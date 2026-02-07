@@ -1,14 +1,34 @@
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
 /**
  * Placeholder Home Screen
  * Will be replaced with the actual marketplace home screen.
+ * Uses StyleSheet (not NativeWind className) to avoid Android native prop type issues.
  */
 export default function HomeScreen() {
     return (
-        <View className="flex-1 justify-center items-center bg-white">
-            <Text className="text-brand-text text-xl font-semibold">Welcome to Tunzaa!</Text>
-            <Text className="text-brand-muted text-base mt-2">Marketplace coming soon...</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>Welcome to Tunzaa!</Text>
+            <Text style={styles.subtitle}>Marketplace coming soon...</Text>
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+    },
+    title: {
+        color: '#1F2937',
+        fontSize: 20,
+        fontWeight: '600',
+    },
+    subtitle: {
+        color: '#6B7280',
+        fontSize: 16,
+        marginTop: 8,
+    },
+});

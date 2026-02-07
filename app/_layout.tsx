@@ -5,6 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 /**
  * Root layout component using Expo Router.
  * Configures the navigation stack and global status bar.
+ *
+ * Note: screenOptions use explicit boolean values (e.g. headerShown: false)
+ * to avoid Android native layer "String cannot be cast to Boolean" when
+ * props are serialized across the bridge.
  */
 export default function RootLayout() {
     return (
@@ -12,8 +16,10 @@ export default function RootLayout() {
             <StatusBar style="light" backgroundColor="#2D3E66" />
             <Stack
                 screenOptions={{
-                    headerShown: false,
-                    animation: 'slide_from_right',
+                    headerShown: false as const,
+                    gestureEnabled: true,
+                    animation: 'default',
+                    animationTypeForReplace: 'push',
                 }}
             />
         </>
