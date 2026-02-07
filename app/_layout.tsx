@@ -1,9 +1,11 @@
 import '../global.css';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { LanguageProvider } from '../src/contexts/LanguageContext';
 
 /**
  * Root layout component using Expo Router.
+ * Wraps the app in LanguageProvider so locale and translations are available everywhere.
  * Configures the navigation stack and global status bar.
  *
  * Note: screenOptions use explicit boolean values (e.g. headerShown: false)
@@ -12,7 +14,7 @@ import { StatusBar } from 'expo-status-bar';
  */
 export default function RootLayout() {
     return (
-        <>
+        <LanguageProvider>
             <StatusBar style="light" backgroundColor="#2D3E66" />
             <Stack
                 screenOptions={{
@@ -22,6 +24,6 @@ export default function RootLayout() {
                     animationTypeForReplace: 'push',
                 }}
             />
-        </>
+        </LanguageProvider>
     );
 }

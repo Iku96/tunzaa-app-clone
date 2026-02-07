@@ -1,29 +1,32 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '../src/contexts/LanguageContext';
 
 /**
  * Role Selection Screen
- * 
+ *
+ * User chooses whether they are a buyer or a business. All copy is translated
+ * via useLanguage().t so it respects the language chosen on the language screen.
+ *
  * Specs from Figma:
  * - Background: White
- * - Back arrow + "Choose what describes you best" header
+ * - Back arrow + translated title
  * - Tunzaa logo (centered)
  * - Description text (centered, muted)
- * - "I'm a buyer" button (blue/brand-accent)
- * - "OR" separator
- * - "I'm a business" button (green/brand-green) with arrow
- * - "Skip" link at bottom
+ * - "I'm a buyer" / "I'm a business" buttons with "OR" separator
+ * - Skip link at bottom
  */
 export default function RoleScreen() {
     const router = useRouter();
+    const { t } = useLanguage();
 
     const handleBack = () => {
         router.back();
     };
 
     const handleBuyerSelect = () => {
-        // TODO: Set user role to 'buyer' and navigate to main app
-        router.push('/home');
+        // Navigate to registration screen for buyers
+        router.push('/register');
     };
 
     const handleBusinessSelect = () => {
@@ -42,53 +45,47 @@ export default function RoleScreen() {
                 <TouchableOpacity
                     onPress={handleBack}
                     style={styles.backButton}
-                    accessibilityLabel="Go back"
+                    accessibilityLabel={t.roleScreenBack}
                     accessibilityRole="button"
                 >
                     <Text style={styles.backArrow}>←</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Choose what describes you best</Text>
+                <Text style={styles.headerTitle}>{t.roleScreenTitle}</Text>
             </View>
 
             {/* Logo */}
             <View style={styles.logoContainer}>
                 <Image
-                    source={require('../assets/tunzaa-logo.png')}
+                    source={require('../assets/blue-tunzaa-logo.png')}
                     style={styles.logo}
                     resizeMode="contain"
                     accessibilityLabel="Tunzaa Logo"
                 />
             </View>
 
-            {/* Description */}
-            <Text style={styles.description}>
-                Achieve your financial goals through a save-to-buy model.{'\n'}
-                Businesses sell, deliver and offer financial services.
-            </Text>
+            {/* Description — translated */}
+            <Text style={styles.description}>{t.roleScreenDescription}</Text>
 
             {/* Buttons Container */}
             <View style={styles.buttonsContainer}>
-                {/* I'm a buyer button */}
                 <TouchableOpacity
                     onPress={handleBuyerSelect}
                     style={styles.buyerButton}
-                    accessibilityLabel="I'm a buyer"
+                    accessibilityLabel={t.roleScreenBuyer}
                     accessibilityRole="button"
                 >
-                    <Text style={styles.buyerButtonText}>I'm a buyer</Text>
+                    <Text style={styles.buyerButtonText}>{t.roleScreenBuyer}</Text>
                 </TouchableOpacity>
 
-                {/* OR separator */}
-                <Text style={styles.orText}>OR</Text>
+                <Text style={styles.orText}>{t.roleScreenOr}</Text>
 
-                {/* I'm a business button */}
                 <TouchableOpacity
                     onPress={handleBusinessSelect}
                     style={styles.businessButton}
-                    accessibilityLabel="I'm a business"
+                    accessibilityLabel={t.roleScreenBusiness}
                     accessibilityRole="button"
                 >
-                    <Text style={styles.businessButtonText}>I'm a business</Text>
+                    <Text style={styles.businessButtonText}>{t.roleScreenBusiness}</Text>
                     <Text style={styles.businessArrow}>→</Text>
                 </TouchableOpacity>
             </View>
@@ -98,10 +95,10 @@ export default function RoleScreen() {
                 <TouchableOpacity
                     onPress={handleSkip}
                     style={styles.skipButton}
-                    accessibilityLabel="Skip role selection"
+                    accessibilityLabel={t.roleScreenSkip}
                     accessibilityRole="button"
                 >
-                    <Text style={styles.skipText}>Skip</Text>
+                    <Text style={styles.skipText}>{t.roleScreenSkip}</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>
             </View>
@@ -139,8 +136,8 @@ const styles = StyleSheet.create({
         marginTop: 32,
     },
     logo: {
-        width: 180,
-        height: 70,
+        width: 111,
+        height: 111,
     },
     description: {
         textAlign: 'center',

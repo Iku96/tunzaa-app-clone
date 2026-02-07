@@ -1,0 +1,27 @@
+---
+description: Implement backend alongside UI so features work end-to-end
+alwaysApply: true
+---
+
+# UI and Backend in Harmony
+
+**Context:** Read **AGENTS.md** for full project instructions, past issues, and lessons learned. Update AGENTS.md when the user gives new instructions or when you fix something important.
+
+When implementing or changing **any UI** (screens, forms, buttons, flows), **implement the backend** (API, persistence, state) at the same time so the feature works end-to-end.
+
+## Do
+
+- **New screen or flow** → Add or update API calls, Supabase queries, or local persistence so the screen reads/writes real data.
+- **New form or action** → Wire submit handlers to backend (e.g. Supabase, REST), handle loading/error states, and reflect success in UI.
+- **New user preference or setting** → Persist it (e.g. AsyncStorage, Supabase `profiles` or settings table) and read it on app load.
+- **List or detail view** → Fetch from backend; don’t leave placeholder or mock data as the final implementation.
+
+## Don’t
+
+- Don’t ship UI that only uses local state or TODOs without a backend path.
+- Don’t add “TODO: connect to API” as the only follow-up; implement the integration in the same change set where possible.
+
+## Scope
+
+- **Backend** here means: any persistence or server interaction (Supabase, REST, GraphQL, AsyncStorage, SecureStore, etc.).
+- If the project has no server yet, “backend” can be local persistence and clear types/hooks so that swapping in a real API later is straightforward.
