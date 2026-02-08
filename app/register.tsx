@@ -1,21 +1,19 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '../src/contexts/LanguageContext';
+import { Ionicons, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 
 /**
- * Registration Screen
+ * Registration Screen (Figma-accurate)
  * 
- * Specs from Figma:
- * - Container: Fixed width 353px, top 89px, left 20px
- * - Title: "Create an account" with subtitle
- * - Logo: Blue Tunzaa logo (centered)
- * - Form inputs: First name, Second name, Phone/Email
- * - Terms checkbox with link
- * - Create Account button (blue #425BA4)
- * - Social login buttons (Google, Apple, Facebook, X)
- * - "Already have an account? Log in" link
- * - Skip button at bottom
+ * Layout:
+ * - SafeAreaView with space-between (top content + bottom Skip)
+ * - White inputs instead of gray
+ * - Divider with horizontal lines
+ * - Wordmark logo (wide, not square)
+ * - Blue Skip button pinned to bottom
+ * - Social icons using Ionicons
  */
 export default function RegisterScreen() {
     const router = useRouter();
@@ -54,226 +52,194 @@ export default function RegisterScreen() {
     };
 
     return (
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <SafeAreaView style={styles.safe}>
             <View style={styles.container}>
-                {/* Back Button */}
-                <TouchableOpacity
-                    onPress={handleBack}
-                    style={styles.backButton}
-                    accessibilityLabel="Go back"
-                    accessibilityRole="button"
-                >
-                    <Text style={styles.backArrow}>←</Text>
-                </TouchableOpacity>
+                {/* Top section */}
+                <View>
+                    {/* Back Button */}
+                    <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                        <Ionicons name="arrow-back" size={22} color="#111827" />
+                    </TouchableOpacity>
 
-                {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.title}>Create an account</Text>
-                    <Text style={styles.subtitle}>Please fill in your details to get started</Text>
-                </View>
-
-                {/* Logo */}
-                <View style={styles.logoContainer}>
-                    <Image
-                        source={require('../assets/blue-tunzaa-logo.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                        accessibilityLabel="Tunzaa Logo"
-                    />
-                </View>
-
-                {/* Form Inputs */}
-                <View style={styles.formContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your first name"
-                        placeholderTextColor="#9CA3AF"
-                        value={firstName}
-                        onChangeText={setFirstName}
-                        autoCapitalize="words"
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter your second name"
-                        placeholderTextColor="#9CA3AF"
-                        value={secondName}
-                        onChangeText={setSecondName}
-                        autoCapitalize="words"
-                    />
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter phone number or email"
-                        placeholderTextColor="#9CA3AF"
-                        value={phoneOrEmail}
-                        onChangeText={setPhoneOrEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-                </View>
-
-                {/* Terms Checkbox */}
-                <TouchableOpacity
-                    style={styles.termsContainer}
-                    onPress={() => setAgreedToTerms(!agreedToTerms)}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: agreedToTerms }}
-                >
-                    <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
-                        {agreedToTerms && <Text style={styles.checkmark}>✓</Text>}
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <Text style={styles.title}>Create an account</Text>
+                        <Text style={styles.subtitle}>Please fill in your details to get started</Text>
                     </View>
-                    <Text style={styles.termsText}>
-                        I agree to the{' '}
-                        <Text style={styles.termsLink}>Terms and Conditions</Text>
-                    </Text>
-                </TouchableOpacity>
 
-                {/* Create Account Button */}
-                <TouchableOpacity
-                    style={styles.createButton}
-                    onPress={handleCreateAccount}
-                    accessibilityLabel="Create Account"
-                    accessibilityRole="button"
-                >
-                    <Text style={styles.createButtonText}>Create Account</Text>
-                </TouchableOpacity>
+                    {/* Logo (wordmark) */}
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('../assets/blue-tunzaa-logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                    </View>
 
-                {/* Social Login Divider */}
-                <Text style={styles.dividerText}>or continue with</Text>
+                    {/* Inputs */}
+                    <View style={styles.formContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter your first name"
+                            placeholderTextColor="#9CA3AF"
+                            value={firstName}
+                            onChangeText={setFirstName}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter your second name"
+                            placeholderTextColor="#9CA3AF"
+                            value={secondName}
+                            onChangeText={setSecondName}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter phone number or email"
+                            placeholderTextColor="#9CA3AF"
+                            value={phoneOrEmail}
+                            onChangeText={setPhoneOrEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                    </View>
 
-                {/* Social Login Buttons */}
-                <View style={styles.socialContainer}>
+                    {/* Terms */}
                     <TouchableOpacity
-                        style={styles.socialButton}
-                        onPress={() => handleSocialLogin('google')}
-                        accessibilityLabel="Continue with Google"
+                        style={styles.termsContainer}
+                        onPress={() => setAgreedToTerms(!agreedToTerms)}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: agreedToTerms }}
                     >
-                        <Text style={styles.socialIcon}>G</Text>
+                        <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+                            {agreedToTerms && <Ionicons name="checkmark" size={14} color="#fff" />}
+                        </View>
+                        <Text style={styles.termsText}>
+                            I agree to the <Text style={styles.termsLink}>Terms and Conditions</Text>
+                        </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.socialButton}
-                        onPress={() => handleSocialLogin('apple')}
-                        accessibilityLabel="Continue with Apple"
-                    >
-                        <Text style={styles.socialIcon}></Text>
+                    {/* Create button */}
+                    <TouchableOpacity style={styles.createButton} onPress={handleCreateAccount}>
+                        <Text style={styles.createButtonText}>Create Account</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.socialButton}
-                        onPress={() => handleSocialLogin('facebook')}
-                        accessibilityLabel="Continue with Facebook"
-                    >
-                        <Text style={styles.socialIcon}>f</Text>
-                    </TouchableOpacity>
+                    {/* Divider with lines */}
+                    <View style={styles.dividerRow}>
+                        <View style={styles.dividerLine} />
+                        <Text style={styles.dividerText}>or continue with</Text>
+                        <View style={styles.dividerLine} />
+                    </View>
 
-                    <TouchableOpacity
-                        style={styles.socialButton}
-                        onPress={() => handleSocialLogin('x')}
-                        accessibilityLabel="Continue with X"
-                    >
-                        <Text style={styles.socialIcon}>X</Text>
-                    </TouchableOpacity>
+                    {/* Social */}
+                    <View style={styles.socialContainer}>
+                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
+                            <FontAwesome name="google" size={20} color="#EA4335" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
+                            <Ionicons name="logo-apple" size={22} color="#111827" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
+                            <FontAwesome name="facebook-f" size={20} color="#1877F2" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('x')}>
+                            <FontAwesome6 name="x-twitter" size={20} color="#111827" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Login */}
+                    <View style={styles.loginContainer}>
+                        <Text style={styles.loginText}>Already have an account? </Text>
+                        <TouchableOpacity onPress={handleLogin}>
+                            <Text style={styles.loginLink}>Log in</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
-                {/* Login Link */}
-                <View style={styles.loginContainer}>
-                    <Text style={styles.loginText}>Already have an account? </Text>
-                    <TouchableOpacity onPress={handleLogin}>
-                        <Text style={styles.loginLink}>Log in</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Skip Button */}
-                <TouchableOpacity
-                    style={styles.skipButton}
-                    onPress={handleSkip}
-                    accessibilityLabel="Skip registration"
-                >
+                {/* Bottom section: Skip pinned */}
+                <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
                     <Text style={styles.skipText}>Skip</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    scrollView: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    scrollContent: {
-        flexGrow: 1,
-    },
+    safe: { flex: 1, backgroundColor: '#FFFFFF' },
+
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
-        paddingHorizontal: 20, // Left spec
-        paddingTop: 89, // Top spec from Figma
-        width: 353, // Fixed width from Figma
-        alignSelf: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 18,
+        justifyContent: 'space-between',
     },
+
     backButton: {
         alignSelf: 'flex-start',
         padding: 8,
-        marginBottom: 16,
+        marginTop: 6,
     },
-    backArrow: {
-        fontSize: 24,
-        color: '#1F2937',
-    },
+
     header: {
         alignItems: 'center',
-        marginBottom: 24,
+        marginTop: 6,
     },
     title: {
         fontSize: 20,
-        fontWeight: '600',
-        color: '#1F2937',
-        marginBottom: 8,
+        fontWeight: '700',
+        color: '#111827',
     },
     subtitle: {
-        fontSize: 14,
+        marginTop: 6,
+        fontSize: 13,
         color: '#6B7280',
         textAlign: 'center',
     },
+
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 32,
+        marginTop: 22,
+        marginBottom: 18,
     },
+    // wordmark shape (wide, short) - bigger to match Figma
     logo: {
-        width: 111,
-        height: 111,
+        width: 170,
+        height: 60,
     },
+
     formContainer: {
         gap: 16,
-        marginBottom: 16,
+        marginTop: 6,
     },
     input: {
-        height: 56,
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
+        height: 54,
+        backgroundColor: '#FFFFFF',   // Figma white inputs
+        borderRadius: 12,
         borderWidth: 1,
         borderColor: '#E5E7EB',
         paddingHorizontal: 16,
         fontSize: 14,
-        color: '#1F2937',
+        color: '#111827',
     },
+
     termsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 24,
+        marginTop: 14,
     },
     checkbox: {
-        width: 20,
-        height: 20,
-        borderRadius: 4,
+        width: 22,
+        height: 22,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: '#D1D5DB',
         backgroundColor: '#FFFFFF',
-        marginRight: 8,
+        marginRight: 10,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -281,86 +247,97 @@ const styles = StyleSheet.create({
         backgroundColor: '#425BA4',
         borderColor: '#425BA4',
     },
-    checkmark: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '600',
-    },
     termsText: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#6B7280',
+        lineHeight: 18,  // Better baseline alignment
     },
     termsLink: {
         color: '#425BA4',
         textDecorationLine: 'underline',
     },
+
     createButton: {
-        height: 56,
+        height: 58,
+        marginTop: 18,
         backgroundColor: '#425BA4',
         borderRadius: 999,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 24,
     },
     createButtonText: {
         color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 15,
+        fontWeight: '700',
     },
-    dividerText: {
-        textAlign: 'center',
-        fontSize: 14,
-        color: '#6B7280',
+
+    dividerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 18,
         marginBottom: 16,
     },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: '#E5E7EB',
+    },
+    dividerText: {
+        marginHorizontal: 12,
+        fontSize: 12,
+        color: '#9CA3AF',   // Lighter like Figma
+    },
+
     socialContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        gap: 12,
-        marginBottom: 24,
+        gap: 14,
+        marginBottom: 18,
     },
     socialButton: {
         flex: 1,
-        height: 48,
+        height: 52,
+        borderRadius: 12,
         backgroundColor: '#FFFFFF',
-        borderRadius: 8,
         borderWidth: 1,
         borderColor: '#E5E7EB',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    socialIcon: {
-        fontSize: 20,
-        color: '#1F2937',
-    },
+
     loginContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 32,
+        alignItems: 'center',
+        marginTop: 6,
     },
     loginText: {
-        fontSize: 14,
-        color: '#6B7280',
-    },
-    loginLink: {
-        fontSize: 14,
-        color: '#425BA4',
+        fontSize: 13,
+        color: '#111827',     // Darker like Figma
         fontWeight: '600',
     },
+    loginLink: {
+        fontSize: 13,
+        color: '#425BA4',
+        fontWeight: '700',
+    },
+
     skipButton: {
         flexDirection: 'row',
+        alignSelf: 'center',
         alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 32,
+        paddingBottom: 18,
+        marginTop: 6,
     },
     skipText: {
-        fontSize: 16,
+        fontSize: 15,
         color: '#425BA4',
-        marginRight: 4,
+        marginRight: 8,
+        fontWeight: '600',
     },
     skipArrow: {
-        fontSize: 16,
+        fontSize: 15,
         color: '#425BA4',
+        fontWeight: '600',
     },
 });

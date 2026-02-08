@@ -18,8 +18,8 @@ export default function LanguageScreen() {
 
     const handleLanguageSelect = async (code: string) => {
         await setLocale(code);
-        // Auto-navigate to role selection after language is set
-        router.push('/role');
+        // Add small delay so user can see the green selection highlight before navigating
+        setTimeout(() => router.push('/role'), 200);
     };
 
     const handleSkip = () => {
@@ -67,27 +67,26 @@ export default function LanguageScreen() {
                                     ? lang.name
                                     : `${lang.name} (${lang.nativeName})`;
 
+                                const isSelected = locale === lang.code;
+
                                 return (
                                     <Pressable
                                         key={lang.code}
-                                        style={({ pressed }) => [
+                                        style={[
                                             styles.languageOption,
                                             index === SUPPORTED_LANGUAGES.length - 1 && styles.languageOptionLast,
-                                            pressed && styles.languageOptionPressed,
+                                            isSelected && styles.languageOptionSelected,
                                         ]}
                                         onPress={() => handleLanguageSelect(lang.code)}
                                         accessibilityLabel={`Select ${lang.nativeName || lang.name}`}
                                         accessibilityRole="button"
-                                        delayLongPress={500}
                                     >
-                                        {({ pressed }) => (
-                                            <Text style={[
-                                                styles.languageText,
-                                                pressed && styles.languageTextPressed,
-                                            ]}>
-                                                {displayName}
-                                            </Text>
-                                        )}
+                                        <Text style={[
+                                            styles.languageText,
+                                            isSelected && styles.languageTextSelected,
+                                        ]}>
+                                            {displayName}
+                                        </Text>
                                     </Pressable>
                                 );
                             })}
@@ -177,27 +176,28 @@ const styles = StyleSheet.create({
         backgroundColor: '#EEF2FF',
     },
     languageOption: {
-        paddingVertical: 24, // Increased to 24px for more spacious Figma-like appearance
+        paddingVertical: 14, // Closer to Figma screenshot
         paddingHorizontal: 20,
         borderBottomWidth: 1,
-        borderBottomColor: '#D1D5DB',
+        borderBottomColor: '#E5E7EB', // Lighter divider
         backgroundColor: '#EEF2FF',
     },
     languageOptionLast: {
         borderBottomWidth: 0,
-        paddingBottom: 24, // Ensure last item has bottom padding
+        paddingBottom: 14, // Consistent padding
     },
-    languageOptionPressed: {
-        backgroundColor: '#00C853', // Bright green on press (matching demo)
+    languageOptionSelected: {
+        backgroundColor: '#00C853', // Solid green bar for selected language
     },
     languageText: {
-        fontSize: 15,
-        lineHeight: 22, // Added line height for better spacing
+        fontSize: 14,
+        lineHeight: 20,
         color: '#374151',
         textAlign: 'center',
     },
-    languageTextPressed: {
-        color: '#FFFFFF', // White text on green background for better contrast
+    languageTextSelected: {
+        color: '#FFFFFF', // White text on green
+        fontWeight: '600',
     },
     skipContainer: {
         flex: 1,
@@ -211,12 +211,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     skipText: {
-        color: '#6B7280',
+        color: '#4A6CF7', // Blue to match Figma
         fontSize: 16,
-        marginRight: 4,
+        marginRight: 6,
     },
     skipChevron: {
-        color: '#6B7280',
+        color: '#4A6CF7', // Blue to match Figma
         fontSize: 16,
     },
 });
