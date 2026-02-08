@@ -85,21 +85,21 @@ export default function RegisterScreen() {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter your first name"
-                                placeholderTextColor="#9CA3AF"
+                                placeholderTextColor="#666666"
                                 value={firstName}
                                 onChangeText={setFirstName}
                             />
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter your second name"
-                                placeholderTextColor="#9CA3AF"
+                                placeholderTextColor="#666666"
                                 value={secondName}
                                 onChangeText={setSecondName}
                             />
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter phone number or email"
-                                placeholderTextColor="#9CA3AF"
+                                placeholderTextColor="#666666"
                                 value={phoneOrEmail}
                                 onChangeText={setPhoneOrEmail}
                                 keyboardType="email-address"
@@ -358,25 +358,33 @@ const styles = StyleSheet.create({
     },
 
     // SKIP BUTTON (BOTTOM PINNED)
+    // Figma: 190×54, radius 1000, padding 15, gap 10
+    // Animation: Move in Right, Spring (mass 1, stiffness 300, damping 20)
     skipButton: {
+        width: 190,  // Figma: Fixed width
+        height: 54,  // Figma: Fixed height
+        borderRadius: 1000,  // Figma: Pill shape
         flexDirection: 'row',
         alignSelf: 'center',
         alignItems: 'center',
-        paddingBottom: 18,
+        justifyContent: 'center',
+        paddingHorizontal: 15,  // Figma: Padding
+        gap: 10,  // Figma: Gap between text and arrow
+        marginBottom: 18,
         marginTop: 6,
     },
     skipText: {
-        fontFamily: 'System',  // Figma: Inter
+        fontFamily: 'System',  // Figma: Inter Medium
         fontSize: 16,
         fontWeight: '500',
+        lineHeight: 24,  // Figma: 24h text element
         letterSpacing: -0.24,  // -1.5% of 16px
         color: '#3B5191',  // Figma: Skip text blue
-        marginRight: 8,
     },
     skipArrow: {
-        fontSize: 16,
-        color: '#3B5191',  // Figma: Skip text blue
-        fontWeight: '500',
+        fontSize: 20,  // Figma: 20×20 arrow icon
+        color: '#3B5191',
+        lineHeight: 20,
     },
 
     // CONTENT WRAPPER - constrains layout to Figma width
