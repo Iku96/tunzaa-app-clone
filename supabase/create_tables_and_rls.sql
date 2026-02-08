@@ -2,7 +2,9 @@
 create table profiles (
   id uuid references auth.users on delete cascade primary key,
   full_name text,
+  email text,
   phone_number text,
+  onboarding_step text default 'started',
   role text check (role in ('buyer', 'merchant', 'admin')) default 'buyer',
   avatar_url text,
   business_name text,

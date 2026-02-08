@@ -39,7 +39,10 @@ export default function Step2Interests() {
             if (user) {
                 const { error } = await supabase
                     .from('profiles')
-                    .update({ interests: selectedInterests } as any) // Cast as any if column not yet in types
+                    .update({
+                        interests: selectedInterests, // Add interests column if needed
+                        interests_completed: true
+                    } as any)
                     .eq('id', user.id);
 
                 if (error) throw error;

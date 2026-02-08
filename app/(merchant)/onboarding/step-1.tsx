@@ -49,7 +49,8 @@ export default function Step1Documents() {
                     .update({
                         business_license_number: license,
                         tin_number: tin,
-                        brela_certificate_number: brela
+                        brela_certificate_number: brela,
+                        onboarding_step: 'step-2'
                     } as any)
                     .eq('id', user.id);
 
@@ -192,21 +193,21 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     inputGroup: {
-        marginBottom: 20,
+        marginBottom: 24, // Universal spacing
     },
     label: {
-        fontSize: 14,
-        color: '#4B5563',
+        color: '#374151', // Gray-700 for better contrast
         marginBottom: 8,
+        fontWeight: '500',
     },
     input: {
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        padding: 12,
+        borderColor: '#D1D5DB', // Gray-300
+        borderRadius: 12, // Increased radius
+        padding: 16, // More padding
         fontSize: 16,
-        color: '#1F2937',
-        backgroundColor: '#F9FAFB',
+        color: '#111827', // Gray-900
+        backgroundColor: '#FFFFFF', // White background
         marginBottom: 8,
     },
     uploadButton: {
@@ -214,11 +215,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
         padding: 12,
-        backgroundColor: '#F3F4F6',
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: '#D1D5DB', // Warmer border
         borderStyle: 'dashed',
+        backgroundColor: '#F9FAFB',
     },
     uploadText: {
         fontSize: 14,

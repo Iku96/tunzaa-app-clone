@@ -46,7 +46,7 @@ export default function BuyerHome() {
             <View style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <View style={styles.userInfo}>
+                    <TouchableOpacity style={styles.userInfo} onPress={() => router.push('/(buyer)/profile')}>
                         <View style={styles.avatarContainer}>
                             {/* Placeholder Avatar - could fetch from user profile */}
                             <Image
@@ -56,9 +56,9 @@ export default function BuyerHome() {
                         </View>
                         <View>
                             <Text style={styles.greeting}>Good Morning,</Text>
-                            <Text style={styles.userName}>Fredrick John</Text>
+                            <Text style={styles.userName}>{user?.user_metadata?.full_name || 'User'}</Text>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                     <View style={styles.headerIcons}>
                         <TouchableOpacity style={styles.iconButton}>
                             <Ionicons name="notifications-outline" size={24} color="#1F2937" />
@@ -111,8 +111,7 @@ export default function BuyerHome() {
                                         title={product.name}
                                         price={product.price}
                                         image={product.image_url}
-                                        originalPrice={null} // Schema doesn't have original price yet
-                                        onPress={() => handleProductPress(product)}
+                                        originalPrice={undefined} // Schema doesn't have original price yet
                                     />
                                 ))
                             )}
@@ -134,7 +133,6 @@ export default function BuyerHome() {
                                 title={product.name}
                                 price={product.price}
                                 image={product.image_url}
-                                onPress={() => handleProductPress(product)}
                             />
                         ))}
                     </ScrollView>

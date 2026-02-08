@@ -25,15 +25,14 @@ export default function Step3Location() {
                         region,
                         district,
                         ward,
-                        // saving extra info to shop description for now or a new column if needed
+                        onboarding_step: 'completed'
                     } as any)
                     .eq('id', user.id);
 
                 if (error) throw error;
             }
-            // For this MVP step 3 -> Step 4 (Map) or Finish.
-            // Based on Figma, map is likely next.
-            router.push('/(merchant)/onboarding/step-4');
+            // For MVP, we finish here and go to dashboard
+            router.replace('/(merchant)/live-orders');
         } catch (e) {
             console.error('Error saving step 3:', e);
             alert('Failed to save details.');
@@ -133,20 +132,21 @@ const styles = StyleSheet.create({
         minHeight: 350,
     },
     inputGroup: {
-        marginBottom: 16,
+        marginBottom: 24, // Universal spacing
     },
     label: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginBottom: 4,
+        fontSize: 14, // Increased size
+        fontWeight: '500',
+        color: '#374151', // Gray-700
+        marginBottom: 8,
     },
     input: {
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        padding: 12,
+        borderColor: '#D1D5DB', // Gray-300
+        borderRadius: 12,
+        padding: 16,
         fontSize: 16,
-        color: '#1F2937',
+        color: '#111827', // Gray-900
         backgroundColor: '#FFFFFF',
     },
     helperLink: {

@@ -16,6 +16,7 @@ interface AuthContextType {
     isMerchant: boolean;
     isBuyer: boolean;
     refreshProfile: () => Promise<void>;
+    signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -96,6 +97,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setViewModeState(mode);
     };
 
+    const signOut = async () => {
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setViewModeState('buyer');
+    };
+
     const value: AuthContextType = {
         session,
         user,
@@ -105,10 +114,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setViewMode,
         isAdmin: profile?.role === 'admin',
         isMerchant: profile?.role === 'merchant' || profile?.role === 'admin',
-        isBuyer: true, // Everyone is a buyer
+        isBuyer: true,
         refreshProfile: async () => {
             if (user) await fetchProfile(user.id);
-        }
+        },
+        signOut
     };
 
     return (

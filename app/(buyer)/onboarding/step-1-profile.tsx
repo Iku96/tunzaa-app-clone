@@ -37,18 +37,15 @@ export default function Step1Profile() {
     const handleNext = async () => {
         setLoading(true);
         try {
-            const updates: any = {
-                gender,
-                date_of_birth: dob, // Ensure YYYY-MM-DD format in real app
-                delivery_location: location,
-                // In real app, upload image to storage and get URL
-                // avatar_url: uploadedUrl 
-            };
-
             if (user) {
                 const { error } = await supabase
                     .from('profiles')
-                    .update(updates)
+                    .update({
+                        date_of_birth: dob,
+                        gender,
+                        region: location,
+                        onboarding_step: 'step-2'
+                    } as any)
                     .eq('id', user.id);
 
                 if (error) throw error;

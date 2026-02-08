@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
         fontWeight: '400',
         lineHeight: 16,  // 100%
         letterSpacing: 0.01,
-        color: '#666666',  // Figma: Input text color
+        color: '#1F2937',  // Darker gray for better contrast
     },
 
     // TERMS ROW

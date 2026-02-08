@@ -28,7 +28,8 @@ export default function Step2Details() {
                     .update({
                         business_name: shopName,
                         phone_number: phone,
-                        shop_description: description
+                        shop_description: description,
+                        onboarding_step: 'step-3'
                     } as any)
                     .eq('id', user.id);
 
@@ -163,22 +164,22 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     inputGroup: {
-        marginBottom: 16,
+        marginBottom: 24, // Universal spacing
     },
     label: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#111827',
+        color: '#374151', // Gray-700
         marginBottom: 8,
     },
     input: {
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        padding: 12,
+        borderColor: '#D1D5DB', // Gray-300
+        borderRadius: 12,
+        padding: 16,
         fontSize: 16,
-        color: '#1F2937',
-        backgroundColor: '#F9FAFB',
+        color: '#111827',
+        backgroundColor: '#FFFFFF',
     },
     textArea: {
         height: 100,
