@@ -123,6 +123,7 @@ export interface Database {
                     date_of_birth: string | null
                     interests: string[] | null
                     delivery_location: string | null
+                    onboarding_step: string
                 }
                 Insert: {
                     avatar_url?: string | null
@@ -145,6 +146,7 @@ export interface Database {
                     date_of_birth?: string | null
                     interests?: string[] | null
                     delivery_location?: string | null
+                    onboarding_step?: string
                 }
                 Update: {
                     avatar_url?: string | null
@@ -167,6 +169,7 @@ export interface Database {
                     date_of_birth?: string | null
                     interests?: string[] | null
                     delivery_location?: string | null
+                    onboarding_step?: string
                 }
                 Relationships: [
                     {

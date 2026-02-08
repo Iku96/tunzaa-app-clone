@@ -31,20 +31,19 @@ export default function WelcomeScreen() {
             }
 
             // Fetch profile to check onboarding status
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
-                .single();
+                .maybeSingle();
 
-            if (!profile) {
-                // Fallback if no profile exists
-                router.replace('/language');
-                return;
+            if (error) {
+                console.error('Error fetching profile:', error);
             }
 
-            const role = profile.role || 'buyer';
-            const step = profile.onboarding_step || 'started';
+            // Fallback values if profile is missing (e.g. created via Auth but DB insert failed)
+            const role = profile?.role || session.user.user_metadata?.role || 'buyer';
+            const step = profile?.onboarding_step || 'started';
 
             if (role === 'merchant') {
                 if (step === 'completed' || step === 'step-4') {
@@ -73,6 +72,9 @@ export default function WelcomeScreen() {
 
         } catch (e) {
             console.error('Routing error:', e);
+            // Only redirect to language if strictly necessary (e.g. fatal error)
+            // But if we have a session, we should try to keep them in.
+            // For now, let's assume if it crashes here, safe fallback is language.
             router.replace('/language');
         }
     };
