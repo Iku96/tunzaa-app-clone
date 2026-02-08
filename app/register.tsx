@@ -1,7 +1,19 @@
 import { useState } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    StyleSheet,
+    KeyboardAvoidingView,
+    ScrollView,
+    Platform
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '../src/contexts/LanguageContext';
+import { supabase } from '../src/lib/supabase';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 /**
@@ -21,28 +33,109 @@ export default function RegisterScreen() {
     const router = useRouter();
     const { t } = useLanguage();
 
+    const { role } = useLocalSearchParams<{ role: 'buyer' | 'merchant' }>();
+    const userRole = role || 'buyer';
+
     const [firstName, setFirstName] = useState('');
     const [secondName, setSecondName] = useState('');
     const [phoneOrEmail, setPhoneOrEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+    const [loading, setLoading] = useState(false);
 
     const handleBack = () => {
         router.back();
     };
 
-    const handleCreateAccount = () => {
-        // TODO: Implement registration with Supabase
+    const handleCreateAccount = async () => {
         if (!agreedToTerms) {
             alert('Please agree to Terms and Conditions');
             return;
         }
-        console.log('Creating account:', { firstName, secondName, phoneOrEmail });
-        router.push('/home');
+        if (!phoneOrEmail || !firstName || !secondName || !password) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Determine if input is email or phone (simple check)
+            const isEmail = phoneOrEmail.includes('@');
+            let authOptions: any;
+
+            if (isEmail) {
+                authOptions = {
+                    email: phoneOrEmail,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: `${firstName} ${secondName}`,
+                            role: userRole,
+                        }
+                    }
+                };
+            } else {
+                authOptions = {
+                    phone: phoneOrEmail,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: `${firstName} ${secondName}`,
+                            role: userRole,
+                        }
+                    }
+                };
+            }
+
+            // 1. Sign Up
+            const { data, error: signUpError } = await supabase.auth.signUp(authOptions);
+
+            if (signUpError) throw signUpError;
+
+            // 2. Check if Email Verification is required (No Session)
+            if (data.user && !data.session) {
+                alert('Account created! Please check your email to verify your account before logging in.');
+                router.replace('/login');
+                return;
+            }
+
+            if (data.session && data.user) {
+                // 3. Create Profile (if RLS allows insert based on auth.uid())
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: data.user.id,
+                        full_name: `${firstName} ${secondName}`,
+                        role: userRole,
+                        phone_number: !isEmail ? phoneOrEmail : null,
+                        email: isEmail ? phoneOrEmail : (data.user.email || null)
+                    } as any);
+
+                if (profileError) {
+                    console.error('Profile creation error:', profileError);
+                    // Continue anyway as the auth account exists, profile can be fixed later or via trigger
+                }
+
+                // 4. Navigate
+                if (userRole === 'merchant') {
+                    router.replace('/(merchant)/onboarding/step-1');
+                } else {
+                    router.replace('/(buyer)/onboarding/step-1');
+                }
+            }
+        } catch (e: any) {
+            alert(e.message || 'Error creating account');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSocialLogin = (provider: string) => {
-        // TODO: Implement social login
-        console.log('Social login:', provider);
+        // Social Auth requires Supabase API Keys and 3rd-party configuration.
+        // For now, we will just show an alert.
+        alert(`Social Login with ${provider} is not yet configured. Please use Email/Password for now.`);
+        console.log('Social login clicked:', provider);
     };
 
     const handleLogin = () => {
@@ -55,120 +148,138 @@ export default function RegisterScreen() {
 
     return (
         <SafeAreaView style={styles.safe}>
-            <View style={styles.container}>
-                {/* Content Wrapper - maxWidth 353px */}
-                <View style={styles.contentWrapper}>
-                    {/* Top section */}
-                    <View>
-                        {/* Back Button */}
-                        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                            <Ionicons name="arrow-back" size={14} color="#1D1E1F" />
-                        </TouchableOpacity>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.container}>
+                        {/* Content Wrapper - maxWidth 353px */}
+                        <View style={styles.contentWrapper}>
+                            {/* Top section */}
+                            <View>
+                                {/* Back Button */}
+                                <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                                    <Ionicons name="arrow-back" size={14} color="#1D1E1F" />
+                                </TouchableOpacity>
 
-                        {/* Header */}
-                        <View style={styles.header}>
-                            <Text style={styles.title}>Create an account</Text>
-                            <Text style={styles.subtitle}>Please fill in your details to get started</Text>
-                        </View>
+                                {/* Header */}
+                                <View style={styles.header}>
+                                    <Text style={styles.title}>Create an account</Text>
+                                    <Text style={styles.subtitle}>Please fill in your details to get started</Text>
+                                </View>
 
-                        {/* Logo (wordmark) */}
-                        <View style={styles.logoContainer}>
-                            <Image
-                                source={require('../assets/blue-tunzaa-logo.png')}
-                                style={styles.logo}
-                                resizeMode="contain"
-                            />
-                        </View>
+                                {/* Logo (wordmark) */}
+                                <View style={styles.logoContainer}>
+                                    <Image
+                                        source={require('../assets/blue-tunzaa-logo.png')}
+                                        style={styles.logo}
+                                        resizeMode="contain"
+                                    />
+                                </View>
 
-                        {/* Inputs */}
-                        <View style={styles.formContainer}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter your first name"
-                                placeholderTextColor="#666666"
-                                value={firstName}
-                                onChangeText={setFirstName}
-                            />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter your second name"
-                                placeholderTextColor="#666666"
-                                value={secondName}
-                                onChangeText={setSecondName}
-                            />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter phone number or email"
-                                placeholderTextColor="#666666"
-                                value={phoneOrEmail}
-                                onChangeText={setPhoneOrEmail}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                            />
-                        </View>
+                                {/* Inputs */}
+                                <View style={styles.formContainer}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Enter your first name"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={firstName}
+                                        onChangeText={setFirstName}
+                                    />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Enter your second name"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={secondName}
+                                        onChangeText={setSecondName}
+                                    />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Enter phone number or email"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={phoneOrEmail}
+                                        onChangeText={setPhoneOrEmail}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                    />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Create a password"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry
+                                    />
+                                </View>
 
-                        {/* Terms */}
-                        <TouchableOpacity
-                            style={styles.termsContainer}
-                            onPress={() => setAgreedToTerms(!agreedToTerms)}
-                            accessibilityRole="checkbox"
-                            accessibilityState={{ checked: agreedToTerms }}
-                        >
-                            <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
-                                {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                {/* Terms */}
+                                <TouchableOpacity
+                                    style={styles.termsContainer}
+                                    onPress={() => setAgreedToTerms(!agreedToTerms)}
+                                    accessibilityRole="checkbox"
+                                    accessibilityState={{ checked: agreedToTerms }}
+                                >
+                                    <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+                                        {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                    </View>
+                                    <Text style={styles.termsText}>
+                                        I agree to the <Text style={styles.termsLink} onPress={() => router.push('/terms')}>Terms and Conditions</Text>
+                                    </Text>
+                                </TouchableOpacity>
+
+                                {/* Create button */}
+                                <TouchableOpacity style={styles.createButton} onPress={handleCreateAccount}>
+                                    <Text style={styles.createButtonText}>Create Account</Text>
+                                </TouchableOpacity>
+
+                                {/* Divider with lines */}
+                                <View style={styles.dividerRow}>
+                                    <View style={styles.dividerLine} />
+                                    <Text style={styles.dividerText}>or continue with</Text>
+                                    <View style={styles.dividerLine} />
+                                </View>
+
+                                {/* Social */}
+                                <View style={styles.socialContainer}>
+                                    <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
+                                        <FontAwesome name="google" size={19} color="#EA4335" />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
+                                        <Ionicons name="logo-apple" size={20} color="#1D1E1F" />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
+                                        <FontAwesome name="facebook-f" size={20} color="#1877F2" />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('x')}>
+                                        <FontAwesome5 name="twitter" size={20} color="#1D1E1F" />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Login */}
+                                <View style={styles.loginContainer}>
+                                    <Text style={styles.loginText}>Already have an account? </Text>
+                                    <TouchableOpacity onPress={handleLogin}>
+                                        <Text style={styles.loginLink}>Log in</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                            <Text style={styles.termsText}>
-                                I agree to the <Text style={styles.termsLink} onPress={() => router.push('/terms')}>Terms and Conditions</Text>
-                            </Text>
+                        </View>
+
+                        {/* Bottom section: Skip pinned */}
+                        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+                            <Text style={styles.skipText}>Skip</Text>
+                            <Text style={styles.skipArrow}>→</Text>
                         </TouchableOpacity>
-
-                        {/* Create button */}
-                        <TouchableOpacity style={styles.createButton} onPress={handleCreateAccount}>
-                            <Text style={styles.createButtonText}>Create Account</Text>
-                        </TouchableOpacity>
-
-                        {/* Divider with lines */}
-                        <View style={styles.dividerRow}>
-                            <View style={styles.dividerLine} />
-                            <Text style={styles.dividerText}>or continue with</Text>
-                            <View style={styles.dividerLine} />
-                        </View>
-
-                        {/* Social */}
-                        <View style={styles.socialContainer}>
-                            <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
-                                <FontAwesome name="google" size={19} color="#EA4335" />
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
-                                <Ionicons name="logo-apple" size={20} color="#1D1E1F" />
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
-                                <FontAwesome name="facebook-f" size={20} color="#1877F2" />
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('x')}>
-                                <FontAwesome5 name="twitter" size={20} color="#1D1E1F" />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Login */}
-                        <View style={styles.loginContainer}>
-                            <Text style={styles.loginText}>Already have an account? </Text>
-                            <TouchableOpacity onPress={handleLogin}>
-                                <Text style={styles.loginLink}>Log in</Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
-                </View>
-
-                {/* Bottom section: Skip pinned */}
-                <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-                    <Text style={styles.skipText}>Skip</Text>
-                    <Text style={styles.skipArrow}>→</Text>
-                </TouchableOpacity>
-            </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
@@ -180,12 +291,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF'
     },
 
+    scrollContent: {
+        flexGrow: 1,
+    },
+
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
         paddingHorizontal: 20,
         paddingTop: 20.5,  // Figma: SafeArea → Back Arrow
         justifyContent: 'space-between',
+        paddingBottom: 20, // Add padding for bottom
     },
 
     // HEADER FRAME

@@ -1,7 +1,19 @@
 import { useState } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    StyleSheet,
+    KeyboardAvoidingView,
+    ScrollView,
+    Platform
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { supabase } from '../src/lib/supabase';
 
 /**
  * Sign In Screen (Welcome Back)
@@ -15,151 +27,189 @@ export default function LoginScreen() {
     const [showPassword, setShowPassword] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-    const handleLogin = () => {
+    const [loading, setLoading] = useState(false);
+
+    const handleLogin = async () => {
         if (!agreedToTerms) {
             alert('Please agree to Terms and Conditions');
             return;
         }
-        console.log('Login:', { usernameOrEmail, password });
-        router.push('/home');
+        if (!usernameOrEmail || !password) {
+            alert('Please enter email and password');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email: usernameOrEmail,
+                password: password,
+            });
+
+            if (error) throw error;
+
+            // AuthContext will handle state update and navigation based on role
+            router.replace('/(buyer)');
+        } catch (e: any) {
+            alert(e.message || 'Error signing in');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSocialLogin = (provider: string) => {
-        console.log('Social login:', provider);
-        // TODO: Implement social auth
+        // Social Auth requires Supabase API Keys and 3rd-party configuration.
+        // For now, we will just show an alert.
+        alert(`Social Login with ${provider} is not yet configured. Please use Email/Password for now.`);
+        console.log('Social login clicked:', provider);
     };
 
     return (
         <SafeAreaView style={styles.safe}>
-            <View style={styles.container}>
-                <View style={styles.contentWrapper}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <Text style={styles.title}>Welcome Back</Text>
-                        <Text style={styles.subtitle}>Enter your details to sign in</Text>
-                    </View>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.container}>
+                        <View style={styles.contentWrapper}>
+                            {/* Header */}
+                            <View style={styles.header}>
+                                <Text style={styles.title}>Welcome Back</Text>
+                                <Text style={styles.subtitle}>Enter your details to sign in</Text>
+                            </View>
 
-                    {/* Logo */}
-                    <View style={styles.logoContainer}>
-                        <Image
-                            source={require('../assets/blue-tunzaa-logo.png')}
-                            style={styles.logo}
-                            resizeMode="contain"
-                        />
-                    </View>
-
-                    {/* Form */}
-                    <View style={styles.formContainer}>
-                        {/* Username/Email Input */}
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter Username or Email"
-                            placeholderTextColor="#9CA3AF"
-                            value={usernameOrEmail}
-                            onChangeText={setUsernameOrEmail}
-                            autoCapitalize="none"
-                        />
-
-                        {/* Password Input with Eye Icon */}
-                        <View style={styles.passwordContainer}>
-                            <TextInput
-                                style={styles.passwordInput}
-                                placeholder="Enter password"
-                                placeholderTextColor="#9CA3AF"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry={!showPassword}
-                            />
-                            <TouchableOpacity
-                                onPress={() => setShowPassword(!showPassword)}
-                                style={styles.eyeIcon}
-                            >
-                                <Ionicons
-                                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                                    size={20}
-                                    color="#9CA3AF"
+                            {/* Logo */}
+                            <View style={styles.logoContainer}>
+                                <Image
+                                    source={require('../assets/blue-tunzaa-logo.png')}
+                                    style={styles.logo}
+                                    resizeMode="contain"
                                 />
+                            </View>
+
+                            {/* Form */}
+                            <View style={styles.formContainer}>
+                                {/* Username/Email Input */}
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter Username or Email"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={usernameOrEmail}
+                                    onChangeText={setUsernameOrEmail}
+                                    autoCapitalize="none"
+                                />
+
+                                {/* Password Input with Eye Icon */}
+                                <View style={styles.passwordContainer}>
+                                    <TextInput
+                                        style={styles.passwordInput}
+                                        placeholder="Enter password"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry={!showPassword}
+                                    />
+                                    <TouchableOpacity
+                                        onPress={() => setShowPassword(!showPassword)}
+                                        style={styles.eyeIcon}
+                                    >
+                                        <Ionicons
+                                            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                                            size={20}
+                                            color="#9CA3AF"
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Forgot Password Link */}
+                                <TouchableOpacity
+                                    onPress={() => router.push('/forgot-password')}
+                                    style={styles.forgotPasswordContainer}
+                                >
+                                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Terms Checkbox */}
+                            <TouchableOpacity
+                                style={styles.termsContainer}
+                                onPress={() => setAgreedToTerms(!agreedToTerms)}
+                                accessibilityRole="checkbox"
+                                accessibilityState={{ checked: agreedToTerms }}
+                            >
+                                <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+                                    {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                </View>
+                                <Text style={styles.termsText}>
+                                    I agree to the <Text style={styles.termsLink} onPress={() => router.push('/terms')}>Terms and Conditions</Text>
+                                </Text>
                             </TouchableOpacity>
+
+                            {/* Login Button */}
+                            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                                <Text style={styles.loginButtonText}>Log In</Text>
+                            </TouchableOpacity>
+
+                            {/* Divider */}
+                            <View style={styles.dividerRow}>
+                                <View style={styles.dividerLine} />
+                                <Text style={styles.dividerText}>or continue with</Text>
+                                <View style={styles.dividerLine} />
+                            </View>
+
+                            {/* Social Buttons */}
+                            <View style={styles.socialContainer}>
+                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
+                                    <FontAwesome name="google" size={20} color="#EA4335" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
+                                    <Ionicons name="logo-apple" size={22} color="#1D1E1F" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
+                                    <FontAwesome name="facebook-f" size={20} color="#1877F2" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('x')}>
+                                    <FontAwesome5 name="twitter" size={20} color="#1D1E1F" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Sign Up Link */}
+                            <View style={styles.signUpContainer}>
+                                <Text style={styles.signUpText}>Don't have an account? </Text>
+                                <TouchableOpacity onPress={() => router.push('/register')}>
+                                    <Text style={styles.signUpLink}>Sign up</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
-                        {/* Forgot Password Link */}
-                        <TouchableOpacity
-                            onPress={() => router.push('/forgot-password')}
-                            style={styles.forgotPasswordContainer}
-                        >
-                            <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                        {/* Skip Button - Pinned to Bottom */}
+                        <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
+                            <Text style={styles.skipText}>Skip</Text>
+                            <Text style={styles.skipArrow}>→</Text>
                         </TouchableOpacity>
                     </View>
-
-                    {/* Terms Checkbox */}
-                    <TouchableOpacity
-                        style={styles.termsContainer}
-                        onPress={() => setAgreedToTerms(!agreedToTerms)}
-                        accessibilityRole="checkbox"
-                        accessibilityState={{ checked: agreedToTerms }}
-                    >
-                        <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
-                            {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
-                        </View>
-                        <Text style={styles.termsText}>
-                            I agree to the <Text style={styles.termsLink} onPress={() => router.push('/terms')}>Terms and Conditions</Text>
-                        </Text>
-                    </TouchableOpacity>
-
-                    {/* Login Button */}
-                    <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                        <Text style={styles.loginButtonText}>Log In</Text>
-                    </TouchableOpacity>
-
-                    {/* Divider */}
-                    <View style={styles.dividerRow}>
-                        <View style={styles.dividerLine} />
-                        <Text style={styles.dividerText}>or continue with</Text>
-                        <View style={styles.dividerLine} />
-                    </View>
-
-                    {/* Social Buttons */}
-                    <View style={styles.socialContainer}>
-                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
-                            <FontAwesome name="google" size={20} color="#EA4335" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
-                            <Ionicons name="logo-apple" size={22} color="#1D1E1F" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
-                            <FontAwesome name="facebook-f" size={20} color="#1877F2" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('x')}>
-                            <FontAwesome5 name="twitter" size={20} color="#1D1E1F" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Sign Up Link */}
-                    <View style={styles.signUpContainer}>
-                        <Text style={styles.signUpText}>Don't have an account? </Text>
-                        <TouchableOpacity onPress={() => router.push('/register')}>
-                            <Text style={styles.signUpLink}>Sign up</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
-                    <Text style={styles.skipText}>Skip</Text>
-                    <Text style={styles.skipArrow}>→</Text>
-                </TouchableOpacity>
-            </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    // Root
     safe: {
         flex: 1,
         backgroundColor: '#FFFFFF',
+    },
+
+    scrollContent: {
+        flexGrow: 1,
     },
 
     container: {
@@ -168,6 +218,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 20,
         justifyContent: 'space-between',
+        paddingBottom: 20,
     },
 
     // Content wrapper - responsive with maxWidth

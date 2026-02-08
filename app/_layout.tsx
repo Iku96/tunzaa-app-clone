@@ -2,6 +2,7 @@ import '../global.css';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LanguageProvider } from '../src/contexts/LanguageContext';
+import { AuthProvider } from '../src/contexts/AuthContext';
 
 /**
  * Root layout component using Expo Router.
@@ -15,15 +16,17 @@ import { LanguageProvider } from '../src/contexts/LanguageContext';
 export default function RootLayout() {
     return (
         <LanguageProvider>
-            <StatusBar style="light" backgroundColor="#2D3E66" />
-            <Stack
-                screenOptions={{
-                    headerShown: false as const,
-                    gestureEnabled: true,
-                    animation: 'default',
-                    animationTypeForReplace: 'push',
-                }}
-            />
+            <AuthProvider>
+                <StatusBar style="light" backgroundColor="#2D3E66" />
+                <Stack
+                    screenOptions={{
+                        headerShown: false as const,
+                        gestureEnabled: true,
+                        animation: 'default',
+                        animationTypeForReplace: 'push',
+                    }}
+                />
+            </AuthProvider>
         </LanguageProvider>
     );
 }

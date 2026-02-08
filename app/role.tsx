@@ -25,13 +25,11 @@ export default function RoleScreen() {
     };
 
     const handleBuyerSelect = () => {
-        // Navigate to registration screen for buyers
-        router.push('/register');
+        router.push({ pathname: '/register', params: { role: 'buyer' } });
     };
 
     const handleBusinessSelect = () => {
-        // TODO: Set user role to 'merchant' and navigate to business onboarding
-        router.push('/home');
+        router.push('/mauzo-intro');
     };
 
     const handleSkip = () => {
