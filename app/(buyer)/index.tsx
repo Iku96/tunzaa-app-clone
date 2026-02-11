@@ -1,262 +1,413 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, SafeAreaView, Dimensions } from 'react-native';
-import { useState, useEffect } from 'react';
-import { supabase } from '../../src/lib/supabase';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, SafeAreaView, Dimensions, StatusBar } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { useRouter } from 'expo-router';
-import PromoBanner from '../../src/components/home/PromoBanner';
-import CategoryGrid from '../../src/components/home/CategoryGrid';
-import ProductCard from '../../src/components/home/ProductCard';
+import { PRODUCTS, CATEGORIES } from '../../src/data/products';
+import PriceTag from '../../src/components/common/PriceTag';
 
 const { width } = Dimensions.get('window');
 
-export default function BuyerHome() {
-    const { user } = useAuth();
+const BottomNav = () => {
     const router = useRouter();
-    const [products, setProducts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    return (
+        <View style={styles.bottomNav}>
+            <TouchableOpacity style={styles.navItem} onPress={() => { }}>
+                <Ionicons name="home" size={24} color="#FFFFFF" />
+                <Text style={styles.navText}>Home</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart/summary')}>
+                <Ionicons name="basket-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.navText}>Order</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart/summary')}>
+                <Ionicons name="cart-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.navText}>Cart</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navItem}>
+                <Ionicons name="grid-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.navText}>Services</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/profile')}>
+                <Ionicons name="person-outline" size={24} color="#FFFFFF" />
+                <Text style={styles.navText}>Account</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
 
-    useEffect(() => {
-        fetchProducts();
-    }, []);
+export default function BuyerHome() {
+    const { user, profile } = useAuth();
+    const router = useRouter();
 
-    const fetchProducts = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false });
+    // Logic to determine display name and image
+    // Priority: Profile (DB) -> User Metadata (Google/Auth) -> Placeholder
+    const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || 'User';
+    // For image, valid URL -> Google/Auth URL -> UI Avatars
+    const displayImage = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || `https://ui-avatars.com/api/?name=${displayName}&background=eff6ff&color=4A55A2`;
 
-            if (error) throw error;
-            setProducts(data || []);
-        } catch (e) {
-            console.error('Error fetching products:', e);
-        } finally {
-            setLoading(false);
-        }
+    const handleProductPress = (id: string) => {
+        router.push(`/(buyer)/product/${id}`);
     };
 
-    const handleProductPress = (product: any) => {
-        console.log('Product pressed:', product.name);
+    const handleCategoryPress = (id: string) => {
+        router.push(`/(buyer)/category/${id}`);
+    };
+
+    const handleSearchPress = () => {
+        router.push('/(buyer)/search/all');
     };
 
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.container}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <TouchableOpacity style={styles.userInfo} onPress={() => router.push('/(buyer)/profile')}>
-                        <View style={styles.avatarContainer}>
-                            {/* Placeholder Avatar - could fetch from user profile */}
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#4A55A2" />
+
+            {/* Extended Blue Header */}
+            <View style={styles.headerContainer}>
+                <SafeAreaView edges={['top']}>
+                    <View style={styles.headerTop}>
+                        <TouchableOpacity style={styles.userInfo} onPress={() => router.push('/(buyer)/profile')}>
                             <Image
-                                source={{ uri: 'https://ui-avatars.com/api/?name=User&background=eff6ff&color=425ba4' }}
+                                source={{ uri: displayImage }}
                                 style={styles.avatar}
                             />
-                        </View>
-                        <View>
-                            <Text style={styles.greeting}>Good Morning,</Text>
-                            <Text style={styles.userName}>{user?.user_metadata?.full_name || 'User'}</Text>
-                        </View>
-                    </TouchableOpacity>
-                    <View style={styles.headerIcons}>
-                        <TouchableOpacity style={styles.iconButton}>
-                            <Ionicons name="notifications-outline" size={24} color="#1F2937" />
-                            <View style={styles.badge} />
+                            <View>
+                                <Text style={styles.greeting}>Welcome</Text>
+                                <Text style={styles.userName}>{displayName} 👋</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.notifButton}>
+                            <Ionicons name="notifications" size={24} color="#FBBF24" />
                         </TouchableOpacity>
                     </View>
-                </View>
 
-                {/* Search Bar */}
-                <View style={styles.searchContainer}>
-                    <View style={styles.searchBar}>
-                        <Ionicons name="search-outline" size={20} color="#9CA3AF" />
-                        <TextInput
-                            placeholder="Search for products and services"
-                            placeholderTextColor="#9CA3AF"
-                            style={styles.searchInput}
-                        />
-                    </View>
-                    <TouchableOpacity style={styles.filterButton}>
-                        <Ionicons name="options-outline" size={24} color="#FFFFFF" />
+                    {/* Search Bar - Positioned just below profile inside the blue area */}
+                    <TouchableOpacity style={styles.searchContainer} onPress={handleSearchPress} activeOpacity={0.9}>
+                        <Ionicons name="search-outline" size={20} color="#6B7280" />
+                        <Text style={styles.searchPlaceholder}>Search for products and services</Text>
+                        <View style={{ flex: 1 }} />
+                        <Ionicons name="camera-outline" size={20} color="#9CA3AF" />
                     </TouchableOpacity>
+                </SafeAreaView>
+            </View>
+
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+                style={styles.scrollView}
+            >
+                {/* Promo Banner - Overlapping slightly or just below with spacing */}
+                <View style={styles.bannerContainer}>
+                    <View style={styles.bannerContent}>
+                        <Text style={styles.bannerText}>UP TO 80% OFF</Text>
+                    </View>
+                    <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1598327770691-7f0ad7d76b16?w=500&auto=format&fit=crop&q=60' }}
+                        style={styles.bannerImage}
+                        resizeMode="contain"
+                    />
+                    <View style={styles.bannerDecor} />
                 </View>
 
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                    {/* Promo Banner */}
-                    <PromoBanner />
+                {/* Categories */}
+                <View style={styles.categoriesSection}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Categories</Text>
+                        <TouchableOpacity onPress={() => router.push('/(buyer)/category/all')}>
+                            <Text style={styles.seeAll}>View All</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.categoriesGrid}>
+                        {CATEGORIES.map((cat, index) => (
+                            <TouchableOpacity
+                                key={cat.id}
+                                style={styles.categoryItem}
+                                onPress={() => handleCategoryPress(cat.id)}
+                            >
+                                <View style={[styles.categoryIconCircle, { backgroundColor: index % 2 === 0 ? '#EFF6FF' : '#F3F4F6' }]}>
+                                    <Ionicons name={cat.icon as any} size={22} color="#4A55A2" />
+                                </View>
+                                <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
 
-                    {/* Categories */}
-                    <CategoryGrid />
-
-                    {/* Recommended for You */}
+                {/* Recommended */}
+                <View style={styles.sectionContainer}>
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Recommended for You</Text>
                         <TouchableOpacity>
                             <Text style={styles.seeAll}>See All</Text>
                         </TouchableOpacity>
                     </View>
-
-                    {loading ? (
-                        <Text style={{ textAlign: 'center', padding: 20 }}>Loading...</Text>
-                    ) : (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-                            {products.length === 0 ? (
-                                <Text style={{ padding: 20, color: '#666' }}>No products yet.</Text>
-                            ) : (
-                                products.map(product => (
-                                    <ProductCard
-                                        key={product.id}
-                                        id={product.id}
-                                        title={product.name}
-                                        price={product.price}
-                                        image={product.image_url}
-                                        originalPrice={undefined} // Schema doesn't have original price yet
-                                    />
-                                ))
-                            )}
-                        </ScrollView>
-                    )}
-
-                    {/* Best Matches (Duplicate for now, or fetch different data) */}
-                    <View style={[styles.sectionHeader, { marginTop: 20 }]}>
-                        <Text style={styles.sectionTitle}>Best Matches</Text>
-                        <TouchableOpacity>
-                            <Text style={styles.seeAll}>See All</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-                        {products.map(product => (
-                            <ProductCard
-                                key={`match-${product.id}`}
-                                id={`match-${product.id}`}
-                                title={product.name}
-                                price={product.price}
-                                image={product.image_url}
-                            />
+                    <View style={styles.recommendedGrid}>
+                        {PRODUCTS.map(product => (
+                            <TouchableOpacity
+                                key={product.id}
+                                style={styles.productCard}
+                                onPress={() => handleProductPress(product.id)}
+                            >
+                                <View style={styles.productImageContainer}>
+                                    <Image source={{ uri: product.image }} style={styles.productImage} />
+                                    <TouchableOpacity style={styles.heartButton}>
+                                        <Ionicons name="heart-outline" size={18} color="#9CA3AF" />
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={styles.productInfo}>
+                                    <Text style={styles.productTitle} numberOfLines={1}>{product.name}</Text>
+                                    <PriceTag price={product.price} size={14} bold />
+                                </View>
+                            </TouchableOpacity>
                         ))}
-                    </ScrollView>
+                    </View>
+                </View>
 
-                    <View style={{ height: 100 }} />
-                </ScrollView>
-            </View>
-        </SafeAreaView>
+                <View style={{ height: 100 }} />
+            </ScrollView>
+
+            <BottomNav />
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
+    container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
-    container: {
-        flex: 1,
+    headerContainer: {
+        backgroundColor: '#4A55A2',
+        paddingHorizontal: 20,
+        paddingBottom: 30, // Increased padding bottom for spacious feel
+        borderBottomLeftRadius: 32, // More rounded
+        borderBottomRightRadius: 32,
+        zIndex: 10,
     },
-    header: {
+    headerTop: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        marginBottom: 20,
+        marginBottom: 24, // Spacing between profile and search
+        marginTop: 10,
     },
     userInfo: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
     },
-    avatarContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        overflow: 'hidden',
-        backgroundColor: '#F3F4F6',
-    },
     avatar: {
-        width: '100%',
-        height: '100%',
+        width: 48, // Slightly larger
+        height: 48,
+        borderRadius: 24,
+        borderWidth: 2,
+        borderColor: '#818CF8',
     },
     greeting: {
-        fontSize: 12,
-        color: '#6B7280',
+        fontSize: 13,
+        color: '#E0E7FF',
+        fontWeight: '500',
     },
     userName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: '#FFFFFF',
     },
-    headerIcons: {
-        flexDirection: 'row',
-        gap: 16,
-    },
-    iconButton: {
-        position: 'relative',
+    notifButton: {
         padding: 4,
-    },
-    badge: {
-        position: 'absolute',
-        top: 4,
-        right: 6,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#EF4444',
-        borderWidth: 1,
-        borderColor: '#FFFFFF',
     },
     searchContainer: {
         flexDirection: 'row',
-        paddingHorizontal: 20,
-        gap: 12,
-        marginBottom: 20,
-    },
-    searchBar: {
-        flex: 1,
-        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F9FAFB',
-        borderRadius: 12,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16, // Softer radius
         paddingHorizontal: 16,
-        height: 48,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
+        height: 52, // Taller touch target
+        gap: 12,
+        // Optional internal shadow or distinct feel
     },
-    searchInput: {
+    searchPlaceholder: {
+        color: '#6B7280',
+        fontSize: 15,
+    },
+    scrollView: {
         flex: 1,
-        marginLeft: 12,
-        fontSize: 14,
-        color: '#1F2937',
-    },
-    filterButton: {
-        width: 48,
-        height: 48,
-        backgroundColor: '#425BA4',
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
     },
     scrollContent: {
-        paddingBottom: 20,
+        paddingTop: 24, // Spacing from header
+        paddingBottom: 110,
+    },
+    bannerContainer: {
+        marginHorizontal: 20,
+        height: 160,
+        borderRadius: 24,
+        backgroundColor: '#6366F1',
+        overflow: 'hidden',
+        position: 'relative',
+        marginBottom: 32, // More breathing room
+        flexDirection: 'row',
+        // Shadow for depth
+        shadowColor: "#4A55A2",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    bannerDecor: {
+        position: 'absolute',
+        top: -60,
+        right: -40,
+        width: 220,
+        height: 220,
+        borderRadius: 110,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    bannerContent: {
+        flex: 1,
+        padding: 24,
+        justifyContent: 'center',
+    },
+    bannerText: {
+        fontSize: 32, // Larger, more impactful
+        fontWeight: '900',
+        color: '#FFFFFF',
+        width: 180,
+        lineHeight: 38,
+    },
+    bannerImage: {
+        width: 160,
+        height: 180,
+        position: 'absolute',
+        right: 0,
+        bottom: 0,
+    },
+    categoriesSection: {
+        paddingHorizontal: 20,
+        marginBottom: 32,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        marginBottom: 16,
+        marginBottom: 20,
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 20, // Larger title
         fontWeight: 'bold',
         color: '#1F2937',
     },
     seeAll: {
         fontSize: 14,
-        color: '#425BA4',
+        color: '#4A55A2',
+        fontWeight: '600',
+    },
+    categoriesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        rowGap: 24,
+    },
+    categoryItem: {
+        width: '18%', // 5 columns
+        alignItems: 'center',
+        gap: 8,
+    },
+    categoryIconCircle: {
+        width: 56, // Larger touch target
+        height: 56,
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    categoryName: {
+        fontSize: 12,
+        color: '#374151',
+        textAlign: 'center',
         fontWeight: '500',
     },
-    horizontalList: {
+    sectionContainer: {
         paddingHorizontal: 20,
-        gap: 0, // Gap handled by card margin
+        marginBottom: 24,
+    },
+    recommendedGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        gap: 16,
+    },
+    productCard: {
+        width: (width - 56) / 2, // 2 column grid
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        marginBottom: 8,
+        paddingBottom: 8,
+    },
+    productImageContainer: {
+        width: '100%',
+        height: 160, // Taller images
+        borderRadius: 20, // Match card radius
+        backgroundColor: '#F3F4F6',
+        marginBottom: 12,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    productImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    heartButton: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 14,
+        padding: 6,
+        // Shadow
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    productInfo: {
+        gap: 6,
+        paddingHorizontal: 4,
+    },
+    productTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#1F2937',
+    },
+    // Bottom Nav Styles
+    bottomNav: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 90, // Taller
+        backgroundColor: '#4A55A2',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'flex-start', // Icons top aligned
+        paddingTop: 16, // Push icons down slightly
+        borderTopLeftRadius: 30, // More curve
+        borderTopRightRadius: 30,
+        // Shadow to separate from content if overlapping
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 20,
+    },
+    navItem: {
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 8,
+    },
+    navText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '500',
     }
 });
