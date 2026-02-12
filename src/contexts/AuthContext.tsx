@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
-import { Profile } from '../types/database.types';
+import { supabase } from '../lib/supabase';
+import type { Profile, UserRole } from '../types/database.types';
 
 type ViewMode = 'buyer' | 'merchant' | 'admin';
 
@@ -15,8 +15,11 @@ interface AuthContextType {
     isAdmin: boolean;
     isMerchant: boolean;
     isBuyer: boolean;
-    refreshProfile: () => Promise<void>;
+    signUp: (email: string, password: string, role: UserRole, phoneNumber: string) => Promise<void>;
+    signIn: (email: string, password: string) => Promise<void>;
     signOut: () => Promise<void>;
+    updateProfile: (updates: Partial<Profile>) => Promise<void>;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -28,8 +31,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewModeState] = useState<ViewMode>('buyer');
 
+    // Fetch profile for current user
+    const fetchProfile = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
+
+            if (error) {
+                console.error('Error fetching profile:', error);
+            } else {
+                setProfile(data);
+            }
+        } catch (e) {
+            console.error('Unexpected error fetching profile:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Initialize auth session
     useEffect(() => {
-        // 1. Check active session
+        // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
@@ -40,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
         });
 
-        // 2. Listen for auth changes
+        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
@@ -55,29 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         return () => subscription.unsubscribe();
     }, []);
-
-    const fetchProfile = async (userId: string) => {
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .maybeSingle();
-
-            if (error) {
-                console.error('Error fetching profile:', error);
-            } else {
-                setProfile(data);
-                // If user is admin/merchant, they could potentially start in that mode, 
-                // but requirements say "Merchant mode allows toggling". 
-                // We'll default to 'buyer' but they can switch if role permits.
-            }
-        } catch (e) {
-            console.error('Unexpected error fetching profile:', e);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const setViewMode = (mode: ViewMode) => {
         if (!profile) return;
@@ -97,12 +99,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setViewModeState(mode);
     };
 
+    const signUp = async (email: string, password: string, role: UserRole, phoneNumber: string) => {
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+            });
+
+            if (error) throw error;
+
+            // Update profile with role and phone number
+            if (data.user) {
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({
+                        role,
+                        phone_number: phoneNumber,
+                    })
+                    .eq('id', data.user.id);
+
+                if (profileError) throw profileError;
+                await fetchProfile(data.user.id);
+            }
+        } catch (error: any) {
+            throw new Error(error.message || 'Failed to sign up');
+        }
+    };
+
+    const signIn = async (email: string, password: string) => {
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (error) throw error;
+        } catch (error: any) {
+            throw new Error(error.message || 'Failed to sign in');
+        }
+    };
+
     const signOut = async () => {
         await supabase.auth.signOut();
         setSession(null);
         setUser(null);
         setProfile(null);
         setViewModeState('buyer');
+    };
+
+    const updateProfile = async (updates: Partial<Profile>) => {
+        if (!user) throw new Error('No user logged in');
+
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', user.id);
+
+            if (error) throw error;
+            await fetchProfile(user.id);
+        } catch (error: any) {
+            throw new Error(error.message || 'Failed to update profile');
+        }
+    };
+
+    const refreshProfile = async () => {
+        if (user) {
+            await fetchProfile(user.id);
+        }
     };
 
     const value: AuthContextType = {
@@ -115,10 +179,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin: profile?.role === 'admin',
         isMerchant: profile?.role === 'merchant' || profile?.role === 'admin',
         isBuyer: true,
-        refreshProfile: async () => {
-            if (user) await fetchProfile(user.id);
-        },
-        signOut
+        signUp,
+        signIn,
+        signOut,
+        updateProfile,
+        refreshProfile,
     };
 
     return (
@@ -130,8 +195,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
     const context = useContext(AuthContext);
-    if (context === undefined) {
+    if (!context) {
         throw new Error('useAuth must be used within an AuthProvider');
     }
-    return context!;
+    return context;
 }
