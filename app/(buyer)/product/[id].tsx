@@ -81,7 +81,10 @@ export default function ProductDetailScreen() {
                             </View>
 
                             {/* Right Column: Vendor Info */}
-                            <View style={styles.rightInfoCol}>
+                            <TouchableOpacity
+                                style={styles.rightInfoCol}
+                                onPress={() => router.push({ pathname: '/(buyer)/shop/[id]', params: { id: '1' } })}
+                            >
                                 <View style={styles.vendorLogoContainer}>
                                     <Ionicons name="phone-portrait-outline" size={18} color="white" />
                                     <View style={styles.mpesaBadge}>
@@ -96,7 +99,7 @@ export default function ProductDetailScreen() {
                                         <Text style={styles.vendorLocText}>{product.vendor.location}</Text>
                                     </View>
                                 </View>
-                            </View>
+                            </TouchableOpacity>
                         </View>
 
                         <View style={{ height: 100 }} />

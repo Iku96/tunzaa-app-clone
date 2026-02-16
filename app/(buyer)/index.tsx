@@ -7,33 +7,7 @@ import PriceTag from '../../src/components/common/PriceTag';
 
 const { width } = Dimensions.get('window');
 
-const BottomNav = () => {
-    const router = useRouter();
-    return (
-        <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.navItem} onPress={() => { }}>
-                <Ionicons name="home" size={24} color="#FFFFFF" />
-                <Text style={styles.navText}>Home</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart/summary')}>
-                <Ionicons name="basket-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.navText}>Order</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart/summary')}>
-                <Ionicons name="cart-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.navText}>Cart</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem}>
-                <Ionicons name="grid-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.navText}>Services</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/profile')}>
-                <Ionicons name="person-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.navText}>Account</Text>
-            </TouchableOpacity>
-        </View>
-    );
-};
+import BottomNav from '../../src/components/navigation/BottomNav';
 
 export default function BuyerHome() {
     const { user, profile } = useAuth();
@@ -63,7 +37,7 @@ export default function BuyerHome() {
 
             {/* Extended Blue Header */}
             <View style={styles.headerContainer}>
-                <SafeAreaView edges={['top']}>
+                <SafeAreaView>
                     <View style={styles.headerTop}>
                         <TouchableOpacity style={styles.userInfo} onPress={() => router.push('/(buyer)/profile')}>
                             <Image
@@ -75,9 +49,14 @@ export default function BuyerHome() {
                                 <Text style={styles.userName}>{displayName} 👋</Text>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.notifButton}>
-                            <Ionicons name="notifications" size={24} color="#FBBF24" />
-                        </TouchableOpacity>
+                        <View style={styles.headerIcons}>
+                            <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(buyer)/chat')}>
+                                <Ionicons name="chatbubble-ellipses-outline" size={24} color="#FFFFFF" />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.iconButton}>
+                                <Ionicons name="notifications" size={24} color="#FBBF24" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                     {/* Search Bar - Positioned just below profile inside the blue area */}
@@ -212,7 +191,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#FFFFFF',
     },
-    notifButton: {
+    headerIcons: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
         padding: 4,
     },
     searchContainer: {
@@ -379,35 +362,4 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#1F2937',
     },
-    // Bottom Nav Styles
-    bottomNav: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 90, // Taller
-        backgroundColor: '#4A55A2',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'flex-start', // Icons top aligned
-        paddingTop: 16, // Push icons down slightly
-        borderTopLeftRadius: 30, // More curve
-        borderTopRightRadius: 30,
-        // Shadow to separate from content if overlapping
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 20,
-    },
-    navItem: {
-        alignItems: 'center',
-        gap: 6,
-        paddingHorizontal: 8,
-    },
-    navText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: '500',
-    }
 });

@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { supabase } from '../../../src/lib/supabase';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const INTERESTS_TAGS = [
     'Gaming',
@@ -22,6 +23,7 @@ const INTERESTS_TAGS = [
 export default function Step2Interests() {
     const router = useRouter();
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
 
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -57,42 +59,57 @@ export default function Step2Interests() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+            {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.logoText}>TUNZAA</Text>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Add your interests</Text>
+                <View style={{ width: 24 }} />
             </View>
 
-            <Text style={styles.title}>Add your interests</Text>
-            <Text style={styles.subtitle}>
-                We'll personalize your experience based on what you like.
-            </Text>
+            <View style={styles.content}>
+                <Text style={styles.subtitle}>
+                    We'll personalize your experience based on what you like.
+                </Text>
 
-            <ScrollView contentContainerStyle={styles.tagsContainer}>
-                {INTERESTS_TAGS.map((tag) => {
-                    const isSelected = selectedInterests.includes(tag);
-                    return (
-                        <TouchableOpacity
-                            key={tag}
-                            style={[styles.tag, isSelected && styles.tagSelected]}
-                            onPress={() => toggleInterest(tag)}
-                        >
-                            <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
-                                {tag}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
-            </ScrollView>
+                {/* TUNZAA Logo */}
+                <View style={styles.logoContainer}>
+                    <Text style={styles.logoText}>TUNZAA</Text>
+                </View>
 
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.continueButton} onPress={handleNext} disabled={loading}>
-                    <Text style={styles.continueButtonText}>{loading ? 'Saving...' : 'Continue'}</Text>
-                </TouchableOpacity>
+                {/* Interests Tags */}
+                <ScrollView contentContainerStyle={styles.tagsScroll} showsVerticalScrollIndicator={false}>
+                    <View style={styles.tagsContainer}>
+                        {INTERESTS_TAGS.map((tag) => {
+                            const isSelected = selectedInterests.includes(tag);
+                            return (
+                                <TouchableOpacity
+                                    key={tag}
+                                    style={[styles.tag, isSelected && styles.tagSelected]}
+                                    onPress={() => toggleInterest(tag)}
+                                >
+                                    <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
+                                        {tag}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </ScrollView>
 
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)/onboarding/step-3')}>
-                    <Text style={styles.skipText}>Skip</Text>
-                    <Ionicons name="arrow-forward" size={16} color="#6B7280" />
-                </TouchableOpacity>
+                {/* Footer */}
+                <View style={styles.footer}>
+                    <TouchableOpacity style={styles.continueButton} onPress={handleNext} disabled={loading}>
+                        <Text style={styles.continueButtonText}>{loading ? 'Saving...' : 'Continue'}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)/onboarding/step-3')}>
+                        <Text style={styles.skipText}>Skip</Text>
+                        <Ionicons name="arrow-forward" size={16} color="#3E4C85" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -101,73 +118,97 @@ export default function Step2Interests() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 24,
-        paddingTop: 10,
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: 20,
     },
     header: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 30,
-        marginTop: 10,
+        justifyContent: 'space-between',
+        marginBottom: 10,
+        height: 44,
     },
-    logoText: {
-        fontSize: 28,
-        fontWeight: '900',
-        color: '#425BA4',
-        letterSpacing: 2,
+    backButton: {
+        padding: 4,
+        marginLeft: -4,
     },
-    title: {
-        fontSize: 20,
+    headerTitle: {
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#1F2937',
-        textAlign: 'center',
-        marginBottom: 8,
+        color: '#1A1A1A',
+    },
+    content: {
+        flex: 1,
     },
     subtitle: {
         fontSize: 14,
-        color: '#6B7280',
+        color: '#666666',
         textAlign: 'center',
         marginBottom: 30,
+        paddingHorizontal: 20,
+    },
+    logoContainer: {
+        alignItems: 'center',
+        marginBottom: 40,
+    },
+    logoText: {
+        fontSize: 36,
+        fontWeight: '900',
+        color: '#3E4C85', // Brand Blue/Indigo
+        letterSpacing: 1,
+        fontFamily: Platform.select({ ios: 'Avenir-Black', android: 'sans-serif-black' }),
+    },
+    tagsScroll: {
+        flexGrow: 1,
+        paddingBottom: 40,
     },
     tagsContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
         gap: 12,
-        paddingBottom: 40,
     },
     tag: {
         paddingHorizontal: 20,
         paddingVertical: 12,
-        borderRadius: 25,
+        borderRadius: 25, // Pill shape
+        backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#E5E7EB',
-        backgroundColor: '#FFFFFF',
+        // Slight shadow for "floating" look if needed, but screenshot implies clean look.
     },
     tagSelected: {
-        borderColor: '#425BA4',
-        backgroundColor: '#EFF6FF',
+        borderColor: '#3E4C85',
+        backgroundColor: '#F0F4FF', // Very light blue tint for selected? Or keep white. Spec usually implies simple outline.
+        // Let's keep white bg but colored border as per typical "outline chip" design unless filled.
+        backgroundColor: '#FFFFFF',
     },
     tagText: {
-        fontSize: 14,
-        color: '#4B5563',
+        fontSize: 13,
+        color: '#1A1A1A',
         fontWeight: '500',
     },
     tagTextSelected: {
-        color: '#425BA4',
+        color: '#3E4C85',
         fontWeight: '600',
     },
     footer: {
-        marginTop: 'auto',
-        marginBottom: 40,
-        gap: 20,
+        paddingTop: 20, // Add some space above footer
+        paddingBottom: 40, // Space for bottom
         alignItems: 'center',
+        gap: 20,
     },
     continueButton: {
         width: '100%',
-        backgroundColor: '#425BA4', // Brand Blue
-        paddingVertical: 16,
+        backgroundColor: '#3E4C85',
+        paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
+        shadowColor: "#3E4C85",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     continueButtonText: {
         color: '#FFFFFF',
@@ -177,10 +218,11 @@ const styles = StyleSheet.create({
     skipButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: 6,
+        padding: 8,
     },
     skipText: {
-        color: '#6B7280',
+        color: '#3E4C85',
         fontSize: 16,
         fontWeight: '500',
     },

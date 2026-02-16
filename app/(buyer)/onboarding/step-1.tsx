@@ -12,7 +12,7 @@ export default function Step1Profile() {
 
     // State
     const [gender, setGender] = useState('');
-    const [dob, setDob] = useState(''); // Text input for MVP: YYYY-MM-DD
+    const [dob, setDob] = useState('');
     const [location, setLocation] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -20,7 +20,6 @@ export default function Step1Profile() {
         setLoading(true);
         try {
             if (user) {
-                // Formatting DOB if needed, assuming user enters YYYY-MM-DD for now
                 const updates: any = {
                     gender,
                     delivery_location: location,
@@ -44,130 +43,141 @@ export default function Step1Profile() {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={styles.container}>
-                <Text style={styles.title}>Complete your profile</Text>
-                <Text style={styles.subtitle}>
-                    Hey there, let's add a few more details about you.
-                </Text>
+        <View style={styles.mainContainer}>
+            <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                {/* Header - Back Button Only */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                        <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+                    </TouchableOpacity>
+                </View>
 
-                {/* Avatar Upload */}
+                {/* Typography Block */}
+                <View style={styles.textBlock}>
+                    <Text style={styles.title}>Complete your profile</Text>
+                    <Text style={styles.subtitle}>
+                        Hey John, let’s add a few more details
+                    </Text>
+                </View>
+
+                {/* Avatar Component */}
                 <View style={styles.avatarContainer}>
                     <View style={styles.avatarCircle}>
-                        <Ionicons name="person" size={60} color="#E5E7EB" />
-                        <TouchableOpacity style={styles.cameraButton}>
-                            <Ionicons name="camera" size={16} color="#FFFFFF" />
+                        <Ionicons name="person" size={64} color="#A3A3A3" />
+                        <TouchableOpacity style={styles.editBadge}>
+                            <Ionicons name="camera" size={14} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
                 </View>
 
-                {/* Form */}
+                {/* Form Fields */}
                 <View style={styles.form}>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Choose gender</Text>
-                        <View style={styles.genderRow}>
-                            <TouchableOpacity
-                                style={[styles.genderOption, gender === 'Male' && styles.genderOptionSelected]}
-                                onPress={() => setGender('Male')}
-                            >
-                                <Text style={[styles.genderText, gender === 'Male' && styles.genderTextSelected]}>Male</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.genderOption, gender === 'Female' && styles.genderOptionSelected]}
-                                onPress={() => setGender('Female')}
-                            >
-                                <Text style={[styles.genderText, gender === 'Female' && styles.genderTextSelected]}>Female</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Date of Birth</Text>
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="YYYY-MM-DD"
-                                value={dob}
-                                onChangeText={setDob}
-                                placeholderTextColor="#9CA3AF"
-                            />
-                            <Ionicons name="calendar-outline" size={20} color="#6B7280" style={styles.inputIcon} />
-                        </View>
-                    </View>
-
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Preferred delivery location</Text>
-                        <TouchableOpacity style={styles.inputWrapper}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Select location"
-                                value={location}
-                                onChangeText={setLocation}
-                                placeholderTextColor="#9CA3AF"
-                                editable={true} // In real app, maybe opens a modal
-                            />
-                            <Ionicons name="chevron-forward" size={20} color="#6B7280" style={styles.inputIcon} />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                {/* Footer buttons */}
-                <View style={styles.footer}>
-                    <TouchableOpacity style={styles.continueButton} onPress={handleNext} disabled={loading}>
-                        <Text style={styles.continueButtonText}>{loading ? 'Saving...' : 'Continue'}</Text>
+                    {/* Gender */}
+                    <TouchableOpacity style={styles.inputField}>
+                        <Text style={[styles.inputText, !gender && styles.placeholderText]}>
+                            {gender || 'Choose gender'}
+                        </Text>
+                        <Ionicons name="chevron-down" size={20} color="#666666" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)/onboarding/step-2')}>
-                        <Text style={styles.skipText}>Skip</Text>
-                        <Ionicons name="arrow-forward" size={16} color="#6B7280" />
+                    {/* Date of Birth */}
+                    <View style={styles.inputField}>
+                        <Text style={[styles.inputText, !dob && styles.placeholderText]}>
+                            {dob || 'Date of birth'}
+                        </Text>
+                        <Ionicons name="calendar-outline" size={20} color="#666666" />
+                        <TextInput
+                            style={styles.hiddenInput}
+                            value={dob}
+                            onChangeText={setDob}
+                        />
+                    </View>
+
+                    {/* Location */}
+                    <TouchableOpacity style={styles.inputField}>
+                        <Text style={[styles.inputText, !location && styles.placeholderText]}>
+                            {location || 'Preferred delivery location'}
+                        </Text>
+                        <Ionicons name="chevron-forward" size={20} color="#666666" />
+                        <TextInput
+                            style={styles.hiddenInput}
+                            value={location}
+                            onChangeText={setLocation}
+                        />
                     </TouchableOpacity>
                 </View>
+            </ScrollView>
 
+            {/* Footer Actions - Pushed to bottom outside scroll if desired, or at bottom of scroll. Spec says 'Footer Actions'. 
+                 Usually sticky footer is better for onboarding. */}
+            <View style={styles.footer}>
+                <TouchableOpacity style={styles.continueButton} onPress={handleNext} disabled={loading}>
+                    <Text style={styles.continueButtonText}>{loading ? 'Saving...' : 'Continue'}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)/onboarding/step-2')}>
+                    <Text style={styles.skipText}>Skip</Text>
+                    <Ionicons name="arrow-forward" size={16} color="#3E4C85" />
+                </TouchableOpacity>
             </View>
-        </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    mainContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'android' ? 40 : 60, // Basic safe area
+    },
     scrollContainer: {
         flexGrow: 1,
+        paddingBottom: 120, // Space for footer
     },
-    container: {
-        flex: 1,
-        paddingHorizontal: 24,
-        paddingTop: 10,
+    header: {
+        alignItems: 'flex-start',
+        marginBottom: 20,
+    },
+    backButton: {
+        padding: 4,
+        marginLeft: -4, // Align with grid
+    },
+    textBlock: {
+        alignItems: 'center',
+        marginBottom: 32,
     },
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1F2937',
+        fontWeight: 'bold', // Semi-Bold or Bold
+        color: '#1A1A1A', // Dark Charcoal
         textAlign: 'center',
         marginBottom: 8,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#6B7280',
+        fontSize: 14,
+        color: '#666666', // Muted Grey
         textAlign: 'center',
-        marginBottom: 30,
+        fontWeight: '400',
     },
     avatarContainer: {
         alignItems: 'center',
-        marginBottom: 30,
+        marginBottom: 40,
     },
     avatarCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#F3F4F6',
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#F0F0F0', // Light Grey
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
     },
-    cameraButton: {
+    editBadge: {
         position: 'absolute',
         bottom: 0,
-        right: 0,
-        backgroundColor: '#425BA4',
+        right: 0, // 4 o'clock position approx
+        backgroundColor: '#3E4C85', // Primary Indigo
         width: 32,
         height: 32,
         borderRadius: 16,
@@ -177,67 +187,53 @@ const styles = StyleSheet.create({
         borderColor: '#FFFFFF',
     },
     form: {
-        marginBottom: 40,
+        gap: 16, // Vertical spacing between fields
     },
-    inputGroup: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginBottom: 8,
-    },
-    genderRow: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    genderOption: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        paddingVertical: 12,
-        alignItems: 'center',
-    },
-    genderOptionSelected: {
-        borderColor: '#425BA4',
-        backgroundColor: '#EFF6FF',
-    },
-    genderText: {
-        color: '#1F2937',
-        fontWeight: '500',
-    },
-    genderTextSelected: {
-        color: '#425BA4',
-    },
-    inputWrapper: {
+    inputField: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#FFFFFF',
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        backgroundColor: '#F9FAFB',
+        borderColor: '#E5E7EB', // Light grey border
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        height: 56,
     },
-    input: {
+    inputText: {
+        fontSize: 15,
+        color: '#1A1A1A',
         flex: 1,
-        padding: 12,
-        fontSize: 16,
-        color: '#1F2937',
     },
-    inputIcon: {
-        paddingRight: 12,
+    placeholderText: {
+        color: '#9CA3AF',
+    },
+    hiddenInput: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        opacity: 0,
     },
     footer: {
-        gap: 20,
+        position: 'absolute',
+        bottom: 40,
+        left: 20,
+        right: 20,
         alignItems: 'center',
-        marginBottom: 40,
+        gap: 20,
     },
     continueButton: {
         width: '100%',
-        backgroundColor: '#425BA4',
-        paddingVertical: 16,
-        borderRadius: 30,
+        backgroundColor: '#3E4C85', // Primary Indigo
+        paddingVertical: 18,
+        borderRadius: 30, // Highly rounded
         alignItems: 'center',
+        shadowColor: "#3E4C85",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     continueButtonText: {
         color: '#FFFFFF',
@@ -247,10 +243,11 @@ const styles = StyleSheet.create({
     skipButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
+        gap: 6,
+        padding: 8,
     },
     skipText: {
-        color: '#6B7280',
+        color: '#3E4C85', // Primary Indigo
         fontSize: 16,
         fontWeight: '500',
     },

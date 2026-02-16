@@ -8,6 +8,8 @@ import { PRODUCTS } from '../../../src/data/products';
 export default function OrderSummaryScreen() {
     const router = useRouter();
     const { productId } = useLocalSearchParams();
+    // State for payment type
+    const [paymentType, setPaymentType] = useState<'installment' | 'full'>('installment');
     const [quantity, setQuantity] = useState(1);
 
     // Get product from params or fallback
@@ -20,7 +22,17 @@ export default function OrderSummaryScreen() {
     const tax = 6300;
     const total = subtotal + deliveryFees + tax - discount;
 
-    const installmentAmount = 10000; // Fixed as per screenshot text, or calculated
+    const handleCheckout = () => {
+        if (paymentType === 'installment') {
+            router.push({
+                pathname: '/(buyer)/checkout/set-goal',
+                params: { productId: product.id }
+            });
+        } else {
+            // Future: Implement Full Payment
+            alert('Full Payment flow coming soon!');
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -39,6 +51,7 @@ export default function OrderSummaryScreen() {
                     <Text style={styles.sectionTitle}>My cart</Text>
 
                     <View style={styles.cartCard}>
+                        {/* ... (Existing Product Card Code) ... */}
                         <View style={styles.imageWrapper}>
                             <Image source={{ uri: product.image }} style={styles.productImage} resizeMode="contain" />
                         </View>
@@ -116,13 +129,28 @@ export default function OrderSummaryScreen() {
 
                 {/* Footer Buttons */}
                 <View style={styles.footer}>
-                    <TouchableOpacity style={styles.installmentBtn}>
-                        <Text style={styles.btnTitle}>Installment</Text>
-                        <Text style={styles.btnSubtitle}>Tunzaa 10,000 Tsh/wiki</Text>
+                    <TouchableOpacity
+                        style={[styles.paymentTypeBtn, paymentType === 'installment' && styles.paymentTypeBtnActive]}
+                        onPress={() => setPaymentType('installment')}
+                    >
+                        <Text style={[styles.btnTitle, paymentType === 'installment' && styles.btnTitleActive]}>Installment</Text>
+                        <Text style={[styles.btnSubtitle, paymentType === 'installment' && styles.btnSubtitleActive]}>Tunzaa 10,000 Tsh/wiki</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.fullPayBtn}>
-                        <Text style={styles.btnTitle}>Full Payment</Text>
+                    <TouchableOpacity
+                        style={[styles.paymentTypeBtn, paymentType === 'full' && styles.paymentTypeBtnActive]}
+                        onPress={() => setPaymentType('full')}
+                    >
+                        <Text style={[styles.btnTitle, paymentType === 'full' && styles.btnTitleActive]}>Full Payment</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Sticky Checkout Action */}
+                <View style={styles.checkoutActionContainer}>
+                    <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
+                        <Text style={styles.checkoutBtnText}>
+                            {paymentType === 'installment' ? 'Start Installment Plan' : 'Pay Full Amount'}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -327,5 +355,48 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 10,
         opacity: 0.9,
+    },
+    paymentTypeBtn: {
+        flex: 1,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 25,
+        paddingVertical: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 60,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+    },
+    paymentTypeBtnActive: {
+        backgroundColor: '#059669', // Green for installment default or active
+        borderColor: '#059669',
+    },
+    btnTitleActive: {
+        color: '#FFFFFF',
+    },
+    btnSubtitleActive: {
+        color: 'rgba(255,255,255,0.9)',
+    },
+    checkoutActionContainer: {
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
+    },
+    checkoutBtn: {
+        backgroundColor: '#4A55A2',
+        paddingVertical: 16,
+        borderRadius: 30,
+        alignItems: 'center',
+        shadowColor: "#4A55A2",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    checkoutBtnText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
