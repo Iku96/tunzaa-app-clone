@@ -40,8 +40,9 @@ export default function DeliveryLoginScreen() {
             if (error) throw error;
 
             // Success -> Navigate to home/dashboard
+            // Success -> Navigate to documents upload
             alert('Umeingia kikamilifu!');
-            // router.replace('/(delivery)/home'); // TODO: Create home screen
+            router.replace('/delivery-documents' as any);
         } catch (e: any) {
             alert(e.message || 'Namba ya simu au neno siri si sahihi');
         } finally {

@@ -100,7 +100,7 @@ export default function DeliveryOTPScreen() {
             // We should probably sign them out first if we want them to sign in again, or just redirect.
             // If they are logged in, directing to Login might auto-redirect to Home if there's an auth listener.
             // Let's assume we just go to login.
-            alert('Uthibitisho umekamilika!');
+            alert('Uthibitisho umekamilika! Tafadhali ingia.');
             router.replace('/delivery-login' as any);
         } catch (e: any) {
             alert(e.message || 'Msimbo si sahihi');

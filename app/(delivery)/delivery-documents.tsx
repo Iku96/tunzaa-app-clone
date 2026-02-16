@@ -3,16 +3,27 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 type DocType = 'license' | 'tin' | 'brela' | null;
 
-export default function Step5Documents() {
+// Mock Steps for visual replication
+const STEPS = [
+    { name: 'Register', completed: true },
+    { name: 'OTP', completed: true },
+    { name: 'Documents', completed: false }, // Current
+    { name: 'Review', completed: false },
+    { name: 'Complete', completed: false },
+];
+
+export default function DeliveryDocumentsScreen() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [activeSection, setActiveSection] = useState<DocType>(null);
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ MODAL STATE
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // State for documents
     const [licenseFile, setLicenseFile] = useState<any>(null);
@@ -39,15 +50,14 @@ export default function Step5Documents() {
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
-            setShowSuccessModal(true); // ✅ SHOW MODAL INSTEAD OF ALERT
+            setShowSuccessModal(true);
         }, 1000);
     };
 
     const handleFinishOnboarding = () => {
         setShowSuccessModal(false);
-        // ✅ Navigate to the main account view (Replace prevents going back)
-        // Adjust this route to match your actual home/dashboard route
-        router.replace('/(merchant)/home');
+        // Navigate to delivery home
+        router.replace('/(delivery)/home' as any);
     };
 
     // ACCORDION ITEM
@@ -100,7 +110,7 @@ export default function Step5Documents() {
                                 onPress={() => pickDocument(setFile)}
                             >
                                 <Image
-                                    source={require('../../../assets/CloudUpload.png')}
+                                    source={require('../../assets/CloudUpload.png')}
                                     style={styles.uploadIcon}
                                     resizeMode="contain"
                                 />
@@ -139,111 +149,222 @@ export default function Step5Documents() {
     };
 
     return (
-        <View style={styles.container}>
-            <ScrollView
-                contentContainerStyle={styles.contentContainer}
-                showsVerticalScrollIndicator={false}
-            >
-                <View style={styles.contentWrapper}>
+        <SafeAreaView style={styles.safe} edges={['top']}>
+            <View style={styles.container}>
+                {/* Header Logic */}
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Mauzo by Tunzaa</Text>
 
-                    <View>
-                        <Text style={styles.title}>Hati Za Biashara</Text>
+                    <View style={styles.stepperContainer}>
+                        {STEPS.map((step, i) => {
+                            const activeIndex = 2; // Hardcoded for this screen
+                            const isActive = i === activeIndex;
+                            const isCompleted = i < activeIndex;
 
-                        <Text style={styles.subtitle}>
-                            Ni muhimu kuambatanisha hati za biashara kwa usalama zaidi wa akaunti yako.
-                        </Text>
+                            return (
+                                <View key={i} style={styles.stepWrapper}>
+                                    {/* Connector */}
+                                    {i > 0 && (
+                                        <View style={[
+                                            styles.connector,
+                                            { backgroundColor: i <= activeIndex ? '#84CC16' : '#6B7280' }
+                                        ]} />
+                                    )}
 
-                        {/* WHITE CARD */}
-                        <View style={styles.card}>
+                                    <View
+                                        style={[
+                                            styles.circle,
+                                            isCompleted && styles.circleCompleted,
+                                            isActive && styles.circleActive,
+                                            i > activeIndex && styles.circleInactive
+                                        ]}
+                                    >
+                                        {isCompleted ? (
+                                            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                                        ) : (
+                                            <Text style={[
+                                                styles.stepText,
+                                                isActive ? styles.stepTextActive : styles.stepTextInactive
+                                            ]}>
+                                                {i + 1}
+                                            </Text>
+                                        )}
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+                </View>
 
-                            <View style={styles.cardHeader}>
-                                <Image
-                                    source={require('../../../assets/CloudUpload.png')}
-                                    style={styles.headerIcon}
-                                    resizeMode="contain"
-                                />
-                                <Text style={styles.cardHeaderTitle}>Pakia taarifa zifuatazo</Text>
+                <ScrollView
+                    contentContainerStyle={styles.contentContainer}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.contentWrapper}>
+
+                        <View>
+                            <Text style={styles.title}>Hati Za Kampuni</Text>
+
+                            <Text style={styles.subtitle}>
+                                Ni muhimu kuambatanisha hati za Kampuni kwa usalama zaidi wa akaunti yako.
+                            </Text>
+
+                            {/* WHITE CARD */}
+                            <View style={styles.card}>
+
+                                <View style={styles.cardHeader}>
+                                    <Image
+                                        source={require('../../assets/CloudUpload.png')}
+                                        style={styles.headerIcon}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={styles.cardHeaderTitle}>Pakia taarifa zifuatazo</Text>
+                                </View>
+
+                                <View style={styles.accordionContainer}>
+                                    <RenderAccordionItem
+                                        id="tin"
+                                        label="TIN ya Biashara"
+                                        file={tinFile}
+                                        setFile={setTinFile}
+                                    />
+                                    <RenderAccordionItem
+                                        id="license"
+                                        label="Pakia Leseni"
+                                        file={licenseFile}
+                                        setFile={setLicenseFile}
+                                    />
+                                    <RenderAccordionItem
+                                        id="brela"
+                                        label="Cheti cha usajili BRELA"
+                                        file={brelaFile}
+                                        setFile={setBrelaFile}
+                                    />
+                                </View>
+
+                                <View style={styles.skipContainer}>
+                                    <TouchableOpacity onPress={handleContinue}>
+                                        <Text style={styles.skipText}>Weka baadae</Text>
+                                    </TouchableOpacity>
+                                </View>
+
                             </View>
+                        </View>
 
-                            <View style={styles.accordionContainer}>
-                                <RenderAccordionItem
-                                    id="license"
-                                    label="Leseni ya Biashara"
-                                    file={licenseFile}
-                                    setFile={setLicenseFile}
-                                />
-                                <RenderAccordionItem
-                                    id="tin"
-                                    label="TIN ya Biashara"
-                                    file={tinFile}
-                                    setFile={setTinFile}
-                                />
-                                <RenderAccordionItem
-                                    id="brela"
-                                    label="Cheti cha usajili BRELA"
-                                    file={brelaFile}
-                                    setFile={setBrelaFile}
-                                />
-                            </View>
+                        {/* FOOTER */}
+                        <View style={styles.footer}>
+                            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                                <Text style={styles.backButtonText}>Rudi</Text>
+                            </TouchableOpacity>
 
-                            <View style={styles.skipContainer}>
-                                <TouchableOpacity onPress={handleContinue}>
-                                    <Text style={styles.skipText}>Weka baadae</Text>
-                                </TouchableOpacity>
-                            </View>
+                            <TouchableOpacity
+                                style={styles.nextButton}
+                                onPress={handleContinue}
+                                disabled={loading}
+                            >
+                                <Text style={styles.nextButtonText}>
+                                    {loading ? 'Inapakia...' : 'Endelea'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
 
+                    </View>
+                </ScrollView>
+
+                {/* SUCCESS POPUP MODAL */}
+                <Modal
+                    visible={showSuccessModal}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowSuccessModal(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Hongera!</Text>
+                            <Text style={styles.modalDescription}>
+                                Tumepokea hati zako. Subiri kidogo tunapokagua maelezo katika saa 24 hadi 48 zijazo.
+                            </Text>
+
+                            <TouchableOpacity onPress={handleFinishOnboarding} style={styles.modalButton}>
+                                <Text style={styles.modalButtonText}>Sawa</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
+                </Modal>
 
-                    {/* FOOTER */}
-                    <View style={styles.footer}>
-                        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                            <Text style={styles.backButtonText}>Rudi</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.nextButton}
-                            onPress={handleContinue}
-                            disabled={loading}
-                        >
-                            <Text style={styles.nextButtonText}>
-                                {loading ? 'Inapakia...' : 'Endelea'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                </View>
-            </ScrollView>
-
-            {/* ✅ SUCCESS POPUP MODAL */}
-            <Modal
-                visible={showSuccessModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowSuccessModal(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Hongera!</Text>
-                        <Text style={styles.modalDescription}>
-                            Tumepokea hati zako. Subiri kidogo tunapokagua maelezo katika saa 24 hadi 48 zijazo.
-                        </Text>
-
-                        <TouchableOpacity onPress={handleFinishOnboarding} style={styles.modalButton}>
-                            <Text style={styles.modalButtonText}>Sawa</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
-        </View>
+            </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    safe: {
+        flex: 1,
+        backgroundColor: '#315BA9',
+    },
     container: {
         flex: 1,
         backgroundColor: '#315BA9',
+    },
+    header: {
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        fontFamily: 'Gilroy-Bold',
+        marginBottom: 20,
+        marginTop: 10,
+    },
+    stepperContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        paddingHorizontal: 10,
+    },
+    stepWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    connector: {
+        width: 20,
+        height: 2,
+        marginHorizontal: 2,
+    },
+    circle: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1.5,
+    },
+    circleCompleted: {
+        backgroundColor: '#84CC16',
+        borderColor: '#84CC16',
+    },
+    circleActive: {
+        backgroundColor: 'transparent',
+        borderColor: '#84CC16',
+    },
+    circleInactive: {
+        backgroundColor: 'transparent',
+        borderColor: '#FFFFFF',
+        opacity: 0.5,
+    },
+    stepText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    stepTextActive: {
+        color: '#FFFFFF',
+    },
+    stepTextInactive: {
+        color: '#FFFFFF',
     },
     contentContainer: {
         flexGrow: 1,
@@ -251,7 +372,7 @@ const styles = StyleSheet.create({
     contentWrapper: {
         flex: 1,
         paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingTop: 20,
         paddingBottom: 40,
     },
     title: {
@@ -459,10 +580,10 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 
-    // ✅ MODAL STYLES
+    // MODAL STYLES
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)', // Dimmed background
+        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -477,12 +598,12 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#315BA9', // Blue Title
+        color: '#315BA9',
         marginBottom: 12,
     },
     modalDescription: {
         fontSize: 14,
-        color: '#6B7280', // Grey Description
+        color: '#6B7280',
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 24,
@@ -493,7 +614,7 @@ const styles = StyleSheet.create({
     },
     modalButtonText: {
         fontSize: 16,
-        color: '#315BA9', // Blue Text for "Sawa"
+        color: '#315BA9',
         fontWeight: '600',
     }
 });
