@@ -1,42 +1,43 @@
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, StatusBar, FlatList } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { ArrowLeft, ArrowRight } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
+// Define slides data
 const SLIDES = [
     {
         id: '1',
-        title: 'Usimamizi Wa Mfuko',
-        description: 'Tumia zana yetu ya usimamizi wa fedha kuhakikisha uangalizi na kushughulikia mtiririko wa fedha wa taasisi ya kifedha.',
-        image: require('../assets/blue-tunzaa-logo.png'), // Placeholder, replace with actual asset if available
+        title: 'Usimamizi Wa Bidhaa',
+        description: 'Tunasahilisha mchakato wa usimamizi wa bidhaa kwa kutumia zana rahisi zetu ambazo unaweza kuongeza, kuhariri, na kufuta bidhaa kwa urahisi.',
+        image: require('../assets/mauzo-intro-illustration.png'),
     },
     {
         id: '2',
+        title: 'Usimamizi Wa Maagizo',
+        description: 'Usimamie hisa zako, mauzo, na habari za wateja katika mahali pamoja, ili uweze kufikia data hii kwa urahisi popote na wakati wowote.',
+        image: require('../assets/mauzo-intro-illustration screen 2.png'),
+    },
+    {
+        id: '3',
+        title: 'Usimamizi Wa Mfuko',
+        description: 'Tumia zana yetu ya usimamizi wa fedha kuhakikisha uangalizi na kushughulikia mtiririko wa fedha wa taasisi ya kifedha.',
+        image: require('../assets/mauzo-intro-illustration screen 3.png'),
+    },
+    {
+        id: '4',
         title: 'Usimamizi Wa Utoaji',
         description: 'Inaendeshwa na zana za kidijitali ili kuhakikisha kuwa bidhaa zinasogezwa kwa usalama na kwa ufanisi hadi zimfikie mteja wa mwisho.',
-        image: require('../assets/blue-tunzaa-logo.png'), // Placeholder
+        image: require('../assets/mauzo-intro-illustration screen 4.png'),
     },
 ];
 
 export default function MauzoIntro() {
     const router = useRouter();
+    const { flow } = useLocalSearchParams<{ flow: string }>();
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
-
-    const handleNext = () => {
-        if (currentIndex < SLIDES.length - 1) {
-            flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
-        } else {
-            // Navigate to register with merchant role
-            router.push({ pathname: '/register', params: { role: 'merchant' } });
-        }
-    };
-
-    const handleSkip = () => {
-        router.push({ pathname: '/register', params: { role: 'merchant' } });
-    };
 
     const handleBack = () => {
         if (currentIndex > 0) {
@@ -46,36 +47,68 @@ export default function MauzoIntro() {
         }
     };
 
+    const handleCreateAccount = () => {
+        if (flow === 'delivery') {
+            router.push('/delivery-register');
+        } else {
+            router.push('/(merchant)/onboarding/step-2');
+        }
+    };
+
+    const handleSkip = () => {
+        if (flow === 'delivery') {
+            router.push('/delivery-register');
+        } else {
+            router.push('/(merchant)/onboarding/step-2');
+        }
+    };
+
+    // Update current index on scroll
+    const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
+        if (viewableItems.length > 0) {
+            setCurrentIndex(viewableItems[0].index);
+        }
+    }).current;
+
+    const viewabilityConfig = useRef({
+        itemVisiblePercentThreshold: 50,
+    }).current;
+
     const renderItem = ({ item }: { item: typeof SLIDES[0] }) => (
         <View style={styles.slide}>
+            {/* Illustration Area */}
             <View style={styles.imageContainer}>
-                {/* 
-                   In a real implementation, distinct images would be used. 
-                   Using the logo as a placeholder for now to match the blue theme.
-                */}
                 <Image
                     source={item.image}
-                    style={styles.heroImage}
+                    style={styles.illustration}
                     resizeMode="contain"
                 />
             </View>
 
-            <View style={styles.textContainer}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.description}>{item.description}</Text>
+            {/* Text Content */}
+            <View style={styles.textWrapper}>
+                <Text style={styles.title}>
+                    {item.title}
+                </Text>
+                <Text style={styles.description}>
+                    {item.description}
+                </Text>
             </View>
         </View>
     );
 
     return (
         <View style={styles.container}>
-            {/* Header: Back Arrow & Title */}
+            <StatusBar barStyle="light-content" />
+
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+                    <ArrowLeft size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Mauzo by Tunzaa</Text>
-                <View style={{ width: 24 }} />
+                {/* Balance view for center alignment */}
+                <View style={{ width: 40 }} />
             </View>
 
             {/* Carousel */}
@@ -87,36 +120,46 @@ export default function MauzoIntro() {
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
-                onMomentumScrollEnd={(e) => {
-                    const index = Math.round(e.nativeEvent.contentOffset.x / width);
-                    setCurrentIndex(index);
-                }}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                scrollEventThrottle={32}
+                bounces={false}
+                style={{ flex: 1 }}
             />
 
-            {/* Pagination Dots */}
-            <View style={styles.pagination}>
-                {SLIDES.map((_, index) => (
-                    <View
-                        key={index}
-                        style={[
-                            styles.dot,
-                            currentIndex === index ? styles.activeDot : styles.inactiveDot,
-                        ]}
-                    />
-                ))}
-            </View>
+            {/* Fixed Bottom Section */}
+            <View style={styles.bottomSection}>
 
-            {/* Footer Buttons */}
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.createButton} onPress={handleNext}>
-                    <Text style={styles.createButtonText}>
-                        {currentIndex === SLIDES.length - 1 ? 'Create an account' : 'Next'}
-                    </Text>
+                {/* Pagination Dots */}
+                <View style={styles.pagination}>
+                    {SLIDES.map((_, index) => (
+                        <View
+                            key={index}
+                            style={[
+                                styles.dot,
+                                currentIndex === index ? styles.activeDot : styles.inactiveDot,
+                            ]}
+                        />
+                    ))}
+                </View>
+
+                {/* Main Action Button */}
+                <TouchableOpacity
+                    style={styles.createButton}
+                    onPress={handleCreateAccount}
+                    activeOpacity={0.8}
+                >
+                    <Text style={styles.createButtonText}>Create an account</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+                {/* Skip Link */}
+                <TouchableOpacity
+                    style={styles.skipButton}
+                    onPress={handleSkip}
+                    activeOpacity={0.7}
+                >
                     <Text style={styles.skipText}>Skip</Text>
-                    <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                    <ArrowRight size={20} color="#FFFFFF" />
                 </TouchableOpacity>
             </View>
         </View>
@@ -126,90 +169,99 @@ export default function MauzoIntro() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#425BA4', // Brand Blue
+        backgroundColor: '#425BA4', // Confirmed Tunzaa Blue
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: 60,
+        paddingTop: 60, // Status bar spacing
         paddingHorizontal: 20,
-        marginBottom: 20,
+        paddingBottom: 10,
     },
     backButton: {
         padding: 8,
+        marginLeft: -8,
     },
     headerTitle: {
         fontSize: 18,
+        fontFamily: 'Gilroy-SemiBold',
         fontWeight: '600',
         color: '#FFFFFF',
+        textAlign: 'center',
     },
     slide: {
         width: width,
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 30,
+        paddingHorizontal: 24,
     },
     imageContainer: {
-        flex: 1,
+        height: height * 0.45, // Responsive height for illustration area
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 40,
+        width: '100%',
+        marginTop: 20,
     },
-    heroImage: {
-        width: 250,
-        height: 250,
-        // Tint to white for visibility on blue bg if it's the logo, 
-        // or remove tintColor if using colorful illustrations
-        tintColor: '#FFFFFF'
+    illustration: {
+        width: '100%',
+        height: '100%',
+        maxHeight: 350,
     },
-    textContainer: {
+    textWrapper: {
         alignItems: 'center',
-        marginBottom: 40,
+        marginTop: 20,
+        width: '100%',
     },
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontWeight: '700',
         color: '#FFFFFF',
+        marginBottom: 12,
         textAlign: 'center',
-        marginBottom: 16,
+        fontFamily: 'Gilroy-Bold',
     },
     description: {
-        fontSize: 16,
-        color: '#E0E7FF', // Light blue/white text
+        fontSize: 14,
+        color: '#E0E7FF',
         textAlign: 'center',
-        lineHeight: 24,
+        lineHeight: 22,
+        paddingHorizontal: 10,
+        fontFamily: 'System',
+        fontWeight: '400',
+    },
+    bottomSection: {
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        paddingBottom: 40,
     },
     pagination: {
         flexDirection: 'row',
-        justifyContent: 'center',
         gap: 8,
         marginBottom: 30,
+        marginTop: 10,
     },
     dot: {
         height: 4,
         borderRadius: 2,
     },
     activeDot: {
-        width: 24,
-        backgroundColor: '#4ade80', // Green accent
+        width: 32,
+        backgroundColor: '#4ade80',
     },
     inactiveDot: {
         width: 8,
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
     },
-    footer: {
-        paddingHorizontal: 20,
-        marginBottom: 50,
-        gap: 20,
-    },
     createButton: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: '#4ade80', // Green border
-        borderRadius: 30,
-        paddingVertical: 16,
+        width: '100%',
+        maxWidth: 320,
+        height: 52,
+        borderRadius: 26,
+        borderWidth: 1.5,
+        borderColor: '#01AC00',
+        justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 24,
     },
     createButtonText: {
         color: '#FFFFFF',
@@ -219,11 +271,12 @@ const styles = StyleSheet.create({
     skipButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
         gap: 8,
+        padding: 10,
     },
     skipText: {
         color: '#FFFFFF',
         fontSize: 16,
+        fontWeight: '500',
     },
 });

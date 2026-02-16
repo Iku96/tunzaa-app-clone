@@ -18,6 +18,8 @@ module.exports = {
             },
             fontFamily: {
                 'sans': ['System', 'sans-serif'],
+                'gilroy-semibold': ['Gilroy-SemiBold', 'sans-serif'],
+                'calibri': ['Calibri', 'sans-serif'],
             },
         },
     },

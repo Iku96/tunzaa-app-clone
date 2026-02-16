@@ -1,105 +1,66 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { supabase } from '../../../src/lib/supabase';
 
 export default function Step3Location() {
     const router = useRouter();
-    const { user } = useAuth();
-
-    // In a real app, these would be dropdowns/selects
-    const [region, setRegion] = useState('');
-    const [district, setDistrict] = useState('');
-    const [ward, setWard] = useState('');
-    const [extraInfo, setExtraInfo] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleNext = async () => {
-        setLoading(true);
-        try {
-            if (user) {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({
-                        region,
-                        district,
-                        ward,
-                        onboarding_step: 'completed'
-                    } as any)
-                    .eq('id', user.id);
-
-                if (error) throw error;
-            }
-            // For MVP, we finish here and go to dashboard
-            router.replace('/(merchant)/live-orders');
-        } catch (e) {
-            console.error('Error saving step 3:', e);
-            alert('Failed to save details.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Eneo La Duka</Text>
-            <Text style={styles.subtitle}>
-                Wezesha wateja kufata bidhaa kwa urahisi kwa kuweka eneo la duka lako.
-            </Text>
+            <View style={styles.contentWrapper}>
 
-            <View style={styles.card}>
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Mkoa</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Chagua Mkoa"
-                        value={region}
-                        onChangeText={setRegion}
-                    />
+                {/* Top Content */}
+                <View>
+                    <Text style={styles.title}>Eneo La Duka</Text>
+                    <Text style={styles.subtitle}>
+                        Wezesha wateja kufuata bidhaa kwa urahisi kwa kuweka eneo la duka lako.
+                    </Text>
+
+                    <View style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            {/* ✅ CUSTOM LOCATION ICON */}
+                            <Image
+                                source={require('../../../assets/location-icon.png')}
+                                style={{ width: 24, height: 24, marginRight: 10 }}
+                                resizeMode="contain"
+                            />
+                            <Text style={styles.cardTitle}>Weka eneo la duka</Text>
+                        </View>
+                        <View style={styles.divider} />
+
+                        <View style={styles.actionContainer}>
+                            {/* Manual Entry Button */}
+                            <TouchableOpacity
+                                style={styles.manualButton}
+                                onPress={() => router.push('/(merchant)/onboarding/step-3-manual')}
+                            >
+                                <Text style={styles.manualButtonText}>Weka Mwenyewe</Text>
+                            </TouchableOpacity>
+
+                            <Text style={styles.orText}>Au</Text>
+
+                            {/* GPS Button */}
+                            <TouchableOpacity
+                                style={styles.gpsButton}
+                                onPress={() => router.push('/(merchant)/onboarding/step-3-map')}
+                            >
+                                <Text style={styles.gpsButtonText}>Chagua eneo moja kwa moja</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </View>
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Wilaya</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Chagua Wilaya"
-                        value={district}
-                        onChangeText={setDistrict}
-                    />
+                {/* Footer Buttons */}
+                <View style={styles.footer}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                        <Text style={styles.backButtonText}>Rudi</Text>
+                    </TouchableOpacity>
+
+                    {/* Disabled Endelea */}
+                    <View style={[styles.nextButton, { opacity: 0.5 }]}>
+                        <Text style={styles.nextButtonText}>Endelea</Text>
+                    </View>
                 </View>
 
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Kata</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Chagua Kata"
-                        value={ward}
-                        onChangeText={setWard}
-                    />
-                </View>
-
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Maelezo ya ziada</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nyumba ya shule..."
-                        value={extraInfo}
-                        onChangeText={setExtraInfo}
-                    />
-                </View>
-
-                <Text style={styles.helperLink}>Una Duka zaidi ya eneo moja? <Text style={{ color: '#425BA4' }}>Ongeza Duka</Text></Text>
-            </View>
-
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Text style={styles.buttonTextOutline}>Rudi</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.nextButton} onPress={handleNext} disabled={loading}>
-                    <Text style={styles.buttonText}>{loading ? 'Inahifadhi...' : 'Endelea'}</Text>
-                </TouchableOpacity>
             </View>
         </View>
     );
@@ -108,82 +69,127 @@ export default function Step3Location() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#315BA9',
+    },
+    contentWrapper: {
+        flex: 1,
+        justifyContent: 'space-between',
         paddingHorizontal: 20,
+        paddingTop: 10,
+        paddingBottom: 40,
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#FFFFFF',
-        textAlign: 'center',
-        marginTop: 10,
+        textAlign: 'left',
+        fontFamily: 'Gilroy-Bold',
     },
     subtitle: {
         fontSize: 14,
-        color: 'rgba(255,255,255,0.8)',
-        textAlign: 'center',
+        color: '#E0E7FF',
+        textAlign: 'left',
         marginTop: 8,
-        marginBottom: 30,
-        paddingHorizontal: 20,
+        marginBottom: 25,
+        paddingRight: 20,
+        lineHeight: 20,
+        fontFamily: 'System',
     },
     card: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 20,
-        minHeight: 350,
+        borderRadius: 20,
+        width: '100%',
+        alignSelf: 'center',
+        paddingVertical: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
-    inputGroup: {
-        marginBottom: 24, // Universal spacing
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        marginBottom: 16,
     },
-    label: {
-        fontSize: 14, // Increased size
-        fontWeight: '500',
-        color: '#374151', // Gray-700
-        marginBottom: 8,
+    cardTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#1F2937',
+        fontFamily: 'Gilroy-SemiBold',
     },
-    input: {
-        borderWidth: 1,
-        borderColor: '#D1D5DB', // Gray-300
+    divider: {
+        height: 1,
+        backgroundColor: '#E5E7EB',
+        width: '100%',
+        marginBottom: 24,
+    },
+    actionContainer: {
+        paddingHorizontal: 24,
+        paddingBottom: 10,
+    },
+    manualButton: {
+        backgroundColor: '#425BA4',
         borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        color: '#111827', // Gray-900
-        backgroundColor: '#FFFFFF',
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    helperLink: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginTop: 12,
+    manualButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    orText: {
+        textAlign: 'center',
+        color: '#9CA3AF',
+        marginVertical: 12,
+        fontSize: 14,
+    },
+    gpsButton: {
+        backgroundColor: '#F3F4F6',
+        borderRadius: 12,
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    gpsButtonText: {
+        color: '#425BA4',
+        fontSize: 16,
+        fontWeight: '500',
     },
     footer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 40,
-        marginBottom: 20,
+        alignItems: 'center',
     },
     backButton: {
+        width: 154,
+        height: 53,
+        borderRadius: 8,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.5)',
-        borderRadius: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        minWidth: 100,
+        borderColor: '#7EC155',
+        backgroundColor: 'transparent',
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    nextButton: {
-        backgroundColor: '#84CC16', // Lime Green
-        borderRadius: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        minWidth: 100,
-        alignItems: 'center',
-    },
-    buttonText: {
+    backButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
     },
-    buttonTextOutline: {
+    nextButton: {
+        width: 154,
+        height: 53,
+        borderRadius: 8,
+        backgroundColor: '#84CC16',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    nextButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
+        fontWeight: '600',
     }
 });

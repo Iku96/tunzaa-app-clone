@@ -1,231 +1,346 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Dimensions, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { supabase } from '../../../src/lib/supabase';
+import { Camera } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+const { height } = Dimensions.get('window');
 
 export default function Step2Details() {
     const router = useRouter();
     const { user } = useAuth();
 
     const [shopName, setShopName] = useState('');
-    const [phone, setPhone] = useState('');
+    const [phone, setPhone] = useState('+255 787 118 486');
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
+    const [coverImage, setCoverImage] = useState<string | null>(null);
+    const [logoImage, setLogoImage] = useState<string | null>(null);
 
-    const handleNext = async () => {
-        if (!shopName) {
-            alert('Tafadhali weka jina la kampuni');
-            return;
-        }
-
-        setLoading(true);
+    const pickImage = async (type: 'cover' | 'logo') => {
         try {
-            if (user) {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({
-                        business_name: shopName,
-                        phone_number: phone,
-                        shop_description: description,
-                        onboarding_step: 'step-3'
-                    } as any)
-                    .eq('id', user.id);
-
-                if (error) throw error;
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Samahani, tunahitaji ruhusa ya kufikia picha zako.');
+                return;
             }
-            router.push('/(merchant)/onboarding/step-3');
-        } catch (e) {
-            console.error('Error saving step 2:', e);
-            alert('Failed to save details.');
-        } finally {
-            setLoading(false);
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: type === 'logo' ? [1, 1] : [3, 1],
+                quality: 0.8,
+            });
+            if (!result.canceled) {
+                if (type === 'cover') setCoverImage(result.assets[0].uri);
+                else setLogoImage(result.assets[0].uri);
+            }
+        } catch (err) {
+            console.error('Error picking image:', err);
         }
     };
 
+    const handleNext = async () => {
+        setLoading(true);
+        // Navigate to Step 3 (Selection Screen)
+        router.push('/(merchant)/onboarding/step-3');
+    };
+
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Weka Taarifa Za Duka</Text>
-            <Text style={styles.subtitle}>
-                Logo, jina la duka na maelezo ya duka ni muhimu katika kuunda duka lako Tunzaa.
-            </Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            {/* ✅ ADDED BACKGROUND COLOR TO FIX TRANSITION OVERLAP */}
+            <View style={styles.container}>
+                <KeyboardAwareScrollView
+                    enableOnAndroid={true}
+                    enableAutomaticScroll={true}
+                    extraScrollHeight={50}
+                    contentContainerStyle={styles.contentContainer}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.staticContent}>
+                        <Text style={styles.title}>Weka Taarifa Za Duka</Text>
+                        <Text style={styles.subtitle}>
+                            Logo, jina la duka na maelezo ya duka ni muhimu katika kuunda duka lako Tunzaa.
+                        </Text>
 
-            <View style={styles.card}>
+                        <View style={styles.card}>
+                            <View style={styles.coverImageContainer}>
+                                {coverImage && <Image source={{ uri: coverImage }} style={styles.coverImage} resizeMode="cover" />}
+                                <TouchableOpacity style={styles.cameraIconContainer} onPress={() => pickImage('cover')}>
+                                    <Camera size={20} color="#3A5BA9" />
+                                </TouchableOpacity>
+                            </View>
 
-                {/* Logo Upload Placeholder */}
-                <View style={styles.logoUploadContainer}>
-                    <View style={styles.logoCircle}>
-                        <Text style={styles.logoText}>Weka logo*</Text>
-                        <TouchableOpacity style={styles.plusButton}>
-                            <Ionicons name="add" size={16} color="#FFFFFF" />
-                        </TouchableOpacity>
+                            <View style={styles.logoContainer}>
+                                <TouchableOpacity style={styles.logoCircle} onPress={() => pickImage('logo')}>
+                                    {logoImage ? (
+                                        <Image source={{ uri: logoImage }} style={styles.logoImage} />
+                                    ) : (
+                                        <Text style={styles.logoText}>Weka logo*</Text>
+                                    )}
+                                    <View style={styles.plusBadge}>
+                                        <Ionicons name="add" size={14} color="#3A5BA9" />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.formContent}>
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>Jina la kampuni</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={shopName}
+                                        onChangeText={setShopName}
+                                        placeholder="Weka jina la kampuni"
+                                        placeholderTextColor="#9CA3AF"
+                                    />
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.phoneText}>{phone}</Text>
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <Text style={styles.label}>Weka Maelezo zaidi <Text style={{ color: 'red' }}>*</Text></Text>
+                                    </View>
+                                    <TextInput
+                                        style={[styles.input, styles.textArea]}
+                                        placeholder="Weka maelezo hapa"
+                                        value={description}
+                                        onChangeText={setDescription}
+                                        placeholderTextColor="#9CA3AF"
+                                        multiline
+                                        textAlignVertical="top"
+                                    />
+                                    <Text style={styles.charCount}>Isizidi maneno 240</Text>
+                                </View>
+                                <Text style={styles.requiredText}>Sehemu ya lazima <Text style={{ color: 'red' }}>*</Text></Text>
+                            </View>
+                        </View>
                     </View>
-                </View>
+                </KeyboardAwareScrollView>
 
-                {/* Form Inputs */}
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Jina la kampuni</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="+255 787 118 486" // Using placeholder to match design/mockup style
-                        value={shopName}
-                        onChangeText={setShopName}
-                        placeholderTextColor="#9CA3AF"
-                    />
+                {/* Footer Pinned Outside Scroll */}
+                <View style={styles.footer}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                        <Text style={styles.buttonTextOutline}>Rudi</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.nextButton} onPress={handleNext} disabled={loading}>
+                        <Text style={styles.buttonText}>{loading ? 'Inahifadhi...' : 'Endelea'}</Text>
+                    </TouchableOpacity>
                 </View>
-
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Weka Maelezo zaidi *</Text>
-                    <TextInput
-                        style={[styles.input, styles.textArea]}
-                        placeholder="Weka maelezo hapa..."
-                        value={description}
-                        onChangeText={setDescription}
-                        placeholderTextColor="#9CA3AF"
-                        multiline
-                        textAlignVertical="top"
-                    />
-                    <Text style={styles.charCount}>Isizidi maneno 240</Text>
-                </View>
-
-                <Text style={styles.requiredText}>Sehemu ya lazima *</Text>
             </View>
-
-            <View style={styles.footer}>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Text style={styles.buttonTextOutline}>Rudi</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.nextButton} onPress={handleNext} disabled={loading}>
-                    <Text style={styles.buttonText}>{loading ? 'Inahifadhi...' : 'Endelea'}</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+        </TouchableWithoutFeedback>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#315BA9', // ✅ FIX: Prevents overlapping during transitions
+    },
+    contentContainer: {
+        flexGrow: 1,
+        paddingBottom: 100,
+    },
+    staticContent: {
         paddingHorizontal: 20,
+        paddingBottom: 20,
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#FFFFFF',
-        textAlign: 'center',
-        marginTop: 10,
+        textAlign: 'left',
+        marginTop: 0,
+        fontFamily: 'Gilroy-Bold',
     },
     subtitle: {
         fontSize: 14,
-        color: 'rgba(255,255,255,0.8)',
-        textAlign: 'center',
+        color: '#E0E7FF',
+        textAlign: 'left',
         marginTop: 8,
-        marginBottom: 30,
-        paddingHorizontal: 30,
+        marginBottom: 25,
+        paddingRight: 20,
+        lineHeight: 20,
+        fontFamily: 'System',
     },
     card: {
         backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        width: '100%',
+        alignSelf: 'center',
+        minHeight: 396,
+        paddingBottom: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    coverImageContainer: {
+        width: '100%',
+        height: 112,
+        backgroundColor: '#CBDAFF',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        position: 'relative',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    coverImage: {
+        width: '100%',
+        height: '100%',
+    },
+    cameraIconContainer: {
+        position: 'absolute',
+        right: 16,
+        bottom: 16,
+        backgroundColor: '#FFFFFF',
+        width: 32,
+        height: 32,
         borderRadius: 16,
-        padding: 20,
-        minHeight: 380,
-    },
-    logoUploadContainer: {
-        alignItems: 'center',
-        marginBottom: 20,
-        marginTop: -10,
-    },
-    logoCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#F3F4F6',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
+        zIndex: 10,
+    },
+    logoContainer: {
+        alignItems: 'center',
+        marginTop: -40,
+        marginBottom: 10,
+    },
+    logoCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#3A5BA9',
         position: 'relative',
+        overflow: 'visible'
+    },
+    logoImage: {
+        width: 76,
+        height: 76,
+        borderRadius: 38,
     },
     logoText: {
-        fontSize: 12,
-        color: '#6B7280',
+        fontSize: 10,
+        color: '#1F2937',
+        textAlign: 'center',
     },
-    plusButton: {
+    plusBadge: {
         position: 'absolute',
         bottom: 0,
         right: 0,
-        backgroundColor: '#425BA4',
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        alignItems: 'center',
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 2,
+        borderColor: '#3A5BA9',
         justifyContent: 'center',
-        elevation: 2,
+        alignItems: 'center',
+        zIndex: 12,
+    },
+    formContent: {
+        paddingHorizontal: 20,
+        marginTop: 10,
     },
     inputGroup: {
-        marginBottom: 24, // Universal spacing
+        marginBottom: 16,
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
-        color: '#374151', // Gray-700
-        marginBottom: 8,
+        fontWeight: '600',
+        color: '#111827',
+        marginBottom: 6,
+        textAlign: 'left',
     },
     input: {
-        borderWidth: 1,
-        borderColor: '#D1D5DB', // Gray-300
-        borderRadius: 12,
-        padding: 16,
+        textAlign: 'center',
         fontSize: 16,
+        fontWeight: '600',
         color: '#111827',
-        backgroundColor: '#FFFFFF',
+        paddingVertical: 12,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 8,
+    },
+    phoneText: {
+        textAlign: 'center',
+        fontSize: 14,
+        color: '#374151',
+        marginTop: -10,
+        fontWeight: '500',
     },
     textArea: {
-        height: 100,
+        textAlign: 'left',
+        backgroundColor: '#F3F4F6',
+        borderRadius: 8,
+        padding: 12,
+        height: 120,
+        fontWeight: '400',
+        fontSize: 14,
+        marginTop: 6,
+        color: '#111827',
         textAlignVertical: 'top',
     },
     charCount: {
-        fontSize: 12,
+        fontSize: 10,
         color: '#9CA3AF',
         textAlign: 'right',
         marginTop: 4,
     },
     requiredText: {
         fontSize: 12,
-        color: '#EF4444',
-        marginTop: 10,
+        color: '#9CA3AF',
+        marginTop: 4,
     },
     footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 40,
-        marginBottom: 20,
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+        paddingTop: 20,
+        backgroundColor: '#315BA9',
     },
     backButton: {
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.5)',
+        width: 154,
+        height: 53,
         borderRadius: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        minWidth: 100,
+        borderWidth: 1,
+        borderColor: '#7EC155', // ✅ FIX: Green Border
+        backgroundColor: 'transparent',
         alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonTextOutline: {
+        color: '#FFFFFF', // White text
+        fontSize: 16,
+        fontWeight: '600',
     },
     nextButton: {
-        backgroundColor: '#84CC16', // Lime Green
+        width: 154,
+        height: 53,
         borderRadius: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        minWidth: 100,
+        backgroundColor: '#84CC16',
         alignItems: 'center',
+        justifyContent: 'center',
     },
     buttonText: {
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
-    },
-    buttonTextOutline: {
-        color: '#FFFFFF',
-        fontSize: 16,
     }
 });

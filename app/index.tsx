@@ -60,7 +60,7 @@ export default function WelcomeScreen() {
             } else {
                 // Buyer
                 if (step === 'completed' || step === 'step-3') {
-                    router.replace('/(buyer)');
+                    router.replace('/(buyer)/home');
                 } else if (step === 'step-2') {
                     router.replace('/(buyer)/onboarding/step-3');
                 } else if (step === 'step-1') {

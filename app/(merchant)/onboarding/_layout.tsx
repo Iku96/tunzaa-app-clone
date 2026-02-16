@@ -1,72 +1,95 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+
+// ✅ DEFINED: Exactly 5 Steps
+const STEPS = [
+    { name: 'mauzo-intro', path: '/mauzo-intro' },              // Step 1
+    { name: 'step-2', path: '/(merchant)/onboarding/step-2' },   // Step 2
+    { name: 'step-3', path: '/(merchant)/onboarding/step-3' },   // Step 3
+    { name: 'step-4', path: '/(merchant)/onboarding/step-4' },   // Step 4
+    { name: 'step-5', path: '/(merchant)/onboarding/step-5' },   // Step 5
+];
 
 export default function OnboardingLayout() {
     const router = useRouter();
     const segments = useSegments();
 
-    // Determine current step based on route
-    const currentRoute = segments[segments.length - 1];
-    let currentStep = 1;
-    if (currentRoute === 'step-2') currentStep = 2;
-    if (currentRoute === 'step-3') currentStep = 3;
-    if (currentRoute === 'step-4') currentStep = 4;
-    if (currentRoute === 'step-5') currentStep = 5;
+    // Get the current file name (e.g., 'step-3-manual')
+    const currentRouteName = segments[segments.length - 1] as string;
 
-    const totalSteps = 5;
+    // Find index in our defined steps
+    let activeIndex = STEPS.findIndex(s => s.name === currentRouteName);
+
+    // ✅ LOGIC FIX: If we are on a sub-page of Step 3, force Index 2 (3rd Bubble)
+    if (currentRouteName === 'step-3-manual' || currentRouteName === 'step-3-map') {
+        activeIndex = 2; // Index 2 is the 3rd item
+    }
+
+    // Default to Step 1 if something goes wrong
+    if (activeIndex === -1) activeIndex = 0;
+
+    const handleStepPress = (index: number) => {
+        // Only allow navigation to completed steps
+        if (index < activeIndex) {
+            router.push(STEPS[index].path as any);
+        }
+    };
 
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
+        <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
                 <Text style={styles.headerTitle}>Mauzo by Tunzaa</Text>
-                <View style={{ width: 24 }} />
-            </View>
 
-            {/* Stepper */}
-            <View style={styles.stepperContainer}>
-                <View style={styles.stepIcons}>
-                    {Array.from({ length: totalSteps }).map((_, index) => {
-                        const step = index + 1;
-                        const isCompleted = step < currentStep;
-                        const isCurrent = step === currentStep;
+                <View style={styles.stepperContainer}>
+                    {STEPS.map((step, i) => {
+                        const isActive = i === activeIndex;
+                        const isCompleted = i < activeIndex;
 
                         return (
-                            <View key={step} style={styles.stepWrapper}>
-                                <View style={[
-                                    styles.stepCircle,
-                                    (isCompleted || isCurrent) ? styles.activeCircle : styles.inactiveCircle
-                                ]}>
+                            <View key={i} style={styles.stepWrapper}>
+                                {/* Connector Line */}
+                                {i > 0 && (
+                                    <View style={[
+                                        styles.connector,
+                                        { backgroundColor: i <= activeIndex ? '#84CC16' : '#6B7280' }
+                                    ]} />
+                                )}
+
+                                <TouchableOpacity
+                                    onPress={() => handleStepPress(i)}
+                                    disabled={i >= activeIndex}
+                                    style={[
+                                        styles.circle,
+                                        isCompleted && styles.circleCompleted,
+                                        isActive && styles.circleActive,
+                                        i > activeIndex && styles.circleInactive
+                                    ]}
+                                >
                                     {isCompleted ? (
                                         <Ionicons name="checkmark" size={14} color="#FFFFFF" />
                                     ) : (
                                         <Text style={[
                                             styles.stepText,
-                                            isCurrent ? styles.activeStepText : styles.inactiveStepText
-                                        ]}>{step}</Text>
+                                            isActive ? styles.stepTextActive : styles.stepTextInactive
+                                        ]}>
+                                            {i + 1}
+                                        </Text>
                                     )}
-                                </View>
-                                {/* Connector Line */}
-                                {step < totalSteps && (
-                                    <View style={[
-                                        styles.connector,
-                                        step < currentStep ? styles.activeConnector : styles.inactiveConnector
-                                    ]} />
-                                )}
+                                </TouchableOpacity>
                             </View>
                         );
                     })}
                 </View>
             </View>
 
-            {/* Step Content */}
-            <View style={styles.content}>
-                <Stack screenOptions={{ headerShown: false }} />
-            </View>
+            <Stack
+                screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: 'transparent' }
+                }}
+            />
         </SafeAreaView>
     );
 }
@@ -74,76 +97,66 @@ export default function OnboardingLayout() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#425BA4', // Brand Blue Background
+        backgroundColor: '#315BA9',
     },
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: 10,
-        marginBottom: 20,
-    },
-    backButton: {
-        padding: 4,
+        paddingBottom: 20,
+        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontWeight: 'bold',
         color: '#FFFFFF',
+        fontFamily: 'Gilroy-Bold',
+        marginBottom: 20,
+        marginTop: 10,
     },
     stepperContainer: {
-        paddingHorizontal: 40,
-        marginBottom: 30,
-    },
-    stepIcons: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        width: '100%',
+        paddingHorizontal: 10,
     },
     stepWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    stepCircle: {
+    connector: {
+        width: 20,
+        height: 2,
+        marginHorizontal: 2,
+    },
+    circle: {
         width: 28,
         height: 28,
         borderRadius: 14,
-        alignItems: 'center',
         justifyContent: 'center',
+        alignItems: 'center',
         borderWidth: 1.5,
     },
-    activeCircle: {
-        backgroundColor: '#84CC16', // Lime Green
+    circleCompleted: {
+        backgroundColor: '#84CC16',
         borderColor: '#84CC16',
     },
-    inactiveCircle: {
-        borderColor: 'rgba(255,255,255,0.5)',
+    circleActive: {
         backgroundColor: 'transparent',
+        borderColor: '#84CC16',
+    },
+    circleInactive: {
+        backgroundColor: 'transparent',
+        borderColor: '#FFFFFF',
+        opacity: 0.5,
     },
     stepText: {
         fontSize: 12,
         fontWeight: 'bold',
     },
-    activeStepText: {
+    stepTextActive: {
         color: '#FFFFFF',
     },
-    inactiveStepText: {
-        color: 'rgba(255,255,255,0.8)',
-    },
-    connector: {
-        width: 30, // Adjust based on screen width if needed
-        height: 2,
-        marginHorizontal: 4,
-    },
-    activeConnector: {
-        backgroundColor: '#84CC16',
-    },
-    inactiveConnector: {
-        backgroundColor: 'rgba(255,255,255,0.3)',
-    },
-    content: {
-        flex: 1,
-        // The screen content will handle its own background/styling
+    stepTextInactive: {
+        color: '#FFFFFF',
     }
 });
