@@ -24,11 +24,14 @@
  * ============================================================================
  */
 
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
 import { Ionicons } from '@expo/vector-icons';
+
+const { width } = Dimensions.get('window');
 
 // ============================================================================
 // PROGRESS STEPPER CONFIGURATION
@@ -68,18 +71,18 @@ const STEPS = [
 const DELIVERY_TYPES = [
     {
         id: 'haraka',
-        label: 'Usafirishaji wa haraka',      // Fast delivery
-        icon: 'bicycle-outline' as const,     // Bicycle = speed/agility
+        label: 'Usafirishaji wa haraka',
+        icon: 'speedometer-outline' as const, // Represents fast delivery
     },
     {
         id: 'kawaida',
-        label: 'Usafirishaji wa kawaida',     // Standard delivery
-        icon: 'car-outline' as const,         // Car = normal transport
+        label: 'Usafirishaji wa kawaida',
+        icon: 'bus-outline' as const,         // Represents standard truck delivery
     },
     {
         id: 'wingi',
-        label: 'Usafirishaji wa wingi',       // Bulk delivery
-        icon: 'cube-outline' as const,        // Cube = packages/bulk
+        label: 'Usafirishaji wa wingi',
+        icon: 'cube-outline' as const,        // Represents bulk/multiple packages
     },
 ];
 
@@ -118,7 +121,13 @@ export default function DeliveryTypeScreen() {
      * - Enable/disable Continue button
      * - Determine which service type to save
      */
-    const [selected, setSelected] = useState<string | null>(null);
+    const [selected, setSelected] = useState<string[]>([]);
+
+    /**
+     * showSuccessModal: Controls success popup visibility
+     * Shows after user clicks Continue with delivery types selected
+     */
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // ------------------------------------------------------------------------
     // NAVIGATION HANDLERS
@@ -139,11 +148,34 @@ export default function DeliveryTypeScreen() {
      */
     const handleContinue = () => {
         // Guard clause: Exit if no selection
-        if (!selected) return;
+        if (selected.length === 0) return;
 
-        // Navigate to delivery partner home screen
-        // replace() clears navigation stack - can't go back to registration
+        // Show the success modal instead of navigating directly
+        setShowSuccessModal(true);
+    };
+
+    /**
+     * handleSetRoute: Navigates to the delivery home screen
+     * Called when user clicks "Weka Ruti" button in success popup
+     */
+    const handleSetRoute = () => {
+        setShowSuccessModal(false);
         router.replace('/(delivery)/home' as any);
+    };
+
+    /**
+     * toggleSelection: Adds or removes a delivery type from the selected array
+     */
+    const toggleSelection = (id: string) => {
+        setSelected(prev => {
+            if (prev.includes(id)) {
+                // Remove if already selected
+                return prev.filter(item => item !== id);
+            } else {
+                // Add if not selected
+                return [...prev, id];
+            }
+        });
     };
 
     // ------------------------------------------------------------------------
@@ -154,84 +186,7 @@ export default function DeliveryTypeScreen() {
         <SafeAreaView style={styles.safe} edges={['top']}>
             <View style={styles.container}>
 
-                {/* ============================================================
-                    HEADER SECTION
-                    - App title
-                    - 5-step progress indicator
-                ============================================================ */}
-                <View style={styles.header}>
-                    {/* App Title */}
-                    <Text style={styles.headerTitle}>Mauzo by Tunzaa</Text>
-
-                    {/* --------------------------------------------------------
-                        PROGRESS STEPPER
-                        Visual indicator showing user is on step 4 of 5
-                        
-                        Structure: Circle → Line → Circle → Line → ...
-                        
-                        Visual states:
-                        - Completed (✅): Green fill, white checkmark
-                        - Active (🔵): Transparent fill, white border, number
-                        - Inactive (⚪): Transparent fill, faded border, number
-                    -------------------------------------------------------- */}
-                    <View style={styles.stepperContainer}>
-                        {STEPS.map((step, i) => {
-                            const activeIndex = 3;  // Type selection is step 4 (index 3)
-
-                            // Determine this step's state
-                            const isActive = i === activeIndex;      // Is this the current step?
-                            const isCompleted = i < activeIndex;    // Has this step been completed?
-
-                            return (
-                                <View key={i} style={styles.stepWrapper}>
-
-                                    {/* Connector Line (not shown before first step) */}
-                                    {i > 0 && (
-                                        <View
-                                            style={[
-                                                styles.connector,
-                                                // Dynamic color based on completion:
-                                                // - Green if this step or earlier steps are complete
-                                                // - Faded white if future steps
-                                                {
-                                                    backgroundColor: i <= activeIndex
-                                                        ? '#84CC16'                    // Green
-                                                        : 'rgba(255,255,255,0.3)'      // Faded white
-                                                }
-                                            ]}
-                                        />
-                                    )}
-
-                                    {/* Step Circle with Number or Checkmark */}
-                                    <View
-                                        style={[
-                                            styles.circle,                                    // Base circle
-                                            isCompleted && styles.circleCompleted,           // Green for completed
-                                            isActive && styles.circleActive,                 // White border for active
-                                            i > activeIndex && styles.circleInactive,        // Faded for future
-                                        ]}
-                                    >
-                                        {isCompleted ? (
-                                            // Completed steps: Show checkmark ✓
-                                            <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                                        ) : (
-                                            // Active/Future steps: Show step number (1, 2, 3...)
-                                            <Text
-                                                style={[
-                                                    styles.stepText,
-                                                    isActive && styles.stepTextActive,         // White for active
-                                                    i > activeIndex && styles.stepTextInactive // Faded for future
-                                                ]}
-                                            >
-                                                {i + 1}  {/* Display 1-indexed step number */}
-                                            </Text>
-                                        )}
-                                    </View>
-                                </View>
-                            );
-                        })}
-                    </View>
-                </View>
+                <DeliveryStepper currentStep={3} />
 
                 {/* ============================================================
                     MAIN CONTENT - Scrollable Area
@@ -262,8 +217,8 @@ export default function DeliveryTypeScreen() {
                     -------------------------------------------------------- */}
                     <View style={styles.optionsList}>
                         {DELIVERY_TYPES.map((type) => {
-                            // Check if THIS option is the selected one
-                            const isSelected = selected === type.id;
+                            // Check if THIS option is in the selected array
+                            const isSelected = selected.includes(type.id);
 
                             return (
                                 <TouchableOpacity
@@ -274,15 +229,15 @@ export default function DeliveryTypeScreen() {
                                         // Selected state only changes text/icon color
                                         isSelected && styles.optionCardSelected
                                     ]}
-                                    onPress={() => setSelected(type.id)}
+                                    onPress={() => toggleSelection(type.id)}
                                     activeOpacity={0.7}  // Slight opacity change on press
                                 >
                                     {/* Icon (bicycle/car/cube) */}
                                     <Ionicons
                                         name={type.icon}
                                         size={24}
-                                        // Color: Blue if selected, gray if not
-                                        color={isSelected ? '#315BA9' : '#6B7280'}
+                                        // Color: White if selected, Blue if not
+                                        color={isSelected ? '#FFFFFF' : '#315BA9'}
                                         style={styles.optionIcon}
                                     />
 
@@ -290,12 +245,21 @@ export default function DeliveryTypeScreen() {
                                     <Text
                                         style={[
                                             styles.optionLabel,
-                                            // Apply blue + bold styling when selected
+                                            // Apply white styling when selected
                                             isSelected && styles.optionLabelSelected
                                         ]}
                                     >
                                         {type.label}
                                     </Text>
+
+                                    {/* Selected Checkmark Icon */}
+                                    {isSelected && (
+                                        <Ionicons
+                                            name="checkmark-circle-outline"
+                                            size={24}
+                                            color="#FFFFFF"
+                                        />
+                                    )}
                                 </TouchableOpacity>
                             );
                         })}
@@ -323,15 +287,49 @@ export default function DeliveryTypeScreen() {
                             style={[
                                 styles.nextButton,
                                 // Apply disabled styling if no selection
-                                !selected && styles.nextButtonDisabled
+                                selected.length === 0 && styles.nextButtonDisabled
                             ]}
                             onPress={handleContinue}
-                            disabled={!selected}  // Prevent clicks when no selection
+                            disabled={selected.length === 0}  // Prevent clicks when no selection
                         >
                             <Text style={styles.nextButtonText}>Endelea</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
+
+                {/* ============================================================
+                    SUCCESS BOTTOM SHEET MODAL
+                    Shows after clicking continue
+                ============================================================ */}
+                <Modal
+                    visible={showSuccessModal}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={() => setShowSuccessModal(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.bottomSheet}>
+                            {/* Drag handle pill */}
+                            <View style={styles.handleContainer}>
+                                <View style={styles.handlePill} />
+                            </View>
+
+                            <Text style={styles.modalText}>
+                                Tumepokea hati zako. Subiri kidogo tunapokagua maelezo katika saa 24 hadi 48 zijazo.
+                            </Text>
+                            <Text style={styles.modalText}>
+                                Wakati huo huo...
+                            </Text>
+
+                            <TouchableOpacity
+                                style={styles.modalNextButton}
+                                onPress={handleSetRoute}
+                            >
+                                <Text style={styles.modalNextButtonText}>Weka Ruti</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </SafeAreaView>
     );
@@ -363,133 +361,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#315BA9',
-    },
-
-    // ------------------------------------------------------------------------
-    // HEADER SECTION
-    // ------------------------------------------------------------------------
-
-    /**
-     * header: Top section containing title and progress stepper
-     * Centered content with appropriate padding
-     */
-    header: {
-        paddingTop: 20,
-        paddingBottom: 30,
-        paddingHorizontal: 20,
-        alignItems: 'center',
-    },
-
-    /**
-     * headerTitle: "Mauzo by Tunzaa" text
-     * White text on blue background
-     */
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: '#FFFFFF',
-        marginBottom: 24,  // Space before stepper
-    },
-
-    // ------------------------------------------------------------------------
-    // PROGRESS STEPPER STYLES
-    // ------------------------------------------------------------------------
-
-    /**
-     * stepperContainer: Horizontal row of step circles
-     * Centers all steps with equal spacing
-     */
-    stepperContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-
-    /**
-     * stepWrapper: Container for one step (circle + connector)
-     * Allows circle and line to be grouped together
-     */
-    stepWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    /**
-     * connector: Horizontal line between step circles
-     * Width: 24px, Height: 2px
-     * Color set dynamically (green for completed, faded white for future)
-     */
-    connector: {
-        width: 24,
-        height: 2,
-        marginHorizontal: 4,  // Small gap between line and circles
-        // backgroundColor set inline based on step status
-    },
-
-    /**
-     * circle: Numbered circle representing each step
-     * Base style - specific states applied via modifier classes
-     */
-    circle: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,  // Perfect circle (radius = width/2)
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        // Border and background colors set via modifier classes
-    },
-
-    /**
-     * circleCompleted: Completed step styling
-     * Solid green fill with checkmark icon
-     */
-    circleCompleted: {
-        backgroundColor: '#84CC16',  // Lime green
-        borderColor: '#84CC16',
-    },
-
-    /**
-     * circleActive: Current step styling
-     * Transparent fill with white border and number
-     */
-    circleActive: {
-        backgroundColor: 'transparent',
-        borderColor: '#FFFFFF',
-    },
-
-    /**
-     * circleInactive: Future step styling
-     * Transparent fill with faded border
-     */
-    circleInactive: {
-        backgroundColor: 'transparent',
-        borderColor: 'rgba(255,255,255,0.3)',  // 30% opacity white
-    },
-
-    /**
-     * stepText: Step number text (1, 2, 3, 4, 5)
-     * Base text style
-     */
-    stepText: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-
-    /**
-     * stepTextActive: Active step number color
-     * White text for current step
-     */
-    stepTextActive: {
-        color: '#FFFFFF',
-    },
-
-    /**
-     * stepTextInactive: Future step number color
-     * Faded white text for upcoming steps
-     */
-    stepTextInactive: {
-        color: 'rgba(255,255,255,0.5)',  // 50% opacity white
     },
 
     // ------------------------------------------------------------------------
@@ -564,12 +435,9 @@ const styles = StyleSheet.create({
 
     /**
      * optionCardSelected: Selected state modifier
-     * Note: In this design, selected state doesn't change card appearance
-     * Only text and icon colors change (see optionLabelSelected)
      */
     optionCardSelected: {
-        // No visual changes to card itself
-        // Could add border here if design changes
+        backgroundColor: '#84CC16', // Tunzaa Green
     },
 
     /**
@@ -582,21 +450,21 @@ const styles = StyleSheet.create({
 
     /**
      * optionLabel: Delivery type text label
-     * Default state: Gray text, medium weight
+     * Default state: Blue text, medium weight
      */
     optionLabel: {
         flex: 1,           // Takes remaining space
         fontSize: 16,
-        color: '#1F2937',  // Dark gray
+        color: '#315BA9',  // Tunzaa Blue
         fontWeight: '500',
     },
 
     /**
      * optionLabelSelected: Selected option text styling
-     * Blue color and bolder weight to indicate selection
+     * White color and bolder weight to indicate selection
      */
     optionLabelSelected: {
-        color: '#315BA9',  // Tunzaa brand blue
+        color: '#FFFFFF',  // White
         fontWeight: '600', // Slightly bolder
     },
 
@@ -669,6 +537,60 @@ const styles = StyleSheet.create({
      * White text on green background
      */
     nextButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+
+    // ------------------------------------------------------------------------
+    // BOTTOM SHEET MODAL STYLES
+    // ------------------------------------------------------------------------
+
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    bottomSheet: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 30,
+        paddingBottom: 50,
+        paddingTop: 10,
+        alignItems: 'center',
+    },
+    handleContainer: {
+        width: '100%',
+        alignItems: 'center',
+        paddingVertical: 12,
+        marginBottom: 16,
+    },
+    handlePill: {
+        width: 48,
+        height: 6,
+        backgroundColor: '#E5E7EB',
+        borderRadius: 3,
+    },
+    modalText: {
+        fontSize: 15,
+        color: '#9CA3AF',
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 16,
+        fontWeight: '400',
+        paddingHorizontal: 10,
+    },
+    modalNextButton: {
+        width: '100%',
+        height: 56,
+        backgroundColor: '#3B5998', // Darker blue from the screenshot
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 24,
+    },
+    modalNextButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',

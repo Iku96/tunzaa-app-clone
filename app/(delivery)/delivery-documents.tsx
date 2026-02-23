@@ -32,6 +32,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp, Edit } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
 
 const { width } = Dimensions.get('window');
 
@@ -100,12 +101,7 @@ export default function DeliveryDocumentsScreen() {
      */
     const [activeSection, setActiveSection] = useState<DocType>(null);
 
-    /**
-     * showSuccessModal: Controls success popup visibility
-     * Shows after user clicks Continue with all files uploaded
-     * Popup message: "Hongera! Tumepokea hati zako..."
-     */
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
 
     /**
      * Document files state
@@ -207,24 +203,13 @@ export default function DeliveryDocumentsScreen() {
 
         // ===== ALL FILES UPLOADED: Proceed =====
 
-        // Show loading state on button
         setLoading(true);
 
-        // Simulate upload/processing (1 second delay)
+        // Process upload then proceed directly to type selection
         setTimeout(() => {
-            setLoading(false);           // Hide loading
-            setShowSuccessModal(true);   // Show success popup
+            setLoading(false);
+            router.push('/(delivery)/delivery-type' as any);
         }, 1000);
-    };
-
-    /**
-     * handleFinishOnboarding: Closes success modal and navigates to next screen
-     * Called when user clicks "Sawa" button in success popup
-     */
-    const handleFinishOnboarding = () => {
-        setShowSuccessModal(false);  // Close modal
-        // Navigate to delivery type selection (step 4)
-        router.push('/(delivery)/delivery-type' as any);
     };
 
     // ------------------------------------------------------------------------
@@ -393,64 +378,9 @@ export default function DeliveryDocumentsScreen() {
     // ------------------------------------------------------------------------
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={styles.safe} edges={['top']}>
             <View style={styles.container}>
-
-                {/* ============================================================
-                    HEADER SECTION
-                    - App title
-                    - 5-step progress indicator
-                ============================================================ */}
-                <View style={styles.header}>
-                    {/* App Title */}
-                    <Text style={styles.headerTitle}>Mauzo by Tunzaa</Text>
-
-                    {/* Progress Stepper: Shows user is on step 3 of 5 */}
-                    <View style={styles.stepperContainer}>
-                        {STEPS.map((step, i) => {
-                            const activeIndex = 2;  // Documents is step 3 (index 2)
-                            const isActive = i === activeIndex;
-                            const isCompleted = i < activeIndex;
-
-                            return (
-                                <View key={i} style={styles.stepWrapper}>
-                                    {/* Connector line between circles */}
-                                    {i > 0 && (
-                                        <View
-                                            style={[
-                                                styles.connector,
-                                                { backgroundColor: i <= activeIndex ? '#84CC16' : '#6B7280' }
-                                            ]}
-                                        />
-                                    )}
-
-                                    {/* Step circle with number or checkmark */}
-                                    <View
-                                        style={[
-                                            styles.circle,
-                                            isCompleted && styles.circleCompleted,
-                                            isActive && styles.circleActive,
-                                            i > activeIndex && styles.circleInactive
-                                        ]}
-                                    >
-                                        {isCompleted ? (
-                                            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-                                        ) : (
-                                            <Text
-                                                style={[
-                                                    styles.stepText,
-                                                    isActive ? styles.stepTextActive : styles.stepTextInactive
-                                                ]}
-                                            >
-                                                {i + 1}
-                                            </Text>
-                                        )}
-                                    </View>
-                                </View>
-                            );
-                        })}
-                    </View>
-                </View>
+                <DeliveryStepper currentStep={2} />
 
                 {/* ============================================================
                     MAIN CONTENT - Scrollable Area
@@ -522,7 +452,7 @@ export default function DeliveryDocumentsScreen() {
 
                                 {/* Skip Link: Allow skipping for now */}
                                 <View style={styles.skipContainer}>
-                                    <TouchableOpacity onPress={handleContinue}>
+                                    <TouchableOpacity onPress={() => router.push('/(delivery)/delivery-type')}>
                                         <Text style={styles.skipText}>Weka baadae</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -560,40 +490,6 @@ export default function DeliveryDocumentsScreen() {
                         </View>
                     </View>
                 </ScrollView>
-
-                {/* ============================================================
-                    SUCCESS POPUP MODAL
-                    Shows after all documents uploaded and Continue clicked
-                    Message: "Hongera! Tumepokea hati zako..."
-                ============================================================ */}
-                <Modal
-                    visible={showSuccessModal}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowSuccessModal(false)}
-                >
-                    {/* Semi-transparent overlay */}
-                    <View style={styles.modalOverlay}>
-                        {/* White popup card */}
-                        <View style={styles.modalContent}>
-                            {/* Title */}
-                            <Text style={styles.modalTitle}>Hongera!</Text>
-
-                            {/* Description */}
-                            <Text style={styles.modalDescription}>
-                                Tumepokea hati zako. Subiri kidogo tunapokagua maelezo katika saa 24 hadi 48 zijazo.
-                            </Text>
-
-                            {/* Confirm Button */}
-                            <TouchableOpacity
-                                onPress={handleFinishOnboarding}
-                                style={styles.modalButton}
-                            >
-                                <Text style={styles.modalButtonText}>Sawa</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Modal>
             </View>
         </SafeAreaView>
     );
@@ -614,66 +510,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#315BA9',
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        fontFamily: 'Gilroy-Bold',
-        marginBottom: 20,
-        marginTop: 10,
-    },
-    stepperContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        paddingHorizontal: 10,
-    },
-    stepWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    connector: {
-        width: 20,
-        height: 2,
-        marginHorizontal: 2,
-    },
-    circle: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1.5,
-    },
-    circleCompleted: {
-        backgroundColor: '#84CC16',
-        borderColor: '#84CC16',
-    },
-    circleActive: {
-        backgroundColor: 'transparent',
-        borderColor: '#84CC16',
-    },
-    circleInactive: {
-        backgroundColor: 'transparent',
-        borderColor: '#FFFFFF',
-        opacity: 0.5,
-    },
-    stepText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    stepTextActive: {
-        color: '#FFFFFF',
-    },
-    stepTextInactive: {
-        color: '#FFFFFF',
     },
     contentContainer: {
         flexGrow: 1,
@@ -928,42 +764,7 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: '#FFFFFF',
-        width: width * 0.85,
-        borderRadius: 16,
-        paddingVertical: 24,
-        paddingHorizontal: 24,
-        alignItems: 'center',
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#315BA9',
-        marginBottom: 12,
-    },
-    modalDescription: {
-        fontSize: 14,
-        color: '#6B7280',
-        textAlign: 'center',
-        lineHeight: 22,
-        marginBottom: 24,
-    },
-    modalButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-    },
-    modalButtonText: {
-        fontSize: 16,
-        color: '#315BA9',
-        fontWeight: '600',
     }
 });
 

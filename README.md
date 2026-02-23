@@ -55,7 +55,7 @@ Ensure you can run `node -v` and `npm -v` from the terminal.
 | `npm run ios` | Start and open on iOS simulator |
 | `npm run web` | Run in the browser |
 
-**Recommended for first run:** `npm start`, then scan the QR code with Expo Go, or press `a` for Android / `i` for iOS.
+**Recommended for first run:** `npm start`, then scan the QR code with Expo Go, or type `w` to open in the web browser. The primary tested environment is Expo Go/Web.
 
 For a **development build** (e.g. native modules): `npx expo run:android` or `npx expo run:ios`.
 
@@ -80,6 +80,8 @@ For a **development build** (e.g. native modules): `npx expo run:android` or `np
 tunzaa-app-clone/
 ├── app/                    # Expo Router screens (file-based routing)
 │   ├── _layout.tsx         # Root layout, LanguageProvider, Stack
+│   ├── (buyer)/            # Buyer-specific screens and flows
+│   ├── (delivery)/         # Delivery partner specific flows (registration, dashboard)
 │   ├── index.tsx           # Welcome/splash → redirects to language
 │   ├── language.tsx       # Language selection (e.g. English, Swahili)
 │   ├── role.tsx            # Buyer vs business role selection

@@ -1,12 +1,14 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
 
 export default function DeliveryLocation() {
     const router = useRouter();
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <DeliveryStepper currentStep={1} />
             <View style={styles.contentWrapper}>
 
                 {/* Top Content */}
@@ -74,10 +76,10 @@ const styles = StyleSheet.create({
     },
     contentWrapper: {
         flex: 1,
-        justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingTop: 0,
         paddingBottom: 40,
+        justifyContent: 'space-between',
     },
     title: {
         fontSize: 24,

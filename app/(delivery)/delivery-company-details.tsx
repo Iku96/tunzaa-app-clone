@@ -8,6 +8,7 @@ import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
 
 const { height } = Dimensions.get('window');
 
@@ -52,7 +53,9 @@ export default function DeliveryCompanyDetails() {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={styles.container} edges={['top']}>
+                <DeliveryStepper currentStep={0} />
+
                 <KeyboardAwareScrollView
                     enableOnAndroid={true}
                     enableAutomaticScroll={true}
@@ -151,6 +154,7 @@ const styles = StyleSheet.create({
     staticContent: {
         paddingHorizontal: 20,
         paddingBottom: 20,
+        paddingTop: 0,
     },
     title: {
         fontSize: 24,

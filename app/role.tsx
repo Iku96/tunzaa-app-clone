@@ -122,14 +122,14 @@ export default function RoleScreen() {
                     accessibilityLabel="Tunzaa Logo"
                 />
 
-                {/* Wrapper View: Enforces Figma Layout (Width 282, Height 30) */}
-                <View style={{ width: 282, height: 30 }}>
+                {/* Wrapper View: Enforces Figma Layout (Width 282) but allows natural height */}
+                <View style={{ width: 282 }}>
                     <Text
                         className="text-center text-[#666666]"
                         style={{
                             fontFamily: 'Calibri',
                             fontSize: 12,
-                            lineHeight: 12,
+                            lineHeight: 18, // Increased line height slightly for better readability
                             letterSpacing: 0.01,
                             fontWeight: '400',
                         }}

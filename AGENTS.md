@@ -34,6 +34,12 @@ Instructions from the project owner. Treat these as requirements for all work on
 - **Business vs Buyer onboarding**  
   Business users ("I'm a business") get a **separate onboarding flow** from buyers. Buyers go to the registration screen (`/register`). Business users should have their own merchant-specific setup (business details, verification, product catalog access, etc.).
 
+- **Delivery Partner Flow**
+  The delivery partner flow is separate from the buyer flow and lives under `app/(delivery)`. It involves selecting delivery types (which allows multiple selections), document uploads, and a driver dashboard with "Delivery requests". Use bottom-sheet style modals for success messages, matching the Figma designs.
+
+- **Emulator Testing Setup**
+  The primary testing environment is Expo Go (via `npm start`) or the Web interface in development. The user does not use Genymotion currently, so instructions and walkthroughs should direct them to test via Expo/Web instead.
+
 *(Add new instructions above this line, with a short title and one or two sentences.)*
 
 ---
@@ -66,6 +72,11 @@ Learn from these so they are not repeated.
 
 - **Context:** NativeWind `className` can cause issues on crash-prone screens.
 - **Practice:** Prefer `StyleSheet` for critical layout/dimensions on Android.
+
+### SafeAreaView overlaps on iOS/Android
+
+- **Context:** Screens inside groups like `(delivery)` or `(buyer)` without navigation headers may render content overlapping the device status bar or physical notches.
+- **Practice:** Standardize the use of `SafeAreaView` from `react-native-safe-area-context` across all root container views by explicitly providing the `edges={['top']}` prop. Example: `<SafeAreaView style={styles.container} edges={['top']}>`.
 
 ---
 

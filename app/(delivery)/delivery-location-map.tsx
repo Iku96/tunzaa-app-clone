@@ -7,6 +7,7 @@ import * as Location from 'expo-location';
 import { MapPin } from 'lucide-react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
 
 const { width } = Dimensions.get('window');
 
@@ -199,7 +200,8 @@ export default function DeliveryLocationMap() {
 
     return (
         <TouchableWithoutFeedback onPress={() => { Keyboard.dismiss(); setActiveField(null); }}>
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={styles.container} edges={['top']}>
+                <DeliveryStepper currentStep={1} />
                 <KeyboardAwareScrollView
                     enableOnAndroid={true}
                     enableAutomaticScroll={true}
@@ -282,7 +284,7 @@ export default function DeliveryLocationMap() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#315BA9' },
     contentContainer: { flexGrow: 1, paddingBottom: 40 },
-    staticContent: { paddingHorizontal: 20, paddingTop: 10 },
+    staticContent: { paddingHorizontal: 20, paddingTop: 0, zIndex: 2 },
     title: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'left', fontFamily: 'Gilroy-Bold' },
     subtitle: { fontSize: 14, color: '#E0E7FF', textAlign: 'left', marginTop: 8, marginBottom: 20, paddingRight: 20 },
     mapHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
