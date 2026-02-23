@@ -45,7 +45,7 @@ export default function SettingsScreen() {
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Settings</Text>
-                <View style={{ width: 32 }} /> {/* Spacer for centering */}
+                <View style={{ width: 32 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>

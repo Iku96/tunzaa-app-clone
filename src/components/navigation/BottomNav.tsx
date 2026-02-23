@@ -8,9 +8,10 @@ export default function BottomNav() {
     const pathname = usePathname();
 
     const isActive = (route: string) => {
-        if (route === '/(buyer)/home' && (pathname === '/(buyer)/home' || pathname === '/(buyer)')) return true;
+        if (route === '/(buyer)' && (pathname === '/(buyer)' || pathname === '/' || pathname === '/(buyer)/index')) return true;
         if (route === '/(buyer)/orders' && pathname.startsWith('/(buyer)/orders')) return true;
         if (route === '/(buyer)/cart' && pathname.startsWith('/(buyer)/cart')) return true;
+        if (route === '/(buyer)/services' && pathname.startsWith('/(buyer)/services')) return true;
         if (route === '/(buyer)/profile' && pathname.startsWith('/(buyer)/profile')) return true;
         return false;
     };
@@ -20,19 +21,19 @@ export default function BottomNav() {
 
     return (
         <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/home')}>
-                <Ionicons name="home" size={24} color={getIconColor('/(buyer)/home')} />
-                <Text style={[styles.navText, { color: getTextColor('/(buyer)/home') }]}>Home</Text>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)')}>
+                <Ionicons name="home" size={24} color={getIconColor('/(buyer)')} />
+                <Text style={[styles.navText, { color: getTextColor('/(buyer)') }]}>Home</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/orders')}>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/orders' as any)}>
                 <Ionicons name="basket-outline" size={24} color={getIconColor('/(buyer)/orders')} />
                 <Text style={[styles.navText, { color: getTextColor('/(buyer)/orders') }]}>Order</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart')}>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart' as any)}>
                 <Ionicons name="cart-outline" size={24} color={getIconColor('/(buyer)/cart')} />
                 <Text style={[styles.navText, { color: getTextColor('/(buyer)/cart') }]}>Cart</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/services')}>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/services' as any)}>
                 <Ionicons name="grid-outline" size={24} color={getIconColor('/(buyer)/services')} />
                 <Text style={[styles.navText, { color: getTextColor('/(buyer)/services') }]}>Services</Text>
             </TouchableOpacity>

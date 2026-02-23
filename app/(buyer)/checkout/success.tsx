@@ -3,15 +3,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
-import ConfettiCannon from 'react-native-confetti-cannon';
 
 export default function SuccessScreen() {
     const router = useRouter();
-    const [shoConfetti, setShowConfetti] = useState(false);
 
-    useEffect(() => {
-        setShowConfetti(true);
-    }, []);
 
     const handleContinue = () => {
         router.push('/(buyer)'); // Go back to home
@@ -19,7 +14,7 @@ export default function SuccessScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            {shoConfetti && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} fadeOut={true} />}
+
 
             <View style={styles.content}>
                 <View style={styles.iconContainer}>

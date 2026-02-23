@@ -40,9 +40,9 @@ export default function DeliveryLoginScreen() {
             if (error) throw error;
 
             // Success -> Navigate to home/dashboard
-            // Success -> Navigate to documents upload
+            // Success -> Navigate to company details
             alert('Umeingia kikamilifu!');
-            router.replace('/delivery-documents' as any);
+            router.replace('/delivery-company-details' as any);
         } catch (e: any) {
             alert(e.message || 'Namba ya simu au neno siri si sahihi');
         } finally {
@@ -51,7 +51,7 @@ export default function DeliveryLoginScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
+        <SafeAreaView style={styles.safe}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}

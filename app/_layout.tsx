@@ -3,6 +3,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LanguageProvider } from '../src/contexts/LanguageContext';
 import { AuthProvider } from '../src/contexts/AuthContext';
+import { TunzaaAuthProvider } from '../src/contexts/TunzaaAuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -10,11 +12,23 @@ import { useEffect } from 'react';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+// React Query client for API hooks (useRequestOTP, useLogin, etc.)
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: 2,
+            staleTime: 5 * 60 * 1000, // 5 minutes
+        },
+        mutations: {
+            retry: 0,
+        },
+    },
+});
+
 /**
  * Root layout component using Expo Router.
- * Wraps the app in LanguageProvider so locale and translations are available everywhere.
- * Configures the navigation stack and global status bar.
- * Loads global fonts.
+ * Wraps the app in LanguageProvider, AuthProvider (Supabase), TunzaaAuthProvider (Tunzaa API),
+ * and QueryClientProvider for React Query hooks.
  *
  * Note: screenOptions use explicit boolean values (e.g. headerShown: false)
  * to avoid Android native layer "String cannot be cast to Boolean" when
@@ -37,18 +51,22 @@ export default function RootLayout() {
     }
 
     return (
-        <LanguageProvider>
-            <AuthProvider>
-                <StatusBar style="light" backgroundColor="#2D3E66" />
-                <Stack
-                    screenOptions={{
-                        headerShown: false as const,
-                        gestureEnabled: true,
-                        animation: 'default',
-                        animationTypeForReplace: 'push',
-                    }}
-                />
-            </AuthProvider>
-        </LanguageProvider>
+        <QueryClientProvider client={queryClient}>
+            <LanguageProvider>
+                <AuthProvider>
+                    <TunzaaAuthProvider>
+                        <StatusBar style="light" backgroundColor="#2D3E66" />
+                        <Stack
+                            screenOptions={{
+                                headerShown: false as const,
+                                gestureEnabled: true,
+                                animation: 'default',
+                                animationTypeForReplace: 'push',
+                            }}
+                        />
+                    </TunzaaAuthProvider>
+                </AuthProvider>
+            </LanguageProvider>
+        </QueryClientProvider>
     );
 }

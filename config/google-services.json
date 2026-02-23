@@ -1,0 +1,39 @@
+{
+    "project_info": {
+        "project_number": "230701056851",
+        "project_id": "afrizon-60b46",
+        "storage_bucket": "afrizon-60b46.firebasestorage.app"
+    },
+    "client": [
+        {
+            "client_info": {
+                "mobilesdk_app_id": "1:230701056851:android:1cc66e60dd6ae2a47517a6",
+                "android_client_info": {
+                    "package_name": "africa.afrizon.gsm"
+                }
+            },
+            "oauth_client": [
+                {
+                    "client_id": "230701056851-d1lqfo4r16r29irhq2q7ihb61bsr5o9k.apps.googleusercontent.com",
+                    "client_type": 3
+                }
+            ],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyBT52bjXgpL_zPQFXGWz5f1zyiP_dwWp2w"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": [
+                        {
+                            "client_id": "230701056851-d1lqfo4r16r29irhq2q7ihb61bsr5o9k.apps.googleusercontent.com",
+                            "client_type": 3
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "configuration_version": "1"
+}

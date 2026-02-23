@@ -105,9 +105,11 @@ export default function OrdersScreen() {
             <StatusBar barStyle="light-content" backgroundColor="#4A55A2" />
 
             {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Order</Text>
-            </View>
+            <SafeAreaView edges={['top']} style={styles.headerSafe}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Order</Text>
+                </View>
+            </SafeAreaView>
 
             <View style={styles.content}>
                 {renderTabs()}
@@ -134,9 +136,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F3F4F6', // Light gray background
     },
+    headerSafe: {
+        backgroundColor: '#4A55A2',
+    },
     header: {
         backgroundColor: '#4A55A2',
-        paddingTop: 60,
         paddingBottom: 20,
         alignItems: 'center',
     },

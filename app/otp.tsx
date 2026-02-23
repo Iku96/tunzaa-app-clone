@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
 /**
  * OTP Screen (Verify & create password)
@@ -9,9 +10,13 @@ import { Ionicons } from '@expo/vector-icons';
  */
 export default function OTPScreen() {
     const router = useRouter();
+    const { phone_number, flow } = useLocalSearchParams<{ phone_number: string; flow?: string }>();
+    const { verifyOTP, requestOTP } = useTunzaaAuth();
 
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(30);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [isResending, setIsResending] = useState(false);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -27,21 +32,56 @@ export default function OTPScreen() {
         setOtpDigits(newDigits);
     };
 
-    const handleResend = () => {
-        if (timer === 0) {
-            console.log('Resending code...');
-            setTimer(30);
-            setOtpDigits(['', '', '', '', '', '']);
+    const handleResend = async () => {
+        if (timer === 0 && phone_number) {
+            setIsResending(true);
+            try {
+                const response = await requestOTP(phone_number);
+                setTimer(response.ttl || 30);
+                setOtpDigits(['', '', '', '', '', '']);
+                console.log('✅ OTP resent successfully');
+            } catch (error: any) {
+                console.error('❌ OTP resend failed:', error);
+                Alert.alert('Error', error.message || 'Failed to resend code. Please try again.');
+            } finally {
+                setIsResending(false);
+            }
         }
     };
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         const code = otpDigits.join('');
-        if (code.length === 6) {
-            console.log('OTP:', code);
-            router.push('/create-password');
-        } else {
-            alert('Please enter all 6 digits');
+        if (code.length !== 6) {
+            Alert.alert('Invalid Code', 'Please enter all 6 digits');
+            return;
+        }
+        if (!phone_number) {
+            Alert.alert('Error', 'Phone number not found. Please go back and try again.');
+            return;
+        }
+
+        setIsVerifying(true);
+        try {
+            const response = await verifyOTP(phone_number, code);
+            console.log('✅ OTP verified:', response);
+
+            if (response.verified) {
+                // Navigate based on the flow
+                if (flow === 'register') {
+                    router.push({ pathname: '/create-password', params: { phone_number } } as any);
+                } else if (flow === 'reset-password') {
+                    router.push({ pathname: '/reset-password', params: { phone_number, reset_token: code } } as any);
+                } else {
+                    router.push({ pathname: '/create-password', params: { phone_number } } as any);
+                }
+            } else {
+                Alert.alert('Verification Failed', 'Invalid code. Please try again.');
+            }
+        } catch (error: any) {
+            console.error('❌ OTP verification failed:', error);
+            Alert.alert('Verification Failed', error.message || 'Failed to verify code. Please try again.');
+        } finally {
+            setIsVerifying(false);
         }
     };
 

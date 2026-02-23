@@ -8,12 +8,14 @@ import {
     StyleSheet,
     KeyboardAvoidingView,
     ScrollView,
-    Platform
+    Platform,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useLanguage } from '../src/contexts/LanguageContext';
-import { supabase } from '../src/lib/supabase';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
+import { setTempPhoneNumber } from '../src/utils/storage';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 /**
@@ -48,94 +50,93 @@ export default function RegisterScreen() {
         router.back();
     };
 
+    const { requestOTP, signInWithGoogle, signInWithApple } = useTunzaaAuth();
+
     const handleCreateAccount = async () => {
         if (!agreedToTerms) {
-            alert('Please agree to Terms and Conditions');
+            Alert.alert('Terms Required', 'Please agree to Terms and Conditions');
             return;
         }
         if (!phoneOrEmail || !firstName || !secondName || !password) {
-            alert('Please fill in all fields');
+            Alert.alert('Missing Fields', 'Please fill in all fields');
             return;
         }
 
         setLoading(true);
         try {
-            // Determine if input is email or phone (simple check)
+            // Determine if input is email or phone
             const isEmail = phoneOrEmail.includes('@');
-            let authOptions: any;
 
-            if (isEmail) {
-                authOptions = {
-                    email: phoneOrEmail,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: `${firstName} ${secondName}`,
-                            role: userRole,
-                        }
-                    }
-                };
-            } else {
-                authOptions = {
-                    phone: phoneOrEmail,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: `${firstName} ${secondName}`,
-                            role: userRole,
-                        }
-                    }
-                };
-            }
+            if (!isEmail) {
+                // Phone registration: Request OTP first, then navigate to verification
+                const phoneNumber = phoneOrEmail.startsWith('+') ? phoneOrEmail : `+255${phoneOrEmail.replace(/^0/, '')}`;
 
-            // 1. Sign Up
-            const { data, error: signUpError } = await supabase.auth.signUp(authOptions);
+                // Store registration data temporarily
+                await setTempPhoneNumber(phoneNumber);
 
-            if (signUpError) throw signUpError;
+                // Request OTP
+                const otpResponse = await requestOTP(phoneNumber);
+                console.log('✅ OTP sent:', otpResponse);
 
-            // 2. Check if Email Verification is required (No Session)
-            if (data.user && !data.session) {
-                alert('Account created! Please check your email to verify your account before logging in.');
-                router.replace('/login');
-                return;
-            }
-
-            if (data.session && data.user) {
-                // 3. Create Profile (if RLS allows insert based on auth.uid())
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .upsert({
-                        id: data.user.id,
-                        full_name: `${firstName} ${secondName}`,
+                // Navigate to OTP screen with registration context
+                router.push({
+                    pathname: '/otp',
+                    params: {
+                        phone_number: phoneNumber,
+                        flow: 'register',
+                        first_name: firstName,
+                        last_name: secondName,
+                        password: password,
                         role: userRole,
-                        phone_number: !isEmail ? phoneOrEmail : null,
-                        email: isEmail ? phoneOrEmail : (data.user.email || null)
-                    } as any);
-
-                if (profileError) {
-                    console.error('Profile creation error:', profileError);
-                    // Continue anyway as the auth account exists, profile can be fixed later or via trigger
-                }
-
-                // 4. Navigate
-                if (userRole === 'merchant') {
-                    router.replace('/(merchant)/onboarding/step-1');
-                } else {
-                    router.replace('/(buyer)/onboarding/step-1');
-                }
+                        email: '',
+                    },
+                } as any);
+            } else {
+                // Email registration: Direct register (no OTP needed for email)
+                // Note: Some backends may still require email verification
+                Alert.alert(
+                    'Phone Number Required',
+                    'Please use a phone number to register. Email-based registration requires a phone number for OTP verification.'
+                );
             }
         } catch (e: any) {
-            alert(e.message || 'Error creating account');
+            console.error('❌ Registration error:', e);
+            Alert.alert('Registration Error', e.message || 'Error creating account. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSocialLogin = (provider: string) => {
-        // Social Auth requires Supabase API Keys and 3rd-party configuration.
-        // For now, we will just show an alert.
-        alert(`Social Login with ${provider} is not yet configured. Please use Email/Password for now.`);
-        console.log('Social login clicked:', provider);
+    const handleSocialLogin = async (provider: string) => {
+        setLoading(true);
+        try {
+            let response;
+            if (provider === 'google') {
+                response = await signInWithGoogle();
+            } else if (provider === 'apple') {
+                response = await signInWithApple();
+            } else {
+                Alert.alert('Not Available', `${provider} login is not yet supported.`);
+                return;
+            }
+
+            if (response) {
+                console.log('✅ Social login success:', response.name);
+                // Navigate based on user role
+                const role = response.activeProfileRole || response.active_profile_role;
+                if (role === 'vendor') {
+                    router.replace('/(merchant)/onboarding/step-1' as any);
+                } else {
+                    router.replace('/(buyer)' as any);
+                }
+            }
+            // null means user cancelled — do nothing
+        } catch (e: any) {
+            console.error('❌ Social login error:', e);
+            Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}. Please try again.`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleLogin = () => {

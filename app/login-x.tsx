@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
 /**
  * Login with X Screen
@@ -15,6 +16,10 @@ export default function LoginXScreen() {
     const [showPassword, setShowPassword] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
 
+    const [loading, setLoading] = useState(false);
+
+    const { signInWithGoogle, signInWithApple } = useTunzaaAuth();
+
     const handleLogin = () => {
         if (!agreedToTerms) {
             alert('Please agree to Terms and Conditions');
@@ -24,8 +29,35 @@ export default function LoginXScreen() {
         router.push('/home');
     };
 
-    const handleSocialLogin = (provider: string) => {
-        console.log('Social login:', provider);
+    const handleSocialLogin = async (provider: string) => {
+        setLoading(true);
+        try {
+            let response;
+            if (provider === 'google') {
+                response = await signInWithGoogle();
+            } else if (provider === 'apple') {
+                response = await signInWithApple();
+            } else {
+                Alert.alert('Not Available', `${provider} login is not yet supported.`);
+                setLoading(false);
+                return;
+            }
+
+            if (response) {
+                console.log('✅ Social login success:', response.name);
+                const role = response.activeProfileRole || response.active_profile_role;
+                if (role === 'vendor') {
+                    router.replace('/(merchant)' as any);
+                } else {
+                    router.replace('/(buyer)' as any);
+                }
+            }
+        } catch (e: any) {
+            console.error('❌ Social login error:', e);
+            Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}.`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

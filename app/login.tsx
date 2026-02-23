@@ -8,12 +8,13 @@ import {
     StyleSheet,
     KeyboardAvoidingView,
     ScrollView,
-    Platform
+    Platform,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
-import { supabase } from '../src/lib/supabase';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
 /**
  * Sign In Screen (Welcome Back)
@@ -26,42 +27,75 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
-
     const [loading, setLoading] = useState(false);
+
+    const { login: tunzaaLogin, signInWithGoogle, signInWithApple } = useTunzaaAuth();
 
     const handleLogin = async () => {
         if (!agreedToTerms) {
-            alert('Please agree to Terms and Conditions');
+            Alert.alert('Terms Required', 'Please agree to Terms and Conditions');
             return;
         }
         if (!usernameOrEmail || !password) {
-            alert('Please enter email and password');
+            Alert.alert('Missing Fields', 'Please enter your identifier and password');
             return;
         }
 
         setLoading(true);
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email: usernameOrEmail,
-                password: password,
-            });
+            // Determine if input is a phone number or email
+            const isPhone = !usernameOrEmail.includes('@');
+            const identifier = isPhone && !usernameOrEmail.startsWith('+')
+                ? `+255${usernameOrEmail.replace(/^0/, '')}`
+                : usernameOrEmail;
 
-            if (error) throw error;
+            const response = await tunzaaLogin(identifier, password, isPhone);
+            console.log('✅ Login success:', response.name);
 
-            // AuthContext will handle state update and navigation based on role
-            router.replace('/(buyer)');
+            // Navigate based on user role
+            const role = response.activeProfileRole || response.active_profile_role;
+            if (role === 'vendor') {
+                router.replace('/(merchant)' as any);
+            } else {
+                router.replace('/(buyer)' as any);
+            }
         } catch (e: any) {
-            alert(e.message || 'Error signing in');
+            console.error('❌ Login error:', e);
+            Alert.alert('Login Failed', e.message || 'Error signing in. Please check your credentials.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSocialLogin = (provider: string) => {
-        // Social Auth requires Supabase API Keys and 3rd-party configuration.
-        // For now, we will just show an alert.
-        alert(`Social Login with ${provider} is not yet configured. Please use Email/Password for now.`);
-        console.log('Social login clicked:', provider);
+    const handleSocialLogin = async (provider: string) => {
+        setLoading(true);
+        try {
+            let response;
+            if (provider === 'google') {
+                response = await signInWithGoogle();
+            } else if (provider === 'apple') {
+                response = await signInWithApple();
+            } else {
+                Alert.alert('Not Available', `${provider} login is not yet supported.`);
+                setLoading(false);
+                return;
+            }
+
+            if (response) {
+                console.log('✅ Social login success:', response.name);
+                const role = response.activeProfileRole || response.active_profile_role;
+                if (role === 'vendor') {
+                    router.replace('/(merchant)' as any);
+                } else {
+                    router.replace('/(buyer)' as any);
+                }
+            }
+        } catch (e: any) {
+            console.error('❌ Social login error:', e);
+            Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}.`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
