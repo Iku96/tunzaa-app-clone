@@ -3,26 +3,36 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PRODUCTS } from '../../../src/data/products';
+import { useQuery } from '@tanstack/react-query';
+import { productsApi } from '../../../src/services/products';
+import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
+import { ActivityIndicator } from 'react-native';
 
 export default function OrderSummaryScreen() {
     const router = useRouter();
     const { productId } = useLocalSearchParams();
-    // State for payment type
     const [paymentType, setPaymentType] = useState<'installment' | 'full'>('installment');
     const [quantity, setQuantity] = useState(1);
 
-    // Get product from params or fallback
-    const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS.find(p => p.name === 'Long Sofa') || PRODUCTS[0];
+    // Fetch product dynamically based on ID
+    const { data: apiProduct, isLoading } = useQuery({
+        queryKey: ['product', productId],
+        queryFn: () => productsApi.getProductById(productId as string),
+        enabled: !!productId,
+    });
+
+    const product = apiProduct ? mapApiProductToUI(apiProduct) : null;
 
     // Financials
-    const subtotal = product.price * quantity;
+    const subtotal = product ? product.price * quantity : 0;
     const discount = 0;
     const deliveryFees = 10000;
     const tax = 6300;
     const total = subtotal + deliveryFees + tax - discount;
 
     const handleCheckout = () => {
+        if (!product) return;
+
         if (paymentType === 'installment') {
             router.push({
                 pathname: '/(buyer)/checkout/set-goal',
@@ -50,81 +60,91 @@ export default function OrderSummaryScreen() {
                     {/* My Cart Section */}
                     <Text style={styles.sectionTitle}>My cart</Text>
 
-                    <View style={styles.cartCard}>
-                        {/* ... (Existing Product Card Code) ... */}
-                        <View style={styles.imageWrapper}>
-                            <Image source={{ uri: product.image }} style={styles.productImage} resizeMode="contain" />
+                    {isLoading || !product ? (
+                        <View style={{ padding: 40, alignItems: 'center' }}>
+                            <ActivityIndicator size="large" color="#4A55A2" />
+                            <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading order details...</Text>
                         </View>
-
-                        <View style={styles.detailsColumn}>
-                            <Text style={styles.productName}>{product.name}</Text>
-                            <Text style={styles.productPrice}>Tsh. {new Intl.NumberFormat('en-US').format(product.price)}</Text>
-
-                            <View style={styles.tagContainer}>
-                                <Text style={styles.tagText}>#Best Seller</Text>
-                            </View>
-
-                            <View style={styles.actionsRow}>
-                                <View style={styles.qtyContainer}>
-                                    <TouchableOpacity
-                                        style={styles.qtyBtn}
-                                        onPress={() => setQuantity(Math.max(1, quantity - 1))}
-                                    >
-                                        <Ionicons name="remove" size={16} color="#1F2937" />
-                                    </TouchableOpacity>
-                                    <Text style={styles.qtyText}>{quantity}</Text>
-                                    <TouchableOpacity
-                                        style={[styles.qtyBtn, styles.qtyBtnActive]}
-                                        onPress={() => setQuantity(quantity + 1)}
-                                    >
-                                        <Ionicons name="add" size={16} color="#FFFFFF" />
-                                    </TouchableOpacity>
+                    ) : (
+                        <>
+                            <View style={styles.cartCard}>
+                                {/* ... (Existing Product Card Code) ... */}
+                                <View style={styles.imageWrapper}>
+                                    {/* Handle image array or string */}
+                                    <Image source={{ uri: Array.isArray(product.image) ? product.image[0] : product.image }} style={styles.productImage} resizeMode="contain" />
                                 </View>
-                                <TouchableOpacity>
-                                    <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                                </TouchableOpacity>
+
+                                <View style={styles.detailsColumn}>
+                                    <Text style={styles.productName}>{product.name}</Text>
+                                    <Text style={styles.productPrice}>Tsh. {new Intl.NumberFormat('en-US').format(product.price)}</Text>
+
+                                    <View style={styles.tagContainer}>
+                                        <Text style={styles.tagText}>#Best Seller</Text>
+                                    </View>
+
+                                    <View style={styles.actionsRow}>
+                                        <View style={styles.qtyContainer}>
+                                            <TouchableOpacity
+                                                style={styles.qtyBtn}
+                                                onPress={() => setQuantity(Math.max(1, quantity - 1))}
+                                            >
+                                                <Ionicons name="remove" size={16} color="#1F2937" />
+                                            </TouchableOpacity>
+                                            <Text style={styles.qtyText}>{quantity}</Text>
+                                            <TouchableOpacity
+                                                style={[styles.qtyBtn, styles.qtyBtnActive]}
+                                                onPress={() => setQuantity(quantity + 1)}
+                                            >
+                                                <Ionicons name="add" size={16} color="#FFFFFF" />
+                                            </TouchableOpacity>
+                                        </View>
+                                        <TouchableOpacity>
+                                            <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
                             </View>
-                        </View>
-                    </View>
 
-                    {/* Order List Breakdown */}
-                    <Text style={styles.sectionTitle}>Order({quantity} item)</Text>
+                            {/* Order List Breakdown */}
+                            <Text style={styles.sectionTitle}>Order({quantity} item)</Text>
 
-                    <View style={styles.orderItemRow}>
-                        <Text style={styles.orderLabel}>Product</Text>
-                        <Text style={styles.orderValue}>{product.name}</Text>
-                    </View>
-                    <View style={styles.orderItemRow}>
-                        <Text style={styles.orderLabel}>Price</Text>
-                        <Text style={styles.orderValue}>Tsh. {new Intl.NumberFormat('en-US').format(product.price)}</Text>
-                    </View>
+                            <View style={styles.orderItemRow}>
+                                <Text style={styles.orderLabel}>Product</Text>
+                                <Text style={styles.orderValue}>{product.name}</Text>
+                            </View>
+                            <View style={styles.orderItemRow}>
+                                <Text style={styles.orderLabel}>Price</Text>
+                                <Text style={styles.orderValue}>Tsh. {new Intl.NumberFormat('en-US').format(product.price)}</Text>
+                            </View>
 
-                    <View style={styles.divider} />
+                            <View style={styles.divider} />
 
-                    {/* Cost Breakdown */}
-                    <View style={styles.costRow}>
-                        <Text style={styles.costLabel}>Subtotal</Text>
-                        <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(subtotal)}</Text>
-                    </View>
-                    <View style={styles.costRow}>
-                        <Text style={styles.costLabel}>Discount</Text>
-                        <Text style={styles.costValue}>Tsh. {discount}</Text>
-                    </View>
-                    <View style={styles.costRow}>
-                        <Text style={styles.costLabel}>Delivery Fees</Text>
-                        <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(deliveryFees)}</Text>
-                    </View>
-                    <View style={styles.costRow}>
-                        <Text style={styles.costLabel}>Tax (18%)</Text>
-                        <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(tax)}</Text>
-                    </View>
+                            {/* Cost Breakdown */}
+                            <View style={styles.costRow}>
+                                <Text style={styles.costLabel}>Subtotal</Text>
+                                <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(subtotal)}</Text>
+                            </View>
+                            <View style={styles.costRow}>
+                                <Text style={styles.costLabel}>Discount</Text>
+                                <Text style={styles.costValue}>Tsh. {discount}</Text>
+                            </View>
+                            <View style={styles.costRow}>
+                                <Text style={styles.costLabel}>Delivery Fees</Text>
+                                <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(deliveryFees)}</Text>
+                            </View>
+                            <View style={styles.costRow}>
+                                <Text style={styles.costLabel}>Tax (18%)</Text>
+                                <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(tax)}</Text>
+                            </View>
 
-                    <View style={[styles.divider, { marginTop: 16 }]} />
+                            <View style={[styles.divider, { marginTop: 16 }]} />
 
-                    <View style={styles.totalRow}>
-                        <Text style={styles.totalLabel}>Total costs</Text>
-                        <Text style={styles.totalValue}>Tsh. {new Intl.NumberFormat('en-US').format(total)}</Text>
-                    </View>
+                            <View style={styles.totalRow}>
+                                <Text style={styles.totalLabel}>Total costs</Text>
+                                <Text style={styles.totalValue}>Tsh. {new Intl.NumberFormat('en-US').format(total)}</Text>
+                            </View>
+                        </>
+                    )}
                 </ScrollView>
 
                 {/* Footer Buttons */}

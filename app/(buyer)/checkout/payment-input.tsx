@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import { productsApi } from '../../../src/services/products';
+import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useCartCombined } from '../../../src/stores/cart';
+import { useCreateOrder } from '../../../src/services/orders';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -15,18 +22,82 @@ const SELECTED_METHOD = {
 
 export default function PaymentInputScreen() {
     const router = useRouter();
+    const { productId, amount: paramAmount } = useLocalSearchParams();
+    const { user } = useTunzaaAuth();
+
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [amount, setAmount] = useState('125,000'); // Mock amount
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    const handlePayment = () => {
-        // Here we would typically show the PIN modal or navigate to a PIN screen
-        // For this flow, let's simulate the PIN entry via a modal in this screen or a separate screen 
-        // consistent with the "PaymentModal" we built earlier.
-        // However, the design shows a specific PIN popup. Let's redirect to a success state or back to order details.
+    const { data: apiProduct, isLoading } = useQuery({
+        queryKey: ['product', productId],
+        queryFn: () => productsApi.getProductById(productId as string),
+        enabled: !!productId,
+    });
 
-        // For now, let's go to the order details to simulate completion
-        // In a real app, this would trigger the USSD push or similar
-        router.push('/(buyer)/orders/sales-order-id'); // navigating to order details
+    const product = apiProduct ? mapApiProductToUI(apiProduct) : null;
+    const amount = paramAmount ? new Intl.NumberFormat('en-US').format(Number(paramAmount)) : '125,000'; // Default mock amount if none passed
+
+    // Hooks for checkout
+    const { buyNow } = useCartCombined(user?.user_id || '');
+    const { mutateAsync: createOrder } = useCreateOrder();
+
+    const handlePayment = async () => {
+        if (!user || !product) {
+            alert("Missing user or product details.");
+            return;
+        }
+
+        if (!phoneNumber) {
+            alert("Please enter your M-Pesa phone number.");
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            // 1. Create a "Buy Now" temporary cart
+            const cartData = await buyNow({
+                product_id: product.id,
+                quantity: 1, // Defaulting to 1 for this static flow
+                sku: 'default',
+            });
+
+            // 2. Submit the order to Tunzaa 2.0 API
+            const order = await createOrder({
+                cart_id: cartData.cart_id,
+                shipping_address: {
+                    first_name: user?.first_name || 'User',
+                    last_name: user?.last_name || '',
+                    address_line1: 'Tunzaa Delivery Address',
+                    city: 'Dar es salaam',
+                    state_province: 'Dar es salaam',
+                    country: 'Tanzania',
+                    phone: phoneNumber,
+                    email: user?.email || '',
+                    is_default: true,
+                },
+                delivery_details: {
+                    partner_id: 'default_partner',
+                    cost: 10000,
+                },
+                payment_details: {
+                    method: 'mobile_money',
+                    amount: product.price, // Passing the true product price
+                    currency: 'TZS',
+                    payment_gateway: 'mpesa',
+                },
+                user_id: user.user_id,
+                delivery_type_id: 'standard',
+            });
+
+            // Success, navigate back to home
+            alert('Order Created Successfully! Redirecting to dashboard...');
+            router.replace('/(buyer)');
+        } catch (error) {
+            console.error("Payment Failed:", error);
+            alert("Failed to process payment. Please try again.");
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     return (
@@ -48,7 +119,7 @@ export default function PaymentInputScreen() {
                 </View>
 
                 <Text style={styles.infoText}>
-                    You are about to pay <Text style={styles.boldText}>{amount}</Text> on Tunzaa for the purchase of a <Text style={styles.boldText}>Nike Air Jordan Series 3</Text>.
+                    You are about to pay <Text style={styles.boldText}>Tsh {amount}</Text> on Tunzaa for the purchase of a <Text style={styles.boldText}>{isLoading ? '...' : (product?.name || 'Nike Air Jordan Series 3')}</Text>.
                 </Text>
 
                 <Text style={styles.label}>Phone</Text>
@@ -63,8 +134,12 @@ export default function PaymentInputScreen() {
                     />
                 </View>
 
-                <TouchableOpacity style={styles.payButton} onPress={handlePayment}>
-                    <Text style={styles.payButtonText}>Make a Payment</Text>
+                <TouchableOpacity style={[styles.payButton, isProcessing && { opacity: 0.7 }]} onPress={handlePayment} disabled={isProcessing}>
+                    {isProcessing ? (
+                        <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                        <Text style={styles.payButtonText}>Make a Payment</Text>
+                    )}
                 </TouchableOpacity>
 
             </View>

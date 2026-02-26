@@ -1,42 +1,67 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Dimensions, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 import { PRODUCTS, CATEGORIES } from '../../../src/data/products';
+import { productsApi, Product as ApiProduct } from '../../../src/services/products';
+import { categoriesApi, Category as ApiCategory } from '../../../src/services/categories';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
 
 const { width } = Dimensions.get('window');
 
-// Mock Data for "All Categories" Screen
-const ALL_CATEGORIES_DATA = [
-    {
-        title: 'Essentials',
-        items: [
-            { id: '1', name: 'Living Room', icon: 'bed-outline' }, // Using 'bed' as proxy for furniture
-            { id: '2', name: 'Bedroom Furniture', icon: 'file-tray-full-outline' },
-            { id: '3', name: 'Dining Room', icon: 'restaurant-outline' },
-            { id: '4', name: 'Office Furniture', icon: 'briefcase-outline' },
-        ]
-    },
-    {
-        title: 'Electronics & Gadgets',
-        items: [
-            { id: '5', name: 'Media Chests', icon: 'desktop-outline' },
-            { id: '6', name: 'Entertainment', icon: 'game-controller-outline' },
-            { id: '7', name: 'Storage Units', icon: 'cube-outline' }, // 'cube' for storage
-            { id: '8', name: 'Lighting', icon: 'bulb-outline' },
-        ]
-    }
-];
-
 export default function CategoryScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [categoryProducts, setCategoryProducts] = useState<any[]>([]);
+    const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
 
     const isAllCategories = id === 'all';
     const categoryName = isAllCategories ? 'All Categories' : (CATEGORIES.find(c => c.id === id)?.name || 'Category');
 
-    // Filter products (mock logic for specific category view)
-    const categoryProducts = PRODUCTS.filter(p => p.category === categoryName);
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                if (isAllCategories) {
+                    // Fetch all categories from API
+                    const res = await categoriesApi.getCategories();
+                    if (res?.items?.length > 0) {
+                        setApiCategories(res.items.filter(c => c.is_active));
+                        console.log(`\u2705 [Category] Loaded ${res.items.length} categories from API`);
+                    }
+                } else {
+                    // Fetch products for this category
+                    const res = await productsApi.getProducts({ category_id: id as string, limit: 30, is_active: true });
+                    if (res?.items?.length > 0) {
+                        console.log(`\u2705 [Category] Loaded ${res.items.length} products for category ${id}`);
+                        setCategoryProducts(res.items.map(p => ({
+                            id: p.product_id || p._id,
+                            name: p.name,
+                            price: p.base_price_raw || p.base_price || 0,
+                            image: p.images?.[0] ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0].url) : 'https://via.placeholder.com/300x300?text=No+Image',
+                            rating: 0,
+                            reviews: 0,
+                            vendor: {
+                                id: p.store_id || p.store?.store_id || '1',
+                                name: p.store?.store_name || 'Vendor',
+                                location: '',
+                                verified: true
+                            },
+                            category: categoryName,
+                        })));
+                    } else {
+                        setCategoryProducts([]);
+                    }
+                }
+            } catch (e: any) {
+                console.warn('⚠️ [Category] API failed, using static fallback:', e.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [id]);
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -75,23 +100,41 @@ export default function CategoryScreen() {
 
                     {isAllCategories ? (
                         /* ALL CATEGORIES LAYOUT */
-                        <View style={styles.allCatsContainer}>
-                            {ALL_CATEGORIES_DATA.map((section, index) => (
-                                <View key={index} style={styles.sectionWrapper}>
-                                    <Text style={styles.sectionTitle}>{section.title}</Text>
+                        loading ? (
+                            <ActivityIndicator size="large" color="#4A55A2" style={{ padding: 40 }} />
+                        ) : (
+                            <View style={styles.allCatsContainer}>
+                                {apiCategories.length > 0 ? (
                                     <View style={styles.gridContainer}>
-                                        {section.items.map((item) => (
-                                            <TouchableOpacity key={item.id} style={styles.gridCard}>
+                                        {apiCategories.map((cat) => (
+                                            <TouchableOpacity
+                                                key={cat.category_id}
+                                                style={styles.gridCard}
+                                                onPress={() => router.push(`/(buyer)/category/${cat.category_id}`)}
+                                            >
                                                 <View style={styles.iconCircle}>
-                                                    <Ionicons name={item.icon as any} size={24} color="#4A55A2" />
+                                                    <Ionicons name="grid-outline" size={24} color="#4A55A2" />
                                                 </View>
-                                                <Text style={styles.cardText}>{item.name}</Text>
+                                                <Text style={styles.cardText}>{cat.name}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
-                                </View>
-                            ))}
-                        </View>
+                                ) : (
+                                    <View style={styles.gridContainer}>
+                                        {CATEGORIES.map((cat) => (
+                                            <TouchableOpacity key={cat.id} style={styles.gridCard}
+                                                onPress={() => router.push(`/(buyer)/category/${cat.id}`)}
+                                            >
+                                                <View style={styles.iconCircle}>
+                                                    <Ionicons name={cat.icon as any} size={24} color="#4A55A2" />
+                                                </View>
+                                                <Text style={styles.cardText}>{cat.name}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
+                        )
                     ) : (
                         /* SINGLE CATEGORY PRODUCT GRID LAYOUT */
                         <View style={styles.productGridSection}>
@@ -112,20 +155,24 @@ export default function CategoryScreen() {
                             </View>
 
                             {/* Grid Content */}
-                            <View style={styles.productGrid}>
-                                {categoryProducts.length > 0 ? (
-                                    categoryProducts.map(p => (
-                                        <ProductCardVertical key={p.id} product={p} />
-                                    ))
-                                ) : (
-                                    <View style={styles.emptyContainer}>
-                                        <Text style={styles.emptyText}>No products found in this category.</Text>
-                                        <TouchableOpacity style={styles.goHomeBtn} onPress={() => router.push('/(buyer)')}>
-                                            <Text style={styles.goHomeText}>Go Home</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                )}
-                            </View>
+                            {loading ? (
+                                <ActivityIndicator size="large" color="#4A55A2" style={{ padding: 40 }} />
+                            ) : (
+                                <View style={styles.productGrid}>
+                                    {categoryProducts.length > 0 ? (
+                                        categoryProducts.map(p => (
+                                            <ProductCardVertical key={p.id} product={p} />
+                                        ))
+                                    ) : (
+                                        <View style={styles.emptyContainer}>
+                                            <Text style={styles.emptyText}>No products found in this category.</Text>
+                                            <TouchableOpacity style={styles.goHomeBtn} onPress={() => router.push('/(buyer)')}>
+                                                <Text style={styles.goHomeText}>Go Home</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                </View>
+                            )}
                         </View>
                     )}
                 </ScrollView>

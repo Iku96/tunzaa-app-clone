@@ -46,6 +46,8 @@ export default function RoleScreen() {
     const handleBusinessOptionSelect = (option: string) => {
         if (option === 'Provide delivery Services') {
             router.push({ pathname: '/mauzo-intro', params: { flow: 'delivery' } });
+        } else if (option === 'Join as Affiliate Marketer') {
+            router.push('/(affiliate)/register' as any);
         } else {
             router.push('/mauzo-intro');
         }

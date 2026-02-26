@@ -1,17 +1,98 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useState } from 'react';
 import { PRODUCTS } from '../../../src/data/products';
+import { productsApi, Product as ApiProduct } from '../../../src/services/products';
 import VendorBadge from '../../../src/components/common/VendorBadge';
+import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
 
 const { width, height } = Dimensions.get('window');
 
 export default function ProductDetailScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
+    const [loading, setLoading] = useState(true);
 
-    const product = PRODUCTS.find(p => p.id === id) || PRODUCTS[0];
+    // Product data - try API first, fall back to static
+    const [product, setProduct] = useState<{
+        id: string; name: string; price: number; image: string; images: string[];
+        rating: number; vendor: { id: string; name: string; location: string };
+    } | null>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const apiProduct = await productsApi.getProductById(id as string);
+                const imageUrl = apiProduct.images?.[0]
+                    ? (typeof apiProduct.images[0] === 'string' ? apiProduct.images[0] : apiProduct.images[0].url)
+                    : 'https://via.placeholder.com/300x300?text=No+Image';
+                const productImages = apiProduct.images?.length
+                    ? apiProduct.images.map(i => typeof i === 'string' ? i : i.url)
+                    : [imageUrl];
+
+                setProduct({
+                    id: apiProduct.product_id || apiProduct._id,
+                    name: apiProduct.name,
+                    price: apiProduct.base_price_raw || apiProduct.base_price || 0,
+                    image: imageUrl,
+                    images: productImages,
+                    rating: 0,
+                    vendor: {
+                        id: apiProduct.store_id || apiProduct.store?.store_id || '1',
+                        name: apiProduct.store?.store_name || 'Vendor',
+                        location: '',
+                    },
+                });
+                console.log('✅ [ProductDetail] Loaded product from API:', apiProduct.name);
+            } catch (e: any) {
+                console.warn('⚠️ [ProductDetail] API failed, using static fallback:', e.message);
+                const staticProduct = PRODUCTS.find(p => p.id === id) || PRODUCTS[0];
+                const staticImage = typeof staticProduct.image === 'string' ? staticProduct.image : '';
+                setProduct({
+                    id: staticProduct.id,
+                    name: staticProduct.name,
+                    price: staticProduct.price,
+                    image: staticImage,
+                    images: [staticImage],
+                    rating: staticProduct.rating,
+                    vendor: { ...staticProduct.vendor, id: '1' },
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProduct();
+    }, [id]);
+    // Wishlist logic
+    const { data: wishlistStatus } = useCheckWishlistStatus(product?.id || '', undefined, !!product?.id);
+    const { mutate: addToWishlist, isPending: isAdding } = useAddToWishlist();
+    const { mutate: removeFromWishlist, isPending: isRemoving } = useRemoveFromWishlist();
+
+    const isWishlisted = wishlistStatus?.is_wishlisted || false;
+    const isWishlistLoading = isAdding || isRemoving;
+
+    const toggleWishlist = () => {
+        if (!product?.id) return;
+        if (isWishlisted) {
+            removeFromWishlist({ productId: product.id });
+        } else {
+            addToWishlist({ product_id: product.id });
+        }
+    };
+
+    if (loading || !product) {
+        return (
+            <SafeAreaView style={styles.safeArea}>
+                <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                    <ActivityIndicator size="large" color="#4A55A2" />
+                    <Text style={{ marginTop: 12, color: '#6B7280' }}>Loading product...</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -28,14 +109,27 @@ export default function ProductDetailScreen() {
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     {/* Product Image */}
                     <View style={styles.imageContainer}>
-                        <Image source={{ uri: product.image }} style={styles.image} resizeMode="contain" />
+                        <ScrollView
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            onMomentumScrollEnd={(event) => {
+                                const index = Math.round(event.nativeEvent.contentOffset.x / width);
+                                setActiveIndex(index);
+                            }}
+                        >
+                            {product.images.map((imgUrl, idx) => (
+                                <View key={idx} style={{ width, alignItems: 'center', justifyContent: 'center' }}>
+                                    <Image source={{ uri: imgUrl }} style={styles.image} resizeMode="contain" />
+                                </View>
+                            ))}
+                        </ScrollView>
 
                         {/* Pagination Pill */}
                         <View style={styles.paginationPill}>
-                            <View style={[styles.dot, styles.activeDot]} />
-                            <View style={styles.dot} />
-                            <View style={styles.dot} />
-                            <View style={styles.dot} />
+                            {product.images.map((_, idx) => (
+                                <View key={idx} style={[styles.dot, idx === activeIndex && styles.activeDot]} />
+                            ))}
                         </View>
                     </View>
 
@@ -47,8 +141,12 @@ export default function ProductDetailScreen() {
                                 Tsh. {new Intl.NumberFormat('en-US').format(product.price)}
                             </Text>
                             <View style={styles.actions}>
-                                <TouchableOpacity style={styles.actionBtn}>
-                                    <Ionicons name="heart-outline" size={20} color="#6B7280" />
+                                <TouchableOpacity style={styles.actionBtn} onPress={toggleWishlist} disabled={isWishlistLoading}>
+                                    <Ionicons
+                                        name={isWishlisted ? "heart" : "heart-outline"}
+                                        size={20}
+                                        color={isWishlisted ? "#EF4444" : "#6B7280"}
+                                    />
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.actionBtn}>
                                     <Ionicons name="share-social-outline" size={20} color="#6B7280" />
@@ -83,7 +181,7 @@ export default function ProductDetailScreen() {
                             {/* Right Column: Vendor Info */}
                             <TouchableOpacity
                                 style={styles.rightInfoCol}
-                                onPress={() => router.push({ pathname: '/(buyer)/shop/[id]', params: { id: '1' } })}
+                                onPress={() => router.push({ pathname: '/(buyer)/shop/[id]', params: { id: product.vendor.id || '1' } })}
                             >
                                 <View style={styles.vendorLogoContainer}>
                                     <Ionicons name="phone-portrait-outline" size={18} color="white" />

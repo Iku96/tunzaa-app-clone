@@ -3,13 +3,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../../src/contexts/AuthContext';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { supabase } from '../../../src/lib/supabase';
 // import DateTimePicker from '@react-native-community/datetimepicker'; // Need to install if we want native picker, utilizing text input for now or simplified date picker if available
 
 export default function Step1Profile() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     // State
     const [gender, setGender] = useState('');
@@ -21,18 +21,21 @@ export default function Step1Profile() {
         setLoading(true);
         try {
             if (user) {
-                const updates: any = {
-                    gender,
-                    delivery_location: location,
-                };
-                if (dob) updates.date_of_birth = dob;
+                // Fallback to storing metadata in Supabase (optional, check if needed in legacy/hybrid)
+                if (user?.id) {
+                    const updates: any = {
+                        gender,
+                        delivery_location: location,
+                    };
+                    if (dob) updates.date_of_birth = dob;
 
-                const { error } = await supabase
-                    .from('profiles')
-                    .update(updates)
-                    .eq('id', user.id);
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update(updates)
+                        .eq('id', user.id);
 
-                if (error) throw error;
+                    if (error) console.warn('Supabase local update failed:', error.message);
+                }
             }
             router.push('/(buyer)/onboarding/step-2');
         } catch (e) {
@@ -57,7 +60,7 @@ export default function Step1Profile() {
                 <View style={styles.textBlock}>
                     <Text style={styles.title}>Complete your profile</Text>
                     <Text style={styles.subtitle}>
-                        Hey John, let’s add a few more details
+                        Hey {user?.first_name || 'there'}, let’s add a few more details
                     </Text>
                 </View>
 
@@ -66,7 +69,7 @@ export default function Step1Profile() {
                     <View style={styles.avatarCircle}>
                         <Ionicons name="person" size={64} color="#A3A3A3" />
                         <TouchableOpacity style={styles.editBadge}>
-                            <Ionicons name="camera" size={14} color="#FFFFFF" />
+                            <Ionicons name="camera" size={12} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -83,15 +86,14 @@ export default function Step1Profile() {
 
                     {/* Date of Birth */}
                     <View style={styles.inputField}>
-                        <Text style={[styles.inputText, !dob && styles.placeholderText]}>
-                            {dob || 'Date of birth'}
-                        </Text>
-                        <Ionicons name="calendar-outline" size={20} color="#666666" />
                         <TextInput
-                            style={styles.hiddenInput}
+                            style={[styles.inputText, !dob && styles.placeholderText]}
+                            placeholder="Date of birth (YYYY-MM-DD)"
+                            placeholderTextColor="#9CA3AF"
                             value={dob}
                             onChangeText={setDob}
                         />
+                        <Ionicons name="calendar-outline" size={20} color="#666666" />
                     </View>
 
                     {/* Location */}
@@ -179,9 +181,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         right: 0, // 4 o'clock position approx
         backgroundColor: '#3E4C85', // Primary Indigo
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,

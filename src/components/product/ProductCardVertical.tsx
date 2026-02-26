@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'rea
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../../data/products';
+import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../services/wishlist';
+import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 56) / 2; // 20px padding * 2 + 16px gap
@@ -13,6 +15,23 @@ interface ProductCardVerticalProps {
 export default function ProductCardVertical({ product }: ProductCardVerticalProps) {
     const router = useRouter();
 
+    // Wishlist logic
+    const { data: wishlistStatus } = useCheckWishlistStatus(product.id, undefined, !!product.id);
+    const { mutate: addToWishlist, isPending: isAdding } = useAddToWishlist();
+    const { mutate: removeFromWishlist, isPending: isRemoving } = useRemoveFromWishlist();
+
+    const isWishlisted = wishlistStatus?.is_wishlisted || false;
+    const isWishlistLoading = isAdding || isRemoving;
+
+    const handleToggleWishlist = () => {
+        if (!product.id) return;
+        if (isWishlisted) {
+            removeFromWishlist({ productId: product.id });
+        } else {
+            addToWishlist({ product_id: product.id });
+        }
+    };
+
     const handlePress = () => {
         router.push(`/(buyer)/product/${product.id}`);
     };
@@ -23,8 +42,16 @@ export default function ProductCardVertical({ product }: ProductCardVerticalProp
                 <Image source={{ uri: product.image }} style={styles.image} resizeMode="contain" />
 
                 {/* Heart Icon - Top Right */}
-                <TouchableOpacity style={styles.heartButton}>
-                    <Ionicons name="heart-outline" size={20} color="#9CA3AF" />
+                <TouchableOpacity style={styles.heartButton} onPress={handleToggleWishlist} disabled={isWishlistLoading}>
+                    {isWishlistLoading ? (
+                        <ActivityIndicator size="small" color="#EF4444" />
+                    ) : (
+                        <Ionicons
+                            name={isWishlisted ? "heart" : "heart-outline"}
+                            size={20}
+                            color={isWishlisted ? "#EF4444" : "#9CA3AF"}
+                        />
+                    )}
                 </TouchableOpacity>
 
                 {/* Pagination Dots - Bottom Center */}

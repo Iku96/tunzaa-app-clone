@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState, useCallback } from 'react';
+import { useTunzaaAuth } from '../contexts/TunzaaAuthContext';
+import { orderApi, Order } from '../services/orders';
 
 export interface PulseOrder {
-    id: number;
+    id: string; // Changed from number to string to match legacy _id/order_id
     user: {
         full_name: string | null;
         avatar_url: string | null;
@@ -18,104 +18,76 @@ export interface PulseOrder {
 }
 
 export function useMerchantPulse() {
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
     const [orders, setOrders] = useState<PulseOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [newPaymentAlert, setNewPaymentAlert] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!user) return;
+    // Get vendor profile ID from user profiles
+    const vendorProfile = user?.profiles?.find(
+        (profile) => profile.role === "vendor"
+    );
+    const vendorId = vendorProfile?.profile_id;
 
-        fetchOrders();
+    const fetchOrders = useCallback(async () => {
+        if (!vendorId) {
+            setLoading(false);
+            return;
+        }
 
-        // Subscribe to NEW payments (INSERT on transactions)
-        // We filter by valid transactions to avoid noise
-        const subscription = supabase
-            .channel('pulse-transactions')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'transactions',
-                    filter: `status=eq.success`
-                },
-                async (payload) => {
-                    // Logic: Check if this payment belongs to one of the merchant's goals
-                    // This is complex to do purely client-side without a custom filter or redundant reads.
-                    // For now, we refresh the whole list to show updated progress.
-                    // In a production app, we'd use a more specific channel or Edge Function.
-                    console.log('New payment detected!', payload);
-
-                    // Optimistic update or refetch
-                    await fetchOrders();
-
-                    setNewPaymentAlert('New payment received!');
-                    setTimeout(() => setNewPaymentAlert(null), 3000);
-                }
-            )
-            .subscribe();
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [user]);
-
-    const fetchOrders = async () => {
         try {
             setLoading(true);
+            setError(null);
 
-            // 1. Get my products
-            const { data: myProducts, error: prodError } = await supabase
-                .from('products')
-                .select('id')
-                .eq('merchant_id', user!.id)
-                .returns<{ id: number }[]>();
+            // Fetch orders from the API
+            const response = await orderApi.getVendorOrders({
+                vendor_id: vendorId,
+                limit: 20
+            });
 
-            if (prodError) throw prodError;
+            // Map to PulseOrder shape expected by the UI
+            const items = response?.items ?? [];
+            const formatted: PulseOrder[] = items.map((item: Order) => {
+                const primaryItem = item.items && item.items.length > 0 ? item.items[0] : null;
 
-            const productIds = myProducts?.map(p => p.id) || [];
-
-            if (productIds.length === 0) {
-                setOrders([]);
-                return;
-            }
-
-            // 2. Get goals for these products
-            // Note: Supabase JS joins are powerful.
-            const { data, error } = await supabase
-                .from('goals')
-                .select(`
-                    id,
-                    target_amount,
-                    current_amount,
-                    created_at,
-                    profiles:user_id (full_name, avatar_url),
-                    products:product_id (title, image_url)
-                `)
-                .in('product_id', productIds)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            // Map to PulseOrder shape
-            const formatted: PulseOrder[] = data.map((item: any) => ({
-                id: item.id,
-                user: item.profiles,
-                product: item.products,
-                total_amount: item.target_amount,
-                current_amount: item.current_amount,
-                last_payment_date: item.created_at // fallback, ideally latest transaction date
-            }));
+                return {
+                    id: item.order_id,
+                    user: {
+                        full_name: item.shipping_address?.first_name
+                            ? `${item.shipping_address.first_name} ${item.shipping_address.last_name || ''}`.trim()
+                            : 'Customer',
+                        avatar_url: null,
+                    },
+                    product: {
+                        title: primaryItem ? primaryItem.name : 'Unknown Product',
+                        image_url: null,
+                    },
+                    total_amount: item.totals?.total || 0,
+                    current_amount: item.payment_details?.amount || 0,
+                    last_payment_date: item.created_at
+                };
+            });
 
             setOrders(formatted);
 
-        } catch (e) {
-            console.error('Error fetching pulse orders:', e);
+        } catch (e: any) {
+            console.error('Failed to fetch merchant orders:', e.message || e);
+            setError(e.message || 'Failed to fetch orders');
         } finally {
             setLoading(false);
         }
-    };
+    }, [vendorId]);
 
-    return { orders, loading, newPaymentAlert };
+    useEffect(() => {
+        fetchOrders();
+
+        // Note: Real-time subscriptions for transactions are removed because 
+        // they relied on direct Supabase connections which are bypassed by the API.
+        // For real-time updates in a production API-driven app, you would use WebSockets 
+        // or a polling mechanism. For now, we rely on the initial fetch.
+
+    }, [fetchOrders]);
+
+    return { orders, loading, error, newPaymentAlert, refetch: fetchOrders };
 }

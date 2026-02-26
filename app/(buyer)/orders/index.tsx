@@ -6,46 +6,50 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav from '../../../src/components/navigation/BottomNav';
 import PriceTag from '../../../src/components/common/PriceTag';
 
-const ORDERS = [
-    {
-        id: '986705',
-        date: '22 Apr 2025',
-        items: [
-            {
-                name: 'Samsung Galaxy A23 - 6.6" - 128GB ROM - 6GB RAM',
-                price: 450000,
-                image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&auto=format&fit=crop&q=60',
-            }
-        ],
-        paidAmount: 292500,
-        totalAmount: 450000,
-        progress: 0.65,
-        status: 'Pending',
-        nextInstallment: 157500,
-        type: 'installments'
-    },
-    {
-        id: '986707',
-        date: '23 Mar 2025',
-        items: [
-            {
-                name: 'LG Double Door Refrigerator - 260L - Silver..',
-                price: 1200000,
-                image: 'https://images.unsplash.com/photo-1571175443880-49e1d58b794a?w=500&auto=format&fit=crop&q=60',
-            }
-        ],
-        paidAmount: 780000,
-        totalAmount: 1200000,
-        progress: 0.65,
-        status: 'Pending',
-        nextInstallment: 420000,
-        type: 'installments'
-    }
-];
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useGetOrders } from '../../../src/services/orders';
+import { ActivityIndicator } from 'react-native';
 
 export default function OrdersScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
     const [activeTab, setActiveTab] = useState('Pending');
+
+    // Fetch user orders
+    const { data: ordersData, isLoading } = useGetOrders(
+        { user_id: user?.user_id },
+        !!user?.user_id
+    );
+
+    const apiOrders = Array.isArray(ordersData) ? ordersData : (ordersData?.items || []);
+
+    const mappedOrders = apiOrders.map(o => {
+        const total = o.totals?.total || 0;
+        const paid = o.payment_details?.amount || 0;
+        const progress = total > 0 ? (paid / total) : 0;
+
+        return {
+            id: o.order_id || o.order_number,
+            date: new Date(o.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            items: o.items?.length > 0 ? o.items.map(i => ({
+                name: i.name,
+                price: i.unit_price,
+                image: i.metadata?.image || 'https://via.placeholder.com/150?text=Order',
+            })) : [{ name: 'Unknown Item', price: 0, image: 'https://via.placeholder.com/150?text=Wait' }],
+            paidAmount: paid,
+            totalAmount: total,
+            progress: progress > 1 ? 1 : progress,
+            status: o.status || 'Pending',
+            nextInstallment: Math.max(0, total - paid),
+            type: o.payment_details?.method === 'installment' ? 'installments' : 'full payment'
+        };
+    });
+
+    const displayOrders = mappedOrders.filter(o => {
+        if (activeTab === 'Pending') return o.status.toLowerCase() !== 'completed';
+        if (activeTab === 'Completed') return o.status.toLowerCase() === 'completed';
+        return false;
+    });
 
     const renderTabs = () => (
         <View style={styles.tabsContainer}>
@@ -115,8 +119,13 @@ export default function OrdersScreen() {
                 {renderTabs()}
 
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                    {activeTab === 'Pending' ? (
-                        ORDERS.map(renderOrderItem)
+                    {isLoading ? (
+                        <View style={styles.emptyState}>
+                            <ActivityIndicator size="large" color="#4A55A2" />
+                            <Text style={styles.emptyText}>Loading orders...</Text>
+                        </View>
+                    ) : displayOrders.length > 0 ? (
+                        displayOrders.map(renderOrderItem)
                     ) : (
                         <View style={styles.emptyState}>
                             <Ionicons name="documents-outline" size={48} color="#9CA3AF" />

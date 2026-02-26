@@ -2,15 +2,23 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput 
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
-import { PRODUCTS } from '../../../src/data/products';
+import { useQuery } from '@tanstack/react-query';
+import { productsApi } from '../../../src/services/products';
+import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
+import { ActivityIndicator } from 'react-native';
 
 export default function SetGoalScreen() {
     const router = useRouter();
     const { productId } = useLocalSearchParams();
 
-    // Find product or use fallback
-    const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS[0];
+    // Fetch product dynamically based on ID
+    const { data: apiProduct, isLoading } = useQuery({
+        queryKey: ['product', productId],
+        queryFn: () => productsApi.getProductById(productId as string),
+        enabled: !!productId,
+    });
+
+    const product = apiProduct ? mapApiProductToUI(apiProduct) : null;
 
     // State for inputs
     const [endDate, setEndDate] = useState(''); // Text input for MVP
@@ -46,69 +54,76 @@ export default function SetGoalScreen() {
                     <View style={{ width: 24 }} />
                 </View>
 
-                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                    {/* Intro Text */}
-                    <Text style={styles.introText}>
-                        You're about to start an installment goal.{"\n"}
-                        Total Price: <Text style={{ fontWeight: 'bold' }}>Tsh {new Intl.NumberFormat('en-US').format(product.price)}</Text>
-                    </Text>
+                {isLoading || !product ? (
+                    <View style={{ flex: 1, padding: 40, alignItems: 'center', justifyContent: 'center' }}>
+                        <ActivityIndicator size="large" color="#4A55A2" />
+                        <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading installment details...</Text>
+                    </View>
+                ) : (
+                    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                        {/* Intro Text */}
+                        <Text style={styles.introText}>
+                            You're about to start an installment goal.{"\n"}
+                            Total Price: <Text style={{ fontWeight: 'bold' }}>Tsh {new Intl.NumberFormat('en-US').format(product.price)}</Text>
+                        </Text>
 
-                    {/* Product Card */}
-                    <View style={styles.productCard}>
-                        <Image source={{ uri: product.image }} style={styles.productImage} resizeMode="cover" />
-                        <View style={styles.productInfo}>
-                            <Text style={styles.productName}>{product.name}</Text>
-                            <Text style={styles.productPrice}>Tsh. {new Intl.NumberFormat('en-US').format(product.price)}</Text>
-                            <View style={styles.goalDurationTag}>
-                                <Text style={styles.goalDurationText}>Goal Duration: 3 months</Text>
+                        {/* Product Card */}
+                        <View style={styles.productCard}>
+                            <Image source={{ uri: Array.isArray(product.image) ? product.image[0] : product.image }} style={styles.productImage} resizeMode="cover" />
+                            <View style={styles.productInfo}>
+                                <Text style={styles.productName}>{product.name}</Text>
+                                <Text style={styles.productPrice}>Tsh. {new Intl.NumberFormat('en-US').format(product.price)}</Text>
+                                <View style={styles.goalDurationTag}>
+                                    <Text style={styles.goalDurationText}>Goal Duration: 3 months</Text>
+                                </View>
                             </View>
                         </View>
-                    </View>
 
-                    {/* Date Selection */}
-                    <View style={styles.section}>
-                        <Text style={styles.sectionLabel}>When do you want to complete your payment?</Text>
-                        <Text style={styles.sectionSubLabel}>Schedule your time</Text>
+                        {/* Date Selection */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionLabel}>When do you want to complete your payment?</Text>
+                            <Text style={styles.sectionSubLabel}>Schedule your time</Text>
 
-                        <TouchableOpacity style={styles.dateInputWrapper}>
-                            <Ionicons name="calendar-outline" size={20} color="#6B7280" />
-                            <TextInput
-                                style={styles.dateInput}
-                                placeholder="20/02/2025"
-                                value={endDate}
-                                onChangeText={setEndDate}
-                                placeholderTextColor="#9CA3AF"
-                            />
-                            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Frequency Selection */}
-                    <View style={styles.section}>
-                        <Text style={styles.sectionLabel}>How often do you want to pay?</Text>
-
-                        <View style={styles.freqGrid}>
-                            {frequencies.map((freq) => {
-                                const isSelected = frequency === freq.id;
-                                return (
-                                    <TouchableOpacity
-                                        key={freq.id}
-                                        style={[styles.freqCard, isSelected && styles.freqCardSelected]}
-                                        onPress={() => setFrequency(freq.id)}
-                                    >
-                                        <Text style={[styles.freqText, isSelected && styles.freqTextSelected]}>
-                                            {freq.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
+                            <TouchableOpacity style={styles.dateInputWrapper}>
+                                <Ionicons name="calendar-outline" size={20} color="#6B7280" />
+                                <TextInput
+                                    style={styles.dateInput}
+                                    placeholder="20/02/2025"
+                                    value={endDate}
+                                    onChangeText={setEndDate}
+                                    placeholderTextColor="#9CA3AF"
+                                />
+                                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            </TouchableOpacity>
                         </View>
-                    </View>
-                </ScrollView>
+
+                        {/* Frequency Selection */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionLabel}>How often do you want to pay?</Text>
+
+                            <View style={styles.freqGrid}>
+                                {frequencies.map((freq) => {
+                                    const isSelected = frequency === freq.id;
+                                    return (
+                                        <TouchableOpacity
+                                            key={freq.id}
+                                            style={[styles.freqCard, isSelected && styles.freqCardSelected]}
+                                            onPress={() => setFrequency(freq.id)}
+                                        >
+                                            <Text style={[styles.freqText, isSelected && styles.freqTextSelected]}>
+                                                {freq.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </View>
+                    </ScrollView>
+                )}
 
                 {/* Footer */}
                 <View style={styles.footer}>
-                    <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+                    <TouchableOpacity style={[styles.continueButton, (!product || isLoading) && { opacity: 0.5 }]} onPress={handleContinue} disabled={!product || isLoading}>
                         <Text style={styles.continueButtonText}>Continue</Text>
                     </TouchableOpacity>
                 </View>

@@ -3,8 +3,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// Extending mock data locally to match the specific screenshot details if needed, 
-// or mapping existing PRODUCTS to match the visual. 
+import { productsApi } from '../../../src/services/products';
+import { useMarketplace } from '../../../src/hooks/useMarketplace';
 import { PRODUCTS } from '../../../src/data/products';
 
 // Helper to format price
@@ -66,12 +66,54 @@ export default function SearchScreen() {
     const router = useRouter();
     const [searchText, setSearchText] = useState(query as string || '');
     const [filterVisible, setFilterVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [results, setResults] = useState<any[]>([]);
 
-    // Filter logic
-    const results = PRODUCTS.filter(p =>
-        p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchText.toLowerCase())
-    );
+    useEffect(() => {
+        const fetchResults = async () => {
+            setLoading(true);
+            try {
+                const term = searchText.trim() || query as string || '';
+                if (!term) {
+                    setResults([]);
+                    return;
+                }
+                const res = await productsApi.searchProducts(term);
+                if (res?.items?.length > 0) {
+                    setResults(res.items.map(p => ({
+                        id: p.product_id || p._id,
+                        name: p.name,
+                        price: p.base_price_raw || p.base_price || 0,
+                        image: p.images?.[0] ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0].url) : 'https://via.placeholder.com/300x300?text=No+Image',
+                        rating: 0,
+                        reviews: 0,
+                        vendor: {
+                            id: p.store_id || p.store?.store_id || '1',
+                            name: p.store?.store_name || 'Vendor',
+                            location: '',
+                            verified: true
+                        },
+                        specs: p.tags || [],
+                        category: p.category_ids?.[0] || '',
+                    })));
+                } else {
+                    setResults([]); // Clear results if empty, rather than falling back to static 
+                }
+            } catch (e) {
+                console.warn('⚠️ [Search] API failed, using static fallback:', e);
+                // Fallback to static for demo purposes if backend search errors out
+                setResults(PRODUCTS.filter(p =>
+                    p.name.toLowerCase().includes(searchText.toLowerCase()) ||
+                    p.category.toLowerCase().includes(searchText.toLowerCase())
+                ));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const debounceTimer = setTimeout(fetchResults, 500);
+        return () => clearTimeout(debounceTimer);
+    }, [searchText, query]);
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -128,7 +170,11 @@ export default function SearchScreen() {
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyText}>No results found found.</Text>
+                            {loading ? (
+                                <Text style={styles.emptyText}>Searching...</Text>
+                            ) : (
+                                <Text style={styles.emptyText}>No results found.</Text>
+                            )}
                         </View>
                     }
                 />

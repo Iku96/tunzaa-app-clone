@@ -73,7 +73,8 @@
           "iosUrlScheme": "com.googleusercontent.apps.230701056851-pkf15en5cledgeas3ui62menv1ja1som"
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

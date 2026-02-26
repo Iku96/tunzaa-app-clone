@@ -2,6 +2,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../../data/products';
+import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../services/wishlist';
+import { ActivityIndicator } from 'react-native';
 import PriceTag from '../common/PriceTag';
 import VendorBadge from '../common/VendorBadge';
 
@@ -12,6 +14,23 @@ interface ProductCardHorizontalProps {
 export default function ProductCardHorizontal({ product }: ProductCardHorizontalProps) {
     const router = useRouter();
 
+    // Wishlist logic
+    const { data: wishlistStatus } = useCheckWishlistStatus(product.id, undefined, !!product.id);
+    const { mutate: addToWishlist, isPending: isAdding } = useAddToWishlist();
+    const { mutate: removeFromWishlist, isPending: isRemoving } = useRemoveFromWishlist();
+
+    const isWishlisted = wishlistStatus?.is_wishlisted || false;
+    const isWishlistLoading = isAdding || isRemoving;
+
+    const handleToggleWishlist = () => {
+        if (!product.id) return;
+        if (isWishlisted) {
+            removeFromWishlist({ productId: product.id });
+        } else {
+            addToWishlist({ product_id: product.id });
+        }
+    };
+
     const handlePress = () => {
         router.push(`/(buyer)/product/${product.id}`);
     };
@@ -21,8 +40,16 @@ export default function ProductCardHorizontal({ product }: ProductCardHorizontal
             {/* Image Section */}
             <View style={styles.imageContainer}>
                 <Image source={{ uri: product.image }} style={styles.image} />
-                <TouchableOpacity style={styles.favButton}>
-                    <Ionicons name="heart-outline" size={18} color="#9CA3AF" />
+                <TouchableOpacity style={styles.favButton} onPress={handleToggleWishlist} disabled={isWishlistLoading}>
+                    {isWishlistLoading ? (
+                        <ActivityIndicator size="small" color="#EF4444" />
+                    ) : (
+                        <Ionicons
+                            name={isWishlisted ? "heart" : "heart-outline"}
+                            size={18}
+                            color={isWishlisted ? "#EF4444" : "#9CA3AF"}
+                        />
+                    )}
                 </TouchableOpacity>
             </View>
 

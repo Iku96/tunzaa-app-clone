@@ -1,6 +1,8 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../services/wishlist';
+import { ActivityIndicator } from 'react-native';
 
 interface ProductCardProps {
     id: string;
@@ -13,6 +15,23 @@ interface ProductCardProps {
 
 export default function ProductCard({ id, image, title, price, originalPrice, rating = 4.5 }: ProductCardProps) {
     const router = useRouter();
+
+    // Wishlist logic
+    const { data: wishlistStatus } = useCheckWishlistStatus(id, undefined, !!id);
+    const { mutate: addToWishlist, isPending: isAdding } = useAddToWishlist();
+    const { mutate: removeFromWishlist, isPending: isRemoving } = useRemoveFromWishlist();
+
+    const isWishlisted = wishlistStatus?.is_wishlisted || false;
+    const isWishlistLoading = isAdding || isRemoving;
+
+    const handleToggleWishlist = () => {
+        if (!id) return;
+        if (isWishlisted) {
+            removeFromWishlist({ productId: id });
+        } else {
+            addToWishlist({ product_id: id });
+        }
+    };
 
     const handlePress = () => {
         // router.push(`/product/${id}`); // Future implementation
@@ -27,8 +46,16 @@ export default function ProductCard({ id, image, title, price, originalPrice, ra
                     style={styles.image}
                     resizeMode="cover"
                 />
-                <TouchableOpacity style={styles.favoriteButton}>
-                    <Ionicons name="heart-outline" size={18} color="#6B7280" />
+                <TouchableOpacity style={styles.favoriteButton} onPress={handleToggleWishlist} disabled={isWishlistLoading}>
+                    {isWishlistLoading ? (
+                        <ActivityIndicator size="small" color="#EF4444" />
+                    ) : (
+                        <Ionicons
+                            name={isWishlisted ? "heart" : "heart-outline"}
+                            size={18}
+                            color={isWishlisted ? "#EF4444" : "#6B7280"}
+                        />
+                    )}
                 </TouchableOpacity>
             </View>
 

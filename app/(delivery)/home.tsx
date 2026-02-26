@@ -2,43 +2,28 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 
 import DeliveryBottomNav from '../../src/components/navigation/DeliveryBottomNav';
+import { useDeliveryContext } from '../../src/contexts/DeliveryContext';
 
 const { width } = Dimensions.get('window');
 
-// Mock data structured for the delivery requests
-const MOCK_REQUESTS = [
-    {
-        id: '1',
-        customerName: 'Juma Said',
-        customerImage: 'https://i.pravatar.cc/150?img=47', // Fallback avatar if needed
-        amount: '15,000',
-        origin: 'Kigogo',
-        destination: 'Mbezi'
-    },
-    {
-        id: '2',
-        customerName: 'Juma Said',
-        customerImage: 'https://i.pravatar.cc/150?img=47',
-        amount: '15,000',
-        origin: 'Kigogo',
-        destination: 'Mbezi'
-    }
-];
-
 export default function DeliveryHomeScreen() {
-    const [requests, setRequests] = useState(MOCK_REQUESTS);
+    const router = useRouter();
+    const { availableRequests, acceptDelivery, rejectDelivery } = useDeliveryContext();
     const [showToast, setShowToast] = useState(false);
 
     const handleAccept = (id: string) => {
-        // Handle accept logic here
-        console.log('Accepted request', id);
+        // Set this request as the active delivery in context
+        acceptDelivery(id);
+        // Navigate to the preview screen
+        router.push('/(delivery)/delivery-preview' as any);
     };
 
     const handleReject = (id: string) => {
-        // Remove the rejected item from the list
-        setRequests(prev => prev.filter(req => req.id !== id));
+        // Remove the rejected item from context list
+        rejectDelivery(id);
 
         // Show the toast message
         setShowToast(true);
@@ -50,10 +35,8 @@ export default function DeliveryHomeScreen() {
     };
 
     const handleUndo = () => {
-        // In a real app we'd keep track of the deleted item and restore it
-        // For now, simply hide the toast
+        // Mock undo hide toast
         setShowToast(false);
-        // And optionally fetch the requests again
     };
 
     return (
@@ -70,62 +53,68 @@ export default function DeliveryHomeScreen() {
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
-                    {requests.map(request => (
-                        <View key={request.id} style={styles.card}>
-                            {/* Top row: Customer info + Amount */}
-                            <View style={styles.cardTop}>
-                                <View style={styles.customerInfo}>
-                                    <Image
-                                        source={{ uri: request.customerImage }}
-                                        style={styles.customerAvatar}
-                                    />
-                                    <View>
-                                        <Text style={styles.deliverToText}>Deliver to</Text>
-                                        <Text style={styles.customerName}>{request.customerName}</Text>
-                                    </View>
-                                </View>
-                                <Text style={styles.amountText}>Tshs {request.amount}</Text>
-                            </View>
-
-                            {/* Middle row: Route */}
-                            <View style={styles.routeContainer}>
-                                <View style={styles.locationNode}>
-                                    <Text style={styles.locationLabel}>From</Text>
-                                    <Text style={styles.locationName}>{request.origin}</Text>
-                                </View>
-
-                                <View style={styles.routeLineContainer}>
-                                    <View style={styles.routeLine} />
-                                    <View style={styles.routeIconWrapper}>
-                                        <Ionicons name="bicycle" size={20} color="#000000" />
-                                    </View>
-                                    <View style={styles.routeLine} />
-                                </View>
-
-                                <View style={[styles.locationNode, { alignItems: 'flex-end' }]}>
-                                    <Text style={styles.locationLabel}>To</Text>
-                                    <Text style={styles.locationName}>{request.destination}</Text>
-                                </View>
-                            </View>
-
-                            {/* Bottom row: Actions */}
-                            <View style={styles.actionButtons}>
-                                <TouchableOpacity
-                                    style={styles.rejectButton}
-                                    onPress={() => handleReject(request.id)}
-                                >
-                                    <Text style={styles.rejectButtonText}>Reject</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={styles.acceptButton}
-                                    onPress={() => handleAccept(request.id)}
-                                >
-                                    <Text style={styles.acceptButtonText}>Accept</Text>
-                                </TouchableOpacity>
-                            </View>
+                    {availableRequests.length === 0 ? (
+                        <View style={{ padding: 40, alignItems: 'center' }}>
+                            <Text style={{ color: '#6B7280' }}>No incoming requests</Text>
                         </View>
-                    ))}
+                    ) : (
+                        availableRequests.map(request => (
+                            <View key={request.id} style={styles.card}>
+                                {/* Top row: Customer info + Amount */}
+                                <View style={styles.cardTop}>
+                                    <View style={styles.customerInfo}>
+                                        <Image
+                                            source={{ uri: request.customerImage }}
+                                            style={styles.customerAvatar}
+                                        />
+                                        <View>
+                                            <Text style={styles.deliverToText}>Deliver to</Text>
+                                            <Text style={styles.customerName}>{request.customerName}</Text>
+                                        </View>
+                                    </View>
+                                    <Text style={styles.amountText}>Tshs {request.amount}</Text>
+                                </View>
+
+                                {/* Middle row: Route */}
+                                <View style={styles.routeContainer}>
+                                    <View style={styles.locationNode}>
+                                        <Text style={styles.locationLabel}>From</Text>
+                                        <Text style={styles.locationName}>{request.origin}</Text>
+                                    </View>
+
+                                    <View style={styles.routeLineContainer}>
+                                        <View style={styles.routeLine} />
+                                        <View style={styles.routeIconWrapper}>
+                                            <Ionicons name="bicycle" size={20} color="#000000" />
+                                        </View>
+                                        <View style={styles.routeLine} />
+                                    </View>
+
+                                    <View style={[styles.locationNode, { alignItems: 'flex-end' }]}>
+                                        <Text style={styles.locationLabel}>To</Text>
+                                        <Text style={styles.locationName}>{request.destination}</Text>
+                                    </View>
+                                </View>
+
+                                {/* Bottom row: Actions */}
+                                <View style={styles.actionButtons}>
+                                    <TouchableOpacity
+                                        style={styles.rejectButton}
+                                        onPress={() => handleReject(request.id)}
+                                    >
+                                        <Text style={styles.rejectButtonText}>Reject</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={styles.acceptButton}
+                                        onPress={() => handleAccept(request.id)}
+                                    >
+                                        <Text style={styles.acceptButtonText}>Accept</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ))
+                    )}
                 </ScrollView>
 
                 {/* Toast Notification for Rejection */}

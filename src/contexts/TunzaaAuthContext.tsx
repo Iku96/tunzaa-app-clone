@@ -74,6 +74,7 @@ interface TunzaaAuthContextType {
     // User Management
     updateUser: (data: { first_name?: string; last_name?: string; preferred_language?: string }) => Promise<any>;
     getUserDetails: () => Promise<any>;
+    refreshProfile: () => Promise<void>;
 
     // Vendor / Delivery Partner
     createVendor: (vendorData: CreateVendorBody) => Promise<any>;
@@ -224,6 +225,28 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         return await authApi.getUserDetails(user.user_id);
     }, [user]);
 
+    // Refresh profile data from server (needed after creating vendor/delivery profiles)
+    const refreshProfile = useCallback(async () => {
+        if (!user) return;
+        try {
+            const freshData = await authApi.getUserDetails(user.user_id);
+
+            // Merge fresh server data with existing user data
+            const updatedUser: TunzaaUser = {
+                ...user,
+                ...freshData,
+                profiles: freshData.profiles || user.profiles,
+                roles: freshData.roles || user.roles,
+                is_verified: freshData.is_verified ?? user.is_verified,
+                activeProfileRole: freshData.activeProfileRole || freshData.active_profile_role || user.activeProfileRole,
+            };
+            setUser(updatedUser);
+            await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+        } catch (error) {
+            console.error('Failed to refresh profile:', error);
+        }
+    }, [user]);
+
     // ---- Vendor / Delivery Partner ----
 
     const createVendor = useCallback(async (vendorData: CreateVendorBody) => {
@@ -253,6 +276,7 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         confirmPasswordReset,
         updateUser,
         getUserDetails,
+        refreshProfile,
         createVendor,
         createDeliveryPartner,
     };

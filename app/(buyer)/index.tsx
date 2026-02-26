@@ -1,24 +1,28 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, Dimensions, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, Dimensions, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { PRODUCTS, CATEGORIES } from '../../src/data/products';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import { useMarketplace } from '../../src/hooks/useMarketplace';
 import PriceTag from '../../src/components/common/PriceTag';
+import PromoBannerCarousel from '../../src/components/home/PromoBannerCarousel';
+import { useBanners } from '../../src/services/tenant';
 
 const { width } = Dimensions.get('window');
 
 import BottomNav from '../../src/components/navigation/BottomNav';
 
 export default function BuyerHome() {
-    const { user, profile } = useAuth();
+    const { user } = useTunzaaAuth();
     const router = useRouter();
+    const { products, categories, loading, error } = useMarketplace();
+    const { data: banners, isLoading: bannersLoading } = useBanners();
 
-    // Logic to determine display name and image
-    // Priority: Profile (DB) -> User Metadata (Google/Auth) -> Placeholder
-    const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || 'User';
-    // For image, valid URL -> Google/Auth URL -> UI Avatars
-    const displayImage = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || `https://ui-avatars.com/api/?name=${displayName}&background=eff6ff&color=4A55A2`;
+    // User display info from Tunzaa auth
+    const displayName = user
+        ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
+        : 'User';
+    const displayImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=4A55A2`;
 
     const handleProductPress = (id: string) => {
         router.push(`/(buyer)/product/${id}`);
@@ -75,18 +79,8 @@ export default function BuyerHome() {
                 contentContainerStyle={styles.scrollContent}
                 style={styles.scrollView}
             >
-                {/* Promo Banner - Overlapping slightly or just below with spacing */}
-                <View style={styles.bannerContainer}>
-                    <View style={styles.bannerContent}>
-                        <Text style={styles.bannerText}>UP TO 80% OFF</Text>
-                    </View>
-                    <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1598327770691-7f0ad7d76b16?w=500&auto=format&fit=crop&q=60' }}
-                        style={styles.bannerImage}
-                        resizeMode="contain"
-                    />
-                    <View style={styles.bannerDecor} />
-                </View>
+                {/* Promo Banner Carousel */}
+                <PromoBannerCarousel banners={banners} loading={bannersLoading} />
 
                 {/* Categories */}
                 <View style={styles.categoriesSection}>
@@ -96,20 +90,24 @@ export default function BuyerHome() {
                             <Text style={styles.seeAll}>View All</Text>
                         </TouchableOpacity>
                     </View>
-                    <View style={styles.categoriesGrid}>
-                        {CATEGORIES.map((cat, index) => (
-                            <TouchableOpacity
-                                key={cat.id}
-                                style={styles.categoryItem}
-                                onPress={() => handleCategoryPress(cat.id)}
-                            >
-                                <View style={[styles.categoryIconCircle, { backgroundColor: index % 2 === 0 ? '#EFF6FF' : '#F3F4F6' }]}>
-                                    <Ionicons name={cat.icon as any} size={22} color="#4A55A2" />
-                                </View>
-                                <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    {loading && categories.length === 0 ? (
+                        <ActivityIndicator size="small" color="#4A55A2" style={{ padding: 20 }} />
+                    ) : (
+                        <View style={styles.categoriesGrid}>
+                            {categories.map((cat, index) => (
+                                <TouchableOpacity
+                                    key={cat.id}
+                                    style={styles.categoryItem}
+                                    onPress={() => handleCategoryPress(cat.id)}
+                                >
+                                    <View style={[styles.categoryIconCircle, { backgroundColor: index % 2 === 0 ? '#EFF6FF' : '#F3F4F6' }]}>
+                                        <Ionicons name={cat.icon as any} size={22} color="#4A55A2" />
+                                    </View>
+                                    <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
                 </View>
 
                 {/* Recommended */}
@@ -120,26 +118,34 @@ export default function BuyerHome() {
                             <Text style={styles.seeAll}>See All</Text>
                         </TouchableOpacity>
                     </View>
-                    <View style={styles.recommendedGrid}>
-                        {PRODUCTS.map(product => (
-                            <TouchableOpacity
-                                key={product.id}
-                                style={styles.productCard}
-                                onPress={() => handleProductPress(product.id)}
-                            >
-                                <View style={styles.productImageContainer}>
-                                    <Image source={{ uri: product.image }} style={styles.productImage} />
-                                    <TouchableOpacity style={styles.heartButton}>
-                                        <Ionicons name="heart-outline" size={18} color="#9CA3AF" />
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={styles.productInfo}>
-                                    <Text style={styles.productTitle} numberOfLines={1}>{product.name}</Text>
-                                    <PriceTag price={product.price} size={14} bold />
-                                </View>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    {loading && products.length === 0 ? (
+                        <ActivityIndicator size="large" color="#4A55A2" style={{ padding: 40 }} />
+                    ) : products.length === 0 ? (
+                        <View style={{ padding: 40, alignItems: 'center' }}>
+                            <Text style={{ color: '#6B7280', fontSize: 14 }}>No products available yet.</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.recommendedGrid}>
+                            {products.map(product => (
+                                <TouchableOpacity
+                                    key={product.id}
+                                    style={styles.productCard}
+                                    onPress={() => handleProductPress(product.id)}
+                                >
+                                    <View style={styles.productImageContainer}>
+                                        <Image source={{ uri: product.image }} style={styles.productImage} />
+                                        <TouchableOpacity style={styles.heartButton}>
+                                            <Ionicons name="heart-outline" size={18} color="#9CA3AF" />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={styles.productInfo}>
+                                        <Text style={styles.productTitle} numberOfLines={1}>{product.name}</Text>
+                                        <PriceTag price={product.price} size={14} bold />
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
                 </View>
 
                 <View style={{ height: 100 }} />
@@ -221,50 +227,7 @@ const styles = StyleSheet.create({
         paddingTop: 24, // Spacing from header
         paddingBottom: 110,
     },
-    bannerContainer: {
-        marginHorizontal: 20,
-        height: 160,
-        borderRadius: 24,
-        backgroundColor: '#6366F1',
-        overflow: 'hidden',
-        position: 'relative',
-        marginBottom: 32, // More breathing room
-        flexDirection: 'row',
-        // Shadow for depth
-        shadowColor: "#4A55A2",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-        elevation: 8,
-    },
-    bannerDecor: {
-        position: 'absolute',
-        top: -60,
-        right: -40,
-        width: 220,
-        height: 220,
-        borderRadius: 110,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-    },
-    bannerContent: {
-        flex: 1,
-        padding: 24,
-        justifyContent: 'center',
-    },
-    bannerText: {
-        fontSize: 32, // Larger, more impactful
-        fontWeight: '900',
-        color: '#FFFFFF',
-        width: 180,
-        lineHeight: 38,
-    },
-    bannerImage: {
-        width: 160,
-        height: 180,
-        position: 'absolute',
-        right: 0,
-        bottom: 0,
-    },
+
     categoriesSection: {
         paddingHorizontal: 20,
         marginBottom: 32,

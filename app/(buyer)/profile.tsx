@@ -1,16 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProfileSetupBanner from '../../src/components/profile/ProfileSetupBanner';
 import ProductCard from '../../src/components/product/ProductCardVertical';
-import { PRODUCTS as products } from '../../src/data/products';
+import { useMarketplace } from '../../src/hooks/useMarketplace';
 
 export default function ProfileScreen() {
     const router = useRouter();
-    const { user, profile, signOut } = useAuth();
+    const { user, logout } = useTunzaaAuth();
+    const { products } = useMarketplace();
+
+    const displayName = user
+        ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Tunzaa User'
+        : 'Tunzaa User';
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=425ba4`;
 
     const handleShareProfile = () => {
         Alert.alert('Share Profile', 'Sharing functionality coming soon!');
@@ -26,7 +32,7 @@ export default function ProfileScreen() {
                     text: "Sign Out",
                     style: "destructive",
                     onPress: async () => {
-                        await signOut();
+                        await logout();
                         router.replace('/language');
                     }
                 }
@@ -34,7 +40,7 @@ export default function ProfileScreen() {
         );
     };
 
-    const renderProductItem = ({ item }) => (
+    const renderProductItem = ({ item }: { item: any }) => (
         <View style={{ width: 160, marginRight: 12 }}>
             <ProductCard product={item} />
         </View>
@@ -47,7 +53,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{profile?.full_name || 'User Profile'}</Text>
+                <Text style={styles.headerTitle}>{displayName}</Text>
                 <TouchableOpacity onPress={() => router.push('/(buyer)/profile/settings')} style={styles.iconButton}>
                     <Ionicons name="ellipsis-horizontal" size={24} color="#1F2937" />
                 </TouchableOpacity>
@@ -59,16 +65,16 @@ export default function ProfileScreen() {
                     <View style={styles.avatarRow}>
                         <View style={styles.statsContainer}>
                             <Image
-                                source={{ uri: profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=eff6ff&color=425ba4` }}
+                                source={{ uri: avatarUrl }}
                                 style={styles.avatar}
                             />
                             <View style={styles.statsTextContainer}>
                                 <View style={styles.statItem}>
-                                    <Text style={styles.statNumber}>30K</Text>
+                                    <Text style={styles.statNumber}>0</Text>
                                     <Text style={styles.statLabel}>Followers</Text>
                                 </View>
                                 <View style={styles.statItem}>
-                                    <Text style={styles.statNumber}>30K</Text>
+                                    <Text style={styles.statNumber}>0</Text>
                                     <Text style={styles.statLabel}>Following</Text>
                                 </View>
                             </View>
@@ -77,7 +83,7 @@ export default function ProfileScreen() {
 
                     <View style={styles.userInfo}>
                         <View style={styles.nameRow}>
-                            <Text style={styles.name}>{profile?.full_name || 'Tunzaa User'}</Text>
+                            <Text style={styles.name}>{displayName}</Text>
                             {/* Verified Badge Placeholder */}
                             <View style={styles.verifiedBadge}>
                                 <Text style={styles.verifiedText}>Verified</Text>
@@ -85,7 +91,7 @@ export default function ProfileScreen() {
                         </View>
                         <View style={styles.locationRow}>
                             <Ionicons name="location-outline" size={14} color="#6B7280" />
-                            <Text style={styles.locationText}>{profile?.region ? `${profile.region}, ${profile.district}` : 'Dar es Salaam'}</Text>
+                            <Text style={styles.locationText}>{user?.phone_number || 'Dar es Salaam'}</Text>
                         </View>
                     </View>
 

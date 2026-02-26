@@ -16,8 +16,8 @@ export const API_CONFIG = {
         "Content-Type": "application/json",
         Accept: "application/json",
     },
-    // Google Maps Configuration
-    GOOGLE_MAPS_API_KEY: "AIzaSyDj0-dYOYHB4eHnwELuV2cnOSpjtVPliMk",
+    // Google Maps Configuration — reads from .env
+    GOOGLE_MAPS_API_KEY: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || "",
 };
 
 export const STORAGE_KEYS = {

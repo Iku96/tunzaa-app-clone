@@ -63,12 +63,31 @@ export const authApi = {
 
     // ---- User Management ----
 
-    /** Update user profile */
+    /** Update user info (first_name, last_name, etc.) */
     updateUser: async (
         userId: string,
         data: { first_name?: string; last_name?: string; preferred_language?: string }
     ): Promise<any> => {
         const response = await apiClient.put(`/users/${userId}`, data);
+        return response.data;
+    },
+
+    /** Update a specific role profile (e.g. buyer, vendor) */
+    updateUserProfile: async (
+        userId: string,
+        profileId: string,
+        data: { display_name?: string; is_active?: boolean; metadata?: Record<string, any> }
+    ): Promise<any> => {
+        const response = await apiClient.put(`/users/${userId}/profile/${profileId}`, data);
+        return response.data;
+    },
+
+    /** Change password (requires current password) */
+    updatePassword: async (
+        userId: string,
+        data: { current_password: string; new_password: string }
+    ): Promise<any> => {
+        const response = await apiClient.put(`/users/${userId}/password`, data);
         return response.data;
     },
 
@@ -256,6 +275,32 @@ export const useUpdateUser = () => {
             userId: string;
             data: { first_name?: string; last_name?: string; preferred_language?: string };
         }) => authApi.updateUser(userId, data),
+    });
+};
+
+export const useUpdateUserProfile = () => {
+    return useMutation({
+        mutationFn: ({
+            userId,
+            profileId,
+            data,
+        }: {
+            userId: string;
+            profileId: string;
+            data: { display_name?: string; is_active?: boolean; metadata?: Record<string, any> };
+        }) => authApi.updateUserProfile(userId, profileId, data),
+    });
+};
+
+export const useUpdatePassword = () => {
+    return useMutation({
+        mutationFn: ({
+            userId,
+            data,
+        }: {
+            userId: string;
+            data: { current_password: string; new_password: string };
+        }) => authApi.updatePassword(userId, data),
     });
 };
 

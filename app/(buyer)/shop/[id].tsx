@@ -1,45 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PRODUCTS } from '../../../src/data/products';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
 import CertificateModal from '../../../src/components/shop/CertificateModal';
 import BusinessMenuSheet from '../../../src/components/shop/BusinessMenuSheet';
 import ShareSheet from '../../../src/components/shop/ShareSheet';
+import { useShop } from '../../../src/hooks/useShop';
+import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
 
 const { width } = Dimensions.get('window');
 
 // Mock Data for Shop matching the screenshot
-const SHOP_DATA = {
-    id: '1',
-    name: 'Vodacom Shop',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Vodacom.svg/1200px-Vodacom.svg.png', // Vodacom logo placeholder
-    cover: 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?w=800&h=400&fit=crop',
-    verified: true,
-    tier: 'Diamond',
-    rating: 4.8,
-    reviews: 1240,
-    followers: '30K',
-    visitors: '30K',
-    products: 156,
-    description: 'Official Vodacom Shop. Get the best deals on smartphones, accessories and more.',
-    location: 'Kinondoni, Dar es Salaam',
-    joined: 'November 2020',
-    delivery: 'Est. Delivery Fees Tsh. 2,000',
-    tin_verified: true,
-    stories: [
-        { id: 1, title: 'Summer vibes', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=600&fit=crop', type: 'video' },
-        { id: 2, title: 'New Arrival', image: 'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=400&h=600&fit=crop', type: 'image' },
-        { id: 3, title: 'Offers', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=600&fit=crop', type: 'image' },
-    ]
-};
+// Fallback stories if none provided by API
+const FALLBACK_STORIES = [
+    { id: 1, title: 'Summer vibes', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=600&fit=crop', type: 'video' },
+    { id: 2, title: 'New Arrival', image: 'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=400&h=600&fit=crop', type: 'image' },
+];
 
 export default function ShopProfileScreen() {
     const router = useRouter();
-    const { id } = useLocalSearchParams();
-    const [activeTab, setActiveTab] = useState<'STORIES' | 'GRID'>('STORIES');
+    const { id } = useLocalSearchParams<{ id: string }>();
+    const { shop, products, loading, error } = useShop(id);
+    const [activeTab, setActiveTab] = useState<'STORIES' | 'GRID'>('GRID'); // Default to GRID since stories not frequently used yet
     const [isFollowing, setIsFollowing] = useState(false);
 
     // Modals & Sheets
@@ -48,8 +32,8 @@ export default function ShopProfileScreen() {
     const [menuVisible, setMenuVisible] = useState(false);
     const [shareVisible, setShareVisible] = useState(false);
 
-    // Filter products (mock)
-    const shopProducts = PRODUCTS.slice(0, 9); // Grid needs multiples of 3 for best look
+    // Map API products to UI products
+    const shopProducts = products.map(mapApiProductToUI);
 
     const handleViewCertificate = (type: 'LICENSE' | 'TIN' | 'BRELA') => {
         setMenuVisible(false);
@@ -64,9 +48,9 @@ export default function ShopProfileScreen() {
             <Image source={{ uri: item.image }} style={styles.storyCardImage} />
             <View style={styles.storyOverlay}>
                 <View style={styles.storyHeader}>
-                    <Image source={{ uri: SHOP_DATA.logo }} style={styles.storyAvatar} />
+                    <Image source={{ uri: shop?.branding?.logo_url || 'https://via.placeholder.com/150' }} style={styles.storyAvatar} />
                     <View>
-                        <Text style={styles.storyShopName}>{SHOP_DATA.name}</Text>
+                        <Text style={styles.storyShopName}>{shop?.store_name || 'Shop'}</Text>
                         <Text style={styles.storyTime}>2 hrs ago</Text>
                     </View>
                 </View>
@@ -97,152 +81,164 @@ export default function ShopProfileScreen() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            {loading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#4A55A2" />
+                </View>
+            ) : error || !shop ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ color: 'red' }}>{error || 'Shop not found'}</Text>
+                    <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
+                        <Text style={{ color: '#4A55A2' }}>Go Back</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
-                {/* Profile Header Info */}
-                <View style={styles.profileHeader}>
-                    {/* Top Row: Logo & Stats */}
-                    <View style={styles.profileTopRow}>
-                        <View style={styles.logoContainer}>
-                            <Image source={{ uri: SHOP_DATA.logo }} style={styles.profileLogo} resizeMode="contain" />
-                            {SHOP_DATA.verified && (
-                                <View style={styles.verifiedBadgeLarge}>
-                                    <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                    {/* Profile Header Info */}
+                    <View style={styles.profileHeader}>
+                        {/* Top Row: Logo & Stats */}
+                        <View style={styles.profileTopRow}>
+                            <View style={styles.logoContainer}>
+                                <Image source={{ uri: shop?.branding?.logo_url || 'https://via.placeholder.com/150' }} style={styles.profileLogo} resizeMode="contain" />
+                                {shop?.is_featured && (
+                                    <View style={styles.verifiedBadgeLarge}>
+                                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                                    </View>
+                                )}
+                            </View>
+
+                            <View style={styles.statsContainer}>
+                                <View style={styles.statItem}>
+                                    <Text style={styles.statValue}>0</Text>
+                                    <Text style={styles.statLabel}>Profile visitor</Text>
                                 </View>
-                            )}
-                        </View>
-
-                        <View style={styles.statsContainer}>
-                            <View style={styles.statItem}>
-                                <Text style={styles.statValue}>{SHOP_DATA.visitors}</Text>
-                                <Text style={styles.statLabel}>Profile visitor</Text>
-                            </View>
-                            <View style={styles.statDivider} />
-                            <TouchableOpacity style={styles.statItem} onPress={() => { /* Navigate to followers */ }}>
-                                <Text style={styles.statValue}>{SHOP_DATA.followers}</Text>
-                                <Text style={styles.statLabel}>Followers</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Shop Details */}
-                    <View style={styles.shopDetails}>
-                        <View style={styles.nameRow}>
-                            <Text style={styles.shopName}>{SHOP_DATA.name}</Text>
-                            {SHOP_DATA.verified && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 4 }} />}
-                            <Text style={styles.verifiedText}>Verified</Text>
-
-                            <View style={{ flex: 1 }} />
-
-                            <View style={styles.diamondBadge}>
-                                <Ionicons name="diamond" size={12} color="#3B82F6" />
-                                <Text style={styles.diamondText}>{SHOP_DATA.tier}</Text>
-                            </View>
-                        </View>
-
-                        {/* Metadata Rows */}
-                        <View style={styles.metaRow}>
-                            <Ionicons name="calendar-outline" size={14} color="#6B7280" />
-                            <Text style={styles.metaText}>Joined {SHOP_DATA.joined}</Text>
-                        </View>
-
-                        <View style={styles.metaRow}>
-                            <Ionicons name="location-outline" size={14} color="#6B7280" />
-                            <Text style={styles.metaText}>{SHOP_DATA.location}</Text>
-                        </View>
-
-                        <View style={styles.metaRow}>
-                            <Ionicons name="bicycle-outline" size={14} color="#6B7280" />
-                            <Text style={styles.metaText}>{SHOP_DATA.delivery}</Text>
-                            <TouchableOpacity>
-                                <Text style={styles.linkText}>Change delivery location</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.metaRow}>
-                            <View style={styles.tinBadge}>
-                                <Ionicons name="document-text" size={10} color="#6B7280" />
-                                <Text style={styles.tinText}>TIN Certificate</Text>
-                            </View>
-                            <Text style={styles.metaTextSmall}>and 2 more</Text>
-                        </View>
-
-                    </View>
-
-                    {/* Action Buttons */}
-                    <View style={styles.actionButtonsRow}>
-                        <TouchableOpacity style={styles.primaryBtn}>
-                            <Text style={styles.primaryBtnText}>Contact</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.outlineBtn}>
-                            <Text style={styles.outlineBtnText}>Refund & Policy</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.iconBtn} onPress={() => setShareVisible(true)}>
-                            <Ionicons name="share-social-outline" size={20} color="#1F2937" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                {/* Tabs */}
-                <View style={styles.tabsContainer}>
-                    <TouchableOpacity
-                        style={[styles.tabItem, activeTab === 'STORIES' && styles.tabItemActive]}
-                        onPress={() => setActiveTab('STORIES')}
-                    >
-                        <Ionicons
-                            name={activeTab === 'STORIES' ? "caret-forward-circle" : "caret-forward-circle-outline"}
-                            size={24}
-                            color={activeTab === 'STORIES' ? "#EA4335" : "#9CA3AF"} // Red play button style
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.tabItem, activeTab === 'GRID' && styles.tabItemActive]}
-                        onPress={() => setActiveTab('GRID')}
-                    >
-                        <Ionicons
-                            name={activeTab === 'GRID' ? "grid" : "grid-outline"}
-                            size={24}
-                            color={activeTab === 'GRID' ? "#1F2937" : "#9CA3AF"}
-                        />
-                    </TouchableOpacity>
-                </View>
-
-                {/* Content Area */}
-                <View style={styles.contentArea}>
-                    {activeTab === 'STORIES' ? (
-                        <View>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>Product Stories</Text>
-                                <TouchableOpacity>
-                                    <Text style={styles.seeMoreText}>See more</Text>
+                                <View style={styles.statDivider} />
+                                <TouchableOpacity style={styles.statItem} onPress={() => { /* Navigate to followers */ }}>
+                                    <Text style={styles.statValue}>{shop?.followers_count || 0}</Text>
+                                    <Text style={styles.statLabel}>Followers</Text>
                                 </TouchableOpacity>
                             </View>
-                            <FlatList
-                                data={SHOP_DATA.stories}
-                                renderItem={renderStoryCard}
-                                keyExtractor={item => item.id.toString()}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.storiesList}
-                                pagingEnabled // Snap to card
-                                snapToInterval={width * 0.8 + 16}
-                                decelerationRate="fast"
-                            />
                         </View>
-                    ) : (
-                        <View style={styles.productsGrid}>
-                            {shopProducts.map((item) => (
-                                <View key={item.id} style={styles.gridItem}>
-                                    <ProductCardVertical product={item} />
-                                </View>
-                            ))}
-                        </View>
-                    )}
-                </View>
 
-            </ScrollView>
+                        {/* Shop Details */}
+                        <View style={styles.shopDetails}>
+                            <View style={styles.nameRow}>
+                                <Text style={styles.shopName}>{shop?.store_name}</Text>
+                                {shop?.is_featured && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 4 }} />}
+                                <Text style={styles.verifiedText}>Verified</Text>
+
+                                <View style={{ flex: 1 }} />
+
+                                <View style={styles.diamondBadge}>
+                                    <Ionicons name="diamond" size={12} color="#3B82F6" />
+                                    <Text style={styles.diamondText}>Supplier</Text>
+                                </View>
+                            </View>
+
+                            {/* Metadata Rows */}
+                            <View style={styles.metaRow}>
+                                <Ionicons name="calendar-outline" size={14} color="#6B7280" />
+                                <Text style={styles.metaText}>Joined {new Date(shop?.created_at).getFullYear() || 'N/A'}</Text>
+                            </View>
+
+                            <View style={styles.metaRow}>
+                                <Ionicons name="location-outline" size={14} color="#6B7280" />
+                                <Text style={styles.metaText}>{shop?.branding?.about_html || 'Location not provided'}</Text>
+                            </View>
+
+                            <View style={styles.metaRow}>
+                                <Ionicons name="bicycle-outline" size={14} color="#6B7280" />
+                                <Text style={styles.metaText}>Delivery Available</Text>
+                                <TouchableOpacity>
+                                    <Text style={styles.linkText}>See details</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.metaRow}>
+                                <View style={styles.tinBadge}>
+                                    <Ionicons name="document-text" size={10} color="#6B7280" />
+                                    <Text style={styles.tinText}>Verified Shop</Text>
+                                </View>
+                            </View>
+
+                        </View>
+
+                        {/* Action Buttons */}
+                        <View style={styles.actionButtonsRow}>
+                            <TouchableOpacity style={styles.primaryBtn}>
+                                <Text style={styles.primaryBtnText}>Contact</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.outlineBtn}>
+                                <Text style={styles.outlineBtnText}>Refund & Policy</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.iconBtn} onPress={() => setShareVisible(true)}>
+                                <Ionicons name="share-social-outline" size={20} color="#1F2937" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Tabs */}
+                    <View style={styles.tabsContainer}>
+                        <TouchableOpacity
+                            style={[styles.tabItem, activeTab === 'STORIES' && styles.tabItemActive]}
+                            onPress={() => setActiveTab('STORIES')}
+                        >
+                            <Ionicons
+                                name={activeTab === 'STORIES' ? "caret-forward-circle" : "caret-forward-circle-outline"}
+                                size={24}
+                                color={activeTab === 'STORIES' ? "#EA4335" : "#9CA3AF"} // Red play button style
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.tabItem, activeTab === 'GRID' && styles.tabItemActive]}
+                            onPress={() => setActiveTab('GRID')}
+                        >
+                            <Ionicons
+                                name={activeTab === 'GRID' ? "grid" : "grid-outline"}
+                                size={24}
+                                color={activeTab === 'GRID' ? "#1F2937" : "#9CA3AF"}
+                            />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Content Area */}
+                    <View style={styles.contentArea}>
+                        {activeTab === 'STORIES' ? (
+                            <View>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>Product Stories</Text>
+                                    <TouchableOpacity>
+                                        <Text style={styles.seeMoreText}>See more</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <FlatList
+                                    data={shop?.banners?.length ? shop.banners.map(b => ({ ...b, image: b.image_url, type: 'image' })) : FALLBACK_STORIES}
+                                    renderItem={renderStoryCard}
+                                    keyExtractor={item => item.id.toString()}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.storiesList}
+                                    pagingEnabled // Snap to card
+                                    snapToInterval={width * 0.8 + 16}
+                                    decelerationRate="fast"
+                                />
+                            </View>
+                        ) : (
+                            <View style={styles.productsGrid}>
+                                {shopProducts.map((item: any) => (
+                                    <View key={item.id} style={styles.gridItem}>
+                                        <ProductCardVertical product={item} />
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+                    </View>
+
+                </ScrollView>
+            )}
 
             {/* Modals */}
             <CertificateModal
@@ -260,7 +256,7 @@ export default function ShopProfileScreen() {
             <ShareSheet
                 visible={shareVisible}
                 onClose={() => setShareVisible(false)}
-                shopName={SHOP_DATA.name}
+                shopName={shop?.store_name || 'Store'}
             />
         </SafeAreaView>
     );

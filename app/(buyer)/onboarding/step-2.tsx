@@ -5,34 +5,42 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { supabase } from '../../../src/lib/supabase';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { categoriesApi, Category } from '../../../src/services/categories';
+import { useEffect } from 'react';
 
-const INTERESTS_TAGS = [
-    'Gaming',
-    'Baby & Kids Products',
-    'Groceries & Daily Needs',
-    'Travel',
-    'Loan & Financing Options',
-    'Event & Travel Tickets',
-    'Books',
-    'Deals & Discounts',
-    'Automotive',
-    'Fashion',
-    'Electronics'
-];
+// We will fetch these dynamically now
 
 export default function Step2Interests() {
     const router = useRouter();
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
 
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [fetching, setFetching] = useState(true);
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const toggleInterest = (interest: string) => {
-        if (selectedInterests.includes(interest)) {
-            setSelectedInterests(selectedInterests.filter(i => i !== interest));
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await categoriesApi.getCategories();
+                if (res?.items) {
+                    setCategories(res.items.filter(c => c.is_active));
+                }
+            } catch (err) {
+                console.error('Error fetching categories:', err);
+            } finally {
+                setFetching(false);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    const toggleInterest = (interestId: string) => {
+        if (selectedInterests.includes(interestId)) {
+            setSelectedInterests(selectedInterests.filter(i => i !== interestId));
         } else {
-            setSelectedInterests([...selectedInterests, interest]);
+            setSelectedInterests([...selectedInterests, interestId]);
         }
     };
 
@@ -82,20 +90,24 @@ export default function Step2Interests() {
                 {/* Interests Tags */}
                 <ScrollView contentContainerStyle={styles.tagsScroll} showsVerticalScrollIndicator={false}>
                     <View style={styles.tagsContainer}>
-                        {INTERESTS_TAGS.map((tag) => {
-                            const isSelected = selectedInterests.includes(tag);
-                            return (
-                                <TouchableOpacity
-                                    key={tag}
-                                    style={[styles.tag, isSelected && styles.tagSelected]}
-                                    onPress={() => toggleInterest(tag)}
-                                >
-                                    <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
-                                        {tag}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
+                        {fetching ? (
+                            <Text style={{ textAlign: 'center', color: '#9CA3AF' }}>Loading categories...</Text>
+                        ) : (
+                            categories.map((cat) => {
+                                const isSelected = selectedInterests.includes(cat.category_id);
+                                return (
+                                    <TouchableOpacity
+                                        key={cat.category_id}
+                                        style={[styles.tag, isSelected && styles.tagSelected]}
+                                        onPress={() => toggleInterest(cat.category_id)}
+                                    >
+                                        <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
+                                            {cat.name}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })
+                        )}
                     </View>
                 </ScrollView>
 

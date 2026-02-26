@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -47,14 +47,18 @@ const PAYMENT_METHODS = [
 
 export default function PaymentMethodScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
-    const handleSelect = (method) => {
+    const handleSelect = (method: any) => {
         setSelectedId(method.id);
 
         if (method.type === 'mobile_money') {
-            // Navigate to payment input
-            router.push('/(buyer)/checkout/payment-input');
+            // Navigate to payment input, forwarding along the checkout params
+            router.push({
+                pathname: '/(buyer)/checkout/payment-input',
+                params: { ...params }
+            });
         } else {
             // Handle card or other flows
             console.log('Selected:', method.name);

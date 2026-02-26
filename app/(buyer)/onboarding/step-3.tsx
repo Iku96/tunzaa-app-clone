@@ -5,22 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/contexts/AuthContext';
 import { supabase } from '../../../src/lib/supabase';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// Mock data if no merchants exist yet for testing
-const MOCK_CREATORS = [
-    { id: '1', business_name: 'Tunzaa shop', avatar: null },
-    { id: '2', business_name: 'Vodacom shop', avatar: null },
-    { id: '3', business_name: 'SBM shop', avatar: null },
-    { id: '4', business_name: 'Mamie shop', avatar: null },
-];
+import { shopsApi, Store } from '../../../src/services/shops';
 
 export default function Step3Follows() {
     const router = useRouter();
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
 
-    const [creators, setCreators] = useState<any[]>([]);
-    const [following, setFollowing] = useState<string[]>([]); // Array of merchant IDs
+    const [creators, setCreators] = useState<Store[]>([]);
+    const [following, setFollowing] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,25 +22,11 @@ export default function Step3Follows() {
 
     const fetchCreators = async () => {
         try {
-            // Fetch profiles where role is merchant (for now assuming we can filter by role derived from somewhere else or just fetch all for demo)
-            // Ideally your profiles table would have a role column, or we fetch from auth linkage. 
-            // For now, let's fetch profiles that have 'business_name' set (implying merchant)
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, business_name')
-                .not('business_name', 'is', null)
-                .limit(10);
-
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                setCreators(data);
-            } else {
-                setCreators(MOCK_CREATORS);
-            }
+            const res = await shopsApi.getStores({ is_vendor_active: true });
+            setCreators(res.items || []);
         } catch (e) {
-            console.error(e);
-            setCreators(MOCK_CREATORS);
+            console.error('Failed to load stores:', e);
+            setCreators([]);
         } finally {
             setLoading(false);
         }
@@ -122,54 +101,65 @@ export default function Step3Follows() {
         <Text style={styles.sectionTitle}>{title}</Text>
     );
 
-    const renderBusinessItem = ({ item }) => {
-        const isFollowing = following.includes(item.id);
+    const renderBusinessItem = ({ item }: { item: Store }) => {
+        const merchantId = item.store_id || (item as any).id;
+        const isFollowing = following.includes(merchantId);
+        const name = item.store_name || (item as any).business_name || 'Business';
+        const image = item.branding?.logo_url || (item as any).avatar_url || 'https://via.placeholder.com/80';
+
         return (
             <View style={styles.businessCard}>
                 <View style={styles.businessAvatarContainer}>
-                    <Image source={{ uri: item.avatar_url || 'https://via.placeholder.com/80' }} style={styles.businessAvatar} />
-                    <TouchableOpacity onPress={() => toggleFollow(item.id)} style={styles.addBadge}>
+                    <Image source={{ uri: image }} style={styles.businessAvatar} />
+                    <TouchableOpacity onPress={() => toggleFollow(merchantId)} style={styles.addBadge}>
                         <Ionicons
-                            name={isFollowing ? "checkmark-circle" : "add-circle"}
+                            name={isFollowing ? "checkmark-circle" : "add"}
                             size={24}
-                            color={isFollowing ? "#10B981" : "#3E4C85"}
+                            color={isFollowing ? "#10B981" : "#FFFFFF"}
+                            style={!isFollowing ? { backgroundColor: '#3E4C85', borderRadius: 12, overflow: 'hidden' } : {}}
                         />
                     </TouchableOpacity>
                 </View>
-                <Text style={styles.businessName} numberOfLines={1}>{item.business_name || 'Business'}</Text>
+                <Text style={styles.businessName} numberOfLines={1}>{name}</Text>
             </View>
         );
     };
 
-    const renderCreatorItem = ({ item }) => {
-        const isFollowing = following.includes(item.id);
+    const renderCreatorItem = ({ item }: { item: Store }) => {
+        const merchantId = item.store_id || (item as any).id;
+        const isFollowing = following.includes(merchantId);
+        const name = item.store_name || (item as any).business_name || 'Creator';
+        const image = item.branding?.logo_url || (item as any).avatar_url || 'https://via.placeholder.com/100';
+
         return (
             <View style={styles.creatorCard}>
                 <View style={styles.creatorImageContainer}>
-                    <Image source={{ uri: item.avatar_url || 'https://via.placeholder.com/100' }} style={styles.creatorImage} />
-                    <TouchableOpacity onPress={() => toggleFollow(item.id)} style={styles.addBadgeCreator}>
+                    <Image source={{ uri: image }} style={styles.creatorImage} />
+                    <TouchableOpacity onPress={() => toggleFollow(merchantId)} style={styles.addBadgeCreator}>
                         <Ionicons
-                            name={isFollowing ? "checkmark-circle" : "add-circle"}
+                            name={isFollowing ? "checkmark-circle" : "add"}
                             size={24}
-                            color={isFollowing ? "#10B981" : "#3E4C85"}
+                            color={isFollowing ? "#10B981" : "#FFFFFF"}
+                            style={!isFollowing ? { backgroundColor: '#3E4C85', borderRadius: 12, overflow: 'hidden' } : {}}
                         />
                     </TouchableOpacity>
                 </View>
-                <Text style={styles.creatorName} numberOfLines={1}>{item.business_name || 'Creator'}</Text>
+                <Text style={styles.creatorName} numberOfLines={1}>{name}</Text>
             </View>
         );
     };
 
-    const renderNearbyItem = ({ item }) => (
-        <View style={styles.nearbyCard}>
-            <Image source={{ uri: item.avatar_url || 'https://via.placeholder.com/100' }} style={styles.nearbyImage} />
-            {/* Text is inside the image or below? Screenshot 4 'Find nearby' shows square icons (logos). 
-                 It seems like a grid of squares or horizontal list of squares.
-                 Let's assume horizontal list of square logos.
-             */}
-            <Text style={styles.nearbyName} numberOfLines={1}>{item.business_name}</Text>
-        </View>
-    );
+    const renderNearbyItem = ({ item }: { item: Store }) => {
+        const name = item.store_name || (item as any).business_name || 'Nearby';
+        const image = item.branding?.logo_url || (item as any).avatar_url || 'https://via.placeholder.com/100';
+
+        return (
+            <View style={styles.nearbyCard}>
+                <Image source={{ uri: image }} style={styles.nearbyImage} />
+                <Text style={styles.nearbyName} numberOfLines={1}>{name}</Text>
+            </View>
+        );
+    };
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -180,34 +170,34 @@ export default function Step3Follows() {
                 {/* Discover Businesses */}
                 <Text style={styles.sectionTitle}>Discover businesses</Text>
                 <FlatList
-                    data={creators.slice(0, 4)} // Mock subset
+                    data={creators.slice(0, 4)} // First chunk
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.horizontalList}
                     renderItem={renderBusinessItem}
-                    keyExtractor={item => `biz-${item.id}`}
+                    keyExtractor={item => `biz-${item.store_id || (item as any).id}`}
                 />
 
                 {/* Discover Creators */}
                 <Text style={styles.sectionTitle}>Discover creators</Text>
                 <FlatList
-                    data={creators.slice(0, 4)} // Mock subset
+                    data={creators.slice(4, 8)} // Second chunk
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.horizontalList}
                     renderItem={renderCreatorItem}
-                    keyExtractor={item => `creator-${item.id}`}
+                    keyExtractor={item => `creator-${item.store_id || (item as any).id}`}
                 />
 
                 {/* Find Nearby Businesses */}
                 <Text style={styles.sectionTitle}>Find nearby businesses</Text>
                 <FlatList
-                    data={creators.slice(0, 4)} // Mock subset
+                    data={creators.slice(8, 12)} // Third chunk
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.horizontalList}
                     renderItem={renderNearbyItem}
-                    keyExtractor={item => `nearby-${item.id}`}
+                    keyExtractor={item => `nearby-${item.store_id || (item as any).id}`}
                 />
 
             </ScrollView>

@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, Modal, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,6 +11,7 @@ type DocType = 'license' | 'tin' | 'brela' | null;
 
 export default function Step5Documents() {
     const router = useRouter();
+    const { user, createVendor, refreshProfile } = useTunzaaAuth();
     const [loading, setLoading] = useState(false);
     const [activeSection, setActiveSection] = useState<DocType>(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false); // ✅ MODAL STATE
@@ -35,19 +37,85 @@ export default function Step5Documents() {
         }
     };
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         setLoading(true);
-        setTimeout(() => {
+        try {
+            // Build vendor payload from user data + defaults for uncollected fields
+            const vendorData = {
+                user: {
+                    user_id: user?.user_id || user?.id || '',
+                    first_name: user?.first_name || '',
+                    last_name: user?.last_name || '',
+                    email: user?.email || '',
+                    phone_number: user?.phone_number || '',
+                },
+                business_name: `${user?.first_name || 'My'}'s Business`,
+                display_name: `${user?.first_name || 'My'}'s Store`,
+                contact_email: user?.email || '',
+                contact_phone: user?.phone_number || '',
+                policy: '',
+                website: '',
+                address_line1: '',
+                address_line2: '',
+                city: '',
+                state_province: '',
+                postal_code: '',
+                country: 'Tanzania',
+                tax_id: '',
+                bank_account: {
+                    bank_name: '',
+                    account_number: '',
+                    account_name: '',
+                    swift_code: '',
+                    branch_code: '',
+                },
+                verification_documents: [],
+                commission_rate: '0',
+                store: {
+                    store_name: `${user?.first_name || 'My'}'s Store`,
+                    store_slug: `${(user?.first_name || 'store').toLowerCase()}-store`,
+                    description: '',
+                    branding: {
+                        logo_url: '',
+                        colors: {
+                            primary: '#315BA9',
+                            secondary: '#84CC16',
+                            accent: '#FBBF24',
+                            text: '#1F2937',
+                            background: '#FFFFFF',
+                        },
+                    },
+                    banners: [],
+                },
+            };
+
+            console.log('🏪 [Step5] Creating vendor profile...');
+            await createVendor(vendorData);
+            console.log('✅ [Step5] Vendor profile created!');
+
+            // Refresh user profile to get the new vendor role
+            console.log('🔄 [Step5] Refreshing user profile...');
+            await refreshProfile();
+            console.log('✅ [Step5] Profile refreshed, showing success modal.');
+
+            setShowSuccessModal(true);
+        } catch (error: any) {
+            console.error('❌ [Step5] Failed to create vendor:', error.message || error);
+            Alert.alert(
+                'Error',
+                `Failed to create vendor profile: ${error.message || 'Please try again.'}`,
+                [{ text: 'OK' }]
+            );
+        } finally {
             setLoading(false);
-            setShowSuccessModal(true); // ✅ SHOW MODAL INSTEAD OF ALERT
-        }, 1000);
+        }
     };
 
     const handleFinishOnboarding = () => {
         setShowSuccessModal(false);
         // ✅ Navigate to the main account view (Replace prevents going back)
-        // Adjust this route to match your actual home/dashboard route
-        router.replace('/(merchant)/home');
+        // Resolves to dashboard index correctly
+        router.replace('/(merchant)' as any);
     };
 
     // ACCORDION ITEM

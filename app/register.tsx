@@ -125,7 +125,7 @@ export default function RegisterScreen() {
                 // Navigate based on user role
                 const role = response.activeProfileRole || response.active_profile_role;
                 if (role === 'vendor') {
-                    router.replace('/(merchant)/onboarding/step-1' as any);
+                    router.replace('/(merchant)' as any);
                 } else {
                     router.replace('/(buyer)' as any);
                 }

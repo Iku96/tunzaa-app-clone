@@ -226,15 +226,17 @@ export const socialAuth = {
         }
     },
 
-    /**
-     * Sign out from Google
-     */
     signOutGoogle: async () => {
         try {
             if (Platform.OS === "web") {
                 if (webAuth) await webAuth.signOut();
             } else {
-                if (GoogleSignin) await GoogleSignin.signOut();
+                if (GoogleSignin) {
+                    const isSignedIn = await GoogleSignin.isSignedIn();
+                    if (isSignedIn) {
+                        await GoogleSignin.signOut();
+                    }
+                }
             }
         } catch (error) {
             console.error("Google sign out error:", error);

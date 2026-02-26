@@ -7,35 +7,40 @@ import Svg, { Circle } from 'react-native-svg';
 import BottomNav from '../../../src/components/navigation/BottomNav';
 import PaymentModal from '../../../src/components/orders/PaymentModal';
 
-const { width } = Dimensions.get('window');
+import { useGetOrder } from '../../../src/services/orders';
+import { ActivityIndicator } from 'react-native';
 
-// Mock Data - should be fetched based on ID
-const MOCK_ORDER = {
-    id: '986705',
-    date: '12 April 2025',
-    items: [
-        {
-            name: 'Long Sofa',
-            price: 12000, // Using small numbers as per screenshot example
-            image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=60',
-            quantity: 1
-        }
-    ],
-    paidAmount: 12000,
-    pendingAmount: 0,
-    totalAmount: 12000,
-    progress: 1.0, // 100%
-    status: 'Completed',
-};
+const { width } = Dimensions.get('window');
 
 export default function OrderDetailsScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const [paymentModalVisible, setPaymentModalVisible] = useState(false);
 
-    // In a real app, fetch order by ID here. Using mock for now.
-    const order = MOCK_ORDER;
-    const isCompleted = order.progress >= 1;
+    // Fetch order by ID
+    const { data: apiOrder, isLoading } = useGetOrder(id as string, !!id);
+
+    const isCompleted = apiOrder?.status?.toLowerCase() === 'completed' || (apiOrder && apiOrder.payment_details?.amount >= apiOrder.totals?.total);
+
+    const total = apiOrder?.totals?.total || 0;
+    const paid = apiOrder?.payment_details?.amount || 0;
+    const progress = total > 0 ? (paid / total) : 0;
+
+    const order = {
+        id: apiOrder?.order_id || apiOrder?.order_number || id,
+        date: new Date(apiOrder?.created_at || Date.now()).toLocaleDateString('en-GB'),
+        items: apiOrder?.items?.length > 0 ? apiOrder.items.map(i => ({
+            name: i.name,
+            price: i.unit_price,
+            image: i.metadata?.image || 'https://via.placeholder.com/500?text=Order',
+            quantity: i.quantity
+        })) : [{ name: 'Loading Item...', price: 0, image: 'https://via.placeholder.com/500', quantity: 1 }],
+        paidAmount: paid,
+        pendingAmount: Math.max(0, total - paid),
+        totalAmount: total,
+        progress: progress > 1 ? 1 : progress,
+        status: apiOrder?.status || 'Pending',
+    };
 
     // Circular Progress Props
     const size = 120;
@@ -67,84 +72,95 @@ export default function OrderDetailsScreen() {
             </SafeAreaView>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* Main Card */}
-                <View style={styles.card}>
-                    <View style={styles.productRow}>
-                        <Image source={{ uri: order.items[0].image }} style={styles.productImage} />
-                        <View style={styles.progressContainer}>
-                            <Svg width={size} height={size}>
-                                <Circle
-                                    stroke="#E5E7EB"
-                                    fill="none"
-                                    cx={center}
-                                    cy={center}
-                                    r={radius}
-                                    strokeWidth={strokeWidth}
-                                />
-                                <Circle
-                                    stroke="#4A55A2"
-                                    fill="none"
-                                    cx={center}
-                                    cy={center}
-                                    r={radius}
-                                    strokeWidth={strokeWidth}
-                                    strokeDasharray={circumference}
-                                    strokeDashoffset={progressOffset}
-                                    strokeLinecap="round"
-                                    transform={`rotate(-90 ${center} ${center})`}
-                                />
-                            </Svg>
-                            <View style={styles.progressTextContainer}>
-                                <Text style={styles.progressText}>{Math.round(order.progress * 100)}%</Text>
-                                <Text style={styles.progressLabel}>Paid</Text>
+                {isLoading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 }}>
+                        <ActivityIndicator size="large" color="#4A55A2" />
+                        <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading order details...</Text>
+                    </View>
+                ) : !apiOrder ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 }}>
+                        <Ionicons name="alert-circle-outline" size={48} color="#9CA3AF" />
+                        <Text style={{ marginTop: 10, color: '#6B7280' }}>Order not found</Text>
+                    </View>
+                ) : (
+                    <View style={styles.card}>
+                        <View style={styles.productRow}>
+                            <Image source={{ uri: order.items[0].image }} style={styles.productImage} />
+                            <View style={styles.progressContainer}>
+                                <Svg width={size} height={size}>
+                                    <Circle
+                                        stroke="#E5E7EB"
+                                        fill="none"
+                                        cx={center}
+                                        cy={center}
+                                        r={radius}
+                                        strokeWidth={strokeWidth}
+                                    />
+                                    <Circle
+                                        stroke="#4A55A2"
+                                        fill="none"
+                                        cx={center}
+                                        cy={center}
+                                        r={radius}
+                                        strokeWidth={strokeWidth}
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={progressOffset}
+                                        strokeLinecap="round"
+                                        transform={`rotate(-90 ${center} ${center})`}
+                                    />
+                                </Svg>
+                                <View style={styles.progressTextContainer}>
+                                    <Text style={styles.progressText}>{Math.round(order.progress * 100)}%</Text>
+                                    <Text style={styles.progressLabel}>Paid</Text>
+                                </View>
                             </View>
                         </View>
-                    </View>
 
-                    <Text style={styles.productName}>{order.items[0].name}</Text>
-                    <Text style={styles.orderNumber}>Order number #{order.id}</Text>
-                    <Text style={styles.orderDate}>{order.date}</Text>
+                        <Text style={styles.productName}>{order.items[0].name}</Text>
+                        <Text style={styles.orderNumber}>Order number #{order.id}</Text>
+                        <Text style={styles.orderDate}>{order.date}</Text>
 
-                    <View style={styles.divider} />
+                        <View style={styles.divider} />
 
-                    <Text style={styles.sectionTitle}>Order details</Text>
+                        <Text style={styles.sectionTitle}>Order details</Text>
 
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Amount paid</Text>
-                        <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tzs {order.paidAmount.toLocaleString()}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Pending amount</Text>
-                        <Text style={[styles.detailValue, { color: '#EF4444' }]}>Tzs {order.pendingAmount.toLocaleString()}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Total Amount</Text>
-                        <Text style={styles.detailValue}>Tzs {order.totalAmount.toLocaleString()}</Text>
-                    </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Amount paid</Text>
+                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tzs {order.paidAmount.toLocaleString()}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Pending amount</Text>
+                            <Text style={[styles.detailValue, { color: '#EF4444' }]}>Tzs {order.pendingAmount.toLocaleString()}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Total Amount</Text>
+                            <Text style={styles.detailValue}>Tzs {order.totalAmount.toLocaleString()}</Text>
+                        </View>
 
-                    {isCompleted ? (
+                        {isCompleted ? (
+                            <TouchableOpacity
+                                style={styles.primaryButton}
+                                onPress={() => router.push('/(buyer)/orders/delivery')}
+                            >
+                                <Text style={styles.primaryButtonText}>Receive your product</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity
+                                style={styles.primaryButton}
+                                onPress={() => setPaymentModalVisible(true)}
+                            >
+                                <Text style={styles.primaryButtonText}>Pay Installment</Text>
+                            </TouchableOpacity>
+                        )}
+
                         <TouchableOpacity
-                            style={styles.primaryButton}
-                            onPress={() => router.push('/(buyer)/orders/delivery')}
+                            style={styles.secondaryButton}
+                            onPress={() => router.push('/(buyer)/orders/receipt')}
                         >
-                            <Text style={styles.primaryButtonText}>Receive your product</Text>
+                            <Text style={styles.secondaryButtonText}>View receipt</Text>
                         </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity
-                            style={styles.primaryButton}
-                            onPress={() => setPaymentModalVisible(true)}
-                        >
-                            <Text style={styles.primaryButtonText}>Pay Installment</Text>
-                        </TouchableOpacity>
-                    )}
-
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={() => router.push('/(buyer)/orders/receipt')}
-                    >
-                        <Text style={styles.secondaryButtonText}>View receipt</Text>
-                    </TouchableOpacity>
-                </View>
+                    </View>
+                )}
             </ScrollView>
 
             <BottomNav />
