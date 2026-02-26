@@ -1,41 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getHotelById } from '../../../../src/data/hotels';
 
 const { width, height } = Dimensions.get('window');
-
-// Mock data lookup (would normally call API)
-const GET_HOTEL = (id: string) => {
-    return {
-        id,
-        name: 'Serena Hotel',
-        location: 'Goba, Dar es salaam',
-        price: '35,000',
-        rating: 4.5,
-        reviews: 3278,
-        description: 'Armani Hotel Dubai is a luxurious 5-star hotel located within the iconic Burj Khalifa, occupying floors concourse... Read More',
-        images: [
-            'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&fit=crop', // Big Hero
-            'https://images.unsplash.com/photo-1571896349842-6e5a51335022?w=500&fit=crop',
-            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&fit=crop',
-        ]
-    };
-};
 
 export default function HotelDetailsScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
-    const hotel = GET_HOTEL(id as string);
+    const hotel = getHotelById(id as string);
+    const [activeImage, setActiveImage] = useState(0);
+
+    if (!hotel) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="bed-outline" size={64} color="#D1D5DB" />
+                    <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 16 }}>Hotel not found</Text>
+                    <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+                        <Text style={{ color: '#4A55A2', fontWeight: '600' }}>Go Back</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-            {/* Hero Image Swiper (Static for now) */}
+            {/* Hero Image */}
             <View style={styles.heroContainer}>
-                <Image source={{ uri: hotel.images[0] }} style={styles.heroImage} />
+                <Image source={{ uri: hotel.images[activeImage] || hotel.images[0] }} style={styles.heroImage} />
 
                 {/* Overlay Header */}
                 <SafeAreaView style={styles.headerOverlay} edges={['top']}>
@@ -52,12 +50,13 @@ export default function HotelDetailsScreen() {
                     </View>
                 </SafeAreaView>
 
-                {/* Pagination Dots (Mock) */}
+                {/* Pagination Dots */}
                 <View style={styles.pagination}>
-                    <View style={[styles.dot, styles.activeDot]} />
-                    <View style={styles.dot} />
-                    <View style={styles.dot} />
-                    <View style={styles.dot} />
+                    {hotel.images.map((_, i) => (
+                        <TouchableOpacity key={i} onPress={() => setActiveImage(i)}>
+                            <View style={[styles.dot, i === activeImage && styles.activeDot]} />
+                        </TouchableOpacity>
+                    ))}
                 </View>
             </View>
 
@@ -67,13 +66,10 @@ export default function HotelDetailsScreen() {
 
                     {/* Header Info */}
                     <View style={styles.titleSection}>
-                        <Text style={styles.price}>Tsh. {hotel.price}</Text>
+                        <Text style={styles.price}>Tsh. {hotel.priceLabel}</Text>
                         <View style={styles.actions}>
-                            {/* Actions moved to top header in design? Screenshot 2 shows Price large, then heart/share small next to it? 
-                               Actually screenshot 2 shows Price on the left, heart/share on the right IN THE WHITE CARD.
-                            */}
                             <TouchableOpacity style={styles.actionBtnSmall}>
-                                <Ionicons name="heart" size={20} color="#E5E7EB" />
+                                <Ionicons name="heart-outline" size={20} color="#9CA3AF" />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.actionBtnSmall}>
                                 <Ionicons name="share-social-outline" size={20} color="#1F2937" />
@@ -81,41 +77,81 @@ export default function HotelDetailsScreen() {
                         </View>
                     </View>
 
-                    {/* Meta */}
+                    {/* Rating & Location */}
                     <View style={styles.metaRow}>
                         <View style={styles.ratingBox}>
-                            <Ionicons name="star" size={14} color="#F59E0B" />
-                            <Ionicons name="star" size={14} color="#F59E0B" />
-                            <Ionicons name="star" size={14} color="#F59E0B" />
-                            <Ionicons name="star" size={14} color="#F59E0B" />
-                            <Ionicons name="star-half" size={14} color="#F59E0B" />
+                            {Array.from({ length: Math.floor(hotel.rating) }, (_, i) => (
+                                <Ionicons key={i} name="star" size={14} color="#F59E0B" />
+                            ))}
+                            {hotel.rating % 1 > 0 && <Ionicons name="star-half" size={14} color="#F59E0B" />}
                         </View>
-                        <Text style={styles.reviewCount}>{hotel.reviews} reviews</Text>
+                        <Text style={styles.reviewCount}>{hotel.reviews.toLocaleString()} reviews</Text>
                         <View style={styles.dotSeparator} />
-                        <Text style={styles.location}>{hotel.location}</Text>
+                        <Ionicons name="location" size={14} color="#4A55A2" />
+                        <Text style={styles.location}>{hotel.location}, {hotel.city}</Text>
                     </View>
 
                     {/* Description */}
                     <Text style={styles.description}>
-                        {hotel.description} <Text style={styles.readMore}>Read More</Text>
+                        {hotel.description}
                     </Text>
 
-                    {/* Amenities / Map / Etc (Placeholder) */}
-                    <View style={{ height: 200, backgroundColor: '#F3F4F6', borderRadius: 16, marginTop: 24, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ color: '#9CA3AF' }}>Map View Placeholder</Text>
+                    {/* Amenities */}
+                    <Text style={styles.amenitiesTitle}>Amenities</Text>
+                    <View style={styles.amenitiesRow}>
+                        {hotel.amenities.map((a, i) => (
+                            <View key={i} style={styles.amenityChip}>
+                                <Ionicons
+                                    name={getAmenityIcon(a)}
+                                    size={16}
+                                    color="#4A55A2"
+                                />
+                                <Text style={styles.amenityText}>{a}</Text>
+                            </View>
+                        ))}
+                    </View>
+
+                    {/* Map Placeholder */}
+                    <View style={styles.mapPlaceholder}>
+                        <Ionicons name="map-outline" size={32} color="#9CA3AF" />
+                        <Text style={{ color: '#9CA3AF', marginTop: 8 }}>Map View</Text>
                     </View>
 
                 </ScrollView>
 
                 {/* Footer Action */}
                 <SafeAreaView edges={['bottom']} style={styles.footer}>
-                    <TouchableOpacity style={styles.bookButton}>
-                        <Text style={styles.bookButtonText}>Book Now</Text>
-                    </TouchableOpacity>
+                    <View style={styles.footerContent}>
+                        <View>
+                            <Text style={styles.footerPrice}>Tsh. {hotel.priceLabel}</Text>
+                            <Text style={styles.footerPeriod}>per {hotel.pricePeriod === 'nightly' ? 'night' : 'month'}</Text>
+                        </View>
+                        <TouchableOpacity style={styles.bookButton}>
+                            <Text style={styles.bookButtonText}>Book Now</Text>
+                        </TouchableOpacity>
+                    </View>
                 </SafeAreaView>
             </View>
         </View>
     );
+}
+
+function getAmenityIcon(name: string): any {
+    const map: Record<string, string> = {
+        'Pool': 'water-outline',
+        'Spa': 'flower-outline',
+        'Restaurant': 'restaurant-outline',
+        'WiFi': 'wifi-outline',
+        'Gym': 'barbell-outline',
+        'Bar': 'wine-outline',
+        'Beach': 'umbrella-outline',
+        'Parking': 'car-outline',
+        'Conference': 'people-outline',
+        'Marina': 'boat-outline',
+        'Shopping': 'bag-outline',
+        'Rooftop Bar': 'wine-outline',
+    };
+    return map[name] || 'checkmark-circle-outline';
 }
 
 const styles = StyleSheet.create({
@@ -124,7 +160,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     heroContainer: {
-        height: height * 0.45,
+        height: height * 0.42,
         width: '100%',
         position: 'relative',
     },
@@ -162,7 +198,7 @@ const styles = StyleSheet.create({
     },
     pagination: {
         position: 'absolute',
-        bottom: 40, // Above the sheet
+        bottom: 40,
         flexDirection: 'row',
         alignSelf: 'center',
         gap: 8,
@@ -178,11 +214,10 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 5,
-        transform: [{ translateY: -1 }], // alignment fix
     },
     contentSheet: {
         flex: 1,
-        marginTop: -30, // Overlap
+        marginTop: -30,
         backgroundColor: '#FFFFFF',
         borderTopLeftRadius: 32,
         borderTopRightRadius: 32,
@@ -215,7 +250,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexWrap: 'wrap',
         marginBottom: 16,
-        gap: 8,
+        gap: 6,
     },
     ratingBox: {
         flexDirection: 'row',
@@ -239,10 +274,40 @@ const styles = StyleSheet.create({
         fontSize: 15,
         lineHeight: 24,
         color: '#4B5563',
+        marginBottom: 24,
     },
-    readMore: {
+    amenitiesTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1F2937',
+        marginBottom: 12,
+    },
+    amenitiesRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+        marginBottom: 24,
+    },
+    amenityChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: '#EEF2FF',
+    },
+    amenityText: {
+        fontSize: 12,
+        fontWeight: '500',
         color: '#4A55A2',
-        fontWeight: '600',
+    },
+    mapPlaceholder: {
+        height: 180,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     footer: {
         position: 'absolute',
@@ -255,9 +320,24 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: '#F3F4F6',
     },
+    footerContent: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    footerPrice: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#4A55A2',
+    },
+    footerPeriod: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
     bookButton: {
         backgroundColor: '#4A55A2',
-        height: 56,
+        height: 52,
+        paddingHorizontal: 32,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
@@ -268,7 +348,7 @@ const styles = StyleSheet.create({
         elevation: 6,
     },
     bookButtonText: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#FFFFFF',
     },

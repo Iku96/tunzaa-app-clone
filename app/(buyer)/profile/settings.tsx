@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../src/contexts/AuthContext';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 export default function SettingsScreen() {
     const router = useRouter();
-    const { signOut } = useAuth();
+    const { logout } = useTunzaaAuth();
 
     const handleSignOut = async () => {
         Alert.alert(
@@ -19,8 +19,8 @@ export default function SettingsScreen() {
                     text: "Log Out",
                     style: "destructive",
                     onPress: async () => {
-                        await signOut();
-                        router.replace('/login');
+                        await logout();
+                        router.replace('/language');
                     }
                 }
             ]
@@ -49,7 +49,7 @@ export default function SettingsScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                {renderSettingItem("briefcase-outline", "Your Activities")}
+                {renderSettingItem("briefcase-outline", "Your Activities", () => router.push('/(buyer)/profile/activities' as any))}
                 {renderSettingItem("notifications-outline", "In-App Notifications")}
                 {renderSettingItem("construct-outline", "Business tools and control", () => router.push('/(buyer)/profile/tools'))}
                 {renderSettingItem("alarm-outline", "Reminders")}

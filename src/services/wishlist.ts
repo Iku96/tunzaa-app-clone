@@ -178,6 +178,7 @@ export const useAddToWishlist = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["wishlist"] });
             queryClient.invalidateQueries({ queryKey: ["wishlist-count"] });
+            queryClient.invalidateQueries({ queryKey: ["wishlist-status"] });
         },
         onError: (error: any) => {
             console.error('Add to wishlist error:', error.message);

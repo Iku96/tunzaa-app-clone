@@ -1,47 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProfileSetupBanner from '../../src/components/profile/ProfileSetupBanner';
 import ProductCard from '../../src/components/product/ProductCardVertical';
 import { useMarketplace } from '../../src/hooks/useMarketplace';
+import { authApi } from '../../src/services/auth';
+
+const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
 
 export default function ProfileScreen() {
     const router = useRouter();
-    const { user, logout } = useTunzaaAuth();
+    const { user } = useTunzaaAuth();
     const { products } = useMarketplace();
+
+    const [profileData, setProfileData] = useState({
+        username: '',
+        location: 'Dar es Salaam', // Default
+        followers_count: 0,
+        following_count: 0,
+        profile_picture: ''
+    });
+
+    // Load profile metadata
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadProfileData = async () => {
+                try {
+                    const userId = user?.user_id || user?.id;
+                    if (!userId) return;
+
+                    // 1. Local data
+                    const storedExtras = await AsyncStorage.getItem(`${PROFILE_EXTRAS_KEY}_${userId}`);
+                    const localData = storedExtras ? JSON.parse(storedExtras) : {};
+
+                    // 2. API data
+                    let apiMeta: Record<string, any> = {};
+                    try {
+                        const userData = await authApi.getUserDetails(userId);
+                        const profiles = userData?.profiles || [];
+                        let profile = profiles.find((p: any) => p.role === 'buyer') || profiles[0];
+                        apiMeta = profile?.metadata || {};
+                    } catch (e) {
+                        // Ignore API error, use local
+                    }
+
+                    // 3. Merge
+                    setProfileData({
+                        username: apiMeta.username || localData.username || '',
+                        location: apiMeta.location || localData.location || 'Dar es Salaam',
+                        followers_count: apiMeta.followers_count || 0,
+                        following_count: apiMeta.following_count || 0,
+                        profile_picture: apiMeta.profile_picture || localData.profile_picture || ''
+                    });
+
+                } catch (e) {
+                    // Ignore
+                }
+            };
+            loadProfileData();
+        }, [user])
+    );
 
     const displayName = user
         ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Tunzaa User'
         : 'Tunzaa User';
-    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=425ba4`;
+
+    const headerTitle = profileData.username || displayName;
+    const avatarUrl = profileData.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=425ba4`;
 
     const handleShareProfile = () => {
         Alert.alert('Share Profile', 'Sharing functionality coming soon!');
     };
 
-    const handleSignOut = async () => {
-        Alert.alert(
-            "Sign Out",
-            "Are you sure you want to sign out?",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Sign Out",
-                    style: "destructive",
-                    onPress: async () => {
-                        await logout();
-                        router.replace('/language');
-                    }
-                }
-            ]
-        );
-    };
-
     const renderProductItem = ({ item }: { item: any }) => (
-        <View style={{ width: 160, marginRight: 12 }}>
+        <View style={{ flex: 1, maxWidth: '50%', paddingHorizontal: 6, marginBottom: 16 }}>
             <ProductCard product={item} />
         </View>
     );
@@ -53,7 +89,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{displayName}</Text>
+                <Text style={styles.headerTitle}>{headerTitle}</Text>
                 <TouchableOpacity onPress={() => router.push('/(buyer)/profile/settings')} style={styles.iconButton}>
                     <Ionicons name="ellipsis-horizontal" size={24} color="#1F2937" />
                 </TouchableOpacity>
@@ -70,11 +106,11 @@ export default function ProfileScreen() {
                             />
                             <View style={styles.statsTextContainer}>
                                 <View style={styles.statItem}>
-                                    <Text style={styles.statNumber}>0</Text>
+                                    <Text style={styles.statNumber}>{profileData.followers_count >= 1000 ? `${(profileData.followers_count / 1000).toFixed(1)}K` : profileData.followers_count}</Text>
                                     <Text style={styles.statLabel}>Followers</Text>
                                 </View>
                                 <View style={styles.statItem}>
-                                    <Text style={styles.statNumber}>0</Text>
+                                    <Text style={styles.statNumber}>{profileData.following_count >= 1000 ? `${(profileData.following_count / 1000).toFixed(1)}K` : profileData.following_count}</Text>
                                     <Text style={styles.statLabel}>Following</Text>
                                 </View>
                             </View>
@@ -91,7 +127,7 @@ export default function ProfileScreen() {
                         </View>
                         <View style={styles.locationRow}>
                             <Ionicons name="location-outline" size={14} color="#6B7280" />
-                            <Text style={styles.locationText}>{user?.phone_number || 'Dar es Salaam'}</Text>
+                            <Text style={styles.locationText}>{profileData.location}</Text>
                         </View>
                     </View>
 
@@ -124,21 +160,15 @@ export default function ProfileScreen() {
                     </View>
 
                     <FlatList
-                        horizontal
-                        data={products.slice(0, 5)}
+                        data={products.slice(0, 10)}
                         renderItem={renderProductItem}
                         keyExtractor={(item) => item.id}
-                        showsHorizontalScrollIndicator={false}
+                        numColumns={2}
+                        scrollEnabled={false}
                         contentContainerStyle={styles.productsList}
                     />
                 </View>
 
-                <View style={styles.section}>
-                    <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-                        <Ionicons name="log-out-outline" size={22} color="#EF4444" />
-                        <Text style={styles.signOutText}>Sign Out</Text>
-                    </TouchableOpacity>
-                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -292,21 +322,5 @@ const styles = StyleSheet.create({
     section: {
         paddingHorizontal: 20,
         marginTop: 20,
-    },
-    signOutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        backgroundColor: '#FEF2F2',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#FCA5A5',
-    },
-    signOutText: {
-        fontSize: 16,
-        color: '#EF4444',
-        fontWeight: '600',
-        marginLeft: 8,
     },
 });

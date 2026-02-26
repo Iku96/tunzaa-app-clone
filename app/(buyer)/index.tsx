@@ -7,6 +7,7 @@ import { useMarketplace } from '../../src/hooks/useMarketplace';
 import PriceTag from '../../src/components/common/PriceTag';
 import PromoBannerCarousel from '../../src/components/home/PromoBannerCarousel';
 import { useBanners } from '../../src/services/tenant';
+import ProductCardVertical from '../../src/components/product/ProductCardVertical';
 
 const { width } = Dimensions.get('window');
 
@@ -127,22 +128,9 @@ export default function BuyerHome() {
                     ) : (
                         <View style={styles.recommendedGrid}>
                             {products.map(product => (
-                                <TouchableOpacity
-                                    key={product.id}
-                                    style={styles.productCard}
-                                    onPress={() => handleProductPress(product.id)}
-                                >
-                                    <View style={styles.productImageContainer}>
-                                        <Image source={{ uri: product.image }} style={styles.productImage} />
-                                        <TouchableOpacity style={styles.heartButton}>
-                                            <Ionicons name="heart-outline" size={18} color="#9CA3AF" />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <View style={styles.productInfo}>
-                                        <Text style={styles.productTitle} numberOfLines={1}>{product.name}</Text>
-                                        <PriceTag price={product.price} size={14} bold />
-                                    </View>
-                                </TouchableOpacity>
+                                <View key={product.id} style={styles.productCard}>
+                                    <ProductCardVertical product={product} />
+                                </View>
                             ))}
                         </View>
                     )}

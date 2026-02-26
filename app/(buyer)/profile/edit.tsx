@@ -28,6 +28,7 @@ export default function EditProfileScreen() {
 
     const initialName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : '');
     const [name, setName] = useState(initialName || '');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState(user?.email || '');
     const [phone, setPhone] = useState(user?.phone_number || '');
     const [dob, setDob] = useState('');
@@ -69,11 +70,13 @@ export default function EditProfileScreen() {
 
                 // 3. Merge: API takes priority if non-empty, otherwise use local
                 const merged = {
+                    username: apiMeta.username || localData.username || '',
                     gender: apiMeta.gender || localData.gender || '',
                     date_of_birth: apiMeta.date_of_birth || localData.date_of_birth || '',
                     profile_picture: apiMeta.profile_picture || localData.profile_picture || '',
                 };
 
+                if (merged.username) setUsername(merged.username);
                 if (merged.gender) setGender(merged.gender);
                 if (merged.profile_picture) setProfileImage(merged.profile_picture);
                 if (merged.date_of_birth) {
@@ -196,9 +199,10 @@ export default function EditProfileScreen() {
                 data: { first_name, last_name }
             });
 
-            // 2. Save gender + date_of_birth to AsyncStorage (always works)
+            // 2. Save metadata extras to AsyncStorage (always works)
             const storedExtras = await AsyncStorage.getItem(`${PROFILE_EXTRAS_KEY}_${targetUserId}`);
             const localData = storedExtras ? JSON.parse(storedExtras) : {};
+            if (username) localData.username = username;
             if (gender) localData.gender = gender;
             if (dob) localData.date_of_birth = dob;
             await AsyncStorage.setItem(`${PROFILE_EXTRAS_KEY}_${targetUserId}`, JSON.stringify(localData));
@@ -210,6 +214,7 @@ export default function EditProfileScreen() {
                 const existingMeta = (targetProfile as any).metadata || {};
                 const updatedMeta = {
                     ...existingMeta,
+                    username: username || undefined,
                     gender: gender || undefined,
                     date_of_birth: dob || undefined,
                 };
@@ -296,6 +301,7 @@ export default function EditProfileScreen() {
                 {/* Form */}
                 <View style={styles.form}>
                     {renderEditableRow('Name', name, setName)}
+                    {renderEditableRow('Username', username, setUsername)}
 
                     {/* Date of Birth — tappable to open picker */}
                     <View style={styles.inputContainer}>

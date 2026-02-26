@@ -231,15 +231,16 @@ export const socialAuth = {
             if (Platform.OS === "web") {
                 if (webAuth) await webAuth.signOut();
             } else {
-                if (GoogleSignin) {
+                if (GoogleSignin && typeof GoogleSignin.isSignedIn === 'function') {
                     const isSignedIn = await GoogleSignin.isSignedIn();
-                    if (isSignedIn) {
+                    if (isSignedIn && typeof GoogleSignin.signOut === 'function') {
                         await GoogleSignin.signOut();
                     }
                 }
             }
         } catch (error) {
-            console.error("Google sign out error:", error);
+            // Silently ignore — Google sign-out is best-effort during logout
+            console.warn("Google sign out skipped:", error);
         }
     },
 

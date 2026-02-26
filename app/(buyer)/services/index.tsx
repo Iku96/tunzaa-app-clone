@@ -1,58 +1,67 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Modal, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../src/contexts/AuthContext';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { getAllHotels, HOTEL_CITIES } from '../../../src/data/hotels';
 import BottomNav from '../../../src/components/navigation/BottomNav';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get('window');
 
+// Service-specific categories (these are NOT product categories)
 const SERVICE_CATEGORIES = [
     { id: '1', name: 'Ticket', icon: 'ticket-outline' },
     { id: '2', name: 'Book', icon: 'book-outline' },
     { id: '3', name: 'Plot', icon: 'map-outline' },
     { id: '4', name: 'Flights', icon: 'airplane-outline' },
-    { id: '5', name: 'Train', icon: 'train-outline' },
+    { id: '5', name: 'Trains', icon: 'train-outline' },
     { id: '6', name: 'Loans', icon: 'cash-outline' },
     { id: '7', name: 'School', icon: 'school-outline' },
     { id: '8', name: 'Marathon', icon: 'walk-outline' },
 ];
 
-const HOTELS_NEARBY = [
-    {
-        id: '1',
-        name: 'Serena Hotel',
-        location: 'Dar es salaam, Kinondoni B',
-        price: '180,000',
-        rating: 5.0,
-        image: 'https://images.unsplash.com/photo-1571896349842-6e5a51335022?w=500&h=500&fit=crop',
-    },
-    {
-        id: '2',
-        name: 'Hyatt Regency',
-        location: 'Dar es salaam, Posta',
-        price: '250,000',
-        rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&h=500&fit=crop',
-    },
-    {
-        id: '3',
-        name: 'Ramada Resort',
-        location: 'Dar es salaam, Mbezi',
-        price: '200,000',
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500&h=500&fit=crop',
-    },
-];
-
 export default function ServicesScreen() {
     const router = useRouter();
-    const { user, profile } = useAuth();
+    const { user } = useTunzaaAuth();
 
-    // Logic to determine display name and image (consistent with Home)
-    const displayName = profile?.full_name || user?.user_metadata?.full_name || 'Fredrick John';
-    const displayImage = profile?.avatar_url || user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${displayName}&background=eff6ff&color=4A55A2`;
+    const hotels = getAllHotels();
+
+    // Search modal state
+    const [showSearchModal, setShowSearchModal] = useState(false);
+    const [city, setCity] = useState('Dar es Salaam');
+    const [guests, setGuests] = useState(2);
+    const [checkIn, setCheckIn] = useState(() => {
+        const d = new Date(); d.setDate(d.getDate() + 7); return d;
+    });
+    const [checkOut, setCheckOut] = useState(() => {
+        const d = new Date(); d.setDate(d.getDate() + 17); return d;
+    });
+    const [showDatePicker, setShowDatePicker] = useState<'checkin' | 'checkout' | null>(null);
+
+    const formatDate = (date: Date) => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[date.getMonth()]} ${String(date.getDate()).padStart(2, '0')}`;
+    };
+
+    const handleSearch = () => {
+        setShowSearchModal(false);
+        router.push({
+            pathname: '/(buyer)/services/hotels',
+            params: {
+                city,
+                guests: String(guests),
+                checkIn: checkIn.toISOString(),
+                checkOut: checkOut.toISOString(),
+            },
+        });
+    };
+
+    const displayName = user
+        ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
+        : 'User';
+    const displayImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=4A55A2`;
 
     return (
         <View style={styles.container}>
@@ -60,31 +69,29 @@ export default function ServicesScreen() {
             <View style={styles.headerContainer}>
                 <SafeAreaView edges={['top', 'left', 'right']}>
                     <View style={styles.headerTop}>
-                        <View style={styles.userInfo}>
+                        <TouchableOpacity style={styles.userInfo} onPress={() => router.push('/(buyer)/profile')}>
                             <Image source={{ uri: displayImage }} style={styles.avatar} />
                             <View>
                                 <Text style={styles.greeting}>Welcome</Text>
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Text style={styles.userName}>{displayName} 👋</Text>
-                                </View>
+                                <Text style={styles.userName}>{displayName} 👋</Text>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                         <TouchableOpacity style={styles.notificationBtn}>
                             <Ionicons name="notifications-outline" size={24} color="#4A55A2" />
                         </TouchableOpacity>
                     </View>
 
-                    {/* Search Bar - "Where? Search Destination" */}
-                    <TouchableOpacity style={styles.searchContainer} activeOpacity={0.9}>
+                    {/* Search Bar → opens search modal */}
+                    <TouchableOpacity
+                        style={styles.searchContainer}
+                        activeOpacity={0.9}
+                        onPress={() => setShowSearchModal(true)}
+                    >
                         <View>
                             <Text style={styles.searchLabel}>Where?</Text>
                             <Text style={styles.searchPlaceholder}>Search Destination</Text>
                         </View>
-                        <View style={styles.searchIconContainer}>
-                            <Ionicons name="search" size={20} color="#FFFFFF" />
-                        </View>
                     </TouchableOpacity>
-
                 </SafeAreaView>
             </View>
 
@@ -93,7 +100,7 @@ export default function ServicesScreen() {
                 {/* Categories */}
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Categories</Text>
-                    <TouchableOpacity onPress={() => { }}>
+                    <TouchableOpacity>
                         <Text style={styles.viewAll}>View All</Text>
                     </TouchableOpacity>
                 </View>
@@ -101,11 +108,7 @@ export default function ServicesScreen() {
                 <View style={styles.categoriesGrid}>
                     {SERVICE_CATEGORIES.map((cat) => (
                         <TouchableOpacity key={cat.id} style={styles.categoryItem} onPress={() => {
-                            if (cat.name === 'Book' || cat.name === 'Ticket') {
-                                router.push('/(buyer)/services/hotels'); // Demo link
-                            } else {
-                                router.push('/(buyer)/services/hotels'); // Demo link
-                            }
+                            router.push('/(buyer)/services/hotels');
                         }}>
                             <View style={styles.iconCircle}>
                                 <Ionicons name={cat.icon as any} size={24} color="#4A55A2" />
@@ -122,20 +125,20 @@ export default function ServicesScreen() {
                 </TouchableOpacity>
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.nearbyList}>
-                    {HOTELS_NEARBY.map((hotel) => (
+                    {hotels.slice(0, 4).map((hotel) => (
                         <TouchableOpacity
                             key={hotel.id}
                             style={styles.nearbyCard}
                             onPress={() => router.push(`/(buyer)/services/hotels/${hotel.id}`)}
                         >
                             <View style={styles.imageContainer}>
-                                <Image source={{ uri: hotel.image }} style={styles.hotelImage} />
+                                <Image source={{ uri: hotel.images[0] }} style={styles.hotelImage} />
                                 <TouchableOpacity style={styles.heartBtn}>
                                     <Ionicons name="heart-outline" size={16} color="#6B7280" />
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.cardContent}>
-                                <Text style={styles.priceText}>Tsh {hotel.price} <Text style={styles.periodText}>monthly</Text></Text>
+                                <Text style={styles.priceText}>Tsh {hotel.priceLabel} <Text style={styles.periodText}>{hotel.pricePeriod}</Text></Text>
                                 <Text style={styles.hotelName} numberOfLines={1}>{hotel.name}</Text>
 
                                 <View style={styles.ratingRow}>
@@ -147,7 +150,7 @@ export default function ServicesScreen() {
 
                                 <View style={styles.locationRow}>
                                     <Ionicons name="location-outline" size={12} color="#6B7280" />
-                                    <Text style={styles.locationText} numberOfLines={1}>{hotel.location}</Text>
+                                    <Text style={styles.locationText} numberOfLines={1}>{hotel.city}, {hotel.location}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -156,6 +159,120 @@ export default function ServicesScreen() {
 
                 <View style={{ height: 100 }} />
             </ScrollView>
+
+            {/* ── Search Modal (Booking.com style) ── */}
+            <Modal visible={showSearchModal} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <SafeAreaView edges={['top']}>
+                            <View style={styles.modalHeader}>
+                                <TouchableOpacity onPress={() => setShowSearchModal(false)}>
+                                    <Ionicons name="close" size={24} color="#1F2937" />
+                                </TouchableOpacity>
+                                <Text style={styles.modalTitle}>Search Hotels</Text>
+                                <View style={{ width: 24 }} />
+                            </View>
+
+                            <ScrollView contentContainerStyle={styles.modalBody}>
+                                {/* Location */}
+                                <View style={styles.fieldSection}>
+                                    <Text style={styles.fieldLabel}>
+                                        <Ionicons name="location-outline" size={16} color="#4A55A2" /> Destination
+                                    </Text>
+                                    <View style={styles.cityOptions}>
+                                        {HOTEL_CITIES.map((c) => (
+                                            <TouchableOpacity
+                                                key={c}
+                                                style={[styles.cityChip, city === c && styles.cityChipActive]}
+                                                onPress={() => setCity(c)}
+                                            >
+                                                <Text style={[styles.cityChipText, city === c && styles.cityChipTextActive]}>{c}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </View>
+
+                                {/* Dates */}
+                                <View style={styles.fieldSection}>
+                                    <Text style={styles.fieldLabel}>
+                                        <Ionicons name="calendar-outline" size={16} color="#4A55A2" /> Dates
+                                    </Text>
+                                    <View style={styles.dateRow}>
+                                        <TouchableOpacity style={styles.dateBox} onPress={() => setShowDatePicker('checkin')}>
+                                            <Text style={styles.dateLabel}>Check-in</Text>
+                                            <Text style={styles.dateValue}>{formatDate(checkIn)}</Text>
+                                        </TouchableOpacity>
+                                        <View style={styles.dateDivider} />
+                                        <TouchableOpacity style={styles.dateBox} onPress={() => setShowDatePicker('checkout')}>
+                                            <Text style={styles.dateLabel}>Check-out</Text>
+                                            <Text style={styles.dateValue}>{formatDate(checkOut)}</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    {showDatePicker && (
+                                        <DateTimePicker
+                                            value={showDatePicker === 'checkin' ? checkIn : checkOut}
+                                            mode="date"
+                                            display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+                                            minimumDate={showDatePicker === 'checkout' ? checkIn : new Date()}
+                                            onChange={(event: any, selectedDate?: Date) => {
+                                                if (Platform.OS === 'android') setShowDatePicker(null);
+                                                if (selectedDate) {
+                                                    if (showDatePicker === 'checkin') {
+                                                        setCheckIn(selectedDate);
+                                                        // Push checkout if needed
+                                                        if (selectedDate >= checkOut) {
+                                                            const newCheckout = new Date(selectedDate);
+                                                            newCheckout.setDate(newCheckout.getDate() + 1);
+                                                            setCheckOut(newCheckout);
+                                                        }
+                                                    } else {
+                                                        setCheckOut(selectedDate);
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                    {showDatePicker && Platform.OS === 'ios' && (
+                                        <TouchableOpacity
+                                            style={{ alignSelf: 'center', marginTop: 8 }}
+                                            onPress={() => setShowDatePicker(null)}
+                                        >
+                                            <Text style={{ color: '#4A55A2', fontWeight: '600' }}>Done</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+
+                                {/* Guests */}
+                                <View style={styles.fieldSection}>
+                                    <Text style={styles.fieldLabel}>
+                                        <Ionicons name="people-outline" size={16} color="#4A55A2" /> Guests
+                                    </Text>
+                                    <View style={styles.guestRow}>
+                                        <TouchableOpacity
+                                            style={styles.guestBtn}
+                                            onPress={() => setGuests(Math.max(1, guests - 1))}
+                                        >
+                                            <Ionicons name="remove" size={20} color="#4A55A2" />
+                                        </TouchableOpacity>
+                                        <Text style={styles.guestCount}>{guests}</Text>
+                                        <TouchableOpacity
+                                            style={styles.guestBtn}
+                                            onPress={() => setGuests(Math.min(10, guests + 1))}
+                                        >
+                                            <Ionicons name="add" size={20} color="#4A55A2" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </ScrollView>
+
+                            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+                                <Ionicons name="search" size={20} color="#FFFFFF" />
+                                <Text style={styles.searchButtonText}>Search Hotels</Text>
+                            </TouchableOpacity>
+                        </SafeAreaView>
+                    </View>
+                </View>
+            </Modal>
 
             <BottomNav />
         </View>
@@ -224,7 +341,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        // Shadow
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
@@ -240,14 +356,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#1F2937',
         fontWeight: 'bold',
-    },
-    searchIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#4A55A2', // Primary blue
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     scrollContent: {
         paddingTop: 30,
@@ -277,7 +385,7 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     categoryItem: {
-        width: '25%', // 4 columns
+        width: '25%',
         alignItems: 'center',
         marginBottom: 24,
         gap: 10,
@@ -286,7 +394,7 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: '#F3F4F6', // Light gray bg
+        backgroundColor: '#F3F4F6',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -305,7 +413,6 @@ const styles = StyleSheet.create({
         width: 200,
         backgroundColor: '#FFFFFF',
         borderRadius: 20,
-        // Shadow
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -379,5 +486,149 @@ const styles = StyleSheet.create({
     locationText: {
         fontSize: 11,
         color: '#6B7280',
+    },
+
+    // ── Search Modal Styles ──
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        paddingHorizontal: 24,
+        paddingBottom: 32,
+        maxHeight: '85%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 20,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1F2937',
+    },
+    modalBody: {
+        paddingTop: 20,
+        paddingBottom: 20,
+    },
+    fieldSection: {
+        marginBottom: 28,
+    },
+    fieldLabel: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: 12,
+    },
+    cityOptions: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+    },
+    cityChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 24,
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+        backgroundColor: '#FFFFFF',
+    },
+    cityChipActive: {
+        backgroundColor: '#4A55A2',
+        borderColor: '#4A55A2',
+    },
+    cityChipText: {
+        fontSize: 13,
+        fontWeight: '500',
+        color: '#4B5563',
+    },
+    cityChipTextActive: {
+        color: '#FFFFFF',
+    },
+    dateRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F9FAFB',
+        borderRadius: 16,
+        overflow: 'hidden',
+    },
+    dateBox: {
+        flex: 1,
+        padding: 16,
+        alignItems: 'center',
+    },
+    dateDivider: {
+        width: 1,
+        height: 40,
+        backgroundColor: '#E5E7EB',
+    },
+    dateLabel: {
+        fontSize: 11,
+        color: '#9CA3AF',
+        marginBottom: 4,
+    },
+    dateValue: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#1F2937',
+    },
+    dateTap: {
+        fontSize: 9,
+        color: '#4A55A2',
+        marginTop: 4,
+    },
+    guestRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 24,
+        backgroundColor: '#F9FAFB',
+        borderRadius: 16,
+        paddingVertical: 16,
+    },
+    guestBtn: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        borderWidth: 1.5,
+        borderColor: '#4A55A2',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    guestCount: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: '#1F2937',
+        width: 60,
+        textAlign: 'center',
+    },
+    searchButton: {
+        flexDirection: 'row',
+        backgroundColor: '#4A55A2',
+        height: 56,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        marginTop: 8,
+        shadowColor: '#4A55A2',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    searchButtonText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#FFFFFF',
     },
 });

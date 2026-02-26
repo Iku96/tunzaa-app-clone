@@ -10,8 +10,9 @@ import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES as STATIC_CATEGORIES } from '..
 export function mapApiProductToUI(product: Product) {
     // Get the primary image URL
     let imageUrl: string | null = null;
-    if (product.images && product.images.length > 0) {
-        const firstImage = product.images[0];
+    const validImages = (product.images || []).filter(img => img != null);
+    if (validImages.length > 0) {
+        const firstImage = validImages[0];
         if (typeof firstImage === 'string') {
             imageUrl = firstImage;
         } else {

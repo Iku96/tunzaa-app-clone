@@ -1,15 +1,29 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Product } from '../../data/products';
 import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../services/wishlist';
 import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 56) / 2; // 20px padding * 2 + 16px gap
 
+/** The mapped UI product shape produced by useMarketplace */
+interface UIProduct {
+    id: string;
+    name: string;
+    price: number;
+    originalPrice?: number;
+    image: string;
+    rating: number;
+    reviews: number;
+    vendor?: { id: string; name: string; location: string; verified: boolean };
+    specs?: string[];
+    description?: string;
+    category?: string;
+}
+
 interface ProductCardVerticalProps {
-    product: Product;
+    product: UIProduct;
 }
 
 export default function ProductCardVertical({ product }: ProductCardVerticalProps) {
@@ -39,7 +53,7 @@ export default function ProductCardVertical({ product }: ProductCardVerticalProp
     return (
         <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.8}>
             <View style={styles.imageContainer}>
-                <Image source={{ uri: product.image }} style={styles.image} resizeMode="contain" />
+                <Image source={{ uri: product.image || 'https://via.placeholder.com/300x300?text=No+Image' }} style={styles.image} resizeMode="contain" />
 
                 {/* Heart Icon - Top Right */}
                 <TouchableOpacity style={styles.heartButton} onPress={handleToggleWishlist} disabled={isWishlistLoading}>

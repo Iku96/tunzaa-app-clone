@@ -250,13 +250,31 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
     // ---- Vendor / Delivery Partner ----
 
     const createVendor = useCallback(async (vendorData: CreateVendorBody) => {
-        if (!user) throw new Error('Not authenticated');
-        return await authApi.createVendor(user.user_id, vendorData);
+        // Use React state user first, fall back to AsyncStorage if state is stale
+        let currentUser = user;
+        if (!currentUser) {
+            const storedData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
+            if (storedData) {
+                currentUser = JSON.parse(storedData);
+                // Also restore the React state
+                setUser(currentUser);
+            }
+        }
+        if (!currentUser) throw new Error('Not authenticated');
+        return await authApi.createVendor(currentUser.user_id, vendorData);
     }, [user]);
 
     const createDeliveryPartner = useCallback(async (partnerData: CreateDeliveryPartnerBody) => {
-        if (!user) throw new Error('Not authenticated');
-        return await authApi.createDeliveryPartner(user.user_id, partnerData);
+        let currentUser = user;
+        if (!currentUser) {
+            const storedData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
+            if (storedData) {
+                currentUser = JSON.parse(storedData);
+                setUser(currentUser);
+            }
+        }
+        if (!currentUser) throw new Error('Not authenticated');
+        return await authApi.createDeliveryPartner(currentUser.user_id, partnerData);
     }, [user]);
 
     // ---- Context Value ----

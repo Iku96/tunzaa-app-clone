@@ -48,7 +48,13 @@ export default function WishlistScreen() {
         const product = item.product;
         if (!product) return null;
 
-        const mainImage = product.images?.[0] || 'https://via.placeholder.com/300';
+        // images[0] can be a string URL or a ProductImage object {url: '...'}
+        const rawImage = product.images?.[0];
+        const mainImage = typeof rawImage === 'string'
+            ? rawImage
+            : (rawImage && typeof rawImage === 'object' && rawImage.url)
+                ? rawImage.url
+                : 'https://via.placeholder.com/300';
         const price = product.selling_price || product.regular_price || 0;
 
         return (

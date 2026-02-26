@@ -12,7 +12,7 @@ export default function BottomNav() {
         if (route === '/(buyer)/orders' && pathname.startsWith('/(buyer)/orders')) return true;
         if (route === '/(buyer)/cart' && pathname.startsWith('/(buyer)/cart')) return true;
         if (route === '/(buyer)/services' && pathname.startsWith('/(buyer)/services')) return true;
-        if (route === '/(buyer)/profile' && pathname.startsWith('/(buyer)/profile')) return true;
+        if (route === '/(buyer)/account' && (pathname.startsWith('/(buyer)/account') || pathname.startsWith('/(buyer)/profile'))) return true;
         return false;
     };
 
@@ -37,9 +37,9 @@ export default function BottomNav() {
                 <Ionicons name="grid-outline" size={24} color={getIconColor('/(buyer)/services')} />
                 <Text style={[styles.navText, { color: getTextColor('/(buyer)/services') }]}>Services</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/profile')}>
-                <Ionicons name="person-outline" size={24} color={getIconColor('/(buyer)/profile')} />
-                <Text style={[styles.navText, { color: getTextColor('/(buyer)/profile') }]}>Account</Text>
+            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/account' as any)}>
+                <Ionicons name="person-outline" size={24} color={getIconColor('/(buyer)/account')} />
+                <Text style={[styles.navText, { color: getTextColor('/(buyer)/account') }]}>Account</Text>
             </TouchableOpacity>
         </View>
     );
