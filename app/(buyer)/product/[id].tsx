@@ -200,7 +200,32 @@ export default function ProductDetailScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <View style={{ height: 100 }} />
+                        {/* Specifications Section */}
+                        <View style={styles.specsContainer}>
+                            <Text style={styles.specsTitle}>Specification</Text>
+                            <View style={styles.specRow}>
+                                <Text style={styles.specLabel}>Screen Size</Text>
+                                <Text style={styles.specValue}>39.5 Inches</Text>
+                            </View>
+                            <View style={styles.specRow}>
+                                <Text style={styles.specLabel}>Brand</Text>
+                                <Text style={styles.specValue}>Hisense</Text>
+                            </View>
+                            <View style={styles.specRow}>
+                                <Text style={styles.specLabel}>Display Technology</Text>
+                                <Text style={styles.specValue}>FHD 1080p, LED, LCD</Text>
+                            </View>
+                            <View style={styles.specRow}>
+                                <Text style={styles.specLabel}>Resolution</Text>
+                                <Text style={styles.specValue}>1080p</Text>
+                            </View>
+                            <View style={styles.specRow}>
+                                <Text style={styles.specLabel}>Refresh Rate</Text>
+                                <Text style={styles.specValue}>60 Hz</Text>
+                            </View>
+                        </View>
+
+                        <View style={{ height: 120 }} />
                     </View>
                 </ScrollView>
 
@@ -211,7 +236,7 @@ export default function ProductDetailScreen() {
                         onPress={() => router.push({ pathname: '/(buyer)/cart/summary', params: { productId: product.id } })}
                         activeOpacity={0.9}
                     >
-                        <Text style={styles.buyButtonText}>Buy Now</Text>
+                        <Text style={styles.buyButtonText}>Add To Cart</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -297,12 +322,12 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     actionBtn: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
+        width: 40,
+        height: 40,
+        borderRadius: 8,
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: '#F3F4F6',
         alignItems: 'center',
         justifyContent: 'center',
         // Subtle shadow
@@ -342,10 +367,10 @@ const styles = StyleSheet.create({
         paddingRight: 12,
     },
     productTitle: {
-        fontSize: 18, // "Long Sofa"
+        fontSize: 16, // Screenshot shows it slightly smaller than price
         fontWeight: 'bold',
         color: '#1F2937',
-        marginBottom: 6,
+        marginBottom: 8,
     },
     ratingContainer: {
         flexDirection: 'row',
@@ -427,8 +452,11 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         backgroundColor: '#FFFFFF',
-        padding: 20,
-        paddingBottom: 40, // Safe area handling
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 34, // Safe area handling
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
     },
     buyButton: {
         backgroundColor: '#4A55A2',
@@ -444,7 +472,31 @@ const styles = StyleSheet.create({
     },
     buyButtonText: {
         color: '#FFFFFF',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
+    },
+    specsContainer: {
+        marginTop: 24,
+    },
+    specsTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1F2937',
+        marginBottom: 16,
+    },
+    specRow: {
+        flexDirection: 'row',
+        marginBottom: 12,
+    },
+    specLabel: {
+        width: 140, // Fixed width to align values nicely
+        fontSize: 12,
+        color: '#1F2937',
+        fontWeight: '500', // Slightly heavier, like mockup
+    },
+    specValue: {
+        flex: 1,
+        fontSize: 12,
+        color: '#6B7280',
     },
 });

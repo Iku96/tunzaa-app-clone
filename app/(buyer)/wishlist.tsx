@@ -23,7 +23,7 @@ export default function WishlistScreen() {
                     text: "Remove",
                     style: "destructive",
                     onPress: () => {
-                        removeFromWishlist(productId, {
+                        removeFromWishlist({ productId }, {
                             onSuccess: () => refetch(),
                             onError: () => Alert.alert("Error", "Could not remove item")
                         });
@@ -77,7 +77,7 @@ export default function WishlistScreen() {
                         <View style={styles.titleRow}>
                             <Text style={styles.productTitle} numberOfLines={2}>{product.name}</Text>
                             <TouchableOpacity style={styles.heartButton} onPress={() => handleRemove(item.product_id)}>
-                                <Ionicons name="heart" size={24} color="#EF4444" />
+                                <Ionicons name="heart" size={20} color="#EF4444" />
                             </TouchableOpacity>
                         </View>
 
@@ -91,17 +91,18 @@ export default function WishlistScreen() {
                             <Text style={styles.ratingText}>(15)</Text>
                         </View>
 
-                        <Text style={styles.price}>Tsh {price.toLocaleString()}</Text>
-
-                        {/* Controls row (Trash, Qty, Add - typical cart controls mixed into wishlist UI) */}
-                        <View style={styles.controlsRow}>
-                            <TouchableOpacity onPress={() => handleRemove(item.product_id)} style={styles.trashCircle}>
-                                <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                            </TouchableOpacity>
-                            <Text style={styles.quantityText}>1</Text>
-                            <TouchableOpacity style={styles.addCircle}>
-                                <Ionicons name="add" size={20} color="#FFFFFF" />
-                            </TouchableOpacity>
+                        {/* Controls/Price Row */}
+                        <View style={styles.priceControlsRow}>
+                            <Text style={styles.price}>Tsh {price.toLocaleString()}</Text>
+                            <View style={styles.qtyRow}>
+                                <TouchableOpacity style={styles.qtyButton} onPress={() => handleRemove(item.product_id)}>
+                                    <Ionicons name="remove" size={16} color="#6B7280" />
+                                </TouchableOpacity>
+                                <Text style={styles.qtyText}>1</Text>
+                                <TouchableOpacity style={[styles.qtyButton, styles.qtyButtonAdd]}>
+                                    <Ionicons name="add" size={16} color="#FFFFFF" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -176,9 +177,10 @@ const styles = StyleSheet.create({
         marginLeft: -4,
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 16, // Screenshot slightly smaller header
         fontWeight: 'bold',
         color: '#1A1A1A',
+        textAlign: 'center',
     },
     subHeader: {
         flexDirection: 'row',
@@ -252,9 +254,9 @@ const styles = StyleSheet.create({
     },
     productTitle: {
         flex: 1,
-        fontSize: 14,
+        fontSize: 13, // Matches standard 13-14pt
         fontWeight: '600',
-        color: '#425BA4', // Theme blue
+        color: '#4A55A2', // Primary theme blue matching the text in the screenshot
         paddingRight: 8,
     },
     heartButton: {
@@ -267,54 +269,55 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     ratingText: {
-        fontSize: 12,
-        color: '#9CA3AF',
+        fontSize: 11,
+        color: '#4B5563', // Darker gray for rating digits like (56)
         marginLeft: 4,
     },
-    price: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#1A1A1A',
-        marginTop: 8,
-    },
-    controlsRow: {
+    priceControlsRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'flex-end', // Aligned to right as per design
+        justifyContent: 'space-between',
         marginTop: 8,
-        gap: 14,
     },
-    trashCircle: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: '#FEE2E2', // Light red background
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    quantityText: {
-        fontSize: 16,
+    price: {
+        fontSize: 14, // Same line as controls
         fontWeight: 'bold',
         color: '#1A1A1A',
     },
-    addCircle: {
-        width: 32,
-        height: 32,
+    qtyRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F3F4F6', // Light gray pill
         borderRadius: 16,
-        backgroundColor: '#425BA4', // Blue background
+        padding: 2,
+    },
+    qtyButton: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6', // Merge into background unless added
         justifyContent: 'center',
         alignItems: 'center',
     },
+    qtyButtonAdd: {
+        backgroundColor: '#4A55A2', // Solid blue for the + pill
+    },
+    qtyText: {
+        marginHorizontal: 8,
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#1A1A1A',
+    },
     buyNowButton: {
-        backgroundColor: '#425BA4',
-        borderRadius: 12,
-        paddingVertical: 14,
+        backgroundColor: '#4A55A2', // Matches new dark branding
+        borderRadius: 8, // More squared
+        paddingVertical: 12,
         alignItems: 'center',
     },
     buyNowText: {
         color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 14,
+        fontWeight: 'bold',
     },
     centerContainer: {
         flex: 1,

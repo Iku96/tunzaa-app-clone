@@ -23,11 +23,19 @@ export default function WelcomeScreen() {
             // Give a small delay for splash effect
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Per user request: Do NOT persist login session.
-            // Always sign out and go to language selection on app launch.
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                await supabase.auth.signOut();
+                router.replace('/(buyer)');
+                return;
+            }
+
+            // Also check for Tunzaa's custom auth storage
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            const userData = await AsyncStorage.getItem('user_data');
+
+            if (userData) {
+                router.replace('/(buyer)');
+                return;
             }
 
             router.replace('/language');

@@ -32,27 +32,29 @@ export default function RefundStatusScreen() {
                 {/* Step 1: Submitted */}
                 <View style={styles.timelineStep}>
                     <View style={[styles.stepIcon, styles.stepActive]}>
-                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                        <Ionicons name="documents-outline" size={14} color="#FFFFFF" />
                     </View>
                     <Text style={[styles.stepLabel, styles.labelActive]}>Submitted</Text>
                 </View>
 
+                {/* Left Line */}
                 <View style={[styles.line, styles.lineActive]} />
 
                 {/* Step 2: Processing */}
                 <View style={styles.timelineStep}>
-                    <View style={[styles.stepIcon, styles.stepWarning]}>
-                        <Ionicons name="time" size={16} color="#FFFFFF" />
+                    <View style={[styles.stepIcon, styles.stepProcessing]}>
+                        <Ionicons name="sync" size={14} color="#3B82F6" />
                     </View>
-                    <Text style={[styles.stepLabel, styles.labelWarning]}>Processing</Text>
+                    <Text style={[styles.stepLabel, styles.labelProcessing]}>Processing</Text>
                 </View>
 
+                {/* Right Line */}
                 <View style={styles.line} />
 
                 {/* Step 3: Completed */}
                 <View style={styles.timelineStep}>
-                    <View style={styles.stepIcon}>
-                        <View style={styles.stepDot} />
+                    <View style={styles.stepIconCompleted}>
+                        <Ionicons name="checkmark" size={14} color="#D1D5DB" />
                     </View>
                     <Text style={styles.stepLabel}>Completed</Text>
                 </View>
@@ -75,12 +77,8 @@ export default function RefundStatusScreen() {
                 {/* Status Card */}
                 <View style={styles.statusCard}>
                     <View style={styles.statusHeader}>
-                        <Text style={styles.productName}>{refundData.productName}</Text>
-                        <View style={styles.statusBadge}>
-                            <Text style={styles.statusText}>{refundData.status}</Text>
-                        </View>
+                        {renderTimeline()}
                     </View>
-                    {renderTimeline()}
 
                     <View style={styles.divider} />
 
@@ -92,9 +90,9 @@ export default function RefundStatusScreen() {
                         <Text style={[styles.label, { color: '#EF4444' }]}>Charging fee (15%)</Text>
                         <Text style={[styles.value, { color: '#EF4444' }]}>-Tsh {refundData.processingFee.toLocaleString()}</Text>
                     </View>
-                    <View style={[styles.row, { marginTop: 8 }]}>
+                    <View style={[styles.row, styles.totalRow]}>
                         <Text style={styles.totalLabel}>Refund Amount</Text>
-                        <Text style={styles.totalValue}>Tsh{refundData.refundAmount.toLocaleString()}</Text>
+                        <Text style={styles.totalValue}>Tsh{refundData.refundAmount.toLocaleString()}, 000</Text>
                     </View>
 
                     {/* Estimated Completion */}
@@ -226,62 +224,72 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         justifyContent: 'space-between',
         width: '100%',
+        paddingHorizontal: 20,
     },
     timelineStep: {
         alignItems: 'center',
-        width: 60,
+        width: 65,
+        zIndex: 2,
     },
     stepIcon: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
         backgroundColor: '#E5E7EB',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 4,
-        zIndex: 1,
+        marginBottom: 8,
     },
     stepActive: {
-        backgroundColor: '#22C55E',
+        backgroundColor: '#22C55E', // Green
     },
-    stepWarning: {
-        backgroundColor: '#F59E0B',
+    stepProcessing: {
+        backgroundColor: '#EFF6FF', // Light blue
     },
-    stepDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#9CA3AF',
+    stepIconCompleted: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#F3F4F6', // Light gray
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
     },
     stepLabel: {
-        fontSize: 10,
-        color: '#9CA3AF',
+        fontSize: 11,
+        color: '#1F2937',
         textAlign: 'center',
+        fontWeight: '500',
     },
     labelActive: {
-        color: '#22C55E',
-        fontWeight: '600',
+        color: '#1F2937',
     },
-    labelWarning: {
-        color: '#F59E0B',
-        fontWeight: '600',
+    labelProcessing: {
+        color: '#3B82F6',
     },
     line: {
         position: 'absolute',
-        top: 11,
-        left: 30, // Adjust based on icon size
-        right: 30,
-        height: 2,
-        backgroundColor: '#E5E7EB',
+        top: 14,
+        left: '25%', // span between 1 and 2
+        width: '25%',
+        height: 1,
+        borderStyle: 'dashed',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
         zIndex: 0,
     },
     lineActive: {
-        backgroundColor: '#22C55E', // Or gradient
+        left: '20%',
+        width: '30%',
+        borderStyle: 'solid',
+        borderWidth: 0,
+        height: 2,
+        backgroundColor: '#E5E7EB',
     },
     divider: {
         height: 1,
         backgroundColor: '#F3F4F6',
-        marginVertical: 16,
+        marginBottom: 16,
     },
     row: {
         flexDirection: 'row',
@@ -297,13 +305,19 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         color: '#1F2937',
     },
+    totalRow: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
+    },
     totalLabel: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#1F2937',
     },
     totalValue: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#4A55A2',
     },

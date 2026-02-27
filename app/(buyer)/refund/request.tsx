@@ -60,7 +60,7 @@ export default function RefundRequestScreen() {
                         <Text style={[styles.calcLabel, { color: '#EF4444' }]}>Charging Fee (15%)</Text>
                         <Text style={[styles.calcValue, { color: '#EF4444' }]}>-Tsh {chargingFee.toLocaleString()}</Text>
                     </View>
-                    <View style={[styles.calcRow, styles.totalRow]}>
+                    <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Refund Amount</Text>
                         <Text style={styles.totalValue}>Tsh{refundAmount.toLocaleString()}</Text>
                     </View>
@@ -112,7 +112,7 @@ export default function RefundRequestScreen() {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.warningIcon}>
-                            <Ionicons name="warning" size={32} color="#EF4444" />
+                            <Ionicons name="warning" size={24} color="#EF4444" />
                         </View>
                         <Text style={styles.modalTitle}>Confirm Refund Request</Text>
 
@@ -143,7 +143,7 @@ export default function RefundRequestScreen() {
                                 <Text style={[styles.modalLabel, { color: '#EF4444' }]}>Charging Fee (15%)</Text>
                                 <Text style={[styles.modalValue, { color: '#EF4444' }]}>-Tsh {chargingFee.toLocaleString()}</Text>
                             </View>
-                            <View style={[styles.modalRow, { marginTop: 8 }]}>
+                            <View style={[styles.modalRow, { marginTop: 12 }]}>
                                 <Text style={styles.modalTotalLabel}>Refund Amount</Text>
                                 <Text style={styles.modalTotalValue}>Tsh{refundAmount.toLocaleString()}</Text>
                             </View>
@@ -219,11 +219,21 @@ const styles = StyleSheet.create({
     },
     calcContainer: {
         marginBottom: 24,
+        padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
     },
     calcRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 8,
+        marginBottom: 12,
     },
     calcLabel: {
         fontSize: 14,
@@ -235,18 +245,20 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginTop: 8,
-        paddingTop: 8,
+        paddingTop: 16,
         borderTopWidth: 1,
         borderTopColor: '#F3F4F6',
     },
     totalLabel: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#1F2937',
     },
     totalValue: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#4A55A2',
     },
@@ -266,12 +278,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 12,
+        padding: 16,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
+        borderColor: '#F3F4F6',
+        borderRadius: 12,
         marginBottom: 16,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#FFFFFF',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.02,
+        shadowRadius: 2,
+        elevation: 1,
     },
     inputText: {
         fontSize: 14,
@@ -283,13 +300,18 @@ const styles = StyleSheet.create({
     },
     textArea: {
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        padding: 12,
+        borderColor: '#F3F4F6',
+        borderRadius: 12,
+        padding: 16,
         height: 100,
         marginBottom: 24,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#FFFFFF',
         fontSize: 14,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.02,
+        shadowRadius: 2,
+        elevation: 1,
     },
     policyCard: {
         backgroundColor: '#FEF3C7',
@@ -334,19 +356,25 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 24,
+        borderRadius: 16,
         padding: 24,
-        width: '100%',
+        width: '90%', // Tighter to match design
         alignItems: 'center',
+        position: 'relative',
+        marginTop: 20, // Space for the top floating icon
     },
     warningIcon: {
+        position: 'absolute',
+        top: -24,
         width: 48,
         height: 48,
         borderRadius: 24,
         backgroundColor: '#FEE2E2',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
+        borderWidth: 4,
+        borderColor: '#FFFFFF', // To create cutout effect
+        zIndex: 10,
     },
     modalTitle: {
         fontSize: 16,
@@ -357,14 +385,14 @@ const styles = StyleSheet.create({
     modalSummary: {
         width: '100%',
         backgroundColor: '#F3F4F6',
-        padding: 12,
+        padding: 16,
         borderRadius: 8,
         marginBottom: 16,
     },
     modalNote: {
         fontSize: 12,
         color: '#6B7280',
-        marginTop: 4,
+        marginTop: 8,
     },
     noticeCard: {
         width: '100%',
@@ -396,14 +424,14 @@ const styles = StyleSheet.create({
     modalRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 4,
+        marginBottom: 12,
     },
     modalLabel: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6B7280',
     },
     modalValue: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '500',
         color: '#1F2937',
     },
@@ -421,7 +449,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#4A55A2',
         width: '100%',
         paddingVertical: 14,
-        borderRadius: 24,
+        borderRadius: 30, // Much more rounded
         alignItems: 'center',
         marginBottom: 12,
     },
@@ -434,12 +462,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#F3F4F6',
         width: '100%',
         paddingVertical: 14,
-        borderRadius: 24,
+        borderRadius: 30,
         alignItems: 'center',
     },
     cancelButtonText: {
-        color: '#1F2937',
+        color: '#6B7280',
         fontSize: 14,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
 });

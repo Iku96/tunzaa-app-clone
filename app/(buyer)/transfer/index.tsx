@@ -40,7 +40,7 @@ const TRANSFER_ORDERS = [
 export default function TransferIndexScreen() {
     const router = useRouter();
 
-    const handleTransfer = (order) => {
+    const handleTransfer = (order: any) => {
         // Pass selected order ID to review screen
         router.push({
             pathname: '/(buyer)/transfer/review',
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     subtitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#1F2937',
         alignSelf: 'flex-start',
@@ -172,13 +172,13 @@ const styles = StyleSheet.create({
     },
     badge: {
         backgroundColor: '#EFF6FF',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
     },
     badgeText: {
         color: '#3B82F6',
-        fontSize: 10,
+        fontSize: 11,
         fontWeight: '600',
     },
     dateText: {
@@ -224,14 +224,14 @@ const styles = StyleSheet.create({
     progressLabels: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 6,
+        marginBottom: 8,
     },
     labels: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#4B5563',
     },
     percentageText: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: 'bold',
         color: '#1F2937',
     },
@@ -248,8 +248,8 @@ const styles = StyleSheet.create({
     },
     transferButton: {
         backgroundColor: '#4A55A2',
-        paddingVertical: 12,
-        borderRadius: 24,
+        paddingVertical: 14,
+        borderRadius: 30, // standard pill shape
         alignItems: 'center',
     },
     transferButtonText: {

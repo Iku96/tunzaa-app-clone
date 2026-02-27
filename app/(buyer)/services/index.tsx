@@ -76,7 +76,7 @@ export default function ServicesScreen() {
                                 <Text style={styles.userName}>{displayName} 👋</Text>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.notificationBtn}>
+                        <TouchableOpacity style={styles.notificationBtn} onPress={() => router.push('/(buyer)/notifications')}>
                             <Ionicons name="notifications-outline" size={24} color="#4A55A2" />
                         </TouchableOpacity>
                     </View>

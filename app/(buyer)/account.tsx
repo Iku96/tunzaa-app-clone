@@ -19,6 +19,7 @@ import { authApi } from '../../src/services/auth';
 import ProductCard from '../../src/components/product/ProductCardVertical';
 import PromoBannerCarousel from '../../src/components/home/PromoBannerCarousel';
 import { useBanners } from '../../src/services/tenant';
+import BottomNav from '../../src/components/navigation/BottomNav';
 
 const { width } = Dimensions.get('window');
 const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
@@ -85,9 +86,9 @@ export default function AccountScreen() {
 
     // Order status actions
     const orderActions = [
-        { icon: 'car-outline' as const, label: 'Shipped', route: '/(buyer)/orders' },
-        { icon: 'archive-outline' as const, label: 'Received', route: '/(buyer)/orders' },
-        { icon: 'return-down-back-outline' as const, label: 'Return', route: '/(buyer)/orders' },
+        { icon: 'bus-outline' as const, label: 'Shipped', route: '/(buyer)/orders/delivery' },
+        { icon: 'download-outline' as const, label: 'Received', route: '/(buyer)/orders' },
+        { icon: 'reload-circle-outline' as const, label: 'Return', route: '/(buyer)/orders' },
     ];
 
     // Quick actions
@@ -124,7 +125,7 @@ export default function AccountScreen() {
                         </View>
                     </View>
                     <View style={styles.headerActions}>
-                        <TouchableOpacity style={styles.headerIconBtn}>
+                        <TouchableOpacity style={styles.headerIconBtn} onPress={() => router.push('/(buyer)/notifications')}>
                             <Ionicons name="notifications-outline" size={22} color="#1F2937" />
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -173,8 +174,10 @@ export default function AccountScreen() {
                     ) : null;
                 })()}
 
-                {/* ── Featured Banner ── */}
-                <PromoBannerCarousel banners={banners} loading={bannersLoading} />
+                {/* ── Featured Dynamic Sliding Banner ── */}
+                <View style={{ marginBottom: 10 }}>
+                    <PromoBannerCarousel banners={banners} loading={bannersLoading} />
+                </View>
 
                 {/* ── Order Status ── */}
                 <View style={styles.orderStatusRow}>
@@ -184,9 +187,7 @@ export default function AccountScreen() {
                             style={styles.orderStatusItem}
                             onPress={() => router.push(action.route as any)}
                         >
-                            <View style={styles.orderStatusIcon}>
-                                <Ionicons name={action.icon} size={28} color="#4A55A2" />
-                            </View>
+                            <Ionicons name={action.icon} size={28} color="#1F2937" style={{ marginBottom: 4 }} />
                             <Text style={styles.orderStatusLabel}>{action.label}</Text>
                         </TouchableOpacity>
                     ))}
@@ -214,9 +215,7 @@ export default function AccountScreen() {
                             style={styles.quickActionItem}
                             onPress={() => router.push(action.route as any)}
                         >
-                            <View style={styles.quickActionIcon}>
-                                <Ionicons name={action.icon} size={26} color="#4A55A2" />
-                            </View>
+                            <Ionicons name={action.icon} size={26} color="#1F2937" style={{ marginBottom: 4 }} />
                             <Text style={styles.quickActionLabel}>{action.label}</Text>
                         </TouchableOpacity>
                     ))}
@@ -228,17 +227,17 @@ export default function AccountScreen() {
                 {/* ── Discover More Deals ── */}
                 <View style={styles.dealsSection}>
                     <Text style={styles.dealsSectionTitle}>Discover More Deals</Text>
-                    <FlatList
-                        horizontal
-                        data={products.slice(0, 8)}
-                        renderItem={renderProductItem}
-                        keyExtractor={(item) => item.id}
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.dealsListContent}
-                    />
+                    <View style={styles.dealsGrid}>
+                        {products.map((item, index) => (
+                            <View key={item.id || index} style={styles.dealsGridItem}>
+                                <ProductCard product={item} />
+                            </View>
+                        ))}
+                    </View>
                 </View>
 
             </ScrollView>
+            <BottomNav />
         </SafeAreaView>
     );
 }
@@ -323,19 +322,10 @@ const styles = StyleSheet.create({
     },
     orderStatusItem: {
         alignItems: 'center',
-        gap: 8,
-    },
-    orderStatusIcon: {
-        width: 56,
-        height: 56,
-        borderRadius: 16,
-        backgroundColor: '#F3F4FF',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     orderStatusLabel: {
         fontSize: 12,
-        color: '#4B5563',
+        color: '#1F2937',
         fontWeight: '500',
     },
 
@@ -398,19 +388,10 @@ const styles = StyleSheet.create({
     },
     quickActionItem: {
         alignItems: 'center',
-        gap: 8,
-    },
-    quickActionIcon: {
-        width: 56,
-        height: 56,
-        borderRadius: 16,
-        backgroundColor: '#F3F4FF',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     quickActionLabel: {
         fontSize: 12,
-        color: '#4B5563',
+        color: '#1F2937',
         fontWeight: '500',
     },
 
@@ -427,13 +408,20 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     dealsSectionTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#111827',
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
         marginBottom: 16,
     },
-    dealsListContent: {
+    dealsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
         paddingRight: 20,
+    },
+    dealsGridItem: {
+        width: '48%',
+        marginBottom: 16,
     },
 
     // ── Profile Completion Bar ──

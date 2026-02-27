@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, TextInput } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -49,20 +49,22 @@ export default function PaymentMethodScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [phoneNumber, setPhoneNumber] = useState('');
 
-    const handleSelect = (method: any) => {
-        setSelectedId(method.id);
-
-        if (method.type === 'mobile_money') {
-            // Navigate to payment input, forwarding along the checkout params
-            router.push({
-                pathname: '/(buyer)/checkout/payment-input',
-                params: { ...params }
-            });
+    const handleSelect = (method: typeof PAYMENT_METHODS[0]) => {
+        if (selectedId === method.id) {
+            setSelectedId(null); // Toggle collapse
         } else {
-            // Handle card or other flows
-            console.log('Selected:', method.name);
+            setSelectedId(method.id);
         }
+    };
+
+    const handleMakePayment = () => {
+        if (!phoneNumber) {
+            alert("Please enter a phone number");
+            return;
+        }
+        router.push('/(buyer)/order/123'); // Route to new tracking dashboard
     };
 
     return (
@@ -76,21 +78,60 @@ export default function PaymentMethodScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                {PAYMENT_METHODS.map((method) => (
-                    <TouchableOpacity
-                        key={method.id}
-                        style={styles.methodCard}
-                        onPress={() => handleSelect(method)}
-                    >
-                        <View style={styles.methodInfo}>
-                            <View style={styles.iconContainer}>
-                                <Image source={{ uri: method.image }} style={styles.methodImage} resizeMode="contain" />
+                <View style={styles.methodsContainer}>
+                    {PAYMENT_METHODS.map((method, index) => {
+                        const isExpanded = selectedId === method.id;
+                        const isLast = index === PAYMENT_METHODS.length - 1;
+
+                        return (
+                            <View key={method.id} style={[styles.methodWrapper, !isLast && styles.methodDivider]}>
+                                <TouchableOpacity
+                                    style={styles.methodCard}
+                                    onPress={() => handleSelect(method)}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={styles.methodInfo}>
+                                        <View style={styles.iconContainer}>
+                                            <Image source={{ uri: method.image }} style={styles.methodImage} resizeMode="contain" />
+                                        </View>
+                                        <Text style={[styles.methodName, isExpanded && styles.methodNameActive]}>{method.name}</Text>
+                                    </View>
+                                    {!isExpanded && (
+                                        <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
+                                    )}
+                                </TouchableOpacity>
+
+                                {/* Expanded Content Area */}
+                                {isExpanded && method.type === 'mobile_money' && (
+                                    <View style={styles.expandedContent}>
+                                        <Text style={styles.expandedDescText}>
+                                            You are about to pay Tsh 35,000 on Tunzaa for the purchase of a Smart Watch Series 5.
+                                        </Text>
+
+                                        <Text style={styles.inputLabel}>Phone</Text>
+                                        <View style={styles.phoneInputContainer}>
+                                            <View style={styles.countryCodeBox}>
+                                                <Text style={styles.countryCodeText}>+255</Text>
+                                            </View>
+                                            <TextInput
+                                                style={styles.phoneInput}
+                                                placeholder="Enter Phone number"
+                                                placeholderTextColor="#9CA3AF"
+                                                keyboardType="phone-pad"
+                                                value={phoneNumber}
+                                                onChangeText={setPhoneNumber}
+                                            />
+                                        </View>
+
+                                        <TouchableOpacity style={styles.makePaymentButton} onPress={handleMakePayment}>
+                                            <Text style={styles.makePaymentButtonText}>Make a Payment</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </View>
-                            <Text style={styles.methodName}>{method.name}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
-                    </TouchableOpacity>
-                ))}
+                        );
+                    })}
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -119,7 +160,21 @@ const styles = StyleSheet.create({
     },
     content: {
         paddingHorizontal: 20,
-        gap: 16,
+        paddingBottom: 40,
+    },
+    methodsContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        overflow: 'hidden', // Ensures first/last children stay inside rounded corners
+    },
+    methodWrapper: {
+        // Wrapper contains both the clickable row and expanded content
+    },
+    methodDivider: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
     },
     methodCard: {
         flexDirection: 'row',
@@ -127,14 +182,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         padding: 16,
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
     },
     methodInfo: {
         flexDirection: 'row',
@@ -157,5 +204,63 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         color: '#1F2937',
+    },
+    methodNameActive: {
+        color: '#1F2937', // Optional: could be theme blue if needed
+        fontWeight: '600',
+    },
+    expandedContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 24,
+    },
+    expandedDescText: {
+        fontSize: 13,
+        color: '#4B5563',
+        lineHeight: 20,
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600', // Semi-bold for label
+        color: '#1A1A1A',
+        marginBottom: 8,
+    },
+    phoneInputContainer: {
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 24,
+    },
+    countryCodeBox: {
+        backgroundColor: '#F9FAFB',
+        paddingHorizontal: 16,
+        justifyContent: 'center',
+        borderRightWidth: 1,
+        borderRightColor: '#E5E7EB',
+    },
+    countryCodeText: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    phoneInput: {
+        flex: 1,
+        height: 50,
+        paddingHorizontal: 16,
+        fontSize: 14,
+        color: '#1F2937',
+        backgroundColor: '#FFFFFF',
+    },
+    makePaymentButton: {
+        backgroundColor: '#425BA4', // Theme blue
+        paddingVertical: 14,
+        borderRadius: 30,
+        alignItems: 'center',
+    },
+    makePaymentButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: 'bold',
     },
 });
