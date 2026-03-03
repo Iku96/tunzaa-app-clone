@@ -1,117 +1,168 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// Note: In a real app we'd use react-native-maps. 
-// For this UI mockup, we'll use a static map background or a styled placeholder.
 
-const { width } = Dimensions.get('window');
-
-export default function PinLocationScreen() {
+export default function DeliveryTrackingScreen() {
     const router = useRouter();
-    const [searchQuery, setSearchQuery] = useState('');
+    // 0 = Review, 1 = Assigned Modal, 2 = Active Tracking
+    const [trackingState, setTrackingState] = useState(0);
 
-    const results = [
-        { id: '1', name: 'Kijitonyama shule', area: 'Dar es salaam, Tanzania', distance: '1.1km' },
-        { id: '2', name: 'Kijitonyama shule', area: 'Dar es salaam, Tanzania', distance: '1.1km' },
-    ];
-
-    const confirmAddress = () => {
-        // Mock returning the address to the previous screen
-        router.push({
-            pathname: '/(buyer)/profile/delivery/address',
-            params: { address: '772M+VJX Shoppers Plaza Masaki, Dar Es Salaam, TZ' }
-        });
+    const handleConfirm = () => {
+        setTrackingState(1);
     };
+
+    const handleMockDelivered = () => {
+        // Navigates to rating flow once "Call driver" is clicked or mock finishes
+        router.push('/(buyer)/orders/rate');
+    };
+
+    const renderReviewCard = () => (
+        <View style={styles.floatingCard}>
+            <View style={styles.dateLabelRow}>
+                <Ionicons name="calendar-outline" size={16} color="#4B5563" />
+                <Text style={styles.dateLabelText}>Thursday January 10th</Text>
+            </View>
+
+            <View style={styles.locationTimeline}>
+                <View style={styles.timelineItem}>
+                    <View style={styles.blueRing} />
+                    <View style={styles.timelineContent}>
+                        <Text style={styles.locationTitle}>Pickup from store</Text>
+                        <Text style={styles.locationSubtitle}>Mwanga shop</Text>
+                    </View>
+                </View>
+                <View style={styles.timelineLine} />
+                <View style={styles.timelineItem}>
+                    <View style={styles.greenRing} />
+                    <View style={styles.timelineContent}>
+                        <Text style={styles.locationTitle}>Drop off location</Text>
+                        <Text style={styles.locationSubtitle}>Mbezi shoppers Kawe</Text>
+                    </View>
+                    <Ionicons name="create-outline" size={20} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
+                </View>
+            </View>
+
+            <View style={styles.deliveryCostRow}>
+                <Text style={styles.costLabel}>Delivery Cost</Text>
+                <Text style={styles.costValue}>Tsh 12,000</Text>
+            </View>
+
+            <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirm}>
+                <Text style={styles.confirmBtnText}>Confirm</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderAssignedModal = () => (
+        <Modal visible={trackingState === 1} transparent animationType="fade">
+            <View style={styles.modalOverlay}>
+                <View style={styles.successModalCard}>
+                    <Image source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3209/3209955.png' }} style={styles.scooterIcon} />
+                    <Text style={styles.successText}>
+                        Your Order successfully assigned. To: <Text style={{ fontWeight: 'bold' }}>Everest driver</Text>
+                    </Text>
+                    <TouchableOpacity style={styles.okBtn} onPress={() => setTrackingState(2)}>
+                        <Text style={styles.okBtnText}>OK</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+
+    const renderTrackingCard = () => (
+        <View style={styles.floatingCard}>
+            <View style={styles.trackingHeaderRow}>
+                <Text style={styles.trackingTitle}>Your order is being processed</Text>
+                <TouchableOpacity onPress={handleMockDelivered}>
+                    <Ionicons name="refresh" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+            </View>
+
+            {/* Horizontal timeline */}
+            <View style={styles.horizontalTimeline}>
+                <View style={styles.hLine} />
+                <View style={[styles.hNode, styles.hNodeActive]}>
+                    <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                </View>
+                <View style={[styles.hNode, styles.hNodeCurrent]} />
+                <View style={[styles.hNode, styles.hNodePending]} />
+            </View>
+            <View style={styles.hLabels}>
+                <Text style={styles.hLabelTextActive}>Mwanga shop</Text>
+                <Text style={styles.hLabelText}>Kawe</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.driverRow}>
+                <View style={styles.vodacomLogoMock}>
+                    {/* Mock identical to screenshot red vodacom circle icon */}
+                    <Image source={{ uri: 'https://1000logos.net/wp-content/uploads/2021/04/Vodacom-logo.png' }} style={{ width: 30, height: 30, borderRadius: 15 }} />
+                </View>
+                <View style={styles.driverInfo}>
+                    <Text style={styles.driverSub}>Vodacom Shop</Text>
+                    <Text style={styles.driverName}>Everest driver</Text>
+                </View>
+                <View style={styles.amountWrap}>
+                    <Text style={styles.amountLabel}>Total amount</Text>
+                    <Text style={styles.amountValue}>Tsh 12,000</Text>
+                </View>
+            </View>
+
+            <TouchableOpacity style={styles.callBtn} onPress={handleMockDelivered}>
+                <Ionicons name="call" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.callBtnText}>Call the driver</Text>
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <View style={styles.container}>
             {/* Map Placeholder */}
-            <View style={styles.mapPlaceholder}>
+            <View style={styles.mapContainer}>
                 <Image
-                    source={{ uri: 'https://images.unsplash.com/photo-1569336415962-a4bd9f67c07a?w=800&h=1200' }}
+                    source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&auto=format&fit=crop&q=80' }}
                     style={styles.mapImage}
-                    resizeMode="cover"
                 />
 
-                {/* Floating Pin */}
-                <View style={styles.pinContainer}>
-                    <View style={styles.pinPulse} />
-                    <Ionicons name="location" size={40} color="#425BA4" />
+                {/* Simulated Pins/Route on Map */}
+                <View style={styles.mapOverlayLayer}>
+                    {trackingState === 2 ? (
+                        <>
+                            {/* Blue route line and Car icon simulation */}
+                            <Ionicons name="location" size={36} color="#22C55E" style={{ position: 'absolute', top: '30%', right: '30%' }} />
+                            <Ionicons name="car" size={32} color="#4A55A2" style={{ position: 'absolute', top: '45%', left: '45%' }} />
+                            <View style={styles.mockRouteLine} />
+                        </>
+                    ) : (
+                        <Ionicons name="location" size={40} color="#4A55A2" style={{ position: 'absolute', top: '40%', left: '40%' }} />
+                    )}
                 </View>
             </View>
 
+            {/* Content Overlays */}
             <SafeAreaView style={styles.overlay} edges={['top']}>
-                {/* Header / Search */}
+
+                {/* Dynamic Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                         <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                     </TouchableOpacity>
-                    <View style={styles.searchBar}>
-                        <Ionicons name="search-outline" size={20} color="#9CA3AF" />
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="kijitonyama"
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                        />
-                        {searchQuery.length > 0 && (
-                            <TouchableOpacity onPress={() => setSearchQuery('')}>
-                                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-                            </TouchableOpacity>
-                        )}
-                    </View>
+                    {trackingState === 0 && (
+                        <Text style={styles.headerTitle}>Review your order before delivery</Text>
+                    )}
                 </View>
 
-                {/* Search Results Dropdown (if searching) */}
-                <View style={styles.resultsContainer}>
-                    <Text style={styles.resultsHeader}>Result for "Kijitonyama"</Text>
-                    <Text style={styles.resultsCount}>{results.length} Found</Text>
-
-                    {results.map((item) => (
-                        <TouchableOpacity key={item.id} style={styles.resultItem}>
-                            <View style={styles.resultIconBox}>
-                                <Ionicons name="location-outline" size={20} color="#4B5563" />
-                            </View>
-                            <View style={styles.resultInfo}>
-                                <Text style={styles.resultName}>{item.name}</Text>
-                                <Text style={styles.resultArea}>{item.area}</Text>
-                            </View>
-                            <Text style={styles.resultDistance}>{item.distance}</Text>
-                        </TouchableOpacity>
-                    ))}
+                {/* Bottom Card content */}
+                <View style={styles.bottomContainer}>
+                    {trackingState === 0 ? renderReviewCard() : renderTrackingCard()}
                 </View>
 
-                {/* Footer UI */}
-                <View style={styles.footer}>
-                    <View style={styles.addressInfoCard}>
-                        <View style={styles.addressIconBox}>
-                            <Ionicons name="location" size={20} color="#425BA4" />
-                        </View>
-                        <Text style={styles.addressText} numberOfLines={1}>
-                            772M+VJX Shoppers Plaza Masaki, Dar Es Salaam, TZ
-                        </Text>
-                    </View>
-
-                    <TouchableOpacity style={styles.confirmButton} onPress={confirmAddress}>
-                        <Text style={styles.confirmButtonText}>Confirm Address</Text>
-                    </TouchableOpacity>
-                </View>
             </SafeAreaView>
 
-            {/* Map Controls */}
-            <View style={styles.mapControls}>
-                <TouchableOpacity style={styles.controlBtn}>
-                    <Ionicons name="add" size={24} color="#4B5563" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.controlBtn}>
-                    <Ionicons name="remove" size={24} color="#4B5563" />
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.controlBtn, { marginTop: 12 }]}>
-                    <Ionicons name="navigate-outline" size={20} color="#4B5563" />
-                </TouchableOpacity>
-            </View>
+            {renderAssignedModal()}
         </View>
     );
 }
@@ -119,190 +170,328 @@ export default function PinLocationScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: '#FFFFFF',
     },
-    mapPlaceholder: {
+    mapContainer: {
         ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#E5E7EB',
     },
     mapImage: {
         width: '100%',
         height: '100%',
-        opacity: 0.8,
+        opacity: 0.9,
     },
-    pinContainer: {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        marginLeft: -20,
-        marginTop: -40,
-        alignItems: 'center',
-        justifyContent: 'center',
+    mapOverlayLayer: {
+        ...StyleSheet.absoluteFillObject,
     },
-    pinPulse: {
+    mockRouteLine: {
         position: 'absolute',
-        bottom: 4,
-        width: 12,
-        height: 6,
-        borderRadius: 4,
-        backgroundColor: 'rgba(0,0,0,0.2)',
+        top: '35%',
+        left: '48%',
+        width: 60,
+        height: 80,
+        borderLeftWidth: 4,
+        borderBottomWidth: 4,
+        borderColor: '#4A55A2',
+        borderBottomLeftRadius: 16,
     },
     overlay: {
         flex: 1,
+        justifyContent: 'space-between',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingVertical: 12,
-        gap: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        marginHorizontal: 16,
+        marginTop: 16,
+        borderRadius: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#FFFFFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        marginRight: 12,
     },
-    searchBar: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        height: 44,
-        borderRadius: 22,
-        paddingHorizontal: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    searchInput: {
-        flex: 1,
-        marginLeft: 10,
-        fontSize: 14,
-        color: '#1A1A1A',
-    },
-    resultsContainer: {
-        marginHorizontal: 20,
-        marginTop: 12,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    resultsHeader: {
+    headerTitle: {
         fontSize: 15,
         fontWeight: 'bold',
         color: '#1A1A1A',
-        marginBottom: 4,
-    },
-    resultsCount: {
-        fontSize: 12,
-        color: '#9CA3AF',
-        marginBottom: 16,
-    },
-    resultItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-    },
-    resultIconBox: {
-        marginRight: 12,
-    },
-    resultInfo: {
         flex: 1,
     },
-    resultName: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1F2937',
-        marginBottom: 2,
+    bottomContainer: {
+        paddingHorizontal: 16,
+        paddingBottom: 32,
     },
-    resultArea: {
-        fontSize: 11,
-        color: '#9CA3AF',
+    floatingCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        padding: 24,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 8,
     },
-    resultDistance: {
-        fontSize: 12,
-        color: '#9CA3AF',
-    },
-    footer: {
-        position: 'absolute',
-        bottom: 34,
-        left: 0,
-        right: 0,
-        paddingHorizontal: 20,
-    },
-    addressInfoCard: {
+
+    // Review Card Styles
+    dateLabelRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
+        backgroundColor: '#F9FAFB',
         paddingHorizontal: 16,
-        height: 52,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        marginBottom: 24,
+        gap: 8,
     },
-    addressIconBox: {
-        marginRight: 12,
-    },
-    addressText: {
+    dateLabelText: {
         fontSize: 13,
         color: '#4B5563',
+        fontWeight: '500',
+    },
+    locationTimeline: {
+        position: 'relative',
+        marginBottom: 24,
+    },
+    timelineLine: {
+        position: 'absolute',
+        left: 9,
+        top: 24,
+        bottom: 24,
+        width: 2,
+        backgroundColor: '#E5E7EB',
+        zIndex: 0,
+    },
+    timelineItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 24,
+        zIndex: 1,
+    },
+    blueRing: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 5,
+        borderColor: '#E0E7FF',
+        backgroundColor: '#4A55A2',
+        marginRight: 16,
+    },
+    greenRing: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 5,
+        borderColor: '#DCFCE7',
+        backgroundColor: '#10B981',
+        marginRight: 16,
+    },
+    timelineContent: {
         flex: 1,
     },
-    confirmButton: {
-        backgroundColor: '#425BA4',
-        borderRadius: 30,
-        height: 52,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#425BA4",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
+    locationTitle: {
+        fontSize: 12,
+        color: '#6B7280',
+        marginBottom: 2,
     },
-    confirmButtonText: {
+    locationSubtitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    deliveryCostRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
+        marginBottom: 16,
+    },
+    costLabel: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    costValue: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    confirmBtn: {
+        backgroundColor: '#4A55A2',
+        borderRadius: 24,
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    confirmBtnText: {
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: 'bold',
     },
-    mapControls: {
-        position: 'absolute',
-        right: 20,
-        top: '50%',
-        marginTop: 40,
+
+    // Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
     },
-    controlBtn: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+    successModalCard: {
         backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 32,
+        alignItems: 'center',
+    },
+    scooterIcon: {
+        width: 80,
+        height: 80,
+        resizeMode: 'contain',
+        marginBottom: 16,
+    },
+    successText: {
+        fontSize: 15,
+        color: '#1A1A1A',
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 24,
+    },
+    okBtn: {
+        width: '100%',
+        backgroundColor: '#4A55A2',
+        borderRadius: 24,
+        paddingVertical: 14,
+        alignItems: 'center',
+    },
+    okBtnText: {
+        color: '#FFFFFF',
+        fontSize: 15,
+        fontWeight: 'bold',
+    },
+
+    // Tracking Card Styles
+    trackingHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    trackingTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    horizontalTimeline: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 8,
+        position: 'relative',
+        marginBottom: 8,
+    },
+    hLine: {
+        position: 'absolute',
+        left: 20,
+        right: 20,
+        height: 2,
+        backgroundColor: '#E5E7EB',
+        zIndex: 0,
+    },
+    hNode: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        zIndex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    hNodeActive: {
+        backgroundColor: '#4A55A2',
+    },
+    hNodeCurrent: {
+        backgroundColor: '#4A55A2',
+        borderWidth: 4,
+        borderColor: '#E0E7FF',
+    },
+    hNodePending: {
+        backgroundColor: '#D1D5DB',
+    },
+    hLabels: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    hLabelTextActive: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#1A1A1A',
+    },
+    hLabelText: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#F3F4F6',
+        marginVertical: 16,
+    },
+    driverRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    vodacomLogoMock: {
+        marginRight: 12,
+        borderRadius: 15,
+        backgroundColor: '#FFFFFF',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    driverInfo: {
+        flex: 1,
+    },
+    driverSub: {
+        fontSize: 11,
+        color: '#6B7280',
+        marginBottom: 2,
+    },
+    driverName: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    amountWrap: {
+        alignItems: 'flex-end',
+    },
+    amountLabel: {
+        fontSize: 11,
+        color: '#6B7280',
+        marginBottom: 2,
+    },
+    amountValue: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    callBtn: {
+        flexDirection: 'row',
+        backgroundColor: '#4A55A2',
+        borderRadius: 24,
+        paddingVertical: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+    },
+    callBtnText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

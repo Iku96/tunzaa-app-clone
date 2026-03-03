@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Circle } from 'react-native-svg';
 
+const { height } = Dimensions.get('window');
+
 export default function OrderDashboardScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
 
-    // Automatically show the success modal when reaching this page
-    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(true);
+    const [isFullyPaid, setIsFullyPaid] = useState(false);
+    const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
     const product = {
-        name: 'Nike Air Jordan',
-        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60', // Placeholder
-        orderNumber: '#986705',
-        quantity: 1,
-        date: '12 April 2025',
-        paid: 3273,
-        pending: 8727,
-        total: 12000,
-        progress: 30 // Percentage
+        name: 'Living Sofa',
+        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=300',
+        orderNumber: '#8050722',
+        date: '22 Feb 2021',
+        productPrice: 35000,
+        deliveryAmount: 10000,
+        total: 45000,
     };
 
     const CircleProgress = ({ percentage }: { percentage: number }) => {
-        const size = 120;
-        const strokeWidth = 12;
+        const size = 100;
+        const strokeWidth = 10;
         const radius = (size - strokeWidth) / 2;
         const circumference = radius * 2 * Math.PI;
         const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -34,7 +35,6 @@ export default function OrderDashboardScreen() {
         return (
             <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
                 <Svg width={size} height={size}>
-                    {/* Background Circle */}
                     <Circle
                         stroke="#F0F4F8"
                         fill="none"
@@ -43,9 +43,8 @@ export default function OrderDashboardScreen() {
                         r={radius}
                         strokeWidth={strokeWidth}
                     />
-                    {/* Progress Circle */}
                     <Circle
-                        stroke="#2F48AE" // Deep blue
+                        stroke="#2F48AE" // Deep blue matching screenshot
                         fill="none"
                         cx={size / 2}
                         cy={size / 2}
@@ -65,21 +64,67 @@ export default function OrderDashboardScreen() {
         );
     };
 
+    const handlePaymentSelect = () => {
+        setIsPaymentModalVisible(false);
+        setIsSuccessModalVisible(true);
+    };
+
+    const handleSuccessClose = () => {
+        setIsSuccessModalVisible(false);
+        setIsFullyPaid(true); // Update progress state after closing the success modal
+    };
+
+    const renderPaymentModal = () => (
+        <Modal visible={isPaymentModalVisible} animationType="slide" transparent>
+            <View style={styles.bottomSheetOverlay}>
+                <TouchableOpacity style={{ flex: 1 }} onPress={() => setIsPaymentModalVisible(false)} />
+                <View style={styles.bottomSheetContent}>
+                    <View style={styles.bottomSheetHandle} />
+                    <Text style={styles.bottomSheetTitle}>Select your preferred payment</Text>
+
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        {[
+                            { name: 'M-Pesa', logo: 'https://1000logos.net/wp-content/uploads/2021/04/Vodacom-logo.png' },
+                            { name: 'Tigo Pesa', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Tigo_logo.svg/1024px-Tigo_logo.svg.png' },
+                            { name: 'Airtel Money', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Airtel_logo_2010.svg/512px-Airtel_logo_2010.svg.png' },
+                            { name: 'Halo Pesa', logo: 'https://halotel.co.tz/assets/images/logo.png' },
+                            { name: 'Visa', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/1024px-Visa_Inc._logo.svg.png' },
+                            { name: 'Selcom Pay', logo: 'https://selcom.net/themes/selcom/assets/images/selcom-logo.png' }
+                        ].map((method, index) => (
+                            <TouchableOpacity key={index} style={styles.paymentMethodRow} onPress={handlePaymentSelect}>
+                                <View style={styles.paymentMethodLogoWrap}>
+                                    <Image source={{ uri: method.logo }} style={styles.paymentMethodLogo} resizeMode="contain" />
+                                </View>
+                                <Text style={styles.paymentMethodName}>{method.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            </View>
+        </Modal>
+    );
+
     const renderSuccessModal = () => (
         <Modal visible={isSuccessModalVisible} transparent={true} animationType="fade">
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
+            <View style={styles.successModalOverlay}>
+                <View style={styles.successModalContent}>
                     <TouchableOpacity
                         style={styles.modalCloseButton}
-                        onPress={() => setIsSuccessModalVisible(false)}
+                        onPress={handleSuccessClose}
                     >
                         <Ionicons name="close" size={24} color="#1F2937" />
                     </TouchableOpacity>
 
-                    <Text style={styles.modalTitle}>🎉Congratulation Femi!</Text>
-                    <Text style={styles.modalText}>
-                        You've successfully made your first installment payment for the <Text style={{ fontWeight: 'bold' }}>NIKE AIR JORDAN</Text>. Keep it up you're on your way to owning your goal!
+                    <Text style={styles.successModalTitle}>🎉 Congratulation Pam!!</Text>
+                    <Text style={styles.successModalText}>
+                        You have successfully completed your installment payment for the <Text style={{ fontWeight: 'bold' }}>NIKE AIR JORDAN</Text>
                     </Text>
+
+                    <View style={styles.successModalBox}>
+                        <Text style={styles.successModalBoxText}>
+                            You are about to make an payment. Tunzaa gives you the ability to pay in installments or the full amount at once, according to your convenience start with any amount to improve positive purchasing habit
+                        </Text>
+                    </View>
                 </View>
             </View>
         </Modal>
@@ -90,7 +135,7 @@ export default function OrderDashboardScreen() {
             {/* Header Area (Blue Background) */}
             <View style={styles.headerBackground}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.push('/(buyer)')} style={styles.backButton}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Order</Text>
@@ -98,29 +143,21 @@ export default function OrderDashboardScreen() {
                 </View>
             </View>
 
-            <ScrollView contentContainerStyle={styles.content} bounces={false}>
-
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} bounces={false}>
                 {/* Overlapping White Tracking Card */}
                 <View style={styles.trackingCard}>
 
                     {/* Top Row: Image & Progress Ring */}
                     <View style={styles.trackingTopRow}>
-                        <Image source={{ uri: product.image }} style={styles.productImage} resizeMode="cover" />
-                        <CircleProgress percentage={product.progress} />
+                        <Image source={{ uri: product.image }} style={styles.productImage} />
+                        <CircleProgress percentage={isFullyPaid ? 100 : 70} />
                     </View>
 
                     {/* Product Basic Info */}
                     <View style={styles.productInfoSection}>
-                        <Text style={styles.productName}>{product.name.toUpperCase()}</Text>
-
-                        <View style={styles.orderMetaRow}>
-                            <View>
-                                <Text style={styles.metaLabel}>Order number</Text>
-                                <Text style={styles.metaValue}>{product.orderNumber}</Text>
-                                <Text style={styles.metaLabel}>Quantity {product.quantity}</Text>
-                            </View>
-                            <Text style={styles.dateText}>{product.date}</Text>
-                        </View>
+                        <Text style={styles.productName}>{product.name}</Text>
+                        <Text style={styles.metaValue}>{product.orderNumber}</Text>
+                        <Text style={styles.dateText}>{product.date}</Text>
                     </View>
 
                     {/* Divider */}
@@ -131,29 +168,57 @@ export default function OrderDashboardScreen() {
                         <Text style={styles.detailsTitle}>Order details</Text>
 
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Amount paid</Text>
-                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tsh {product.paid.toLocaleString()}</Text>
+                            <Text style={styles.detailLabel}>Product</Text>
+                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tsh {product.productPrice.toLocaleString()}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Pending amount</Text>
-                            <Text style={[styles.detailValue, { color: '#F59E0B' }]}>Tsh {product.pending.toLocaleString()}</Text>
+                            <Text style={styles.detailLabel}>Delivery amount</Text>
+                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tsh {product.deliveryAmount.toLocaleString()}</Text>
                         </View>
-                        <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Total amount</Text>
-                            <Text style={[styles.detailValue, { color: '#1F2937' }]}>Tsh {product.total.toLocaleString()}</Text>
+                        <View style={[styles.detailRow, { marginTop: 8 }]}>
+                            <Text style={[styles.detailLabel, { fontWeight: 'bold' }]}>Total amount</Text>
+                            <Text style={[styles.detailValue, { color: '#2F48AE', fontWeight: 'bold', fontSize: 16 }]}>Tsh {product.total.toLocaleString()}</Text>
                         </View>
                     </View>
 
-                    {/* Footer Info Box */}
-                    <View style={styles.infoBox}>
-                        <Text style={styles.infoBoxText}>
-                            You are about to make a payment. Tunzaa gives you the ability to pay in installments or the full amount at once, according to your convenience start with any amount to improve positive purchasing habit
-                        </Text>
-                    </View>
+                    {/* Dynamic Action Buttons */}
+                    {isFullyPaid ? (
+                        <View style={styles.actionButtonsContainer}>
+                            <TouchableOpacity
+                                style={styles.primaryBtn}
+                                onPress={() => router.push('/(buyer)/profile/delivery/map')}
+                            >
+                                <Text style={styles.primaryBtnText}>Receive your product</Text>
+                                {/* Added icon if appropriate, screenshot shows simple text but maybe right arrow. Let's keep it simple. */}
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.outlineBtn}
+                                onPress={() => router.push('/(buyer)/orders/rate')}
+                            >
+                                <Text style={styles.outlineBtnText}>Rate delivery</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            style={styles.payBtn}
+                            onPress={() => setIsPaymentModalVisible(true)}
+                        >
+                            <Text style={styles.payBtnText}>Pay Installment: Tsh 13,500</Text>
+                        </TouchableOpacity>
+                    )}
+
                 </View>
-
             </ScrollView>
 
+            {/* Bottom Nav Mock (From screenshots, this screen has bottom tabs) */}
+            <View style={styles.bottomNavMock}>
+                <Ionicons name="home" size={24} color="#2F48AE" />
+                <Ionicons name="grid-outline" size={24} color="#9CA3AF" />
+                <Ionicons name="briefcase-outline" size={24} color="#9CA3AF" />
+                <Ionicons name="person-outline" size={24} color="#9CA3AF" />
+            </View>
+
+            {renderPaymentModal()}
             {renderSuccessModal()}
         </SafeAreaView>
     );
@@ -162,11 +227,11 @@ export default function OrderDashboardScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#FFFFFF', // To seamlessly blend the bottom if card is short
     },
     headerBackground: {
-        backgroundColor: '#2F48AE', // Deep blue top
-        height: 200, // Enough height for the overlapping card
+        backgroundColor: '#4A55A2', // Match theme blue
+        height: 180,
         position: 'absolute',
         top: 0,
         left: 0,
@@ -190,27 +255,33 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
     content: {
-        paddingTop: 80, // Offset to overlap the blue header
-        paddingBottom: 40,
+        paddingTop: 70, // Offset to overlap the blue header
+        paddingBottom: 80, // Clearance for bottom nav
     },
     trackingCard: {
         backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        minHeight: 500, // Fill remaining space
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        minHeight: height - 150, // Fill remaining space safely
         padding: 24,
         zIndex: 1,
+        // Elevation for the top curve shadow
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
     },
     trackingTopRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        alignItems: 'center', // Center vertically Image vs Circle
         marginBottom: 24,
     },
     productImage: {
-        width: 130,
+        width: 140,
         height: 100,
-        borderRadius: 12,
+        borderRadius: 16,
         backgroundColor: '#F3F4F6',
     },
     progressTextContainer: {
@@ -232,45 +303,32 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     productName: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18,
         color: '#1F2937',
-        marginBottom: 16,
-    },
-    orderMetaRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-    },
-    metaLabel: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginBottom: 4,
+        marginBottom: 8,
     },
     metaValue: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#425BA4',
+        color: '#4A55A2',
         marginBottom: 4,
     },
     dateText: {
-        fontSize: 12,
-        color: '#6B7280',
+        fontSize: 13,
+        color: '#9CA3AF',
     },
     divider: {
         height: 1,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderStyle: 'dashed',
-        backgroundColor: 'transparent',
-        marginVertical: 24,
+        backgroundColor: '#E5E7EB',
+        marginVertical: 20,
     },
     detailsSection: {
         marginBottom: 32,
     },
     detailsTitle: {
-        fontSize: 14,
-        color: '#6B7280',
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#1F2937',
         marginBottom: 16,
     },
     detailRow: {
@@ -280,33 +338,131 @@ const styles = StyleSheet.create({
     },
     detailLabel: {
         fontSize: 14,
-        color: '#4B5563',
+        color: '#6B7280',
     },
     detailValue: {
         fontSize: 14,
+        fontWeight: '600',
+    },
+
+    // Action Buttons
+    actionButtonsContainer: {
+        gap: 12,
+    },
+    primaryBtn: {
+        backgroundColor: '#22C55E', // Green perfectly matching "Receive your product"
+        borderRadius: 24,
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    primaryBtnText: {
+        color: '#FFFFFF',
+        fontSize: 16,
         fontWeight: 'bold',
     },
-    infoBox: {
+    outlineBtn: {
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1.5,
+        borderColor: '#22C55E', // Green outline
+        borderRadius: 24,
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    outlineBtnText: {
+        color: '#22C55E',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    payBtn: {
+        backgroundColor: '#4A55A2',
+        borderRadius: 24,
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    payBtnText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+
+    // Bottom Nav Mock
+    bottomNavMock: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 12,
+        paddingBottom: 24, // Safe area styling mock
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
+        zIndex: 10,
+    },
+
+    // Payment Modal Bottom Sheet
+    bottomSheetOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        justifyContent: 'flex-end',
+    },
+    bottomSheetContent: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        maxHeight: '60%',
+    },
+    bottomSheetHandle: {
+        width: 40,
+        height: 4,
+        backgroundColor: '#E5E7EB',
+        borderRadius: 2,
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    bottomSheetTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 24,
+        textAlign: 'left',
+    },
+    paymentMethodRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    paymentMethodLogoWrap: {
+        width: 32,
+        height: 32,
+        marginRight: 16,
         backgroundColor: '#F9FAFB',
-        padding: 16,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderRadius: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
     },
-    infoBoxText: {
-        fontSize: 12,
-        color: '#9CA3AF',
-        lineHeight: 18,
-        textAlign: 'justify',
+    paymentMethodLogo: {
+        width: '80%',
+        height: '80%',
     },
-    modalOverlay: {
+    paymentMethodName: {
+        fontSize: 15,
+        color: '#1A1A1A',
+    },
+
+    // Success Modal
+    successModalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(31, 41, 55, 0.7)',
         justifyContent: 'center',
         alignItems: 'center',
         padding: 24,
     },
-    modalContent: {
+    successModalContent: {
         backgroundColor: '#FFFFFF',
         borderRadius: 16,
         padding: 24,
@@ -321,17 +477,31 @@ const styles = StyleSheet.create({
         padding: 4,
         zIndex: 10,
     },
-    modalTitle: {
+    successModalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
         marginBottom: 16,
-        marginTop: 20, // Space for close button
+        marginTop: 20,
     },
-    modalText: {
+    successModalText: {
         fontSize: 14,
-        color: '#6B7280',
+        color: '#4B5563',
         textAlign: 'center',
         lineHeight: 22,
+        marginBottom: 24,
+    },
+    successModalBox: {
+        backgroundColor: '#EFF6FF', // Light blue bg
+        padding: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#DBEAFE',
+    },
+    successModalBoxText: {
+        fontSize: 13,
+        color: '#60A5FA', // Blue text matching screenshot
+        lineHeight: 20,
+        textAlign: 'center',
     },
 });

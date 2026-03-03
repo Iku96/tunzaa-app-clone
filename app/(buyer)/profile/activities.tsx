@@ -1,151 +1,167 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
-type Activity = {
-    id: string;
-    icon: keyof typeof Ionicons.glyphMap;
+type ActivityItemProps = {
+    icon: keyof typeof Ionicons.glyphMap | keyof typeof Feather.glyphMap;
     title: string;
-    description: string;
-    time: string;
-    color: string;
+    onPress: () => void;
+    iconFamily?: 'Ionicons' | 'Feather';
 };
 
-// Activities will be populated from order history, wishlist changes, profile updates, etc.
-// For now we show a summary of the user's recent activity based on available data.
+const ActivityItem = ({ icon, title, onPress, iconFamily = 'Ionicons' }: ActivityItemProps) => (
+    <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
+        <View style={styles.itemLeft}>
+            {iconFamily === 'Ionicons' ? (
+                <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={22} color="#1F2937" style={styles.icon} />
+            ) : (
+                <Feather name={icon as keyof typeof Feather.glyphMap} size={22} color="#1F2937" style={styles.icon} />
+            )}
+            <Text style={styles.itemTitle}>{title}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+    </TouchableOpacity>
+);
+
+const SectionHeader = ({ title }: { title: string }) => (
+    <Text style={styles.sectionHeader}>{title}</Text>
+);
+
 export default function ActivitiesScreen() {
     const router = useRouter();
-    const { user } = useTunzaaAuth();
-
-    const activities: Activity[] = [
-        {
-            id: '1',
-            icon: 'person-circle-outline',
-            title: 'Account Created',
-            description: 'Welcome to Tunzaa! Your account was created successfully.',
-            time: user?.created_at
-                ? new Date(user.created_at).toLocaleDateString()
-                : 'Recently',
-            color: '#22C55E',
-        },
-        {
-            id: '2',
-            icon: 'cart-outline',
-            title: 'Browsing Products',
-            description: 'You\'ve been exploring products and categories on Tunzaa.',
-            time: 'Today',
-            color: '#4A55A2',
-        },
-        {
-            id: '3',
-            icon: 'heart-outline',
-            title: 'Wishlist Activity',
-            description: 'Check your wishlist to see saved items.',
-            time: 'Recent',
-            color: '#EF4444',
-        },
-    ];
 
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
+        <SafeAreaView style={styles.safeArea}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={24} color="#1F2937" />
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Your Activities</Text>
-                <View style={{ width: 32 }} />
+                <Text style={styles.headerTitle}>Your Activity</Text>
+                <View style={{ width: 24 }} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                {activities.map((activity, index) => (
-                    <View key={activity.id} style={styles.activityCard}>
-                        <View style={[styles.iconCircle, { backgroundColor: activity.color + '15' }]}>
-                            <Ionicons name={activity.icon} size={24} color={activity.color} />
-                        </View>
-                        <View style={styles.activityContent}>
-                            <Text style={styles.activityTitle}>{activity.title}</Text>
-                            <Text style={styles.activityDesc}>{activity.description}</Text>
-                            <Text style={styles.activityTime}>{activity.time}</Text>
-                        </View>
-                        {index < activities.length - 1 && <View style={styles.timeline} />}
-                    </View>
-                ))}
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                <Text style={styles.overviewText}>Your Tunzaa Activity Overview</Text>
 
-                <View style={styles.emptyFooter}>
-                    <View style={styles.emptyIcon}>
-                        <Ionicons name="time-outline" size={32} color="#9CA3AF" />
-                    </View>
-                    <Text style={styles.emptyText}>
-                        More activities will appear here as you shop, order, and interact with vendors.
-                    </Text>
-                </View>
+                <SectionHeader title="Purchased" />
+                <ActivityItem
+                    icon="bag-outline"
+                    title="Shopping activity"
+                    onPress={() => router.push('/(buyer)/profile/activities/spending')}
+                />
+
+                <SectionHeader title="Engagement" />
+                <ActivityItem
+                    icon="heart-outline"
+                    title="Likes"
+                    onPress={() => router.push('/(buyer)/profile/activities/likes')}
+                />
+                <ActivityItem
+                    icon="share-social-outline"
+                    title="Share"
+                    onPress={() => router.push('/(buyer)/profile/activities/shares')}
+                />
+                <ActivityItem
+                    icon="bookmark-outline"
+                    title="Wishlist"
+                    onPress={() => router.push('/(buyer)/wishlist')}
+                />
+
+                <SectionHeader title="Content" />
+                <ActivityItem
+                    icon="grid-outline"
+                    title="Post"
+                    onPress={() => { }}
+                />
+
+                <SectionHeader title="Payment" />
+                <ActivityItem
+                    icon="card-outline"
+                    title="Orders & payment"
+                    onPress={() => router.push('/(buyer)/profile/activities/orders-payments')}
+                />
+
+                <SectionHeader title="How you use Tunzaa" />
+                <ActivityItem
+                    icon="time-outline"
+                    title="Time spent"
+                    onPress={() => router.push('/(buyer)/profile/activities/time')}
+                />
+                <ActivityItem
+                    icon="search-outline"
+                    title="Recent search"
+                    onPress={() => router.push('/(buyer)/profile/activities/recent-search')}
+                />
+
+                <View style={styles.bottomPadding} />
             </ScrollView>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFFFFF' },
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+    },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        backgroundColor: '#FFFFFF',
     },
-    backBtn: { padding: 4 },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#1F2937' },
-    content: { padding: 20, paddingBottom: 40 },
-    activityCard: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
+    backButton: {
+        padding: 4,
+        marginLeft: -4,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        textAlign: 'center',
+    },
+    scrollContent: {
+        paddingTop: 16,
+    },
+    overviewText: {
+        textAlign: 'center',
+        fontSize: 14,
+        color: '#6B7280',
         marginBottom: 24,
-        position: 'relative',
     },
-    iconCircle: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+    sectionHeader: {
+        fontSize: 14,
+        fontWeight: '400',
+        color: '#1A1A1A',
+        marginTop: 16,
+        marginBottom: 8,
+        paddingHorizontal: 24,
+    },
+    itemContainer: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        backgroundColor: '#FFFFFF',
+    },
+    itemLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    icon: {
         marginRight: 16,
     },
-    activityContent: { flex: 1 },
-    activityTitle: { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 4 },
-    activityDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18, marginBottom: 4 },
-    activityTime: { fontSize: 11, color: '#9CA3AF' },
-    timeline: {
-        position: 'absolute',
-        left: 23,
-        top: 52,
-        width: 2,
-        height: 24,
-        backgroundColor: '#E5E7EB',
+    itemTitle: {
+        fontSize: 16,
+        color: '#1A1A1A',
+        fontWeight: '400',
     },
-    emptyFooter: {
-        alignItems: 'center',
-        marginTop: 40,
-        paddingHorizontal: 20,
-    },
-    emptyIcon: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: '#F9FAFB',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 16,
-    },
-    emptyText: {
-        fontSize: 13,
-        color: '#9CA3AF',
-        textAlign: 'center',
-        lineHeight: 18,
-    },
+    bottomPadding: {
+        height: 60,
+    }
 });
