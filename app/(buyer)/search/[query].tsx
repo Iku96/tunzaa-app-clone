@@ -1,61 +1,80 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Modal, FlatList, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, FlatList, Image, Dimensions, Modal, Switch } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { productsApi } from '../../../src/services/products';
-import { useMarketplace } from '../../../src/hooks/useMarketplace';
 import { PRODUCTS } from '../../../src/data/products';
+
+const { width } = Dimensions.get('window');
 
 // Helper to format price
 const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US').format(price);
 };
 
-// Custom Product Card for Search Result to match the screenshot exactly
-const SearchProductCard = ({ product }: { product: typeof PRODUCTS[0] }) => {
+// Custom Product Card for List View
+const ListProductCard = ({ product }: { product: typeof PRODUCTS[0] }) => {
     const router = useRouter();
     return (
-        <TouchableOpacity
-            style={styles.cardContainer}
-            onPress={() => router.push(`/(buyer)/product/${product.id}`)}
-            activeOpacity={0.8}
-        >
-            <View style={styles.cardImageWrapper}>
-                <Image source={{ uri: product.image }} style={styles.cardImage} />
-                {/* No heart icon in this specific screenshot card view, but can keep if desired. Screenshot doesn't show it clearly on the card itself, usually top right. Leaving out for exact match or keeping subtle. Expected: Clean image on left. */}
+        <TouchableOpacity style={styles.listCard} onPress={() => router.push(`/(buyer)/product/${product.id}` as any)}>
+            <View style={styles.listCardImageWrapper}>
+                <Image source={{ uri: product.image }} style={styles.listCardImage} />
             </View>
-
-            <View style={styles.cardDetails}>
-                <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>{product.name}</Text>
+            <View style={styles.listCardDetails}>
+                <View style={styles.listCardHeader}>
+                    <Text style={styles.listCardTitle} numberOfLines={1}>{product.name}</Text>
                 </View>
-
-                <Text style={styles.cardPrice}>Tsh. {formatPrice(product.price)}</Text>
-
-                <Text style={styles.cardSpecs} numberOfLines={2}>
-                    Specification: {product.specs ? product.specs.join(', ') : 'Water resistant, Accelerometer, Display: 44mm...'}
+                <Text style={styles.listCardPrice}>Tsh. {formatPrice(product.price)}</Text>
+                <Text style={styles.listCardSpecs} numberOfLines={2}>
+                    Specifications: {product.specs ? product.specs.join(', ') : 'Water resistant, Accelerometer, Display: 44mm, ...'}
                 </Text>
-
-                <View style={styles.vendorContainer}>
-                    {/* Vendor Logo Placeholder/Icon */}
-                    <View style={styles.vendorLogo}>
+                <View style={styles.listCardVendorContainer}>
+                    <View style={styles.vendorLogoWrap}>
                         {product.vendor.name.includes('VODACOM') ? (
-                            <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 8 }}>M</Text> // Mocking M-Pesa logo color
+                            <Image source={{ uri: 'https://1000logos.net/wp-content/uploads/2021/04/Vodacom-logo.png' }} style={styles.vendorLogoList} />
                         ) : (
-                            <Ionicons name="business" size={12} color="#FFFFFF" />
+                            <View style={[styles.vendorLogoList, { backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }]}>
+                                <Ionicons name="storefront" size={12} color="#9CA3AF" />
+                            </View>
                         )}
                     </View>
-
-                    <View style={styles.vendorInfo}>
-                        <Text style={styles.vendorName}>{product.vendor.name}</Text>
-                        <Text style={styles.vendorMeta}>Supplier since 2024</Text>
-                        <View style={styles.locationRow}>
+                    <View style={styles.vendorInfoList}>
+                        <Text style={styles.vendorNameList}>{product.vendor.name}</Text>
+                        <Text style={styles.vendorMetaList}>Supplier since 2024</Text>
+                        <View style={styles.locationRowList}>
                             <Ionicons name="location-outline" size={10} color="#4A55A2" />
-                            <Text style={styles.locationText}>{product.vendor.location}</Text>
+                            <Text style={styles.locationTextList}>Dar, Mikocheni</Text>
                         </View>
                     </View>
                 </View>
+            </View>
+        </TouchableOpacity>
+    );
+};
+
+// Custom Product Card for Gallery View
+const GridProductCard = ({ product }: { product: typeof PRODUCTS[0] }) => {
+    const router = useRouter();
+    return (
+        <TouchableOpacity style={styles.gridCard} onPress={() => router.push(`/(buyer)/product/${product.id}` as any)}>
+            <View style={styles.gridImageWrapper}>
+                <Image source={{ uri: product.image }} style={styles.gridImage} />
+                <TouchableOpacity style={styles.gridHeartIcon}>
+                    <Ionicons name="heart-outline" size={18} color="#9CA3AF" />
+                </TouchableOpacity>
+                <Image
+                    source={{ uri: product.vendor.name.includes('VODACOM') ? 'https://1000logos.net/wp-content/uploads/2021/04/Vodacom-logo.png' : 'https://i.pravatar.cc/100?u=' + product.id }}
+                    style={styles.gridVendorAvatar}
+                />
+            </View>
+            <View style={styles.gridCardDetails}>
+                <View style={styles.gridRatingRow}>
+                    <Ionicons name="star" size={12} color="#FBBF24" />
+                    <Text style={styles.gridRatingText}>4.8 <Text style={{ color: '#9CA3AF' }}>(56)</Text></Text>
+                </View>
+                <Text style={styles.gridCardTitle} numberOfLines={2}>{product.name}</Text>
+                <Text style={styles.gridCardPrice}>Tsh. {formatPrice(product.price)}</Text>
             </View>
         </TouchableOpacity>
     );
@@ -65,55 +84,189 @@ export default function SearchScreen() {
     const { query } = useLocalSearchParams();
     const router = useRouter();
     const [searchText, setSearchText] = useState(query as string || '');
-    const [filterVisible, setFilterVisible] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [results, setResults] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [results, setResults] = useState<any[]>(PRODUCTS.slice(0, 6)); // Default mockup results
 
-    useEffect(() => {
-        const fetchResults = async () => {
-            setLoading(true);
-            try {
-                const term = searchText.trim() || query as string || '';
-                if (!term) {
-                    setResults([]);
-                    return;
-                }
-                const res = await productsApi.searchProducts(term);
-                if (res?.items?.length > 0) {
-                    setResults(res.items.map(p => ({
-                        id: p.product_id || p._id,
-                        name: p.name,
-                        price: p.base_price_raw || p.base_price || 0,
-                        image: p.images?.[0] ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0].url) : 'https://via.placeholder.com/300x300?text=No+Image',
-                        rating: 0,
-                        reviews: 0,
-                        vendor: {
-                            id: p.store_id || p.store?.store_id || '1',
-                            name: p.store?.store_name || 'Vendor',
-                            location: '',
-                            verified: true
-                        },
-                        specs: p.tags || [],
-                        category: p.category_ids?.[0] || '',
-                    })));
-                } else {
-                    setResults([]); // Clear results if empty, rather than falling back to static 
-                }
-            } catch (e) {
-                console.warn('⚠️ [Search] API failed, using static fallback:', e);
-                // Fallback to static for demo purposes if backend search errors out
-                setResults(PRODUCTS.filter(p =>
-                    p.name.toLowerCase().includes(searchText.toLowerCase()) ||
-                    p.category.toLowerCase().includes(searchText.toLowerCase())
-                ));
-            } finally {
-                setLoading(false);
-            }
-        };
+    // UI States
+    const [viewMode, setViewMode] = useState<'list' | 'gallery'>('list');
+    const [sortMode, setSortMode] = useState<'matches' | 'sales' | 'price'>('matches');
+    const [isImageSearchMode, setIsImageSearchMode] = useState(false);
 
-        const debounceTimer = setTimeout(fetchResults, 500);
-        return () => clearTimeout(debounceTimer);
-    }, [searchText, query]);
+    // Modals
+    const [showFilterModal, setShowFilterModal] = useState(false);
+    const [showImageSearchModal, setShowImageSearchModal] = useState(false);
+    const [showPhotoPermissionModal, setShowPhotoPermissionModal] = useState(false);
+
+    // Filter Form States
+    const [filterSort, setFilterSort] = useState<'newest' | 'oldest' | 'priceDesc' | 'priceAsc'>('newest');
+    const [nearbyShops, setNearbyShops] = useState(false);
+
+    // Mock an Image Search selection
+    const handleImageSearchSelect = () => {
+        setShowImageSearchModal(false);
+        setIsImageSearchMode(true);
+        setViewMode('gallery');
+        setShowPhotoPermissionModal(false); // Make sure this is closed if coming from gallery
+    };
+
+    const renderImageSearchModal = () => (
+        <Modal visible={showImageSearchModal} transparent animationType="slide">
+            <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowImageSearchModal(false)} activeOpacity={1}>
+                <View style={styles.imageSearchSheet}>
+                    <View style={styles.sheetHandle} />
+                    <View style={styles.imageSearchIconWrapper}>
+                        <Ionicons name="images-outline" size={24} color="#1A1A1A" />
+                    </View>
+                    <Text style={styles.imageSearchTitle}>Search with an image</Text>
+
+                    <TouchableOpacity style={styles.outlineBtn} onPress={() => {
+                        setShowImageSearchModal(false);
+                        setShowPhotoPermissionModal(true);
+                    }}>
+                        <Ionicons name="image-outline" size={20} color="#1A1A1A" style={{ marginRight: 8 }} />
+                        <Text style={styles.outlineBtnText}>Choose from your gallery</Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.orText}>or</Text>
+
+                    <TouchableOpacity style={styles.outlineBtn} onPress={handleImageSearchSelect}>
+                        <Ionicons name="camera-outline" size={20} color="#1A1A1A" style={{ marginRight: 8 }} />
+                        <Text style={styles.outlineBtnText}>Take a photo</Text>
+                    </TouchableOpacity>
+
+                    <Text style={styles.imageSearchHelp}>JPG/ PNG/ Max: 25MB Min 332 x 332px</Text>
+                </View>
+            </TouchableOpacity>
+        </Modal>
+    );
+
+    const renderPhotoPermissionModal = () => (
+        <Modal visible={showPhotoPermissionModal} animationType="slide" transparent>
+            <View style={styles.photoPermissionContainer}>
+                {/* Simulated native permission overlay header */}
+                <View style={styles.permissionHeader}>
+                    <Text style={styles.permissionTitle}>This app can only access the photos that you select</Text>
+                </View>
+
+                <View style={styles.galleryHeaderRow}>
+                    <TouchableOpacity onPress={() => setShowPhotoPermissionModal(false)}>
+                        <Ionicons name="close" size={28} color="#FFFFFF" />
+                    </TouchableOpacity>
+                    <View style={styles.galleryTabs}>
+                        <TouchableOpacity style={styles.galleryTabActive}>
+                            <Text style={styles.galleryTabTextActive}>Photos</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.galleryTab}>
+                            <Text style={styles.galleryTabText}>Albums</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity>
+                        <Ionicons name="ellipsis-vertical" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                </View>
+
+                <ScrollView style={styles.galleryContent}>
+                    <Text style={styles.gallerySectionTitle}>Recent</Text>
+                    {/* Mock grid of device photos */}
+                    <View style={styles.galleryGrid}>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((itm, i) => (
+                            <TouchableOpacity key={i} style={styles.galleryThumbWrapper} onPress={handleImageSearchSelect}>
+                                <Image
+                                    style={styles.galleryThumb}
+                                    source={{ uri: `https://images.unsplash.com/photo-${1500000000000 + i}?w=400&q=80` }}
+                                />
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </ScrollView>
+            </View>
+        </Modal>
+    );
+
+    const renderFilterModal = () => (
+        <Modal visible={showFilterModal} transparent animationType="slide">
+            <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowFilterModal(false)} activeOpacity={1}>
+                <View style={styles.filterSheet}>
+                    <View style={styles.sheetHandle} />
+                    <View style={styles.filterHeader}>
+                        <Text style={styles.filterTitle}>Filter</Text>
+                        <TouchableOpacity style={styles.clearAllBtn}>
+                            <Text style={styles.clearAllText}>Clear All</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        {/* Color Dropdown */}
+                        <TouchableOpacity style={styles.filterRowItem}>
+                            <Text style={styles.filterRowLabel}>Color</Text>
+                            <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+                        </TouchableOpacity>
+
+                        {/* Sort Radios */}
+                        {[
+                            { id: 'newest', label: 'Newest' },
+                            { id: 'oldest', label: 'Oldest' },
+                            { id: 'priceDesc', label: 'Price: High to low' },
+                            { id: 'priceAsc', label: 'Price: Low to high' },
+                        ].map((opt) => (
+                            <TouchableOpacity
+                                key={opt.id}
+                                style={styles.filterRowItem}
+                                onPress={() => setFilterSort(opt.id as any)}
+                            >
+                                <Text style={[styles.filterRowLabel, filterSort === opt.id && styles.filterRowLabelActive]}>
+                                    {opt.label}
+                                </Text>
+                                <View style={styles.radioContainer}>
+                                    {filterSort === opt.id && <View style={styles.radioInner} />}
+                                </View>
+                            </TouchableOpacity>
+                        ))}
+
+                        <Text style={styles.filterSectionTitle}>More</Text>
+
+                        {/* Nearby Shops */}
+                        <View style={styles.filterRowItem}>
+                            <Text style={styles.filterRowLabel}>Nearby shops</Text>
+                            <Switch
+                                value={nearbyShops}
+                                onValueChange={setNearbyShops}
+                                trackColor={{ false: '#E5E7EB', true: '#4A55A2' }}
+                                thumbColor="#FFFFFF"
+                            />
+                        </View>
+
+                        {/* View As */}
+                        <View style={styles.viewAsContainer}>
+                            <Text style={styles.filterRowLabel}>View as</Text>
+                            <View style={styles.viewAsToggles}>
+                                <TouchableOpacity
+                                    style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleActive]}
+                                    onPress={() => setViewMode('list')}
+                                >
+                                    <Ionicons name="list" size={16} color={viewMode === 'list' ? '#4A55A2' : '#9CA3AF'} />
+                                    <Text style={[styles.viewToggleText, viewMode === 'list' && styles.viewToggleTextActive]}>List</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.viewToggleBtn, viewMode === 'gallery' && styles.viewToggleActive]}
+                                    onPress={() => setViewMode('gallery')}
+                                >
+                                    <Ionicons name="grid-outline" size={16} color={viewMode === 'gallery' ? '#4A55A2' : '#9CA3AF'} />
+                                    <Text style={[styles.viewToggleText, viewMode === 'gallery' && styles.viewToggleTextActive]}>Gallery</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </ScrollView>
+
+                    <View style={styles.filterFooter}>
+                        <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilterModal(false)}>
+                            <Text style={styles.applyBtnText}>Apply</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        </Modal>
+    );
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -124,239 +277,413 @@ export default function SearchScreen() {
                         <Ionicons name="arrow-back" size={24} color="#1F2937" />
                     </TouchableOpacity>
 
-                    <View style={styles.searchBar}>
-                        <Ionicons name="search-outline" size={20} color="#1F2937" />
-                        <TextInput
-                            value={searchText}
-                            onChangeText={setSearchText}
-                            placeholder="Smart watch" // Matches screenshot
-                            placeholderTextColor="#9CA3AF"
-                            style={styles.searchInput}
-                        />
-                        <TouchableOpacity>
-                            <Ionicons name="camera-outline" size={22} color="#1F2937" />
-                        </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
-                        <Ionicons name="options-outline" size={20} color="#4A55A2" />
-                    </TouchableOpacity>
-                </View>
-
-                {/* Sort Tabs */}
-                <View style={styles.tabsRow}>
-                    <TouchableOpacity style={styles.activeTab}>
-                        <Ionicons name="caret-up" size={12} color="#4A55A2" />
-                        <Text style={styles.activeTabText}>Best matches</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.tab}>
-                        <Ionicons name="caret-up" size={12} color="#1F2937" />
-                        <Text style={styles.tabText}>Top sales</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.tab}>
-                        <Ionicons name="swap-vertical-outline" size={12} color="#1F2937" />
-                        <Text style={styles.tabText}>Price</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Results List */}
-                <FlatList
-                    data={results}
-                    keyExtractor={item => item.id}
-                    renderItem={({ item }) => <SearchProductCard product={item} />}
-                    contentContainerStyle={styles.listContent}
-                    showsVerticalScrollIndicator={false}
-                    ListEmptyComponent={
-                        <View style={styles.emptyState}>
-                            {loading ? (
-                                <Text style={styles.emptyText}>Searching...</Text>
-                            ) : (
-                                <Text style={styles.emptyText}>No results found.</Text>
-                            )}
+                    {isImageSearchMode ? (
+                        <View style={styles.imageResultHeader}>
+                            <Image
+                                source={{ uri: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=100' }}
+                                style={styles.searchImageThumb}
+                            />
+                            <TouchableOpacity onPress={() => setIsImageSearchMode(false)}>
+                                <Ionicons name="close" size={20} color="#9CA3AF" />
+                            </TouchableOpacity>
                         </View>
-                    }
-                />
+                    ) : (
+                        <View style={styles.searchBar}>
+                            <Ionicons name="search-outline" size={20} color="#1A1A1A" />
+                            <TextInput
+                                value={searchText}
+                                onChangeText={setSearchText}
+                                placeholder="Smart watch"
+                                placeholderTextColor="#9CA3AF"
+                                style={styles.searchInput}
+                            />
+                            <TouchableOpacity onPress={() => setShowImageSearchModal(true)}>
+                                <Ionicons name="camera-outline" size={22} color="#1A1A1A" />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+                    <TouchableOpacity
+                        style={[styles.filterBtn, showFilterModal && styles.filterBtnActive]}
+                        onPress={() => setShowFilterModal(true)}
+                    >
+                        <Ionicons name="funnel-outline" size={18} color={showFilterModal ? '#FFFFFF' : '#1A1A1A'} />
+                        {showFilterModal && <Text style={styles.filterBtnTextActive}>Filter</Text>}
+                    </TouchableOpacity>
+                </View>
+
+                {/* Info Text (only in Image Search Mode) */}
+                {isImageSearchMode && (
+                    <Text style={styles.imageSearchCountText}>123 items</Text>
+                )}
+
+                {/* Sort Tabs Row */}
+                <View style={[styles.tabsRow, isImageSearchMode && { justifyContent: 'flex-start', gap: 24, paddingHorizontal: 20 }]}>
+                    <TouchableOpacity style={styles.tab} onPress={() => setSortMode('matches')}>
+                        <Ionicons name="caret-up" size={12} color={sortMode === 'matches' ? '#4A55A2' : '#FFFFFF'} />
+                        <Text style={[styles.tabText, sortMode === 'matches' && styles.activeTabText]}>Best matches</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.tab} onPress={() => setSortMode('sales')}>
+                        <Ionicons name="caret-up" size={12} color={sortMode === 'sales' ? '#4A55A2' : '#FFFFFF'} />
+                        <Text style={[styles.tabText, sortMode === 'sales' && styles.activeTabText]}>Top sales</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.tab} onPress={() => setSortMode('price')}>
+                        <Ionicons name="swap-vertical-outline" size={12} color="#1F2937" />
+                        <Text style={[styles.tabText, sortMode === 'price' && styles.activeTabText]}>Price</Text>
+                    </TouchableOpacity>
+
+                    {/* View Toggle Icon explicitly in Image Mode Toolbar as seen in screenshot */}
+                    {isImageSearchMode && (
+                        <TouchableOpacity style={[styles.filterBtn, { marginLeft: 'auto', width: 44, height: 44, borderRadius: 22 }]} onPress={() => setViewMode(viewMode === 'list' ? 'gallery' : 'list')}>
+                            <Ionicons name="options-outline" size={18} color="#4A55A2" />
+                        </TouchableOpacity>
+                    )}
+                </View>
+
+                {/* List or Grid */}
+                {viewMode === 'list' ? (
+                    <FlatList
+                        data={results}
+                        keyExtractor={item => item.id}
+                        renderItem={({ item }) => <ListProductCard product={item} />}
+                        contentContainerStyle={styles.listContent}
+                        showsVerticalScrollIndicator={false}
+                    />
+                ) : (
+                    <FlatList
+                        data={results}
+                        keyExtractor={item => item.id}
+                        numColumns={2}
+                        columnWrapperStyle={styles.gridRow}
+                        renderItem={({ item }) => <GridProductCard product={item} />}
+                        contentContainerStyle={styles.gridContent}
+                        showsVerticalScrollIndicator={false}
+                    />
+                )}
             </View>
+
+            {/* Modals */}
+            {renderImageSearchModal()}
+            {renderPhotoPermissionModal()}
+            {renderFilterModal()}
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    container: {
-        flex: 1,
-    },
+    safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+    container: { flex: 1 },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         paddingBottom: 16,
         paddingTop: 8,
         gap: 12,
     },
-    backButton: {
-        paddingRight: 4,
-    },
+    backButton: { padding: 4 },
     searchBar: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F3F4F6', // Light gray
-        borderRadius: 16, // Pill shape/Rounded
+        backgroundColor: '#F9FAFB',
+        borderRadius: 24,
         paddingHorizontal: 16,
-        height: 52, // Taller
+        height: 48,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
         gap: 10,
     },
-    searchInput: {
+    searchInput: { flex: 1, fontSize: 15, color: '#1A1A1A' },
+    imageResultHeader: {
         flex: 1,
-        fontSize: 15,
-        color: '#1F2937',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#F9FAFB',
+        borderRadius: 24,
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        height: 48,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+    },
+    searchImageThumb: {
+        width: 32,
+        height: 32,
+        borderRadius: 6,
     },
     filterBtn: {
-        width: 52,
-        height: 52,
-        borderRadius: 16,
-        backgroundColor: '#F3F4F6', // Same gray
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#F9FAFB',
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 6,
+    },
+    filterBtnActive: {
+        backgroundColor: '#4A55A2',
+        borderColor: '#4A55A2',
+        width: 'auto',
+        paddingHorizontal: 16,
+        borderRadius: 24,
+    },
+    filterBtnTextActive: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    imageSearchCountText: {
+        paddingHorizontal: 20,
+        fontSize: 12,
+        color: '#6B7280',
+        marginBottom: 8,
     },
     tabsRow: {
         flexDirection: 'row',
-        paddingHorizontal: 30, // Identifying spacing from screenshot
+        paddingHorizontal: 32,
         marginBottom: 20,
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    activeTab: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    activeTabText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#4A55A2',
-    },
-    tab: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    tabText: {
-        fontSize: 13,
-        color: '#1F2937',
-        fontWeight: '500',
-    },
-    listContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-    emptyState: {
-        paddingTop: 40,
-        alignItems: 'center',
-    },
-    emptyText: {
-        color: '#6B7280',
-        fontSize: 16,
-    },
+    tab: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    tabText: { fontSize: 13, color: '#6B7280', fontWeight: '500' },
+    activeTabText: { color: '#4A55A2', fontWeight: 'bold' },
+    listContent: { paddingHorizontal: 16, paddingBottom: 24 },
 
-    // Card Styles
-    cardContainer: {
+    // List Card styling matching specific search screenshot
+    listCard: {
         flexDirection: 'row',
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        padding: 12,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
-        // Slight shadow
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    listCardImageWrapper: {
+        width: 80,
+        height: 80,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6',
+        marginRight: 16,
+    },
+    listCardImage: { width: '100%', height: '100%', borderRadius: 12 },
+    listCardDetails: { flex: 1, justifyContent: 'center' },
+    listCardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
+    listCardTitle: { fontSize: 15, fontWeight: '500', color: '#1A1A1A' },
+    listCardPrice: { fontSize: 13, fontWeight: 'bold', color: '#1A1A1A', marginBottom: 4 },
+    listCardSpecs: { fontSize: 11, color: '#9CA3AF', marginBottom: 8, lineHeight: 16 },
+    listCardVendorContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    vendorLogoWrap: { width: 24, height: 24, borderRadius: 12, overflow: 'hidden' },
+    vendorLogoList: { width: '100%', height: '100%' },
+    vendorInfoList: { flex: 1 },
+    vendorNameList: { fontSize: 10, fontWeight: 'bold', color: '#1A1A1A' },
+    vendorMetaList: { fontSize: 9, color: '#6B7280', marginBottom: 2 },
+    locationRowList: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+    locationTextList: { fontSize: 9, color: '#4B5563' },
+
+    // Grid System
+    gridContent: { paddingHorizontal: 16, paddingBottom: 24 },
+    gridRow: { justifyContent: 'space-between', marginBottom: 16 },
+    gridCard: {
+        width: (width - 48) / 2, // 2 columns with padding and gap
+        backgroundColor: '#FFFFFF',
+    },
+    gridImageWrapper: {
+        width: '100%',
+        aspectRatio: 1,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 16,
+        marginBottom: 12,
+        position: 'relative',
+    },
+    gridImage: { width: '100%', height: '100%', borderRadius: 16 },
+    gridHeartIcon: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#FFFFFF',
+        alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 8,
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
         elevation: 2,
     },
-    cardImageWrapper: {
-        width: 100,
-        height: 100,
-        borderRadius: 12,
-        backgroundColor: '#F9FAFB',
-        marginRight: 16,
+    gridVendorAvatar: {
+        position: 'absolute',
+        bottom: -12,
+        right: 12,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        backgroundColor: '#FFFFFF',
+    },
+    gridCardDetails: { paddingHorizontal: 4, paddingBottom: 8 },
+    gridRatingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
+    gridRatingText: { fontSize: 11, fontWeight: '600', color: '#1A1A1A' },
+    gridCardTitle: { fontSize: 13, fontWeight: '500', color: '#1A1A1A', marginBottom: 4, lineHeight: 18 },
+    gridCardPrice: { fontSize: 14, fontWeight: 'bold', color: '#1A1A1A' },
+
+    // Modals & Bottom Sheets Common
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        justifyContent: 'flex-end',
+    },
+    sheetHandle: {
+        width: 40,
+        height: 4,
+        backgroundColor: '#E5E7EB',
+        borderRadius: 2,
+        alignSelf: 'center',
+        marginTop: 12,
+        marginBottom: 20,
+    },
+
+    // Image Search Modals
+    imageSearchSheet: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        paddingBottom: 40,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+    },
+    imageSearchIconWrapper: {
+        width: 48,
+        height: 48,
+        borderRadius: 8,
+        backgroundColor: '#F3F4F6',
         alignItems: 'center',
         justifyContent: 'center',
+        marginBottom: 16,
     },
-    cardImage: {
-        width: '90%',
-        height: '90%',
-        resizeMode: 'contain',
-    },
-    cardDetails: {
-        flex: 1,
+    imageSearchTitle: { fontSize: 16, fontWeight: 'bold', color: '#4A55A2', marginBottom: 24 },
+    outlineBtn: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'center',
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        marginBottom: 12,
     },
-    cardHeader: {
+    outlineBtnText: { fontSize: 14, fontWeight: '500', color: '#1A1A1A' },
+    orText: { fontSize: 12, color: '#9CA3AF', marginBottom: 12 },
+    imageSearchHelp: { fontSize: 11, color: '#9CA3AF', marginTop: 12 },
+
+    // Photo selection gallery (mock custom screen acting as modal)
+    photoPermissionContainer: {
+        flex: 1,
+        backgroundColor: '#111827', // Dark background for native gallery feel
+    },
+    permissionHeader: {
+        backgroundColor: '#1F2937',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        paddingTop: 60,
+    },
+    permissionTitle: { color: '#E5E7EB', fontSize: 14, textAlign: 'center' },
+    galleryHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    galleryTabs: {
+        flexDirection: 'row',
+        backgroundColor: '#374151',
+        borderRadius: 20,
+        padding: 4,
+    },
+    galleryTabActive: {
+        backgroundColor: '#4B5563',
+        paddingHorizontal: 20,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    galleryTab: {
+        paddingHorizontal: 20,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    galleryTabTextActive: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+    galleryTabText: { color: '#9CA3AF', fontSize: 13 },
+    galleryContent: { flex: 1 },
+    gallerySectionTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold', padding: 16 },
+    galleryGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+    galleryThumbWrapper: { width: width / 3, aspectRatio: 1, padding: 1 },
+    galleryThumb: { width: '100%', height: '100%' },
+
+    // Filter Modal
+    filterSheet: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        maxHeight: '80%',
+    },
+    filterHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 4,
-    },
-    cardTitle: {
-        fontSize: 15,
-        fontWeight: '500', // Regular/Medium matches screenshot better than Bold
-        color: '#1F2937',
-    },
-    cardPrice: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#4A55A2',
-        marginBottom: 6,
-    },
-    cardSpecs: {
-        fontSize: 11,
-        color: '#9CA3AF',
-        marginBottom: 12,
-        lineHeight: 16,
-    },
-    vendorContainer: {
-        flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-        borderTopWidth: 1,
-        borderTopColor: '#F3F4F6',
-        paddingTop: 8,
+        paddingHorizontal: 24,
+        marginBottom: 16,
     },
-    vendorLogo: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: 'red', // Mocking branding color from screenshot (red circular logo)
+    filterTitle: { fontSize: 20, fontWeight: 'bold', color: '#1A1A1A' },
+    clearAllBtn: { padding: 8 },
+    clearAllText: { fontSize: 13, color: '#6B7280', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 4 },
+    filterRowItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+    },
+    filterRowLabel: { fontSize: 15, color: '#1A1A1A', fontWeight: '500' },
+    filterRowLabelActive: { color: '#1A1A1A' },
+    radioContainer: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: '#E5E7EB',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    vendorInfo: {
-        flex: 1,
+    radioInner: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#4A55A2',
     },
-    vendorName: {
-        fontSize: 10,
+    filterSectionTitle: {
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: '#1A1A1A',
+        marginTop: 16,
+        marginBottom: 8,
+        paddingHorizontal: 24,
     },
-    vendorMeta: {
-        fontSize: 9,
-        color: '#6B7280',
-        marginBottom: 2,
-    },
-    locationRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 2,
-    },
-    locationText: {
-        fontSize: 9,
-        color: '#4B5563',
-    }
+    viewAsContainer: { paddingHorizontal: 24, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    viewAsToggles: { flexDirection: 'row', backgroundColor: '#F9FAFB', borderRadius: 8, padding: 4 },
+    viewToggleBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 6 },
+    viewToggleActive: { backgroundColor: '#FFFFFF', shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+    viewToggleText: { fontSize: 13, color: '#9CA3AF', fontWeight: '500' },
+    viewToggleTextActive: { color: '#4A55A2', fontWeight: 'bold' },
+    filterFooter: { padding: 24, paddingTop: 16, paddingBottom: 40, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+    applyBtn: { backgroundColor: '#4A55A2', paddingVertical: 16, borderRadius: 24, alignItems: 'center' },
+    applyBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
 });

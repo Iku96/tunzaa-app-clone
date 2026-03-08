@@ -59,7 +59,7 @@ export default function BuyerHome() {
                             <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(buyer)/chat')}>
                                 <Ionicons name="chatbubble-ellipses-outline" size={24} color="#FFFFFF" />
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.iconButton}>
+                            <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(buyer)/notifications')}>
                                 <Ionicons name="notifications" size={24} color="#FBBF24" />
                             </TouchableOpacity>
                         </View>

@@ -44,19 +44,19 @@ export default function TransferReviewScreen() {
         router.push('/(buyer)/transfer/status');
     };
 
-    const renderProductCard = (label, order, isSource) => (
+    const renderProductCard = (label: string, order: any, isSource: boolean) => (
         <View style={styles.section}>
             <Text style={styles.sectionLabel}>{label}</Text>
             <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                    <View style={styles.blueLine} />
-                    <View style={{ flex: 1 }}>
-                        <View style={styles.rowBetween}>
+                    <View style={styles.rowBetween}>
+                        <View style={styles.titleRow}>
+                            <View style={styles.blueLine} />
                             <Text style={styles.productName}>{order.name}</Text>
-                            <Text style={styles.dateText}>{order.date}</Text>
                         </View>
-                        <Text style={styles.planText}>{order.plan}</Text>
+                        <Text style={styles.dateText}>{order.date}</Text>
                     </View>
+                    <Text style={styles.planText}>{order.plan}</Text>
                 </View>
 
                 <View style={styles.productContent}>
@@ -68,7 +68,7 @@ export default function TransferReviewScreen() {
                         </View>
                         <View style={styles.rowBetween}>
                             <Text style={styles.balanceLabel}>New Balance After Transfer</Text>
-                            <Text style={[styles.balanceValue, isSource ? styles.redText : styles.greenText]}>
+                            <Text style={[styles.balanceValue, isSource ? styles.redText : styles.blueText]}>
                                 TSH {order.newBalance.toLocaleString()}
                             </Text>
                         </View>
@@ -138,6 +138,7 @@ export default function TransferReviewScreen() {
                     <Text style={styles.submitButtonText}>Transfer Fund</Text>
                 </TouchableOpacity>
 
+                <View style={{ height: 20 }} />
             </ScrollView>
 
             {/* Success Modal */}
@@ -149,7 +150,7 @@ export default function TransferReviewScreen() {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <TouchableOpacity style={styles.closeButton} onPress={handleCloseSuccess}>
-                            <Ionicons name="close" size={24} color="#1F2937" />
+                            <Ionicons name="close-circle" size={28} color="#D1D5DB" />
                         </TouchableOpacity>
 
                         <Image
@@ -158,16 +159,13 @@ export default function TransferReviewScreen() {
                             resizeMode="contain"
                         />
 
-                        <View style={styles.successBadge}>
-                            <Ionicons name="checkmark-circle" size={20} color="#F59E0B" />
-                            <Text style={styles.successTitle}>
-                                Your transfer request has been submitted successfully.
-                            </Text>
-                        </View>
+                        <Text style={styles.successTitle}>
+                            🎉 Your transfer request has been submitted successfully.
+                        </Text>
 
                         <View style={styles.modalSummary}>
-                            <Text style={styles.modalLabel}>Amount Transferred: <Text style={{ fontWeight: 'bold' }}>Tsh {transferAmount.toLocaleString()}</Text></Text>
-                            <Text style={styles.modalLabel}>New Balance applied to: <Text style={{ fontWeight: 'bold' }}>{toOrder.name}</Text></Text>
+                            <Text style={styles.modalLabel}>Amount transferred: Tsh {transferAmount.toLocaleString()}</Text>
+                            <Text style={styles.modalLabel}>New balance applied to: {toOrder.name}</Text>
                         </View>
 
                         <View style={styles.modalBalanceRow}>
@@ -175,6 +173,10 @@ export default function TransferReviewScreen() {
                             <Text style={styles.modalBalanceValue}>TSH {toOrder.newBalance.toLocaleString()}</Text>
                         </View>
 
+                    </View>
+
+                    {/* Shadowed Background Footer for Summary block on Screenshot 3 */}
+                    <View style={styles.modalFooterOutside}>
                         <View style={styles.modalFooter}>
                             <Text style={styles.modalFooterTitle}>Transfer Summary</Text>
                             <View style={styles.modalFooterRow}>
@@ -186,6 +188,9 @@ export default function TransferReviewScreen() {
                                 <Text style={styles.modalFooterValue}>TSH {netAdjustment.toLocaleString()}</Text>
                             </View>
                         </View>
+                        <Text style={styles.modalDisclaimerOutside}>
+                            I confirm that this transfer is final and I understand once submitted can't be reversed.
+                        </Text>
                     </View>
                 </View>
             </Modal>
@@ -244,31 +249,34 @@ const styles = StyleSheet.create({
         elevation: 1,
     },
     cardHeader: {
+        marginBottom: 16,
+    },
+    titleRow: {
         flexDirection: 'row',
-        marginBottom: 12,
+        alignItems: 'center',
+        flex: 1,
     },
     blueLine: {
-        width: 4,
-        backgroundColor: '#3B82F6',
+        width: 3,
+        backgroundColor: '#4A55A2',
         borderRadius: 2,
-        marginRight: 8,
-        height: '100%',
+        height: 14,
+        marginRight: 6,
     },
     productName: {
         fontSize: 14,
         fontWeight: 'bold',
         color: '#1F2937',
-        flex: 1,
     },
     dateText: {
         fontSize: 10,
         color: '#9CA3AF',
-        marginLeft: 8,
     },
     planText: {
         fontSize: 12,
-        color: '#6B7280',
-        marginTop: 2,
+        color: '#9CA3AF',
+        marginTop: 4,
+        marginLeft: 9, // align with product name
     },
     rowBetween: {
         flexDirection: 'row',
@@ -279,10 +287,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     productImage: {
-        width: 40,
-        height: 40,
+        width: 48,
+        height: 48,
         borderRadius: 4,
-        marginRight: 12,
+        marginRight: 16,
         transform: [{ rotate: '-10deg' }],
         backgroundColor: '#F3F4F6',
     },
@@ -295,21 +303,22 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     balanceValue: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: 13,
+        fontWeight: 'bold',
         color: '#1F2937',
     },
     redText: { color: '#EF4444' },
+    blueText: { color: '#4A55A2' },
     greenText: { color: '#22C55E' },
     arrowContainer: {
         alignItems: 'center',
-        marginVertical: -10, // Overlap
+        marginVertical: -8, // Overlap
         zIndex: 1,
     },
     arrowCircle: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
         backgroundColor: '#4A55A2',
         justifyContent: 'center',
         alignItems: 'center',
@@ -381,10 +390,10 @@ const styles = StyleSheet.create({
     },
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: 'rgba(31,41,55,0.85)', // Darker translucent background to match screen 3
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 24,
+        paddingHorizontal: 20,
     },
     modalContent: {
         backgroundColor: '#FFFFFF',
@@ -392,51 +401,47 @@ const styles = StyleSheet.create({
         padding: 24,
         width: '100%',
         alignItems: 'center',
+        position: 'relative',
     },
     closeButton: {
         position: 'absolute',
-        top: 12,
-        right: 12,
-        padding: 4,
+        top: 16,
+        right: 16,
+        zIndex: 1,
     },
     modalImage: {
-        width: 80,
-        height: 80,
-        marginBottom: 16,
+        width: 100,
+        height: 100,
+        marginVertical: 12,
         resizeMode: 'contain',
     },
-    successBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-        gap: 8,
-    },
     successTitle: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#1F2937',
         textAlign: 'center',
-        flex: 1,
+        marginBottom: 16,
+        lineHeight: 22,
     },
     modalSummary: {
         width: '100%',
         alignItems: 'center',
-        marginBottom: 16,
-        gap: 4,
+        marginBottom: 20,
+        gap: 6,
     },
     modalLabel: {
-        fontSize: 12,
-        color: '#6B7280',
+        fontSize: 13,
+        color: '#4B5563',
         textAlign: 'center',
     },
     modalBalanceRow: {
         backgroundColor: '#4A55A2',
         width: '100%',
-        padding: 12,
+        padding: 16,
         borderRadius: 8,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 24,
+        alignItems: 'center',
     },
     modalBalanceLabel: {
         color: '#FFFFFF',
@@ -445,18 +450,19 @@ const styles = StyleSheet.create({
     modalBalanceValue: {
         color: '#FFFFFF',
         fontWeight: 'bold',
-        fontSize: 12,
+        fontSize: 14,
+    },
+    modalFooterOutside: {
+        width: '100%',
+        marginTop: 24,
     },
     modalFooter: {
         width: '100%',
-        backgroundColor: '#F3F4F6',
-        padding: 16,
-        borderRadius: 12,
     },
     modalFooterTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: '#374151',
         marginBottom: 12,
     },
     modalFooterRow: {
@@ -465,12 +471,19 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     modalFooterLabel: {
-        fontSize: 12,
-        color: '#6B7280',
+        fontSize: 13,
+        color: '#4B5563',
     },
     modalFooterValue: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600',
-        color: '#1F2937',
+        color: '#374151',
+    },
+    modalDisclaimerOutside: {
+        fontSize: 12,
+        color: '#6B7280',
+        textAlign: 'center',
+        marginTop: 30,
+        lineHeight: 18,
     },
 });

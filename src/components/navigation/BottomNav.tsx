@@ -1,7 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path } from 'react-native-svg';
+
+const { width } = Dimensions.get('window');
 
 export default function BottomNav() {
     const router = useRouter();
@@ -16,54 +19,74 @@ export default function BottomNav() {
         return false;
     };
 
-    const getIconColor = (route: string) => isActive(route) ? '#FBBF24' : '#FFFFFF';
-    const getTextColor = (route: string) => isActive(route) ? '#FBBF24' : '#FFFFFF';
+    const getIconColor = (route: string) => isActive(route) ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)';
+    const getTextColor = (route: string) => isActive(route) ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)';
+
+    const getIconName = (route: string, activeName: string, inactiveName: string) =>
+        isActive(route) ? activeName : inactiveName;
 
     return (
-        <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)')}>
-                <Ionicons name="home" size={24} color={getIconColor('/(buyer)')} />
-                <Text style={[styles.navText, { color: getTextColor('/(buyer)') }]}>Home</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/orders' as any)}>
-                <Ionicons name="basket-outline" size={24} color={getIconColor('/(buyer)/orders')} />
-                <Text style={[styles.navText, { color: getTextColor('/(buyer)/orders') }]}>Order</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart' as any)}>
-                <Ionicons name="cart-outline" size={24} color={getIconColor('/(buyer)/cart')} />
-                <Text style={[styles.navText, { color: getTextColor('/(buyer)/cart') }]}>Cart</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/services' as any)}>
-                <Ionicons name="grid-outline" size={24} color={getIconColor('/(buyer)/services')} />
-                <Text style={[styles.navText, { color: getTextColor('/(buyer)/services') }]}>Services</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/account' as any)}>
-                <Ionicons name="person-outline" size={24} color={getIconColor('/(buyer)/account')} />
-                <Text style={[styles.navText, { color: getTextColor('/(buyer)/account') }]}>Account</Text>
-            </TouchableOpacity>
+        <View style={styles.bottomNavWrapper}>
+            <View style={styles.svgContainer}>
+                <Svg height="24" width={width} viewBox={`0 0 ${width} 24`}>
+                    <Path
+                        d="M 0 24 L 0 0 A 24 24 0 0 0 24 24 Z"
+                        fill="#4A55A2"
+                    />
+                    <Path
+                        d={`M ${width - 24} 24 A 24 24 0 0 0 ${width} 0 L ${width} 24 Z`}
+                        fill="#4A55A2"
+                    />
+                </Svg>
+            </View>
+            <View style={styles.bottomNav}>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)')}>
+                    <Ionicons name={getIconName('/(buyer)', 'home', 'home-outline') as any} size={24} color={getIconColor('/(buyer)')} />
+                    <Text style={[styles.navText, { color: getTextColor('/(buyer)') }]}>Home</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/orders' as any)}>
+                    <Ionicons name={getIconName('/(buyer)/orders', 'bag-handle', 'bag-handle-outline') as any} size={24} color={getIconColor('/(buyer)/orders')} />
+                    <Text style={[styles.navText, { color: getTextColor('/(buyer)/orders') }]}>Order</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/cart' as any)}>
+                    <Ionicons name={getIconName('/(buyer)/cart', 'cart', 'cart-outline') as any} size={24} color={getIconColor('/(buyer)/cart')} />
+                    <Text style={[styles.navText, { color: getTextColor('/(buyer)/cart') }]}>Cart</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/services' as any)}>
+                    <Ionicons name={getIconName('/(buyer)/services', 'grid', 'grid-outline') as any} size={24} color={getIconColor('/(buyer)/services')} />
+                    <Text style={[styles.navText, { color: getTextColor('/(buyer)/services') }]}>Services</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push('/(buyer)/account' as any)}>
+                    <Ionicons name={getIconName('/(buyer)/account', 'person-circle', 'person-circle-outline') as any} size={26} color={getIconColor('/(buyer)/account')} />
+                    <Text style={[styles.navText, { color: getTextColor('/(buyer)/account') }]}>Account</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    bottomNav: {
+    bottomNavWrapper: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
+        backgroundColor: 'transparent',
+    },
+    svgContainer: {
+        height: 24,
+        width: '100%',
+        marginBottom: -2, // Pull down slightly to avoid 1px gaps
+        // add shadow only to the top edge for iOS if needed, but usually flat is better
+    },
+    bottomNav: {
         height: 90,
         backgroundColor: '#4A55A2',
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'flex-start',
         paddingTop: 16,
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 20,
+        paddingBottom: 24,
     },
     navItem: {
         alignItems: 'center',

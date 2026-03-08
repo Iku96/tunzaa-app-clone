@@ -43,7 +43,7 @@ export default function OrderSummaryScreen() {
     const tax = 6300;
     const totalCosts = 51300;
 
-    const renderSummaryItem = (item) => (
+    const renderSummaryItem = (item: typeof SUMMARY_ITEMS[0]) => (
         <View key={item.id} style={styles.itemRow}>
             <Image source={{ uri: item.image }} style={styles.itemImage} />
             <View style={styles.itemDetails}>
@@ -80,10 +80,28 @@ export default function OrderSummaryScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                <Text style={styles.sectionTitle}>My cart</Text>
+                {/* Single Card Header item per screenshot */}
+                {SUMMARY_ITEMS.length > 0 && renderSummaryItem(SUMMARY_ITEMS[0])}
 
-                <View style={styles.cartList}>
-                    {SUMMARY_ITEMS.map(renderSummaryItem)}
+                <Text style={styles.orderTitle}>Order({SUMMARY_ITEMS.length} item)</Text>
+
+                <View style={styles.orderListContainer}>
+                    {SUMMARY_ITEMS.map((item) => (
+                        <View key={item.id} style={styles.orderListItem}>
+                            <Text style={styles.orderListLabel}>Product</Text>
+                            <Text style={styles.orderListValue}>{item.name.toLowerCase()}</Text>
+                        </View>
+                    ))}
+
+                    <View style={styles.orderListItem}>
+                        <Text style={styles.orderListLabel}>Price</Text>
+                        <Text style={styles.orderListValue}>Tsh. {subtotal.toLocaleString()}</Text>
+                    </View>
+
+                    <View style={styles.orderListItem}>
+                        <Text style={styles.orderListLabel}>Quantity</Text>
+                        <Text style={styles.orderListValue}>Items {SUMMARY_ITEMS[0].quantity}</Text>
+                    </View>
                 </View>
 
                 <View style={styles.divider} />
@@ -149,23 +167,39 @@ const styles = StyleSheet.create({
         padding: 4,
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: '#1A1A1A',
+        textAlign: 'center',
     },
     content: {
         padding: 20,
         paddingBottom: 100,
     },
-    sectionTitle: {
+    orderTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: '#1A1A1A',
+        marginTop: 24,
         marginBottom: 16,
     },
-    cartList: {
+    orderListContainer: {
         gap: 16,
-        marginBottom: 24,
+    },
+    orderListItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    orderListLabel: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    orderListValue: {
+        fontSize: 14,
+        color: '#1A1A1A',
+        maxWidth: '60%',
+        textAlign: 'right',
     },
     itemRow: {
         flexDirection: 'row',
@@ -202,12 +236,13 @@ const styles = StyleSheet.create({
     },
     tag: {
         fontSize: 10,
-        color: '#3B82F6',
+        color: '#4A55A2', // Blue
         backgroundColor: '#EFF6FF',
         alignSelf: 'flex-start',
-        paddingHorizontal: 4,
-        paddingVertical: 2,
+        paddingHorizontal: 6,
+        paddingVertical: 3,
         borderRadius: 4,
+        marginTop: 4,
     },
     itemPrice: {
         fontSize: 14,
@@ -237,20 +272,25 @@ const styles = StyleSheet.create({
         marginHorizontal: 12,
         fontSize: 12,
         fontWeight: '600',
-        color: '#1F2937',
+        color: '#1A1A1A',
     },
     deleteButton: {
         padding: 8,
+        alignSelf: 'flex-end',
+        marginBottom: 4,
     },
     divider: {
         height: 1,
-        backgroundColor: '#F3F4F6',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderStyle: 'dashed',
+        backgroundColor: 'transparent',
         marginVertical: 16,
     },
     costRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 16,
     },
     costLabel: {
         fontSize: 14,
@@ -258,8 +298,7 @@ const styles = StyleSheet.create({
     },
     costValue: {
         fontSize: 14,
-        fontWeight: '600',
-        color: '#1F2937',
+        color: '#1A1A1A',
     },
     totalRow: {
         marginTop: 12,
@@ -285,7 +324,7 @@ const styles = StyleSheet.create({
     installmentButton: {
         flex: 1,
         backgroundColor: '#22C55E', // Green
-        paddingVertical: 12,
+        paddingVertical: 10,
         borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',

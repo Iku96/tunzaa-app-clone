@@ -107,7 +107,7 @@ export default function TransferStatusScreen() {
                     </View>
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Net Adjustment (To):</Text>
-                        <Text style={[styles.summaryValue, { color: '#22C55E' }]}>+Tsh {netAdjustment.toLocaleString()}</Text>
+                        <Text style={[styles.summaryValue, { color: '#4A55A2' }]}>+Tsh {netAdjustment.toLocaleString()}</Text>
                     </View>
 
                     <View style={styles.divider} />
@@ -125,7 +125,7 @@ export default function TransferStatusScreen() {
                 {/* Status Badge */}
                 <View style={styles.statusBadge}>
                     <View style={styles.iconContainer}>
-                        <Ionicons name="time" size={24} color="#FFFFFF" />
+                        <Ionicons name="information" size={20} color="#FFFFFF" />
                     </View>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.statusTitle}>Transfer In Progress</Text>
@@ -233,9 +233,18 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 1,
         backgroundColor: '#E5E7EB',
+        borderStyle: 'dashed',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
     },
     arrowIcon: {
         marginHorizontal: 8,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     summaryContainer: {
         marginBottom: 24,
@@ -271,15 +280,15 @@ const styles = StyleSheet.create({
     },
     statusBadge: {
         flexDirection: 'row',
-        backgroundColor: '#EFF6FF',
+        backgroundColor: '#F8FAFC', // very light blue/grey
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#DBEAFE',
+        borderColor: '#E2E8F0',
     },
     iconContainer: {
-        width: 40,
-        height: 40,
+        width: 32,
+        height: 32,
         borderRadius: 8,
         backgroundColor: '#4A55A2',
         justifyContent: 'center',

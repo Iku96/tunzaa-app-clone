@@ -1,23 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
-
-// Mock Data
-const RECEIPT_DATA = {
-    date: 'Dec 12, 2025 | 10:48:45 PM',
-    customerName: 'Maximus Max',
-    orderId: '986704', // Matches previous mock
-    productName: 'Nike Air Jordan',
-    receiptNo: '07434333642125',
-    address: '7663 Oakland St.\nHonolulu, HI 96815',
-    subtotal: 51000,
-    tax: 4100, // 8%
-    total: 61000,
-};
 
 export default function ReceiptScreen() {
     const router = useRouter();
@@ -26,75 +12,93 @@ export default function ReceiptScreen() {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#1F2937" />
+                    <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Receipt</Text>
                 <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
+                {/* Physical-style Receipt Card */}
                 <View style={styles.receiptCard}>
-                    {/* Logo */}
-                    <Image source={require('../../../assets/tunzaa-logo.png')} style={styles.logo} resizeMode="contain" />
 
-                    <Text style={styles.receiptTitle}>Product Payments</Text>
-                    <Text style={styles.paymentNumber}>Payment number #8512857528</Text>
-
-                    <View style={styles.dashedLine} />
-
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Date & time</Text>
-                        <Text style={styles.value}>{RECEIPT_DATA.date}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Customer name</Text>
-                        <Text style={styles.value}>{RECEIPT_DATA.customerName}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Order ID</Text>
-                        <Text style={styles.value}>{RECEIPT_DATA.orderId}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Product Name</Text>
-                        <Text style={styles.value}>{RECEIPT_DATA.productName}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Receipt</Text>
-                        <Text style={styles.value}>{RECEIPT_DATA.receiptNo}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Address</Text>
-                        <Text style={[styles.value, { textAlign: 'right' }]}>{RECEIPT_DATA.address}</Text>
+                    {/* Top Branding Section */}
+                    <View style={styles.brandSection}>
+                        <Text style={styles.tunzaaLogoText}>TUNZAA</Text>
+                        <View style={styles.paymentTypeRow}>
+                            <View style={styles.dot} />
+                            <Text style={styles.paymentTypeText}>Product Payments</Text>
+                        </View>
+                        <Text style={styles.orderNumberText}>Payment made for Order number #9087053</Text>
                     </View>
 
-                    <View style={styles.dashedLine} />
+                    <View style={styles.dashedDivider} />
 
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Subtotal</Text>
-                        <Text style={styles.value}>Tsh. {RECEIPT_DATA.subtotal.toLocaleString()}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Tax (8%)</Text>
-                        <Text style={styles.value}>Tsh. {RECEIPT_DATA.tax.toLocaleString()}</Text>
+                    <Text style={styles.dateText}>Nov 13, 2024 | 02:40 PM</Text>
+
+                    {/* Main Receipt Info Rows */}
+                    <View style={styles.infoSection}>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Service</Text>
+                            <Text style={styles.infoValue}>Vodacom Shop</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Method</Text>
+                            <Text style={styles.infoValue}>M-Pesa</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Product Name</Text>
+                            <Text style={styles.infoValue}>Samsung Galaxy</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Amount</Text>
+                            <Text style={styles.infoValue}>1,500,000</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>Status</Text>
+                            <Text style={styles.statusValue}>Completed</Text>
+                        </View>
                     </View>
 
-                    <View style={[styles.row, { marginTop: 12 }]}>
-                        <Text style={styles.totalLabel}>Total cost</Text>
-                        <Text style={styles.totalValue}>Tsh. {RECEIPT_DATA.total.toLocaleString()}</Text>
+                    <View style={styles.dashedDivider} />
+
+                    {/* Breakdown Section */}
+                    <View style={styles.breakdownSection}>
+                        <View style={styles.breakdownRow}>
+                            <Text style={styles.breakdownLabel}>Subtotal</Text>
+                            <Text style={styles.breakdownValue}>Tsh 35,000</Text>
+                        </View>
+                        <View style={styles.breakdownRow}>
+                            <Text style={styles.breakdownLabel}>Discount</Text>
+                            <Text style={styles.breakdownValue}>Tsh 0</Text>
+                        </View>
+                        <View style={styles.breakdownRow}>
+                            <Text style={styles.breakdownLabel}>Delivery Fees</Text>
+                            <Text style={styles.breakdownValue}>Tsh 10,000</Text>
+                        </View>
+                        <View style={styles.breakdownRow}>
+                            <Text style={styles.breakdownLabel}>Tax (18%)</Text>
+                            <Text style={styles.breakdownValue}>Tsh 6,300</Text>
+                        </View>
+
+                        <View style={[styles.breakdownRow, { marginTop: 12 }]}>
+                            <Text style={styles.totalLabel}>Total costs</Text>
+                            <Text style={styles.totalValue}>Tsh. 51,300</Text>
+                        </View>
                     </View>
 
-                    {/* Perforated bottom edge effect */}
-                    <View style={styles.perforationContainer}>
-                        {Array.from({ length: 15 }).map((_, i) => (
-                            <View key={i} style={styles.circle} />
-                        ))}
-                    </View>
+                    {/* Cutouts on the sides for receipt styling effect */}
+                    <View style={styles.leftCutout} />
+                    <View style={styles.rightCutout} />
+
+                    {/* Fixed Button At Bottom of Card */}
+                    <TouchableOpacity style={styles.downloadBtn} onPress={() => router.push('/(buyer)/orders' as any)}>
+                        <Ionicons name="download-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <Text style={styles.downloadBtnText}>Download Receipt</Text>
+                    </TouchableOpacity>
+
                 </View>
-
-                <TouchableOpacity style={styles.downloadButton}>
-                    <Ionicons name="download-outline" size={20} color="#FFFFFF" />
-                    <Text style={styles.downloadText}>Download Receipt</Text>
-                </TouchableOpacity>
 
             </ScrollView>
         </SafeAreaView>
@@ -104,83 +108,157 @@ export default function ReceiptScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: '#F3F4F6', // Off-white/gray background highlights the white receipt card
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 20,
-        marginBottom: 20,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1F2937',
+        paddingTop: 16,
+        paddingBottom: 20,
     },
     backButton: {
         padding: 4,
     },
-    scrollContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 40,
+    headerTitle: {
+        flex: 1,
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        textAlign: 'center',
+    },
+    content: {
+        padding: 24,
+        alignItems: 'center',
     },
     receiptCard: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        padding: 24,
-        alignItems: 'center',
+        width: '100%',
+        borderRadius: 16,
+        paddingVertical: 32,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 5,
+        shadowRadius: 12,
+        elevation: 4,
         position: 'relative',
-        marginBottom: 24,
     },
-    logo: {
-        width: 120,
-        height: 48,
+    leftCutout: {
+        position: 'absolute',
+        left: -12,
+        top: '60%', // Approximately where the dashed divider is
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6',
+    },
+    rightCutout: {
+        position: 'absolute',
+        right: -12,
+        top: '60%',
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6',
+    },
+    brandSection: {
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingHorizontal: 24,
+    },
+    tunzaaLogoText: {
+        fontSize: 28,
+        fontWeight: '900',
+        color: '#4A55A2',
+        letterSpacing: 2,
+        marginBottom: 12,
+    },
+    paymentTypeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#EEF2FF',
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+        borderRadius: 16,
         marginBottom: 16,
     },
-    receiptTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1F2937',
-        marginBottom: 4,
+    dot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: '#4A55A2',
+        marginRight: 8,
     },
-    paymentNumber: {
-        fontSize: 12,
+    paymentTypeText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#4A55A2',
+    },
+    orderNumberText: {
+        fontSize: 13,
         color: '#6B7280',
-        marginBottom: 24,
+        textAlign: 'center',
     },
-    dashedLine: {
+    dashedDivider: {
+        height: 1,
         borderWidth: 1,
-        borderStyle: 'dashed',
         borderColor: '#E5E7EB',
-        width: '100%',
-        marginBottom: 24,
-        borderRadius: 1,
+        borderStyle: 'dashed',
+        backgroundColor: 'transparent',
+        marginVertical: 24,
+        marginHorizontal: 24,
     },
-    row: {
+    dateText: {
+        fontSize: 13,
+        color: '#6B7280',
+        textAlign: 'right',
+        paddingHorizontal: 24,
+        marginBottom: 24,
+    },
+    infoSection: {
+        paddingHorizontal: 24,
+    },
+    infoRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '100%',
+        alignItems: 'center',
         marginBottom: 16,
     },
-    label: {
+    infoLabel: {
         fontSize: 14,
         color: '#6B7280',
     },
-    value: {
+    infoValue: {
         fontSize: 14,
         fontWeight: '600',
         color: '#1F2937',
-        maxWidth: '60%',
-        textAlign: 'right',
+    },
+    statusValue: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#22C55E', // Green for completed
+    },
+    breakdownSection: {
+        paddingHorizontal: 24,
+        marginBottom: 32,
+    },
+    breakdownRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    breakdownLabel: {
+        fontSize: 13,
+        color: '#6B7280',
+    },
+    breakdownValue: {
+        fontSize: 13,
+        fontWeight: '500',
+        color: '#1F2937',
     },
     totalLabel: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#1F2937',
     },
@@ -189,34 +267,19 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#1F2937',
     },
-    perforationContainer: {
+    downloadBtn: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        position: 'absolute',
-        bottom: -10,
-        left: 0,
-        right: 0,
-        overflow: 'hidden',
-    },
-    circle: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: '#F3F4F6',
-        marginHorizontal: -6,
-    },
-    downloadButton: {
         backgroundColor: '#4A55A2',
+        borderRadius: 24,
         paddingVertical: 16,
-        borderRadius: 30,
-        flexDirection: 'row',
-        justifyContent: 'center',
+        marginHorizontal: 24,
         alignItems: 'center',
-        gap: 8,
+        justifyContent: 'center',
+        marginTop: 16,
     },
-    downloadText: {
+    downloadBtnText: {
         color: '#FFFFFF',
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 'bold',
     },
 });

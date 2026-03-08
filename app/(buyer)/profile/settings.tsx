@@ -30,7 +30,7 @@ export default function SettingsScreen() {
     const renderSettingItem = (icon: string, label: string, onPress?: () => void, isLast: boolean = false) => (
         <TouchableOpacity style={[styles.itemContainer, isLast && styles.lastItem]} onPress={onPress}>
             <View style={styles.itemContent}>
-                <Ionicons name={icon} size={24} color="#4B5563" style={styles.itemIcon} />
+                <Ionicons name={icon as any} size={24} color="#4B5563" style={styles.itemIcon} />
                 <Text style={styles.itemLabel}>{label}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -50,13 +50,13 @@ export default function SettingsScreen() {
 
             <ScrollView contentContainerStyle={styles.content}>
                 {renderSettingItem("briefcase-outline", "Your Activities", () => router.push('/(buyer)/profile/activities' as any))}
-                {renderSettingItem("notifications-outline", "In-App Notifications")}
-                {renderSettingItem("construct-outline", "Business tools and control", () => router.push('/(buyer)/profile/tools'))}
-                {renderSettingItem("alarm-outline", "Reminders")}
-                {renderSettingItem("cube-outline", "Delivery Method")}
-                {renderSettingItem("document-text-outline", "Policies")}
+                {renderSettingItem("notifications-outline", "In-App Notifications", () => router.push('/(buyer)/profile/settings/notifications' as any))}
+                {renderSettingItem("construct-outline", "Business tools and control", () => router.push('/(buyer)/profile/tools' as any))}
+                {renderSettingItem("alarm-outline", "Reminders", () => router.push('/(buyer)/profile/settings/reminder' as any))}
+                {renderSettingItem("cube-outline", "Delivery Method", () => router.push('/(buyer)/profile/delivery' as any))}
+                {renderSettingItem("document-text-outline", "Policies", () => router.push('/(buyer)/profile/settings/policies' as any))}
                 {renderSettingItem("globe-outline", "Language")}
-                {renderSettingItem("person-outline", "Account Manager")}
+                {renderSettingItem("person-outline", "Account Manager", () => router.push('/(buyer)/profile/manager'))}
                 {renderSettingItem("log-out-outline", "Log out", handleSignOut, true)}
 
                 <View style={styles.footer}>
