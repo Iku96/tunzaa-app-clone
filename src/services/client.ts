@@ -69,8 +69,9 @@ apiClient.interceptors.response.use(
                     originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
                     return apiClient(originalRequest);
                 }
-            } catch (refreshError) {
-                console.error("❌ Token refresh failed:", refreshError);
+            } catch (refreshError: any) {
+                console.error("❌ [API Client] Token refresh failed:", refreshError?.message || refreshError);
+                console.warn("⚠️ [API Client] Clearing session due to refresh failure");
                 await clearTokens();
                 await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
             }

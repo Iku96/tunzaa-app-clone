@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Modal, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Modal, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { getAllHotels, HOTEL_CITIES } from '../../../src/data/hotels';
 import BottomNav from '../../../src/components/navigation/BottomNav';
-import DateTimePicker from '@react-native-community/datetimepicker';
+
+// Safe import for DateTimePicker to avoid crash if native module is missing
+let DateTimePicker: any = null;
+try {
+    DateTimePicker = require('@react-native-community/datetimepicker').default;
+} catch (e) {
+    console.warn('Native DateTimePicker not found, using fallback.');
+}
 
 const { width } = Dimensions.get('window');
 
@@ -209,30 +216,83 @@ export default function ServicesScreen() {
                                         </TouchableOpacity>
                                     </View>
                                     {showDatePicker && (
-                                        <DateTimePicker
-                                            value={showDatePicker === 'checkin' ? checkIn : checkOut}
-                                            mode="date"
-                                            display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
-                                            minimumDate={showDatePicker === 'checkout' ? checkIn : new Date()}
-                                            onChange={(event: any, selectedDate?: Date) => {
-                                                if (Platform.OS === 'android') setShowDatePicker(null);
-                                                if (selectedDate) {
-                                                    if (showDatePicker === 'checkin') {
-                                                        setCheckIn(selectedDate);
-                                                        // Push checkout if needed
-                                                        if (selectedDate >= checkOut) {
-                                                            const newCheckout = new Date(selectedDate);
-                                                            newCheckout.setDate(newCheckout.getDate() + 1);
-                                                            setCheckOut(newCheckout);
+                                        DateTimePicker ? (
+                                            <DateTimePicker
+                                                value={showDatePicker === 'checkin' ? checkIn : checkOut}
+                                                mode="date"
+                                                display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+                                                minimumDate={showDatePicker === 'checkout' ? checkIn : new Date()}
+                                                onChange={(event: any, selectedDate?: Date) => {
+                                                    if (Platform.OS === 'android') setShowDatePicker(null);
+                                                    if (selectedDate) {
+                                                        if (showDatePicker === 'checkin') {
+                                                            setCheckIn(selectedDate);
+                                                            // Push checkout if needed
+                                                            if (selectedDate >= checkOut) {
+                                                                const newCheckout = new Date(selectedDate);
+                                                                newCheckout.setDate(newCheckout.getDate() + 1);
+                                                                setCheckOut(newCheckout);
+                                                            }
+                                                        } else {
+                                                            setCheckOut(selectedDate);
                                                         }
-                                                    } else {
-                                                        setCheckOut(selectedDate);
                                                     }
-                                                }
-                                            }}
-                                        />
+                                                }}
+                                            />
+                                        ) : (
+                                            /* Simple JS Fallback if native module is missing */
+                                            <View style={styles.fallbackPicker}>
+                                                <Text style={styles.fallbackTitle}>
+                                                    Adjust {showDatePicker === 'checkin' ? 'Check-in' : 'Check-out'} Date:
+                                                </Text>
+                                                <View style={styles.fallbackRow}>
+                                                    <TouchableOpacity
+                                                        style={styles.fallbackBtn}
+                                                        onPress={() => {
+                                                            const d = new Date(showDatePicker === 'checkin' ? checkIn : checkOut);
+                                                            d.setDate(d.getDate() - 1);
+                                                            if (showDatePicker === 'checkin') {
+                                                                if (d >= new Date()) setCheckIn(d);
+                                                            } else {
+                                                                if (d > checkIn) setCheckOut(d);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Ionicons name="remove-circle-outline" size={32} color="#4A55A2" />
+                                                    </TouchableOpacity>
+                                                    <Text style={styles.fallbackValue}>
+                                                        {formatDate(showDatePicker === 'checkin' ? checkIn : checkOut)}
+                                                    </Text>
+                                                    <TouchableOpacity
+                                                        style={styles.fallbackBtn}
+                                                        onPress={() => {
+                                                            const d = new Date(showDatePicker === 'checkin' ? checkIn : checkOut);
+                                                            d.setDate(d.getDate() + 1);
+                                                            if (showDatePicker === 'checkin') {
+                                                                setCheckIn(d);
+                                                                if (d >= checkOut) {
+                                                                    const next = new Date(d);
+                                                                    next.setDate(next.getDate() + 1);
+                                                                    setCheckOut(next);
+                                                                }
+                                                            } else {
+                                                                setCheckOut(d);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Ionicons name="add-circle-outline" size={32} color="#4A55A2" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                                <TouchableOpacity
+                                                    style={styles.fallbackDone}
+                                                    onPress={() => setShowDatePicker(null)}
+                                                >
+                                                    <Text style={styles.fallbackDoneText}>Done</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        )
                                     )}
-                                    {showDatePicker && Platform.OS === 'ios' && (
+                                    {showDatePicker && Platform.OS === 'ios' && DateTimePicker && (
                                         <TouchableOpacity
                                             style={{ alignSelf: 'center', marginTop: 8 }}
                                             onPress={() => setShowDatePicker(null)}
@@ -630,5 +690,47 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         color: '#FFFFFF',
+    },
+
+    // ── Fallback Picker Styles ──
+    fallbackPicker: {
+        backgroundColor: '#F3F4F6',
+        borderRadius: 16,
+        padding: 16,
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    fallbackTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: 12,
+    },
+    fallbackRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 20,
+        marginBottom: 16,
+    },
+    fallbackBtn: {
+        padding: 4,
+    },
+    fallbackValue: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1F2937',
+        minWidth: 80,
+        textAlign: 'center',
+    },
+    fallbackDone: {
+        backgroundColor: '#4A55A2',
+        paddingHorizontal: 24,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    fallbackDoneText: {
+        color: '#FFFFFF',
+        fontWeight: '600',
+        fontSize: 14,
     },
 });

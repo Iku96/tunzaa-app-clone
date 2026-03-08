@@ -57,11 +57,26 @@ export const saveTokens = async (
 };
 
 export const clearTokens = async (): Promise<void> => {
-    console.log("🔑 Clearing authentication tokens");
+    console.log("🔑 [Storage] Clearing authentication tokens and userId");
     await Promise.all([
         setAccessToken(null),
         setRefreshToken(null),
+        setUserId(null),
     ]);
+};
+
+// ---- User ID Storage (for session recovery) ----
+
+export const getUserId = async (): Promise<string | null> => {
+    return await getStorageItemAsync('user_id');
+};
+
+export const setUserId = async (userId: string | null): Promise<void> => {
+    await setStorageItemAsync('user_id', userId);
+};
+
+export const clearUserId = async (): Promise<void> => {
+    await setUserId(null);
 };
 
 // ---- Temp Phone Number ----

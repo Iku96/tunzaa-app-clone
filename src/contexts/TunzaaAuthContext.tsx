@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../services/auth';
 import { socialAuth } from '../services/social-auth';
-import { saveTokens, clearTokens, getAccessToken } from '../utils/storage';
+import { saveTokens, clearTokens, getAccessToken, getUserId, setUserId } from '../utils/storage';
 import { STORAGE_KEYS } from '../services/config';
 import type {
     AuthResponse,
@@ -116,6 +116,7 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
 
     // Store user data from AuthResponse
     const storeUserData = useCallback(async (authResponse: AuthResponse) => {
+        console.log(`💾 [AuthContext] Storing user data for ${authResponse.user_id}`);
         const tunzaaUser: TunzaaUser = {
             id: authResponse.id,
             user_id: authResponse.user_id,
@@ -127,17 +128,26 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
             is_active: authResponse.is_active,
             is_verified: authResponse.is_verified,
             activeProfileRole: authResponse.activeProfileRole || authResponse.active_profile_role,
-            profiles: authResponse.profiles,
-            roles: authResponse.roles,
-            permissions: authResponse.permissions,
+            profiles: authResponse.profiles || [],
+            roles: authResponse.roles || [],
+            permissions: authResponse.permissions || [],
             tenant_id: authResponse.tenant_id,
             provider: authResponse.provider,
             firebase_uid: authResponse.firebase_uid,
         };
 
         setUser(tunzaaUser);
-        await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(tunzaaUser));
-        await saveTokens(authResponse.access_token, authResponse.refresh_token);
+
+        try {
+            await Promise.all([
+                AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(tunzaaUser)),
+                setUserId(authResponse.user_id),
+                saveTokens(authResponse.access_token, authResponse.refresh_token),
+            ]);
+            console.log('✅ [AuthContext] User data and tokens saved successfully');
+        } catch (e) {
+            console.error('❌ [AuthContext] Failed to save user data:', e);
+        }
 
         return tunzaaUser;
     }, []);
@@ -249,33 +259,79 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
 
     // ---- Vendor / Delivery Partner ----
 
-    const createVendor = useCallback(async (vendorData: CreateVendorBody) => {
-        // Use React state user first, fall back to AsyncStorage if state is stale
-        let currentUser = user;
-        if (!currentUser) {
+    // Internal helper to restore session if missing but token exists
+    const restoreSessionIfMissing = async (): Promise<TunzaaUser | null> => {
+        if (user) return user;
+
+        try {
+            console.log('🔄 [AuthContext] State missing, attempting restoration...');
+
+            // 1. Try AsyncStorage (Fast cache)
             const storedData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
             if (storedData) {
-                currentUser = JSON.parse(storedData);
-                // Also restore the React state
-                setUser(currentUser);
+                const parsed = JSON.parse(storedData);
+                console.log('✅ [AuthContext] Restored from AsyncStorage');
+                setUser(parsed);
+                return parsed;
             }
+
+            // 2. If AsyncStorage empty, check SecureStore for UserId and Token
+            const [storedUserId, token] = await Promise.all([
+                getUserId(),
+                getAccessToken()
+            ]);
+
+            if (storedUserId && token) {
+                console.log(`🛰️ [AuthContext] Found UserId ${storedUserId} in SecureStore, fetching fresh details...`);
+                try {
+                    const freshData = await authApi.getUserDetails(storedUserId);
+                    if (freshData) {
+                        const restoredUser: TunzaaUser = {
+                            ...freshData,
+                            user_id: freshData.user_id || storedUserId,
+                            activeProfileRole: freshData.activeProfileRole || freshData.active_profile_role,
+                        };
+                        setUser(restoredUser);
+                        await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(restoredUser));
+                        console.log('✅ [AuthContext] Session recovered from server!');
+                        return restoredUser;
+                    }
+                } catch (apiError: any) {
+                    console.error('❌ [AuthContext] Server recovery failed:', apiError?.message || apiError);
+                }
+            } else {
+                console.warn('⚠️ [AuthContext] No UserId or Token found in SecureStore');
+            }
+        } catch (e) {
+            console.error('❌ [AuthContext] Self-healing failed:', e);
         }
-        if (!currentUser) throw new Error('Not authenticated');
+        return null;
+    };
+
+    const createVendor = useCallback(async (vendorData: CreateVendorBody) => {
+        console.log('🏗️ [AuthContext] createVendor called');
+        let currentUser = await restoreSessionIfMissing();
+
+        if (!currentUser) {
+            console.error('❌ [AuthContext] Vendor creation failed: User is null and could not be restored.');
+            throw new Error('Authentication session expired. Please log in again.');
+        }
+
+        console.log(`✅ [AuthContext] Proceeding with user_id: ${currentUser.user_id}`);
         return await authApi.createVendor(currentUser.user_id, vendorData);
-    }, [user]);
+    }, [user, restoreSessionIfMissing]);
 
     const createDeliveryPartner = useCallback(async (partnerData: CreateDeliveryPartnerBody) => {
-        let currentUser = user;
+        console.log('🏗️ [AuthContext] createDeliveryPartner called');
+        let currentUser = await restoreSessionIfMissing();
+
         if (!currentUser) {
-            const storedData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
-            if (storedData) {
-                currentUser = JSON.parse(storedData);
-                setUser(currentUser);
-            }
+            console.error('❌ [AuthContext] Partner creation failed: User is null and could not be restored.');
+            throw new Error('Authentication session expired. Please log in again.');
         }
-        if (!currentUser) throw new Error('Not authenticated');
+
         return await authApi.createDeliveryPartner(currentUser.user_id, partnerData);
-    }, [user]);
+    }, [user, restoreSessionIfMissing]);
 
     // ---- Context Value ----
 
