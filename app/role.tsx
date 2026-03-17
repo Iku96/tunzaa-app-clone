@@ -49,7 +49,8 @@ export default function RoleScreen() {
         } else if (option === 'Join as Affiliate Marketer') {
             router.push('/(affiliate)/register' as any);
         } else {
-            router.push('/mauzo-intro');
+            // For "Sell products" or other business options, register first
+            router.push({ pathname: '/register', params: { role: 'merchant' } });
         }
     };
 
@@ -251,7 +252,7 @@ export default function RoleScreen() {
               - Replaced 'top: 780' with 'mt-auto'
               - This pushes the Skip button to the bottom of the screen content
             */}
-            <View className="mt-auto pt-10 pb-5 items-center justify-center">
+            <View className="mt-auto pt-5 pb-1 items-center justify-center">
                 <TouchableOpacity
                     onPress={handleSkip}
                     className="flex-row items-center gap-x-2 p-3"
@@ -270,6 +271,22 @@ export default function RoleScreen() {
                         {t.roleScreenSkip || "Skip"}
                     </Text>
                     <ArrowRight size={20} color="#6B7280" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    onPress={() => router.push({ pathname: '/login', params: { role: isBusinessExpanded ? 'merchant' : 'buyer' } })}
+                    className="mt-2 mb-8"
+                >
+                    <Text
+                        style={{
+                            fontFamily: 'System',
+                            fontSize: 14,
+                            color: '#2C3D6D',
+                            textDecorationLine: 'underline'
+                        }}
+                    >
+                        Already have an account? Sign In
+                    </Text>
                 </TouchableOpacity>
             </View>
         </ScrollView >

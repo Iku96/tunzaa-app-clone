@@ -12,7 +12,7 @@ import {
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
@@ -22,6 +22,7 @@ import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
  */
 export default function LoginScreen() {
     const router = useRouter();
+    const { role: targetRole } = useLocalSearchParams<{ role?: string }>();
 
     const [usernameOrEmail, setUsernameOrEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -52,9 +53,25 @@ export default function LoginScreen() {
             const response = await tunzaaLogin(identifier, password, isPhone);
             console.log('✅ Login success:', response.name);
 
-            // Navigate based on user role
-            const role = response.activeProfileRole || response.active_profile_role;
-            if (role === 'vendor') {
+            // Check if we have pending merchant onboarding data
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            const hasPending = await AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME');
+            
+            if (hasPending && (response.activeProfileRole || response.active_profile_role) !== 'vendor') {
+                console.log('🏗️ [Login] Found pending onboarding, directing to finish registration...');
+                router.replace('/(merchant)/onboarding/step-5' as any);
+                return;
+            }
+
+            // Navigate based on user role and context intent
+            const serverRole = response.activeProfileRole || response.active_profile_role;
+            const hasVendorProfile = response.profiles?.some((p: any) => p.role === 'vendor');
+            
+            console.log(`🧭 [Login] Redirecting. Target: ${targetRole}, Server: ${serverRole}, HasVendor: ${hasVendorProfile}`);
+
+            if (targetRole === 'merchant' && hasVendorProfile) {
+                router.replace('/(merchant)' as any);
+            } else if (serverRole === 'vendor') {
                 router.replace('/(merchant)' as any);
             } else {
                 router.replace('/(buyer)' as any);
@@ -83,8 +100,12 @@ export default function LoginScreen() {
 
             if (response) {
                 console.log('✅ Social login success:', response.name);
-                const role = response.activeProfileRole || response.active_profile_role;
-                if (role === 'vendor') {
+                const serverRole = response.activeProfileRole || response.active_profile_role;
+                const hasVendorProfile = response.profiles?.some((p: any) => p.role === 'vendor');
+                
+                if (targetRole === 'merchant' && hasVendorProfile) {
+                    router.replace('/(merchant)' as any);
+                } else if (serverRole === 'vendor') {
                     router.replace('/(merchant)' as any);
                 } else {
                     router.replace('/(buyer)' as any);
@@ -146,6 +167,7 @@ export default function LoginScreen() {
                                         value={password}
                                         onChangeText={setPassword}
                                         secureTextEntry={!showPassword}
+                                        autoCapitalize="none"
                                     />
                                     <TouchableOpacity
                                         onPress={() => setShowPassword(!showPassword)}

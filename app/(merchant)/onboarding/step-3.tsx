@@ -33,7 +33,7 @@ export default function Step3Location() {
                                 style={styles.manualButton}
                                 onPress={() => router.push('/(merchant)/onboarding/step-3-manual')}
                             >
-                                <Text style={styles.manualButtonText}>Weka Mwenyewe</Text>
+                                <Text style={styles.manualButtonText}>Weka kwa kutumia maandishi</Text>
                             </TouchableOpacity>
 
                             <Text style={styles.orText}>Au</Text>
@@ -43,7 +43,7 @@ export default function Step3Location() {
                                 style={styles.gpsButton}
                                 onPress={() => router.push('/(merchant)/onboarding/step-3-map')}
                             >
-                                <Text style={styles.gpsButtonText}>Chagua eneo moja kwa moja</Text>
+                                <Text style={styles.gpsButtonText}>Chagua kwenye ramani</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

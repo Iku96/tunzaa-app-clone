@@ -1,6 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated, Dimensions, StyleSheet, Modal, TouchableWithoutFeedback, Image } from 'react-native';
-import { LayoutGrid, Box, ShoppingBag, User, Wallet, ChevronDown, MoreHorizontal, Briefcase } from 'lucide-react-native';
+import { 
+    LayoutGrid, 
+    Box, 
+    TrendingUp,
+    Users, 
+    Wallet, 
+    Settings, 
+    LogOut, 
+    X,
+    ChevronRight,
+    Search,
+    Bell,
+    CheckCircle,
+    Briefcase,
+    MoreHorizontal,
+    User,
+    ChevronDown
+} from 'lucide-react-native';
+import { useRouter, usePathname } from 'expo-router';
+import { useTunzaaAuth } from '../../contexts/TunzaaAuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,7 +29,33 @@ interface SidebarMenuProps {
 }
 
 export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
+    const { user, logout } = useTunzaaAuth();
+    const router = useRouter();
+    const pathname = usePathname();
     const slideAnim = useRef(new Animated.Value(-width)).current; // Start completely off-screen
+
+    // Find vendor profile and extract details
+    const vendorProfile = user?.profiles?.find(p => p.role === 'vendor') as any;
+    
+    // Check metadata for branding if not directly on profile
+    const metadata = vendorProfile?.metadata || {};
+    const logoUrl = metadata.logo_url || metadata.image_url || vendorProfile?.branding?.logo_url;
+    
+    const displayName = metadata.business_name || vendorProfile?.display_name || vendorProfile?.business_name || user?.name || 'Merchant';
+    
+    // Calculate initials
+    const initials = displayName
+        .split(' ')
+        .filter((n: string) => n.length > 0)
+        .map((n: string) => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+
+    // Format joined date
+    const joinedDate = vendorProfile?.created_at 
+        ? new Date(vendorProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        : 'March 2026';
 
     useEffect(() => {
         if (isVisible) {
@@ -28,8 +73,24 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
         }
     }, [isVisible, slideAnim]);
 
+    const handleLogout = async () => {
+        onClose();
+        await logout();
+        router.replace('/');
+    };
+
+    const navigateTo = (route: string) => {
+        onClose();
+        // If it's the current route, don't push
+        if (pathname === route) return;
+        router.push(route as any);
+    };
+
+    // Helper to check if a route is active
+    const isActive = (route: string) => pathname === route;
+
     // Don't render until visible or animating out to avoid blocking touches underneath
-    if (!isVisible && slideAnim._value === -width) return null;
+    if (!isVisible && (slideAnim as any)._value === -width) return null;
 
     return (
         <Modal
@@ -55,13 +116,23 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                     <View style={styles.header}>
                         <View style={styles.userInfoRow}>
                             <View style={styles.avatarContainer}>
-                                <Text style={styles.avatarInitials}>V</Text>
+                                {logoUrl ? (
+                                    <Image 
+                                        source={{ uri: logoUrl }} 
+                                        style={styles.avatarImage} 
+                                        resizeMode="cover"
+                                    />
+                                ) : (
+                                    <View style={styles.logoPlaceholder}>
+                                        <Text style={styles.avatarInitials}>{initials}</Text>
+                                    </View>
+                                )}
                             </View>
                             <View style={styles.userDetails}>
-                                <Text style={styles.userName}>Vodacom</Text>
+                                <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
                                 <View style={styles.joinedRow}>
-                                    <Briefcase size={12} color="#111827" style={{ marginRight: 4 }} />
-                                    <Text style={styles.joinedText}>Joined November 2010</Text>
+                                    <Briefcase size={12} color="#6B7280" style={{ marginRight: 4 }} />
+                                    <Text style={styles.joinedText}>Joined {joinedDate}</Text>
                                 </View>
                             </View>
                         </View>
@@ -72,37 +143,54 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
 
                     {/* Navigation Items */}
                     <View style={styles.navContainer}>
-                        {/* Dashboard (Active) */}
-                        <TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
-                            <LayoutGrid size={22} color="#111827" style={styles.navIcon} />
-                            <Text style={styles.activeNavText}>Dashboard</Text>
+                        {/* Dashboard */}
+                        <TouchableOpacity 
+                            style={[styles.navItem, isActive('/(merchant)') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(merchant)')}
+                        >
+                            <Briefcase size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(merchant)') && styles.activeNavText]}>Dashboard</Text>
                         </TouchableOpacity>
 
-                        {/* Inventory */}
-                        <TouchableOpacity style={styles.navItem}>
-                            <Box size={22} color="#111827" style={styles.navIcon} />
-                            <Text style={styles.navText}>Inventory</Text>
+                        <TouchableOpacity 
+                            style={[styles.navItem, isActive('/(merchant)/inventory') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(merchant)/inventory')}
+                        >
+                            <Box size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(merchant)/inventory') && styles.activeNavText]}>Inventory</Text>
                         </TouchableOpacity>
 
                         {/* Orders and sales */}
-                        <TouchableOpacity style={styles.navItem}>
-                            <ShoppingBag size={22} color="#111827" style={styles.navIcon} />
-                            <Text style={styles.navText}>Orders and sales</Text>
+                        <TouchableOpacity 
+                            style={[styles.navItem, isActive('/(merchant)/live-orders') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(merchant)/live-orders')}
+                        >
+                            <TrendingUp size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(merchant)/live-orders') && styles.activeNavText]}>Orders and sales</Text>
                         </TouchableOpacity>
 
-                        {/* Customer Profile */}
-                        <TouchableOpacity style={styles.navItem}>
-                            <User size={22} color="#111827" style={styles.navIcon} />
-                            <Text style={styles.navText}>Customer Profile</Text>
+                        {/* Customer Profile (linked to Store Profile) */}
+                        <TouchableOpacity 
+                            style={[styles.navItem, isActive('/(merchant)/store-profile') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(merchant)/store-profile')}
+                        >
+                            <User size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(merchant)/store-profile') && styles.activeNavText]}>Customer Profile</Text>
                         </TouchableOpacity>
 
                         {/* Loans (with dropdown) */}
                         <TouchableOpacity style={styles.navItemRow}>
                             <View style={styles.navItemLeft}>
-                                <Wallet size={22} color="#111827" style={styles.navIcon} />
+                                <Wallet size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
                                 <Text style={styles.navText}>Loans</Text>
                             </View>
                             <ChevronDown size={18} color="#111827" />
+                        </TouchableOpacity>
+
+                        {/* Logout */}
+                        <TouchableOpacity style={[styles.navItem, { marginTop: 40 }]} onPress={handleLogout}>
+                            <LogOut size={22} color="#EF4444" style={styles.navIcon} />
+                            <Text style={[styles.navText, { color: '#EF4444' }]}>Logout</Text>
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
@@ -149,7 +237,7 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#E50000', // Vodacom Red
+        backgroundColor: '#3A5BA9', // Theme Blue
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -158,6 +246,11 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 20,
         fontWeight: 'bold',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 22,
     },
     userDetails: {
         justifyContent: 'center',
@@ -192,7 +285,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     activeNavItem: {
-        backgroundColor: '#F3F4F6', // Light gray background for active
+        backgroundColor: '#EEF2FF', // Light blue/lavender for active
     },
     navItemRow: {
         flexDirection: 'row',
@@ -202,6 +295,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         borderRadius: 8,
         marginBottom: 8,
+    },
+    logoPlaceholder: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     navItemLeft: {
         flexDirection: 'row',

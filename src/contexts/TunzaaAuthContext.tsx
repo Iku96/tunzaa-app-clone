@@ -17,6 +17,7 @@ import type {
     PasswordResetConfirmResponse,
     CreateVendorBody,
     CreateDeliveryPartnerBody,
+    UserProfile, // Added UserProfile type import
 } from '../services/types';
 
 // ---- Types ----
@@ -73,12 +74,17 @@ interface TunzaaAuthContextType {
 
     // User Management
     updateUser: (data: { first_name?: string; last_name?: string; preferred_language?: string }) => Promise<any>;
-    getUserDetails: () => Promise<any>;
+    getUserDetails: (explicitUserId?: string) => Promise<any>;
     refreshProfile: () => Promise<void>;
 
     // Vendor / Delivery Partner
-    createVendor: (vendorData: CreateVendorBody) => Promise<any>;
-    createDeliveryPartner: (partnerData: CreateDeliveryPartnerBody) => Promise<any>;
+    createVendor: (vendorData: CreateVendorBody, explicitUserId?: string) => Promise<any>;
+    updateVendor: (vendorId: string, profileId: string, vendorData: Partial<CreateVendorBody>) => Promise<any>;
+    createDeliveryPartner: (partnerData: CreateDeliveryPartnerBody, explicitUserId?: string) => Promise<any>;
+
+    // Internal Helpers
+    changePassword: (data: { current_password: string; new_password: string }) => Promise<any>;
+    saveAuthResponse: (authResponse: AuthResponse) => Promise<TunzaaUser>;
 }
 
 const TunzaaAuthContext = createContext<TunzaaAuthContextType | null>(null);
@@ -115,25 +121,38 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
 
 
     // Store user data from AuthResponse
-    const storeUserData = useCallback(async (authResponse: AuthResponse) => {
-        console.log(`💾 [AuthContext] Storing user data for ${authResponse.user_id}`);
+    const storeUserData = useCallback(async (authResponse: any) => {
+        console.log(`💾 [AuthContext] Storing user data for ${authResponse.user_id || authResponse.id}`);
+        
+        // Robustly handle different response formats (flat, nested 'user' object, or JSON-string 'user')
+        let userData = authResponse;
+        if (typeof authResponse.user === 'string') {
+            try {
+                userData = JSON.parse(authResponse.user);
+            } catch (e) {
+                console.error('❌ [AuthContext] Failed to parse nested user string:', e);
+            }
+        } else if (authResponse.user && typeof authResponse.user === 'object') {
+            userData = authResponse.user;
+        }
+
         const tunzaaUser: TunzaaUser = {
-            id: authResponse.id,
-            user_id: authResponse.user_id,
-            first_name: authResponse.first_name,
-            last_name: authResponse.last_name,
-            name: authResponse.name,
-            email: authResponse.email,
-            phone_number: authResponse.phone_number,
-            is_active: authResponse.is_active,
-            is_verified: authResponse.is_verified,
-            activeProfileRole: authResponse.activeProfileRole || authResponse.active_profile_role,
-            profiles: authResponse.profiles || [],
-            roles: authResponse.roles || [],
-            permissions: authResponse.permissions || [],
-            tenant_id: authResponse.tenant_id,
-            provider: authResponse.provider,
-            firebase_uid: authResponse.firebase_uid,
+            id: authResponse.id || userData.id || userData.user_id,
+            user_id: authResponse.user_id || userData.user_id || userData.id,
+            first_name: authResponse.first_name || userData.first_name || '',
+            last_name: authResponse.last_name || userData.last_name || '',
+            name: authResponse.name || userData.name || `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+            email: authResponse.email || userData.email,
+            phone_number: authResponse.phone_number || userData.phone_number,
+            is_active: authResponse.is_active ?? userData.is_active,
+            is_verified: authResponse.is_verified ?? userData.is_verified,
+            activeProfileRole: authResponse.activeProfileRole || authResponse.active_profile_role || userData.active_profile_role || userData.activeProfileRole,
+            profiles: authResponse.profiles || userData.profiles || [],
+            roles: authResponse.roles || userData.roles || [],
+            permissions: authResponse.permissions || userData.permissions || [],
+            tenant_id: authResponse.tenant_id || userData.tenant_id,
+            provider: authResponse.provider || userData.provider,
+            firebase_uid: authResponse.firebase_uid || userData.firebase_uid,
         };
 
         setUser(tunzaaUser);
@@ -225,14 +244,26 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
     const updateUser = useCallback(async (data: { first_name?: string; last_name?: string; preferred_language?: string }) => {
         if (!user) throw new Error('Not authenticated');
         const response = await authApi.updateUser(user.user_id, data);
-        // Update local user data
-        setUser(prev => prev ? { ...prev, ...data } : null);
+        
+        // Update local user data & persist it
+        const updatedUser = { ...user, ...data };
+        setUser(updatedUser);
+        try {
+            await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+        } catch (e) {
+            console.error('❌ [AuthContext] Failed to persist updated user data:', e);
+        }
+        
         return response;
     }, [user]);
 
-    const getUserDetails = useCallback(async () => {
-        if (!user) throw new Error('Not authenticated');
-        return await authApi.getUserDetails(user.user_id);
+    const getUserDetails = useCallback(async (explicitUserId?: string) => {
+        const idToUse = explicitUserId || user?.user_id;
+        if (!idToUse) {
+            console.warn('⚠️ [AuthContext] getUserDetails called without userId or authenticated session');
+            throw new Error('Not authenticated');
+        }
+        return await authApi.getUserDetails(idToUse);
     }, [user]);
 
     // Refresh profile data from server (needed after creating vendor/delivery profiles)
@@ -308,30 +339,215 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         return null;
     };
 
-    const createVendor = useCallback(async (vendorData: CreateVendorBody) => {
-        console.log('🏗️ [AuthContext] createVendor called');
-        let currentUser = await restoreSessionIfMissing();
+    const updateVendor = useCallback(async (vendorId: string, profileId: string, vendorData: Partial<CreateVendorBody>) => {
+        if (!user) throw new Error('Not authenticated');
+        
+        console.log(`📝 [AuthContext] updateVendor called for vendor: ${vendorId}, profile: ${profileId}`);
 
-        if (!currentUser) {
-            console.error('❌ [AuthContext] Vendor creation failed: User is null and could not be restored.');
+        let final_logo_url = vendorData.store?.branding?.logo_url || vendorData.branding?.logo_url || vendorData.logo_url;
+        let final_banner_url = vendorData.store?.banners?.[0] || vendorData.branding?.banner_url || vendorData.banner_url;
+
+        // 1. Handle Image Uploads if local URIs are provided
+        try {
+            if (final_logo_url && (final_logo_url.startsWith('file://') || final_logo_url.startsWith('content://'))) {
+                console.log('📤 [AuthContext] Uploading logo...');
+                const uploadRes = await uploadApi.uploadFile(final_logo_url, `logo_${vendorId}.jpg`);
+                final_logo_url = uploadRes.url;
+            }
+            if (final_banner_url && (final_banner_url.startsWith('file://') || final_banner_url.startsWith('content://'))) {
+                console.log('📤 [AuthContext] Uploading banner...');
+                const uploadRes = await uploadApi.uploadFile(final_banner_url, `banner_${vendorId}.jpg`);
+                final_banner_url = uploadRes.url;
+            }
+        } catch (uploadError) {
+            console.error('❌ [AuthContext] Image upload failed:', uploadError);
+            throw new Error('Failed to upload store images. Please try again.');
+        }
+
+        // 2. Optimistic Update (Local State)
+        const vendorProfile = user.profiles.find(p => p.profile_id === profileId || p.profileId === profileId);
+        const currentMetadata = vendorProfile?.metadata || {};
+
+        const updatedProfiles = user.profiles.map(p => {
+            if (p.profile_id === profileId || p.profileId === profileId) {
+                const business_name = vendorData.business_name || vendorData.display_name || p.metadata?.business_name || p.business_name;
+                
+                return {
+                    ...p,
+                    display_name: vendorData.display_name || p.display_name,
+                    displayName: vendorData.display_name || p.displayName,
+                    business_name: business_name,
+                    metadata: {
+                        ...p.metadata,
+                        business_name: business_name,
+                        banner_url: final_banner_url || p.metadata?.banner_url,
+                        logo_url: final_logo_url || p.metadata?.logo_url,
+                        image_url: final_logo_url || p.metadata?.logo_url,
+                        description: vendorData.store?.description || vendorData.description || p.metadata?.description,
+                    }
+                };
+            }
+            return p;
+        });
+
+        const optimisticallyUpdatedUser = { ...user, profiles: updatedProfiles };
+        setUser(optimisticallyUpdatedUser);
+        await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(optimisticallyUpdatedUser));
+
+        try {
+            // 3. Parallel API calls (Marketplace + User Profile)
+            const final_business_name = vendorData.business_name || vendorData.display_name || currentMetadata.business_name;
+
+            await Promise.all([
+                authApi.updateVendor(vendorId, {
+                    ...vendorData,
+                    business_name: final_business_name,
+                    store: {
+                        ...vendorData.store,
+                        branding: {
+                            ...vendorData.store?.branding,
+                            logo_url: final_logo_url || currentMetadata.logo_url
+                        },
+                        banners: final_banner_url ? [final_banner_url] : (vendorData.store?.banners || (currentMetadata.banner_url ? [currentMetadata.banner_url] : []))
+                    }
+                } as any),
+                authApi.updateUserProfile(user.user_id, profileId, {
+                    display_name: vendorData.display_name || final_business_name,
+                    metadata: {
+                        ...currentMetadata,
+                        business_name: final_business_name,
+                        banner_url: final_banner_url || currentMetadata.banner_url,
+                        logo_url: final_logo_url || currentMetadata.logo_url,
+                        image_url: final_logo_url || currentMetadata.logo_url,
+                        description: vendorData.store?.description || vendorData.description || currentMetadata.description,
+                        is_onboarded: true
+                    }
+                })
+            ]);
+
+            console.log('✅ [AuthContext] Vendor and Profile updated on server, refreshing...');
+            await refreshProfile();
+            return true;
+        } catch (error) {
+            console.error('❌ [AuthContext] updateVendor API failed:', error);
+            throw error;
+        }
+    }, [user, refreshProfile]);
+
+    const createVendor = useCallback(async (vendorData: CreateVendorBody, explicitUserId?: string) => {
+        console.log('🏗️ [AuthContext] createVendor called');
+        let userIdToUse = explicitUserId;
+        let currentUser = user;
+
+        if (!userIdToUse || !currentUser) {
+            if (!currentUser) {
+                console.log('🔄 [AuthContext] User state missing, attempting restoration before vendor action...');
+                currentUser = await restoreSessionIfMissing();
+            }
+            userIdToUse = currentUser?.user_id;
+        }
+
+        if (!userIdToUse) {
+            console.error('❌ [AuthContext] Vendor action failed: No userId provided and session could not be restored.');
             throw new Error('Authentication session expired. Please log in again.');
         }
 
-        console.log(`✅ [AuthContext] Proceeding with user_id: ${currentUser.user_id}`);
-        return await authApi.createVendor(currentUser.user_id, vendorData);
-    }, [user, restoreSessionIfMissing]);
+        // ✅ CHECK IF VENDOR PROFILE ALREADY EXISTS
+        const existingVendorProfile = currentUser?.profiles?.find(p => p.role === 'vendor');
+        if (existingVendorProfile) {
+            const vendorId = existingVendorProfile.profile_id || existingVendorProfile.profileId;
+            const profileId = existingVendorProfile.profile_id || existingVendorProfile.profileId;
+            console.log(`📝 [AuthContext] Vendor profile already exists (ID: ${vendorId}), updating via updateVendor context method...`);
+            return await updateVendor(vendorId, profileId, vendorData);
+        }
+
+        console.log(`✅ [AuthContext] Proceeding with NEW vendor creation for user_id: ${userIdToUse}`);
+        
+        // 1. Handle Image Uploads for onboarding
+        let logo_url = vendorData.store?.branding?.logo_url;
+        let banner_url = vendorData.store?.banners?.[0];
+
+        try {
+            if (logo_url && (logo_url.startsWith('file://') || logo_url.startsWith('content://'))) {
+                const uploadRes = await uploadApi.uploadFile(logo_url, 'vendor_logo.jpg');
+                logo_url = uploadRes.url;
+            }
+            if (banner_url && (banner_url.startsWith('file://') || banner_url.startsWith('content://'))) {
+                const uploadRes = await uploadApi.uploadFile(banner_url, 'vendor_banner.jpg');
+                banner_url = uploadRes.url;
+            }
+        } catch (uploadError) {
+            console.warn('⚠️ [AuthContext] Onboarding image upload failed, proceeding with local URIs:', uploadError);
+        }
+
+        const finalVendorData = {
+            ...vendorData,
+            store: {
+                ...vendorData.store,
+                branding: {
+                    ...vendorData.store?.branding,
+                    logo_url: logo_url || ''
+                },
+                banners: banner_url ? [banner_url] : (vendorData.store?.banners || [])
+            }
+        };
+
+        const response = await authApi.createVendor(userIdToUse, finalVendorData);
+        
+        // After creation, we need to sync the metadata to the User Profile API
+        // so that the sidebar/header show the correct info immediately.
+        try {
+            const newProfile = response.profiles?.find((p: any) => p.role === 'vendor') || 
+                               response.user?.profiles?.find((p: any) => p.role === 'vendor');
+            const profileId = newProfile?.profile_id || newProfile?.profileId;
+            
+            if (profileId) {
+                console.log(`🔄 [AuthContext] Syncing metadata for NEW vendor profile: ${profileId}`);
+                await authApi.updateUserProfile(userIdToUse, profileId, {
+                    display_name: vendorData.display_name,
+                    metadata: {
+                        business_name: vendorData.business_name,
+                        banner_url,
+                        logo_url,
+                        image_url: logo_url,
+                        description: vendorData.store?.description,
+                        is_onboarded: true,
+                        vendor_id: response.vendor_id || response.id // Store the actual marketplace vendor ID
+                    }
+                });
+            }
+        } catch (syncError) {
+            console.warn('⚠️ [AuthContext] Failed to sync metadata after vendor creation:', syncError);
+        }
+
+        // Final refresh to ensure context state is perfectly in sync
+        await refreshProfile();
+        
+        return response;
+    }, [user, restoreSessionIfMissing, refreshProfile, updateVendor]);
 
     const createDeliveryPartner = useCallback(async (partnerData: CreateDeliveryPartnerBody) => {
         console.log('🏗️ [AuthContext] createDeliveryPartner called');
-        let currentUser = await restoreSessionIfMissing();
+        let currentUser = user;
+        
+        if (!currentUser) {
+            console.log('🔄 [AuthContext] User state missing, attempting restoration before partner creation...');
+            currentUser = await restoreSessionIfMissing();
+        }
 
         if (!currentUser) {
-            console.error('❌ [AuthContext] Partner creation failed: User is null and could not be restored.');
+            console.error('❌ [AuthContext] Partner creation failed: User session could not be restored.');
             throw new Error('Authentication session expired. Please log in again.');
         }
 
+        console.log(`✅ [AuthContext] Proceeding with partner creation for user_id: ${currentUser.user_id}`);
         return await authApi.createDeliveryPartner(currentUser.user_id, partnerData);
     }, [user, restoreSessionIfMissing]);
+
+    const changePassword = useCallback(async (data: { current_password: string; new_password: string }) => {
+        if (!user) throw new Error('Not authenticated');
+        return await authApi.updatePassword(user.user_id, data);
+    }, [user]);
 
     // ---- Context Value ----
 
@@ -352,7 +568,10 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         getUserDetails,
         refreshProfile,
         createVendor,
+        updateVendor,
         createDeliveryPartner,
+        changePassword,
+        saveAuthResponse: storeUserData,
     };
 
     return (

@@ -109,6 +109,7 @@ export const authApi = {
     createVendor: async (userId: string, vendorData: CreateVendorBody) => {
         const response = await apiClient.post("/marketplace/vendors", {
             ...vendorData,
+            user_id: userId, // Ensure top-level user_id is present
         });
         return response.data;
     },
@@ -134,6 +135,7 @@ export const authApi = {
     ) => {
         const response = await apiClient.post("/partners/", {
             ...partnerData,
+            user_id: userId, // Ensure top-level user_id is present
         });
         return response.data;
     },

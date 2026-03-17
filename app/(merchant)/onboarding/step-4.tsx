@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
 
 const { width } = Dimensions.get('window');
 
@@ -7,13 +8,32 @@ export default function Step4Review() {
     const router = useRouter();
     const params = useLocalSearchParams();
 
-    // Fallback data
-    const locationData = {
-        region: params.region || 'Arusha',
-        municipal: params.municipal || 'Arusha Urban',
-        ward: params.ward || 'Kimandolu',
-        notes: params.extraInfo || 'Hakuna maelezo ya ziada',
-    };
+    const [locationData, setLocationData] = useState({
+        region: params.region as string || '...',
+        municipal: params.municipal as string || '...',
+        ward: params.ward as string || '...',
+        notes: params.extraInfo as string || '...',
+    });
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+                const saved = await AsyncStorage.getItem('TEMP_ONBOARDING_LOCATION');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    setLocationData({
+                        region: data.region || locationData.region,
+                        municipal: data.municipal || locationData.municipal,
+                        ward: data.ward || locationData.ward,
+                        notes: data.extraInfo || locationData.notes,
+                    });
+                }
+            } catch (e) {
+                console.error('❌ [Step4] Failed to load location data:', e);
+            }
+        })();
+    }, []);
 
     return (
         <View style={styles.container}>

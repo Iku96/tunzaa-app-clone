@@ -3,7 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image,
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../src/lib/supabase';
 
 const CATEGORIES = [
     'Electronics',
@@ -40,21 +39,10 @@ export default function AddProductScreen() {
 
         setLoading(true);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            console.log("TODO: migrate to whitelabel API");
             if (!user) throw new Error('Not authenticated');
 
-            const { error } = await supabase
-                .from('products')
-                .insert({
-                    merchant_id: user.id,
-                    name,
-                    price: parseFloat(price),
-                    category,
-                    description,
-                    stock_quantity: parseInt(stock) || 1,
-                    image_url: 'https://via.placeholder.com/300', // Placeholder until Image Upload is implemented
-                    is_active: true
-                });
+            const { error } = console.log("TODO: migrate to whitelabel API");
 
             if (error) throw error;
 

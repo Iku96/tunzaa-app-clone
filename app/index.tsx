@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../src/lib/supabase';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
 /**
  * Welcome Screen (Splash)
@@ -9,42 +9,29 @@ import { supabase } from '../src/lib/supabase';
  * Specs from Figma:
  * - Background: #2D3E66 (brand-primary)
  * - Logo: 185x185px, centered
- * - Auto-navigates to language selection after 2 seconds
+ * - Auto-navigates based on auth session after splash delay
  */
 export default function WelcomeScreen() {
     const router = useRouter();
+    const { isAuthenticated, isLoading, user } = useTunzaaAuth();
 
     useEffect(() => {
-        checkSessionAndRedirect();
-    }, []);
+        if (isLoading) return; // Wait for session restoration
 
-    const checkSessionAndRedirect = async () => {
-        try {
-            // Give a small delay for splash effect
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                router.replace('/(buyer)');
-                return;
+        const timer = setTimeout(() => {
+            if (isAuthenticated && user) {
+                // User is authenticated, but we don't land them directly in a dashboard
+                // per user request "I don't wanna be logged in directly when the app loads".
+                // Instead, we show the Role screen so they can choose their entry point.
+                console.log('🚀 [Splash] Authenticated, showing Role screen for choice');
+                router.replace('/role');
+            } else {
+                router.replace('/language');
             }
+        }, 1500);
 
-            // Also check for Tunzaa's custom auth storage
-            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-            const userData = await AsyncStorage.getItem('user_data');
-
-            if (userData) {
-                router.replace('/(buyer)');
-                return;
-            }
-
-            router.replace('/language');
-
-        } catch (e) {
-            console.error('Routing error:', e);
-            router.replace('/language');
-        }
-    };
+        return () => clearTimeout(timer);
+    }, [isLoading, isAuthenticated, user]);
 
     return (
         <View style={styles.container}>

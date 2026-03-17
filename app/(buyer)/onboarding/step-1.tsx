@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
-import { supabase } from '../../../src/lib/supabase';
 // import DateTimePicker from '@react-native-community/datetimepicker'; // Need to install if we want native picker, utilizing text input for now or simplified date picker if available
 
 export default function Step1Profile() {
@@ -29,10 +28,7 @@ export default function Step1Profile() {
                     };
                     if (dob) updates.date_of_birth = dob;
 
-                    const { error } = await supabase
-                        .from('profiles')
-                        .update(updates)
-                        .eq('id', user.id);
+                    console.log("TODO: migrate to whitelabel API");
 
                     if (error) console.warn('Supabase local update failed:', error.message);
                 }

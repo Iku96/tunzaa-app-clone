@@ -2,13 +2,12 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { supabase } from '../../../src/lib/supabase';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import * as DocumentPicker from 'expo-document-picker';
 
 export default function Step1Documents() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     const [license, setLicense] = useState('');
     const [tin, setTin] = useState('');
@@ -44,15 +43,7 @@ export default function Step1Documents() {
                 // Save progress to profile
                 // Note: In a real app, we would upload the files to Supabase Storage here 
                 // and save the URLs. For now, we save the text numbers.
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({
-                        business_license_number: license,
-                        tin_number: tin,
-                        brela_certificate_number: brela,
-                        onboarding_step: 'step-2'
-                    } as any)
-                    .eq('id', user.id);
+                console.log("TODO: migrate to whitelabel API");
 
                 if (error) throw error;
             }

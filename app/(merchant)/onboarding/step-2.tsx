@@ -2,8 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Dimensions,
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { supabase } from '../../../src/lib/supabase';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -12,10 +11,10 @@ const { height } = Dimensions.get('window');
 
 export default function Step2Details() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     const [shopName, setShopName] = useState('');
-    const [phone, setPhone] = useState('+255 787 118 486');
+    const [phone, setPhone] = useState(user?.phone_number || '');
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
     const [coverImage, setCoverImage] = useState<string | null>(null);
@@ -44,9 +43,34 @@ export default function Step2Details() {
     };
 
     const handleNext = async () => {
+        if (!shopName.trim()) {
+            alert('Tafadhali weka jina la kampuni au duka lako.');
+            return;
+        }
+
         setLoading(true);
-        // Navigate to Step 3 (Selection Screen)
-        router.push('/(merchant)/onboarding/step-3');
+        try {
+            // Persist shop details for late creation
+            const { STORAGE_KEYS } = require('../../../src/services/config');
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            
+            await Promise.all([
+                AsyncStorage.setItem('TEMP_ONBOARDING_SHOP_NAME', shopName.trim()),
+                AsyncStorage.setItem('TEMP_ONBOARDING_PHONE', phone.trim()),
+                AsyncStorage.setItem('TEMP_ONBOARDING_DESCRIPTION', description.trim()),
+                coverImage ? AsyncStorage.setItem('TEMP_ONBOARDING_COVER', coverImage) : Promise.resolve(),
+                logoImage ? AsyncStorage.setItem('TEMP_ONBOARDING_LOGO', logoImage) : Promise.resolve(),
+            ]);
+            
+            console.log('✅ [Step2] Shop details persisted');
+            
+            // Navigate to Step 3 (Selection Screen)
+            router.push('/(merchant)/onboarding/step-3');
+        } catch (e) {
+            console.error('❌ [Step2] Failed to save shop details:', e);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -101,7 +125,15 @@ export default function Step2Details() {
                                 </View>
 
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.phoneText}>{phone}</Text>
+                                    <Text style={styles.label}>Namba ya simu ya duka</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={phone}
+                                        onChangeText={setPhone}
+                                        placeholder="Mfano: +255 700 000 000"
+                                        placeholderTextColor="#9CA3AF"
+                                        keyboardType="phone-pad"
+                                    />
                                 </View>
 
                                 <View style={styles.inputGroup}>

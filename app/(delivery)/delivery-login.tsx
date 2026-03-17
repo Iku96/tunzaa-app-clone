@@ -14,10 +14,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../src/lib/supabase';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 
 export default function DeliveryLoginScreen() {
     const router = useRouter();
+    const { login } = useTunzaaAuth();
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -32,14 +33,8 @@ export default function DeliveryLoginScreen() {
 
         setLoading(true);
         try {
-            const { error } = await supabase.auth.signInWithPassword({
-                phone: `+255${phone}`, // Assuming +255 prefix logic
-                password: password,
-            });
+            await login(`+255${phone}`, password, true);
 
-            if (error) throw error;
-
-            // Success -> Navigate to home/dashboard
             // Success -> Navigate to company details
             alert('Umeingia kikamilifu!');
             router.replace('/delivery-company-details' as any);

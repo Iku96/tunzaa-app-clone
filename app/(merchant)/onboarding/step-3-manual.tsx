@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Touchabl
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useAuth } from '../../../src/contexts/AuthContext';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
 // ✅ STATIC DATA 
@@ -28,7 +28,7 @@ const LOCATION_DATA: any = {
 
 export default function Step3Manual() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     // Form State
     const [region, setRegion] = useState('');      // Mkoa
@@ -47,19 +47,25 @@ export default function Step3Manual() {
         }
 
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            // ✅ PASS DATA TO STEP 4
+        try {
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            await AsyncStorage.setItem('TEMP_ONBOARDING_LOCATION', JSON.stringify({
+                region,
+                municipal,
+                ward,
+                extraInfo
+            }));
+            console.log('✅ [Step3] Location persisted');
+            
             router.push({
                 pathname: '/(merchant)/onboarding/step-4',
-                params: {
-                    region,
-                    municipal,
-                    ward,
-                    extraInfo
-                }
+                params: { region, municipal, ward, extraInfo }
             });
-        }, 1000);
+        } catch (e) {
+            console.error('❌ [Step3] Save failed:', e);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // ✅ REUSABLE HIERARCHICAL AUTOCOMPLETE

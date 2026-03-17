@@ -2,7 +2,6 @@ import '../global.css';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LanguageProvider } from '../src/contexts/LanguageContext';
-import { AuthProvider } from '../src/contexts/AuthContext';
 import { TunzaaAuthProvider } from '../src/contexts/TunzaaAuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -27,7 +26,7 @@ const queryClient = new QueryClient({
 
 /**
  * Root layout component using Expo Router.
- * Wraps the app in LanguageProvider, AuthProvider (Supabase), TunzaaAuthProvider (Tunzaa API),
+ * Wraps the app in LanguageProvider, TunzaaAuthProvider (whitelabel REST API),
  * and QueryClientProvider for React Query hooks.
  *
  * Note: screenOptions use explicit boolean values (e.g. headerShown: false)
@@ -53,19 +52,17 @@ export default function RootLayout() {
     return (
         <QueryClientProvider client={queryClient}>
             <LanguageProvider>
-                <AuthProvider>
-                    <TunzaaAuthProvider>
-                        <StatusBar style="light" backgroundColor="#2D3E66" />
-                        <Stack
-                            screenOptions={{
-                                headerShown: false as const,
-                                gestureEnabled: true,
-                                animation: 'default',
-                                animationTypeForReplace: 'push',
-                            }}
-                        />
-                    </TunzaaAuthProvider>
-                </AuthProvider>
+                <TunzaaAuthProvider>
+                    <StatusBar style="light" backgroundColor="#2D3E66" />
+                    <Stack
+                        screenOptions={{
+                            headerShown: false as const,
+                            gestureEnabled: true,
+                            animation: 'default',
+                            animationTypeForReplace: 'push',
+                        }}
+                    />
+                </TunzaaAuthProvider>
             </LanguageProvider>
         </QueryClientProvider>
     );

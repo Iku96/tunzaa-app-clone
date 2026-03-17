@@ -62,23 +62,29 @@ export default function MerchantDashboardScreen() {
                     <View style={styles.dateRow}>
                         <TouchableOpacity style={styles.datePill}>
                             <Calendar size={14} color="#6B7280" style={{ marginRight: 6 }} />
-                            <Text style={styles.dateText}>Jun 25, 2025</Text>
+                            <Text style={styles.dateText}>
+                                {new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                            </Text>
                         </TouchableOpacity>
 
                         <Text style={styles.dateDash}>-</Text>
 
                         <TouchableOpacity style={styles.datePill}>
                             <Calendar size={14} color="#6B7280" style={{ marginRight: 6 }} />
-                            <Text style={styles.dateText}>Jun 30, 2025</Text>
+                            <Text style={styles.dateText}>
+                                {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                            </Text>
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.reportText}>Report : Jun 20, 2025 - Jun 30, 2025</Text>
+                    <Text style={styles.reportText}>
+                        Report : {new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })} - {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                    </Text>
                 </View>
 
                 {/* Main Blue Payments Card */}
                 <View style={styles.mainBlueCard}>
                     <Text style={styles.mainCardSubtitle}>Total Payments Received</Text>
-                    <Text style={styles.mainCardTitle}>Tsh.85,0000</Text>
+                    <Text style={styles.mainCardTitle}>Tsh. 0</Text>
 
                     <TouchableOpacity style={styles.historyButton}>
                         <Text style={styles.historyButtonText}>View Transaction History</Text>
@@ -134,6 +140,34 @@ export default function MerchantDashboardScreen() {
                             <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right' }]}>{item.percentage}</Text>
                         </View>
                     ))}
+                </View>
+
+                {/* Top Selling Products */}
+                <View style={styles.listContainer}>
+                    <View style={[styles.listHeader, { backgroundColor: '#01AC00' }]}>
+                        <Text style={styles.listHeaderTitle}>Top Selling Products</Text>
+                        <TouchableOpacity style={[styles.expandIconBtn, { borderColor: '#FFFFFF' }]}>
+                            <Maximize2 size={16} color="#FFFFFF" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.tableHeadRow}>
+                        <Text style={[styles.tableHeadText, { flex: 2 }]}>Product Name</Text>
+                        <Text style={[styles.tableHeadText, { flex: 1, textAlign: 'center' }]}>Sales</Text>
+                        <Text style={[styles.tableHeadText, { flex: 1, textAlign: 'right' }]}>Growth</Text>
+                    </View>
+
+                    <View style={[styles.tableRow, styles.tableRowBorder]}>
+                        <Text style={[styles.tableRowText, { flex: 2 }]}>Wireless Charger</Text>
+                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center' }]}>1,250</Text>
+                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right', color: '#01AC00' }]}>+12%</Text>
+                    </View>
+
+                    <View style={styles.tableRow}>
+                        <Text style={[styles.tableRowText, { flex: 2 }]}>Smart Watch Series 7</Text>
+                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center' }]}>850</Text>
+                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right', color: '#01AC00' }]}>+8%</Text>
+                    </View>
                 </View>
 
             </ScrollView>

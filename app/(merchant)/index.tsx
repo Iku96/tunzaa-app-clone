@@ -12,6 +12,11 @@ import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { orderApi } from '../../src/services/orders';
 import { getAccessToken } from '../../src/utils/storage';
 import { API_CONFIG } from '../../src/services/config';
+import { 
+    useGetVendorGMV, 
+    useGetTopPerformingProducts,
+    useGetOrderStatusDistribution 
+} from '../../src/services/reports';
 
 export default function MerchantDashboardScreen() {
     const router = useRouter();
@@ -21,78 +26,49 @@ export default function MerchantDashboardScreen() {
     const [apiTestLoading, setApiTestLoading] = useState(false);
 
     // Auth context - for debugging
-    const { user, isAuthenticated } = useTunzaaAuth();
+    const { user, isAuthenticated, isLoading: authLoading } = useTunzaaAuth();
     const vendorProfile = user?.profiles?.find((p) => p.role === 'vendor');
 
-    // Server Data Integration
-    const { orders, loading, error, newPaymentAlert, refetch } = useMerchantPulse();
-
-    // Direct API test - bypasses the hook to isolate issues
-    const testApiConnection = async () => {
-        setApiTestLoading(true);
-        setApiTestResult(null);
-        try {
-            // Step 1: Check token
-            const token = await getAccessToken();
-            if (!token) {
-                setApiTestResult('❌ STEP 1 FAIL: No access token in storage. You need to log in first.');
-                setApiTestLoading(false);
-                return;
-            }
-            setApiTestResult(`✅ Step 1: Token found (${token.substring(0, 20)}...)`);
-
-            // Step 2: Check vendor ID
-            if (!vendorProfile?.profile_id) {
-                setApiTestResult(prev => prev + `\n❌ STEP 2 FAIL: No vendor profile found. Profiles: ${JSON.stringify(user?.profiles?.map(p => p.role))}`);
-                setApiTestLoading(false);
-                return;
-            }
-            setApiTestResult(prev => prev + `\n✅ Step 2: Vendor ID = ${vendorProfile.profile_id}`);
-
-            // Step 3: Make the actual API call
-            const url = `${API_CONFIG.BASE_URL}/orders/vendor/${vendorProfile.profile_id}/orders?limit=5`;
-            setApiTestResult(prev => prev + `\n⏳ Step 3: Calling ${url}`);
-
-            const response = await orderApi.getVendorOrders({
-                vendor_id: vendorProfile.profile_id,
-                limit: 5
-            });
-
-            setApiTestResult(prev => prev + `\n✅ Step 3: Response received!` +
-                `\n   Type: ${typeof response}` +
-                `\n   Keys: ${response ? Object.keys(response).join(', ') : 'null'}` +
-                `\n   Items: ${Array.isArray(response?.items) ? response.items.length + ' orders' : 'NOT AN ARRAY: ' + typeof response?.items}` +
-                `\n   Total: ${response?.total ?? 'N/A'}` +
-                `\n   Raw (first 300): ${JSON.stringify(response).substring(0, 300)}`);
-
-        } catch (e: any) {
-            const errMsg = e?.message || String(e);
-            const apiErr = (e as any)?.apiError;
-            setApiTestResult(prev => (prev || '') +
-                `\n❌ STEP 3 FAIL: ${errMsg}` +
-                (apiErr ? `\n   API Error: ${JSON.stringify(apiErr)}` : '') +
-                `\n   Full: ${JSON.stringify(e).substring(0, 300)}`);
-        } finally {
-            setApiTestLoading(false);
+    // Redirect if authenticated but no vendor profile
+    React.useEffect(() => {
+        if (!authLoading && isAuthenticated && !vendorProfile) {
+            console.log('⚠️ No vendor profile found, redirecting to onboarding...');
+            router.replace('/(merchant)/onboarding/step-2');
         }
-    };
+    }, [isAuthenticated, vendorProfile, authLoading]);
 
-    const handleBack = () => {
-        router.back();
-    };
+    // Server Data Integration
+    const { orders, loading: pulseLoading, error: pulseError, refetch: refetchPulse } = useMerchantPulse();
 
-    const toggleSidebar = () => {
-        setIsSidebarOpen(true);
-    };
+    // Report Data Integration
+    const vendorId = vendorProfile?.profile_id || '';
+    const { 
+        data: gmvData, 
+        isLoading: gmvLoading, 
+        refetch: refetchGMV 
+    } = useGetVendorGMV(vendorId, !!vendorId);
+    
+    const { 
+        data: topProductsData, 
+        isLoading: productsLoading, 
+        refetch: refetchProducts 
+    } = useGetTopPerformingProducts(vendorId, !!vendorId);
 
-    const closeSidebar = () => {
-        setIsSidebarOpen(false);
-    };
+    const {
+        data: statusData,
+        isLoading: statusLoading,
+        refetch: refetchStatus
+    } = useGetOrderStatusDistribution(vendorId, !!vendorId);
 
     // Derived Metrics from Server Data
-    const totalPayments = orders.reduce((sum, order) => sum + (order.current_amount || 0), 0);
-    const totalOrders = orders.length;
-    const completedOrders = orders.filter(o => o.current_amount >= o.total_amount).length;
+    const vendorGmv = gmvData?.data?.[0];
+    const totalPayments = vendorGmv?.['orders.total_revenue'] || 0;
+    
+    // Total orders count from GMV report
+    const totalOrdersCount = vendorGmv?.['orders.count'] || 0;
+    
+    // Completed orders from status distribution
+    const completedOrdersCount = statusData?.data?.find(s => s.status.toLowerCase() === 'completed')?.order_count || 0;
 
     // Sort orders by completion percentage (descending) and take top 10
     const almostCompletedOrders = [...orders]
@@ -104,6 +80,18 @@ export default function MerchantDashboardScreen() {
         .sort((a, b) => b.percentage - a.percentage)
         .slice(0, 10);
 
+    const topProducts = topProductsData?.data || [];
+
+    const loading = pulseLoading || gmvLoading || productsLoading || statusLoading;
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(true);
+    };
+
+    const closeSidebar = () => {
+        setIsSidebarOpen(false);
+    };
+
 
     return (
         <SafeAreaView style={styles.safe} edges={['top']}>
@@ -112,68 +100,25 @@ export default function MerchantDashboardScreen() {
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                {/* ===== DEBUG BANNER (tap to toggle) ===== */}
-                <TouchableOpacity
-                    onPress={() => setShowDebug(!showDebug)}
-                    style={{ backgroundColor: '#1E293B', borderRadius: 8, padding: 12, marginBottom: 10 }}
-                >
-                    <Text style={{ color: '#FBBF24', fontWeight: 'bold', fontSize: 13 }}>{'🔍 DATA DEBUG'} {showDebug ? '(tap to hide)' : '(tap to show)'}</Text>
-                    {showDebug && (
-                        <View style={{ marginTop: 8 }}>
-                            <Text style={{ color: '#FFF', fontSize: 11 }}>Auth: {isAuthenticated ? '✅ Logged in' : '❌ NOT logged in'}</Text>
-                            <Text style={{ color: '#FFF', fontSize: 11 }}>User ID: {user?.id || user?.user_id || 'null'}</Text>
-                            <Text style={{ color: '#FFF', fontSize: 11 }}>Name: {user?.name || 'null'}</Text>
-                            <Text style={{ color: '#FFF', fontSize: 11 }}>Profiles: {user?.profiles?.map(p => `${p.role}:${p.profile_id?.substring(0, 8)}..`).join(', ') || 'none'}</Text>
-                            <Text style={{ color: '#FFF', fontSize: 11 }}>Vendor Profile ID: {vendorProfile?.profile_id || '❌ NOT FOUND'}</Text>
-                            <Text style={{ color: '#FFF', fontSize: 11, marginTop: 4 }}>API Status: {loading ? '⏳ Loading...' : error ? '❌ ' + error : '✅ ' + orders.length + ' orders fetched'}</Text>
-                            {error && <Text style={{ color: '#EF4444', fontSize: 11, marginTop: 2 }}>Error Detail: {error}</Text>}
-
-                            {/* Action Buttons */}
-                            <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                                <TouchableOpacity
-                                    onPress={testApiConnection}
-                                    disabled={apiTestLoading}
-                                    style={{ backgroundColor: '#3B82F6', borderRadius: 6, paddingVertical: 8, paddingHorizontal: 14 }}
-                                >
-                                    {apiTestLoading
-                                        ? <ActivityIndicator size="small" color="#FFF" />
-                                        : <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '600' }}>🧪 Test API</Text>
-                                    }
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => refetch()}
-                                    style={{ backgroundColor: '#10B981', borderRadius: 6, paddingVertical: 8, paddingHorizontal: 14 }}
-                                >
-                                    <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '600' }}>🔄 Refetch</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* API Test Result */}
-                            {apiTestResult && (
-                                <View style={{ backgroundColor: '#0F172A', borderRadius: 6, padding: 10, marginTop: 8 }}>
-                                    <Text style={{ color: '#A5F3FC', fontSize: 10, fontFamily: 'monospace' }}>{apiTestResult}</Text>
-                                </View>
-                            )}
-                        </View>
-                    )}
-                </TouchableOpacity>
 
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={handleBack} style={styles.headerBtn}>
-                        <ArrowLeft size={24} color="#111827" />
+                    <TouchableOpacity style={styles.headerBtn} onPress={toggleSidebar}>
+                        <LayoutGrid size={24} color="#111827" />
                     </TouchableOpacity>
 
                     <View style={styles.headerRightRow}>
-                        <TouchableOpacity style={styles.headerBtn} onPress={toggleSidebar}>
-                            <LayoutGrid size={24} color="#111827" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.headerBtn}>
+                        <TouchableOpacity 
+                            style={styles.headerBtn}
+                            onPress={() => router.push('/(merchant)/add-product')}
+                        >
                             <PlusSquare size={24} color="#111827" />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.headerBtn}>
+                        <TouchableOpacity 
+                            style={styles.headerBtn}
+                            onPress={() => router.push('/(merchant)/settings')}
+                        >
                             <MoreHorizontal size={24} color="#111827" />
                         </TouchableOpacity>
                     </View>
@@ -184,17 +129,23 @@ export default function MerchantDashboardScreen() {
                     <View style={styles.dateRow}>
                         <TouchableOpacity style={styles.datePill}>
                             <Calendar size={14} color="#6B7280" style={{ marginRight: 6 }} />
-                            <Text style={styles.dateText}>Jun 25, 2025</Text>
+                            <Text style={styles.dateText}>
+                                {new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                            </Text>
                         </TouchableOpacity>
 
                         <Text style={styles.dateDash}>-</Text>
 
                         <TouchableOpacity style={styles.datePill}>
                             <Calendar size={14} color="#6B7280" style={{ marginRight: 6 }} />
-                            <Text style={styles.dateText}>Jun 30, 2025</Text>
+                            <Text style={styles.dateText}>
+                                {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                            </Text>
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.reportText}>Report : Jun 20, 2025 - Jun 30, 2025</Text>
+                    <Text style={styles.reportText}>
+                        Report : {new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })} - {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                    </Text>
                 </View>
 
                 {/* Main Blue Payments Card */}
@@ -204,7 +155,10 @@ export default function MerchantDashboardScreen() {
                         Tsh.{totalPayments.toLocaleString()}
                     </Text>
 
-                    <TouchableOpacity style={styles.historyButton}>
+                    <TouchableOpacity 
+                        style={styles.historyButton}
+                        onPress={() => router.push('/(merchant)/live-orders')}
+                    >
                         <Text style={styles.historyButtonText}>View Transaction History</Text>
                     </TouchableOpacity>
                 </View>
@@ -214,8 +168,11 @@ export default function MerchantDashboardScreen() {
                     {/* Orders Placed */}
                     <View style={styles.summaryCard}>
                         <Text style={styles.summarySubtitle}>Total Orders Placed</Text>
-                        <Text style={styles.summaryTitle}>{loading ? '-' : totalOrders}</Text>
-                        <TouchableOpacity style={styles.viewDetailsBtn}>
+                        <Text style={styles.summaryTitle}>{loading ? '-' : totalOrdersCount}</Text>
+                        <TouchableOpacity 
+                            style={styles.viewDetailsBtn}
+                            onPress={() => router.push('/(merchant)/live-orders')}
+                        >
                             <Text style={styles.viewDetailsText}>View Details</Text>
                         </TouchableOpacity>
                     </View>
@@ -223,8 +180,11 @@ export default function MerchantDashboardScreen() {
                     {/* Completed Orders */}
                     <View style={styles.summaryCard}>
                         <Text style={styles.summarySubtitle}>Total Completed Orders</Text>
-                        <Text style={styles.summaryTitle}>{loading ? '-' : completedOrders}</Text>
-                        <TouchableOpacity style={styles.viewDetailsBtn}>
+                        <Text style={styles.summaryTitle}>{loading ? '-' : completedOrdersCount}</Text>
+                        <TouchableOpacity 
+                            style={styles.viewDetailsBtn}
+                            onPress={() => router.push('/(merchant)/live-orders')}
+                        >
                             <Text style={styles.viewDetailsText}>View Details</Text>
                         </TouchableOpacity>
                     </View>
@@ -234,7 +194,9 @@ export default function MerchantDashboardScreen() {
                 <View style={styles.listContainer}>
                     {/* List Header */}
                     <View style={styles.listHeader}>
-                        <Text style={styles.listHeaderTitle}>Ten Orders Almost Completed - (75%)</Text>
+                        <Text style={styles.listHeaderTitle}>
+                            {almostCompletedOrders.length} {almostCompletedOrders.length === 1 ? 'Order' : 'Orders'} Almost Completed
+                        </Text>
                         <TouchableOpacity style={styles.expandIconBtn}>
                             <Maximize2 size={16} color="#FFFFFF" />
                         </TouchableOpacity>
@@ -248,7 +210,7 @@ export default function MerchantDashboardScreen() {
                     </View>
 
                     {/* Table Rows */}
-                    {loading ? (
+                    {pulseLoading ? (
                         <View style={{ padding: 20, alignItems: 'center' }}>
                             <Text style={{ color: '#6B7280' }}>Loading orders...</Text>
                         </View>
@@ -265,12 +227,56 @@ export default function MerchantDashboardScreen() {
                                 <Text style={[styles.tableRowText, { flex: 2 }]} numberOfLines={1}>
                                     {item.product?.title || 'Unknown Product'}
                                 </Text>
-                                {/* 'Orders' column repurposed as Target Amount in this dynamic view */}
                                 <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center' }]}>
-                                    {(item.total_amount / 1000).toFixed(0)}k
+                                    {item.product?.quantity || 1}
                                 </Text>
-                                <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right' }]}>
+                                <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right', color: '#111827' }]}>
                                     {item.percentage.toFixed(0)}%
+                                </Text>
+                            </View>
+                        ))
+                    )}
+                </View>
+
+                {/* Best-Selling Products List */}
+                <View style={styles.listContainer}>
+                    {/* List Header */}
+                    <View style={styles.listHeader}>
+                        <Text style={styles.listHeaderTitle}>Best-Selling Products</Text>
+                        <TouchableOpacity style={styles.expandIconBtn}>
+                            <Maximize2 size={16} color="#FFFFFF" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Table Headers */}
+                    <View style={styles.tableHeadRow}>
+                        <Text style={[styles.tableHeadText, { flex: 2.5 }]}>Product Name</Text>
+                        <Text style={[styles.tableHeadText, { flex: 1.5, textAlign: 'right' }]}>Total Orders</Text>
+                    </View>
+
+                    {/* Table Rows */}
+                    {productsLoading ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: '#6B7280' }}>Loading reports...</Text>
+                        </View>
+                    ) : topProducts.length === 0 ? (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: '#6B7280' }}>No product data found.</Text>
+                        </View>
+                    ) : (
+                        topProducts.map((item, index) => (
+                            <View key={item.product_id} style={[
+                                styles.tableRow,
+                                index !== topProducts.length - 1 && styles.tableRowBorder
+                            ]}>
+                                <View style={{ flex: 2.5, flexDirection: 'row', alignItems: 'center' }}>
+                                    <Text style={[styles.rankText, { marginRight: 15 }]}>{index + 1}</Text>
+                                    <Text style={styles.tableRowText} numberOfLines={1}>
+                                        {item.product_name}
+                                    </Text>
+                                </View>
+                                <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'right' }]}>
+                                    {item.order_count.toLocaleString()}
                                 </Text>
                             </View>
                         ))
@@ -473,5 +479,11 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#111827',
         fontWeight: '500',
+    },
+    rankText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#425BA4', // Ranking numbers in brand blue
+        width: 20,
     }
 });

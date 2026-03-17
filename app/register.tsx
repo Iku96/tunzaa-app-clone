@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -35,8 +35,9 @@ export default function RegisterScreen() {
     const router = useRouter();
     const { t } = useLanguage();
 
-    const { role } = useLocalSearchParams<{ role: 'buyer' | 'merchant' }>();
-    const userRole = role || 'buyer';
+    const params = useLocalSearchParams<{ role: 'buyer' | 'merchant', pendingOnboarding: string }>();
+    const userRole = params.role || 'buyer';
+    const pendingOnboarding = params.pendingOnboarding || '';
 
     const [firstName, setFirstName] = useState('');
     const [secondName, setSecondName] = useState('');
@@ -45,6 +46,34 @@ export default function RegisterScreen() {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
 
     const [loading, setLoading] = useState(false);
+    const [isPreFilled, setIsPreFilled] = useState(false);
+
+    useEffect(() => {
+        const loadPendingData = async () => {
+            if (pendingOnboarding === 'true') {
+                try {
+                    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+                    const [savedPhone, savedFirstName, savedLastName] = await Promise.all([
+                        AsyncStorage.getItem('TEMP_ONBOARDING_PHONE'),
+                        AsyncStorage.getItem('TEMP_ONBOARDING_FIRST_NAME'),
+                        AsyncStorage.getItem('TEMP_ONBOARDING_LAST_NAME'),
+                    ]);
+
+                    if (savedPhone) setPhoneOrEmail(savedPhone);
+                    if (savedFirstName) setFirstName(savedFirstName);
+                    if (savedLastName) setSecondName(savedLastName);
+                    
+                    if (savedPhone || savedFirstName || savedLastName) {
+                        setIsPreFilled(true);
+                    }
+                } catch (e) {
+                    console.error('Failed to load pending onboarding data:', e);
+                }
+            }
+        };
+
+        loadPendingData();
+    }, [pendingOnboarding]);
 
     const handleBack = () => {
         router.back();
@@ -140,7 +169,7 @@ export default function RegisterScreen() {
     };
 
     const handleLogin = () => {
-        router.push('/login');
+        router.push({ pathname: '/login', params: { role: userRole } });
     };
 
     const handleSkip = () => {
@@ -169,8 +198,14 @@ export default function RegisterScreen() {
 
                                 {/* Header */}
                                 <View style={styles.header}>
-                                    <Text style={styles.title}>Create an account</Text>
-                                    <Text style={styles.subtitle}>Please fill in your details to get started</Text>
+                                    <Text style={styles.title}>
+                                        {userRole === 'merchant' ? 'Create business account' : 'Create an account'}
+                                    </Text>
+                                    <Text style={styles.subtitle}>
+                                        {isPreFilled 
+                                            ? 'Confirm your details and create a password' 
+                                            : 'Please fill in your details to get started'}
+                                    </Text>
                                 </View>
 
                                 {/* Logo (wordmark) */}
@@ -190,6 +225,7 @@ export default function RegisterScreen() {
                                         placeholderTextColor="#9CA3AF"
                                         value={firstName}
                                         onChangeText={setFirstName}
+                                        autoCapitalize="words"
                                     />
                                     <TextInput
                                         style={styles.input}
@@ -197,6 +233,7 @@ export default function RegisterScreen() {
                                         placeholderTextColor="#9CA3AF"
                                         value={secondName}
                                         onChangeText={setSecondName}
+                                        autoCapitalize="words"
                                     />
                                     <TextInput
                                         style={styles.input}
@@ -214,6 +251,7 @@ export default function RegisterScreen() {
                                         value={password}
                                         onChangeText={setPassword}
                                         secureTextEntry
+                                        autoCapitalize="none"
                                     />
                                 </View>
 

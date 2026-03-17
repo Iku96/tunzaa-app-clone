@@ -2,14 +2,13 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, ScrollView }
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { supabase } from '../../../src/lib/supabase';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { shopsApi, Store } from '../../../src/services/shops';
 
 export default function Step3Follows() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
     const insets = useSafeAreaInsets();
 
     const [creators, setCreators] = useState<Store[]>([]);
@@ -47,19 +46,10 @@ export default function Step3Follows() {
         try {
             if (isFollowing) {
                 // Delete
-                await supabase
-                    .from('follows')
-                    .delete()
-                    .eq('follower_id', user.id)
-                    .eq('following_id', merchantId);
+                console.log("TODO: migrate to whitelabel API");
             } else {
                 // Insert
-                await supabase
-                    .from('follows')
-                    .insert({
-                        follower_id: user.id,
-                        following_id: merchantId
-                    });
+                console.log("TODO: migrate follow to whitelabel API");
             }
         } catch (e) {
             console.error('Error toggling follow:', e);

@@ -3,14 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert,
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { supabase } from '../../../src/lib/supabase';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import * as DocumentPicker from 'expo-document-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Step1Profile() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     // States
     const [gender, setGender] = useState('');
@@ -38,15 +37,7 @@ export default function Step1Profile() {
         setLoading(true);
         try {
             if (user) {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({
-                        date_of_birth: dob,
-                        gender,
-                        region: location,
-                        onboarding_step: 'step-2'
-                    } as any)
-                    .eq('id', user.id);
+                console.log("TODO: migrate to whitelabel API");
 
                 if (error) throw error;
             }

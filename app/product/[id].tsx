@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIn
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../src/lib/supabase';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProductDetails() {
@@ -21,18 +20,7 @@ export default function ProductDetails() {
 
     const fetchProductDetails = async (productId: string) => {
         try {
-            const { data, error } = await supabase
-                .from('products')
-                .select(`
-                    *,
-                    profiles:merchant_id (
-                        full_name,
-                        business_name,
-                        avatar_url
-                    )
-                `)
-                .eq('id', productId)
-                .single();
+            console.log("TODO: migrate to whitelabel API");
 
             if (error) throw error;
             setProduct(data);

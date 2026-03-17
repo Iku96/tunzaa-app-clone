@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
@@ -10,13 +11,16 @@ import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
  */
 export default function OTPScreen() {
     const router = useRouter();
-    const { phone_number, flow } = useLocalSearchParams<{ phone_number: string; flow?: string }>();
-    const { verifyOTP, requestOTP } = useTunzaaAuth();
+    const params = useLocalSearchParams() as any;
+    const { phone_number, flow, first_name, last_name, password, role, email } = params;
+    
+    const { verifyOTP, requestOTP, register, createVendor, refreshProfile, saveAuthResponse, getUserDetails } = useTunzaaAuth();
 
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(30);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
+    const inputRefs = useRef<Array<TextInput | null>>([]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -27,9 +31,39 @@ export default function OTPScreen() {
     }, []);
 
     const handleOtpChange = (text: string, index: number) => {
+        // Handle pasting of full code
+        if (text.length > 1) {
+            const pastedText = text.slice(0, 6).split('');
+            const newDigits = [...otpDigits];
+            pastedText.forEach((char, i) => {
+                if (index + i < 6) newDigits[index + i] = char;
+            });
+            setOtpDigits(newDigits);
+            
+            // Focus last filled box or last box
+            const nextIndex = Math.min(index + pastedText.length, 5);
+            inputRefs.current[nextIndex]?.focus();
+            return;
+        }
+
         const newDigits = [...otpDigits];
-        newDigits[index] = text;
+        newDigits[index] = text.slice(-1); // Only take last char for non-pasting
         setOtpDigits(newDigits);
+
+        // Auto focus next box
+        if (text && index < 5) {
+            // Small delay to ensure state update doesn't interfere with focus
+            setTimeout(() => {
+                inputRefs.current[index + 1]?.focus();
+            }, 10);
+        }
+    };
+
+    const handleKeyPress = (e: any, index: number) => {
+        if (e.nativeEvent.key === 'Backspace' && !otpDigits[index] && index > 0) {
+            // Move to previous box if current is empty and backspace pressed
+            inputRefs.current[index - 1]?.focus();
+        }
     };
 
     const handleResend = async () => {
@@ -55,23 +89,56 @@ export default function OTPScreen() {
             Alert.alert('Invalid Code', 'Please enter all 6 digits');
             return;
         }
-        if (!phone_number) {
-            Alert.alert('Error', 'Phone number not found. Please go back and try again.');
-            return;
-        }
-
         setIsVerifying(true);
         try {
+            // Removed destructuring of useTunzaaAuth here as it's already done at the top of the component
             const response = await verifyOTP(phone_number, code);
             console.log('✅ OTP verified:', response);
 
-            if (response.verified) {
+            const verifyResp = response as any;
+            if (verifyResp.verified || verifyResp.is_verified || verifyResp.access_token) {
                 // Navigate based on the flow
                 if (flow === 'register') {
-                    router.push({ pathname: '/create-password', params: { phone_number } } as any);
+                    console.log(`📝 [OTP] Completing registration process for ${first_name} as ${role}`);
+                    
+                    try {
+                        let authResponse: any = null;
+
+                        // Smart Flow: If OTP verification already returned a token, use it and skip register
+                        if (verifyResp.access_token) {
+                            console.log('🛰️ [OTP] User already exists/authenticated via OTP, skipping registration call.');
+                            authResponse = await saveAuthResponse(verifyResp);
+                        } else {
+                            // Register new user
+                            const registrationData: any = {
+                                first_name: first_name || '',
+                                last_name: last_name || '',
+                                password: password || '',
+                                phone_number: phone_number,
+                                email: email || '',
+                            };
+                            authResponse = await register(registrationData);
+                            console.log('✅ [OTP] Registration successful:', authResponse.user_id);
+                        }
+                        
+                        if (role === 'merchant') {
+                            console.log('✅ [OTP] Account created/verified, moving to business onboarding');
+                            router.replace('/(merchant)/onboarding/step-2' as any);
+                        } else if (role === 'buyer') {
+                            router.replace('/(buyer)' as any);
+                        } else {
+                            router.replace('/home' as any);
+                        }
+                    } catch (regErr: any) {
+                        console.error('❌ [OTP] Registration/Vendor creation failed:', regErr);
+                        // Extract a more helpful message from the API error if possible
+                        const errorMessage = regErr.apiError?.message || regErr.message || 'Error occurred. Please try again.';
+                        Alert.alert('Registration Failed', errorMessage);
+                    }
                 } else if (flow === 'reset-password') {
                     router.push({ pathname: '/reset-password', params: { phone_number, reset_token: code } } as any);
                 } else {
+                    // Default fallback logic
                     router.push({ pathname: '/create-password', params: { phone_number } } as any);
                 }
             } else {
@@ -86,7 +153,7 @@ export default function OTPScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={styles.safe} edges={['top']}>
             <View style={styles.container}>
                 <View style={styles.contentWrapper}>
                     {/* Header with Back Arrow */}
@@ -116,11 +183,16 @@ export default function OTPScreen() {
                         {otpDigits.map((digit, index) => (
                             <TextInput
                                 key={index}
+                                ref={(ref) => { inputRefs.current[index] = ref; }}
                                 style={styles.otpBox}
                                 value={digit}
                                 onChangeText={(text) => handleOtpChange(text, index)}
+                                onKeyPress={(e) => handleKeyPress(e, index)}
                                 keyboardType="number-pad"
-                                maxLength={1}
+                                maxLength={index === 0 ? 6 : 1} // Allow pasting in first box
+                                textContentType="oneTimeCode"
+                                autoComplete="one-time-code"
+                                selectTextOnFocus
                             />
                         ))}
                     </View>
@@ -145,8 +217,12 @@ export default function OTPScreen() {
                     </View>
 
                     {/* Continue Button */}
-                    <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-                        <Text style={styles.continueButtonText}>Continue</Text>
+                    <TouchableOpacity style={styles.continueButton} onPress={handleContinue} disabled={isVerifying}>
+                        {isVerifying ? (
+                            <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                            <Text style={styles.continueButtonText}>Continue</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
 
@@ -172,6 +248,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 20,
         justifyContent: 'space-between',
+        paddingBottom: 20,
     },
 
     // Content wrapper - responsive with maxWidth

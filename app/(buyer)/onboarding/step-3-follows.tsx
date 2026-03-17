@@ -3,13 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIn
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { supabase } from '../../../src/lib/supabase';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Step3Follows() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     // In a real app, this would be fetched from Supabase (e.g., 'popular merchants')
     // For now, we fetch valid merchant profiles or use mock data if none exist
@@ -25,11 +24,7 @@ export default function Step3Follows() {
         try {
             // Fetch profiles with role 'merchant'
             // Limit to 10 for suggestions
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, full_name, avatar_url, business_name')
-                .eq('role', 'merchant')
-                .limit(10);
+            const { data, error } = console.log("TODO: migrate to whitelabel API");
 
             if (error) throw error;
 
@@ -74,7 +69,7 @@ export default function Step3Follows() {
                 }));
 
                 // Assuming 'follows' table exists
-                // const { error } = await supabase.from('follows').insert(followsData);
+                // const { error } = console.log("TODO: migrate to whitelabel API");
                 // if (error) console.error(error); 
             }
         } catch (e) {

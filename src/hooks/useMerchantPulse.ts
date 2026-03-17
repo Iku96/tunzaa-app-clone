@@ -11,6 +11,7 @@ export interface PulseOrder {
     product: {
         title: string;
         image_url: string | null;
+        quantity?: number;
     } | null;
     total_amount: number;
     current_amount: number;
@@ -62,6 +63,7 @@ export function useMerchantPulse() {
                     product: {
                         title: primaryItem ? primaryItem.name : 'Unknown Product',
                         image_url: null,
+                        quantity: primaryItem ? primaryItem.quantity : 1,
                     },
                     total_amount: item.totals?.total || 0,
                     current_amount: item.payment_details?.amount || 0,

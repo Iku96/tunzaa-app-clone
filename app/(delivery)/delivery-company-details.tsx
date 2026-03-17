@@ -2,8 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Dimensions,
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { supabase } from '../../src/lib/supabase';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -14,7 +13,7 @@ const { height } = Dimensions.get('window');
 
 export default function DeliveryCompanyDetails() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     const [companyName, setCompanyName] = useState('');
     const [phone, setPhone] = useState('+255 787 118 486');

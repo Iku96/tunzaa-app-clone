@@ -26,12 +26,19 @@
       "package": "africa.afrizon.gsm",
       "versionCode": 1,
       "googleServicesFile": "./config/google-services.json",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDj0-dYOYHB4eHnwELuV2cnOSpjtVPliMk"
+        }
+      },
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
       ]
     },
     "web": {

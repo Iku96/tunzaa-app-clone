@@ -1,0 +1,217 @@
+export const PERMISSIONS = {
+  // Tenant
+  TENANT_CREATE: "tenant:create",
+  TENANT_READ: "tenant:read",
+  TENANT_UPDATE: "tenant:update",
+  TENANT_DELETE: "tenant:delete",
+
+  // Module
+  MODULE_TOGGLE: "module:toggle",
+
+  // Analytics
+  ANALYTICS_VIEW: "analytics:view",
+  ANALYTICS_EXPORT: "analytics:export",
+
+  // Branding
+  BRANDING_UPDATE: "branding:update",
+
+  // Vendor Management
+  VENDOR_APPROVE: "vendor:approve",
+  VENDOR_REJECT: "vendor:reject",
+  VENDOR_VIEW: "vendor:view",
+
+  // KYC
+  KYC_APPROVE: "kyc:approve",
+  KYC_REJECT: "kyc:reject",
+  KYC_VIEW: "kyc:view",
+
+  // Product
+  PRODUCT_CREATE: "product:create",
+  PRODUCT_READ: "product:read",
+  PRODUCT_UPDATE: "product:update",
+  PRODUCT_DELETE: "product:delete",
+
+  // Category
+  CATEGORY_CREATE: "category:create",
+  CATEGORY_READ: "category:read",
+  CATEGORY_UPDATE: "category:update",
+  CATEGORY_DELETE: "category:delete",
+
+  // Order
+  ORDER_CREATE: "order:create",
+  ORDER_READ: "order:read",
+  ORDER_UPDATE: "order:update",
+  ORDER_REFUND: "order:refund",
+  ORDER_FULFILL: "order:fulfill",
+  ORDER_TRACK: "order:track",
+
+  // Store
+  STORE_CREATE: "store:create",
+  STORE_READ: "store:read",
+  STORE_UPDATE: "store:update",
+
+  // Inventory
+  INVENTORY_UPDATE: "inventory:update",
+  INVENTORY_READ: "inventory:read",
+
+  // Report
+  REPORT_VIEW: "report:view",
+  REPORT_EXPORT: "report:export",
+
+  // Account
+  ACCOUNT_CREATE: "account:create",
+  ACCOUNT_READ: "account:read",
+  ACCOUNT_UPDATE: "account:update",
+
+  // Search
+  SEARCH_PERFORM: "search:perform",
+
+  // Cart & Checkout
+  CART_MANAGE: "cart:manage",
+  CHECKOUT_PERFORM: "checkout:perform",
+
+  // Notification
+  NOTIFICATION_RECEIVE: "notification:receive",
+
+  // Rider/Delivery
+  RIDER_JOB_VIEW: "rider:job:view",
+  RIDER_JOB_ACCEPT: "rider:job:accept",
+  RIDER_JOB_COMPLETE: "rider:job:complete",
+  GPS_TRACKING_UPDATE: "gps:tracking:update",
+  POD_MANAGE: "pod:manage",
+
+  // Earnings & Payout
+  EARNINGS_VIEW: "earnings:view",
+  PAYOUT_REQUEST: "payout:request",
+
+  // Aliases for compatibility
+  MANAGE_STORE: "store:update",
+} as const;
+
+export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
+
+export const ROLE_PERMISSIONS = {
+  super: [
+    PERMISSIONS.TENANT_CREATE,
+    PERMISSIONS.TENANT_READ,
+    PERMISSIONS.TENANT_UPDATE,
+    PERMISSIONS.TENANT_DELETE,
+    PERMISSIONS.MODULE_TOGGLE,
+    PERMISSIONS.ANALYTICS_VIEW,
+    PERMISSIONS.ANALYTICS_EXPORT,
+    PERMISSIONS.BRANDING_UPDATE,
+    PERMISSIONS.VENDOR_APPROVE,
+    PERMISSIONS.VENDOR_REJECT,
+    PERMISSIONS.VENDOR_VIEW,
+    PERMISSIONS.KYC_APPROVE,
+    PERMISSIONS.KYC_REJECT,
+    PERMISSIONS.KYC_VIEW,
+    PERMISSIONS.PRODUCT_CREATE,
+    PERMISSIONS.PRODUCT_READ,
+    PERMISSIONS.PRODUCT_UPDATE,
+    PERMISSIONS.PRODUCT_DELETE,
+    PERMISSIONS.CATEGORY_CREATE,
+    PERMISSIONS.CATEGORY_READ,
+    PERMISSIONS.CATEGORY_UPDATE,
+    PERMISSIONS.CATEGORY_DELETE,
+    PERMISSIONS.ORDER_CREATE,
+    PERMISSIONS.ORDER_READ,
+    PERMISSIONS.ORDER_UPDATE,
+    PERMISSIONS.ORDER_REFUND,
+    PERMISSIONS.ORDER_FULFILL,
+    PERMISSIONS.STORE_CREATE,
+    PERMISSIONS.STORE_READ,
+    PERMISSIONS.STORE_UPDATE,
+    PERMISSIONS.INVENTORY_UPDATE,
+    PERMISSIONS.INVENTORY_READ,
+    PERMISSIONS.REPORT_VIEW,
+    PERMISSIONS.REPORT_EXPORT,
+    PERMISSIONS.ACCOUNT_CREATE,
+    PERMISSIONS.ACCOUNT_READ,
+    PERMISSIONS.ACCOUNT_UPDATE,
+    PERMISSIONS.SEARCH_PERFORM,
+    PERMISSIONS.CART_MANAGE,
+    PERMISSIONS.CHECKOUT_PERFORM,
+    PERMISSIONS.ORDER_TRACK,
+    PERMISSIONS.NOTIFICATION_RECEIVE,
+    PERMISSIONS.RIDER_JOB_VIEW,
+    PERMISSIONS.RIDER_JOB_ACCEPT,
+    PERMISSIONS.RIDER_JOB_COMPLETE,
+    PERMISSIONS.GPS_TRACKING_UPDATE,
+    PERMISSIONS.POD_MANAGE,
+    PERMISSIONS.EARNINGS_VIEW,
+    PERMISSIONS.PAYOUT_REQUEST,
+  ],
+  admin: [
+    PERMISSIONS.BRANDING_UPDATE,
+    PERMISSIONS.VENDOR_APPROVE,
+    PERMISSIONS.VENDOR_REJECT,
+    PERMISSIONS.VENDOR_VIEW,
+    PERMISSIONS.KYC_APPROVE,
+    PERMISSIONS.KYC_REJECT,
+    PERMISSIONS.KYC_VIEW,
+    PERMISSIONS.PRODUCT_CREATE,
+    PERMISSIONS.PRODUCT_READ,
+    PERMISSIONS.PRODUCT_UPDATE,
+    PERMISSIONS.PRODUCT_DELETE,
+    PERMISSIONS.CATEGORY_CREATE,
+    PERMISSIONS.CATEGORY_READ,
+    PERMISSIONS.CATEGORY_UPDATE,
+    PERMISSIONS.CATEGORY_DELETE,
+    PERMISSIONS.ORDER_READ,
+    PERMISSIONS.ORDER_UPDATE,
+    PERMISSIONS.ORDER_REFUND,
+    PERMISSIONS.ANALYTICS_VIEW,
+    PERMISSIONS.REPORT_VIEW,
+    PERMISSIONS.REPORT_EXPORT,
+  ],
+  vendor: [
+    PERMISSIONS.STORE_CREATE,
+    PERMISSIONS.STORE_READ,
+    PERMISSIONS.STORE_UPDATE,
+    PERMISSIONS.PRODUCT_CREATE,
+    PERMISSIONS.PRODUCT_READ,
+    PERMISSIONS.PRODUCT_UPDATE,
+    PERMISSIONS.PRODUCT_DELETE,
+    PERMISSIONS.INVENTORY_UPDATE,
+    PERMISSIONS.INVENTORY_READ,
+    PERMISSIONS.ORDER_READ,
+    PERMISSIONS.ORDER_FULFILL,
+    PERMISSIONS.REPORT_VIEW,
+    PERMISSIONS.REPORT_EXPORT,
+    PERMISSIONS.NOTIFICATION_RECEIVE,
+  ],
+  delivery: [
+    PERMISSIONS.RIDER_JOB_VIEW,
+    PERMISSIONS.RIDER_JOB_ACCEPT,
+    PERMISSIONS.RIDER_JOB_COMPLETE,
+    PERMISSIONS.GPS_TRACKING_UPDATE,
+    PERMISSIONS.POD_MANAGE,
+    PERMISSIONS.EARNINGS_VIEW,
+    PERMISSIONS.PAYOUT_REQUEST,
+    PERMISSIONS.NOTIFICATION_RECEIVE,
+  ],
+  buyer: [
+    PERMISSIONS.ACCOUNT_READ,
+    PERMISSIONS.ACCOUNT_UPDATE,
+    PERMISSIONS.SEARCH_PERFORM,
+    PERMISSIONS.CART_MANAGE,
+    PERMISSIONS.CHECKOUT_PERFORM,
+    PERMISSIONS.ORDER_TRACK,
+    PERMISSIONS.ORDER_READ,
+    PERMISSIONS.NOTIFICATION_RECEIVE,
+  ],
+  winga: [
+    // Winga permissions are not in the provided JSON, defaulting to buyer or delivery subset?
+    // Assuming Winga is similar to delivery or affiliate. For now, empty or basic.
+    // The previous code had winga, but the provided JSON doesn't list it explicitly as an object,
+    // though "winga" is in the role list.
+    // Based on previous code:
+    // PERMISSIONS.WINGA_ACCESS, PERMISSIONS.MANAGE_AFFILIATE
+    // I will leave it with basic buyer permissions plus any specific ones if inferred,
+    // or just buyer permissions for now to be safe.
+    PERMISSIONS.ACCOUNT_READ,
+    PERMISSIONS.ACCOUNT_UPDATE,
+    PERMISSIONS.NOTIFICATION_RECEIVE,
+  ]
+};

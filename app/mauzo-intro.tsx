@@ -2,6 +2,7 @@ import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, StatusBar,
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react-native';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,6 +37,7 @@ const SLIDES = [
 export default function MauzoIntro() {
     const router = useRouter();
     const { flow } = useLocalSearchParams<{ flow: string }>();
+    const { isAuthenticated } = useTunzaaAuth();
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
 
@@ -51,7 +53,8 @@ export default function MauzoIntro() {
         if (flow === 'delivery') {
             router.push('/delivery-register');
         } else {
-            router.push('/(merchant)/onboarding/step-2');
+            // Register an account first, then collect shop details
+            router.push({ pathname: '/register', params: { role: 'merchant' } });
         }
     };
 
@@ -59,7 +62,8 @@ export default function MauzoIntro() {
         if (flow === 'delivery') {
             router.push('/delivery-register');
         } else {
-            router.push('/(merchant)/onboarding/step-2');
+            // Register an account first
+            router.push({ pathname: '/register', params: { role: 'merchant' } });
         }
     };
 
@@ -153,14 +157,25 @@ export default function MauzoIntro() {
                 </TouchableOpacity>
 
                 {/* Skip Link */}
-                <TouchableOpacity
-                    style={styles.skipButton}
-                    onPress={handleSkip}
-                    activeOpacity={0.7}
-                >
-                    <Text style={styles.skipText}>Skip</Text>
-                    <ArrowRight size={20} color="#FFFFFF" />
-                </TouchableOpacity>
+                <View style={styles.secondaryActions}>
+                    <TouchableOpacity
+                        style={styles.skipButton}
+                        onPress={handleSkip}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.skipText}>Skip</Text>
+                        <ArrowRight size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+
+                    <View style={styles.divider} />
+
+                    <TouchableOpacity
+                        onPress={() => router.push('/login')}
+                        style={styles.loginLink}
+                    >
+                        <Text style={styles.loginText}>Already have an account? <Text style={styles.loginTextBold}>Sign In</Text></Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -268,6 +283,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
+    secondaryActions: {
+        width: '100%',
+        alignItems: 'center',
+    },
     skipButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -278,5 +297,23 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '500',
+    },
+    divider: {
+        height: 1,
+        width: '40%',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        marginVertical: 15,
+    },
+    loginLink: {
+        padding: 5,
+    },
+    loginText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontFamily: 'System',
+    },
+    loginTextBold: {
+        fontWeight: '700',
+        textDecorationLine: 'underline',
     },
 });

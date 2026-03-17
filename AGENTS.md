@@ -78,6 +78,12 @@ Learn from these so they are not repeated.
 - **Context:** Screens inside groups like `(delivery)` or `(buyer)` without navigation headers may render content overlapping the device status bar or physical notches.
 - **Practice:** Standardize the use of `SafeAreaView` from `react-native-safe-area-context` across all root container views by explicitly providing the `edges={['top']}` prop. Example: `<SafeAreaView style={styles.container} edges={['top']}>`.
 
+### Merchant Profile Persistence (Marketplace vs User Profile)
+
+- **Context**: Merchant details (business name, logo, banner) are stored in both the `marketplace/vendors` API and the `users/{id}/profile/{id}` metadata.
+- **Issue**: Updating only one API causes the UI (sidebar, header) to show outdated information.
+- **Practice**: Always use the synchronized `updateVendor` method in `TunzaaAuthContext`. It performs a "double-write" to both APIs and updates the local state optimistically. For new vendors, `createVendor` also triggers this synchronization after success.
+
 ---
 
 ## Tech and product context

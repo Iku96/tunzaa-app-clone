@@ -13,11 +13,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../src/lib/supabase';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 
 export default function DeliveryOTPScreen() {
     const router = useRouter();
-    const { phone, fullName, password } = useLocalSearchParams<{ phone: string, fullName?: string, password?: string }>();
+    const { verifyOTP, register, requestOTP } = useTunzaaAuth();
+    const { phone, fullName, firstName, lastName, password } = useLocalSearchParams<{
+        phone: string;
+        fullName?: string;
+        firstName?: string;
+        lastName?: string;
+        password?: string;
+    }>();
     const [otp, setOtp] = useState(['', '', '', '']);
     const inputs = useRef<Array<TextInput | null>>([]);
     const [loading, setLoading] = useState(false);
@@ -35,12 +42,9 @@ export default function DeliveryOTPScreen() {
         newOtp[index] = text;
         setOtp(newOtp);
 
-        // Move to next input if text is entered
         if (text && index < 3) {
             inputs.current[index + 1]?.focus();
         }
-        // Move to previous input if text is cleared usually handled by onKeyPress, 
-        // but for simplicity in this basic setup we'll just focus next on entry.
     };
 
     const handleKeyPress = (e: any, index: number) => {
@@ -58,48 +62,19 @@ export default function DeliveryOTPScreen() {
 
         setLoading(true);
         try {
-            // 1. Verify OTP
-            const { data, error } = await supabase.auth.verifyOtp({
-                phone: `+255${phone}`,
-                token: code,
-                type: 'sms',
-            });
+            // 1. Verify OTP via whitelabel API
+            await verifyOTP(`+255${phone}`, code);
 
-            if (error) throw error;
-
-            // 2. Set Password (if provided) implementation
-            // Note: verifying SMS OTP logs the user in.
-            if (password && data.user) {
-                const { error: updateError } = await supabase.auth.updateUser({
-                    password: password
+            // 2. Register user with verified phone
+            if (firstName && lastName && password) {
+                await register({
+                    first_name: firstName,
+                    last_name: lastName,
+                    phone_number: `+255${phone}`,
+                    password: password,
                 });
-                if (updateError) {
-                    console.error('Error updating password:', updateError);
-                    // Continue anyway? Or show error? User is logged in but password might not be set.
-                }
             }
 
-            // 3. Create/Update Profile
-            if (data.user && fullName) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .upsert({
-                        id: data.user.id,
-                        full_name: fullName,
-                        role: 'delivery',
-                        phone_number: phone,
-                    } as any);
-
-                if (profileError) {
-                    console.error('Profile error:', profileError);
-                }
-            }
-
-            // Success -> Go to Login (or Home since they are logged in?)
-            // Requested flow: "button should direct the user to the sign in screen"
-            // We should probably sign them out first if we want them to sign in again, or just redirect.
-            // If they are logged in, directing to Login might auto-redirect to Home if there's an auth listener.
-            // Let's assume we just go to login.
             alert('Uthibitisho umekamilika! Tafadhali ingia.');
             router.replace('/delivery-login' as any);
         } catch (e: any) {
@@ -113,11 +88,7 @@ export default function DeliveryOTPScreen() {
         if (timer > 0) return;
 
         try {
-            const { error } = await supabase.auth.resend({
-                type: 'sms',
-                phone: `+255${phone}`,
-            });
-            if (error) throw error;
+            await requestOTP(`+255${phone}`);
             setTimer(30);
             alert('Msimbo umetumwa tena!');
         } catch (e: any) {

@@ -2,74 +2,46 @@ import { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/contexts/AuthContext';
-import { supabase } from '../src/lib/supabase';
-import type { Business } from '../src/types/database.types';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
+import { shopsApi } from '../src/services/shops';
+
+interface Business {
+    id: string;
+    name: string;
+    description?: string;
+}
 
 export default function CreatorsScreen() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [followedIds, setFollowedIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchBusinesses();
-        fetchFollowing();
     }, []);
 
     const fetchBusinesses = async () => {
         try {
-            const { data, error } = await supabase
-                .from('businesses')
-                .select('*')
-                .limit(20);
-
-            if (error) throw error;
-            setBusinesses(data || []);
+            const data = await shopsApi.getStores();
+            setBusinesses(Array.isArray(data) ? data : (data as any)?.results || []);
         } catch (error: any) {
-            Alert.alert('Error', 'Failed to load businesses');
+            console.log('Failed to load businesses:', error);
+            // Gracefully handle — show empty state instead of alert
         } finally {
             setLoading(false);
-        }
-    };
-
-    const fetchFollowing = async () => {
-        if (!user) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('followers')
-                .select('following_id')
-                .eq('follower_id', user.id);
-
-            if (error) throw error;
-            setFollowedIds((data || []).map(f => f.following_id));
-        } catch (error) {
-            console.log('Error fetching following:', error);
         }
     };
 
     const handleFollow = async (businessId: string) => {
         if (!user) return;
 
-        try {
-            if (followedIds.includes(businessId)) {
-                // Unfollow
-                await supabase
-                    .from('followers')
-                    .delete()
-                    .match({ follower_id: user.id, following_id: businessId });
-                setFollowedIds(followedIds.filter(id => id !== businessId));
-            } else {
-                // Follow
-                await supabase
-                    .from('followers')
-                    .insert({ follower_id: user.id, following_id: businessId });
-                setFollowedIds([...followedIds, businessId]);
-            }
-        } catch (error: any) {
-            Alert.alert('Error', error.message);
+        // Toggle follow state locally (API integration can be added later)
+        if (followedIds.includes(businessId)) {
+            setFollowedIds(followedIds.filter(id => id !== businessId));
+        } else {
+            setFollowedIds([...followedIds, businessId]);
         }
     };
 

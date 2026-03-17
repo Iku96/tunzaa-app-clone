@@ -64,23 +64,35 @@ export default function Step3Map() {
     // 1️⃣ Get User Location on Mount
     useEffect(() => {
         (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status === 'granted') {
-                let location = await Location.getCurrentPositionAsync({});
-                const newRegion = {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                };
-                setMapRegion(newRegion);
-                mapRef.current?.animateToRegion(newRegion, 1000);
+            try {
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                if (status === 'granted') {
+                    console.log('📍 [Step3Map] Location permission granted, fetching position...');
+                    let location = await Location.getCurrentPositionAsync({
+                        accuracy: Location.Accuracy.Balanced,
+                    });
+                    
+                    const newRegion = {
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                    };
+                    console.log(`📍 [Step3Map] Current position: ${newRegion.latitude}, ${newRegion.longitude}`);
+                    setMapRegion(newRegion);
+                    mapRef.current?.animateToRegion(newRegion, 1000);
+                } else {
+                    console.warn('⚠️ [Step3Map] Location permission denied');
+                }
+            } catch (error) {
+                console.error('❌ [Step3Map] Error fetching location:', error);
             }
         })();
     }, []);
 
     // 2️⃣ Handle Map Drag/Tap
     const onLocationChange = (coord: { latitude: number, longitude: number }) => {
+        console.log(`📍 [Step3Map] Map location changed: ${coord.latitude}, ${coord.longitude}`);
         setMapRegion(prev => ({ ...prev, ...coord }));
     };
 
@@ -92,9 +104,20 @@ export default function Step3Map() {
         }
 
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            // ✅ PASS DATA TO STEP 4
+        try {
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            await AsyncStorage.setItem('TEMP_ONBOARDING_LOCATION', JSON.stringify({
+                region,
+                municipal,
+                ward,
+                extraInfo,
+                coords: {
+                    latitude: mapRegion.latitude,
+                    longitude: mapRegion.longitude
+                }
+            }));
+            console.log('✅ [Step3Map] Location persisted');
+
             router.push({
                 pathname: '/(merchant)/onboarding/step-4',
                 params: {
@@ -104,7 +127,11 @@ export default function Step3Map() {
                     extraInfo
                 }
             });
-        }, 1000);
+        } catch (e) {
+            console.error('❌ [Step3Map] Save failed:', e);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // ✅ REUSABLE AUTOCOMPLETE

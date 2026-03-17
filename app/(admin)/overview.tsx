@@ -1,12 +1,11 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../src/contexts/AuthContext';
-import { supabase } from '../../src/lib/supabase';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 
 export default function AdminOverview() {
-    const { user, setViewMode } = useAuth();
+    const { user, setViewMode } = useTunzaaAuth();
     const router = useRouter();
     const [stats, setStats] = useState({
         totalUsers: 0,
@@ -26,13 +25,10 @@ export default function AdminOverview() {
             // For now, we'll simulate aggregration or fetch basic counts if RLS permits (admin role)
 
             // 1. Total Users
-            const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+            const { count: userCount } = console.log("TODO: migrate to whitelabel API");
 
             // 2. Active Goals
-            const { count: goalCount, data: goals } = await supabase
-                .from('goals')
-                .select('current_amount, created_at')
-                .eq('status', 'saving');
+            const { count: goalCount, data: goals } = console.log("TODO: migrate to whitelabel API");
 
             // 3. Calculate Total Locked
             const totalLocked = goals?.reduce((acc, g) => acc + (g.current_amount || 0), 0) || 0;

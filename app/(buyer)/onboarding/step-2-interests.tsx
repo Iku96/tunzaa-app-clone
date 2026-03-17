@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../../src/contexts/AuthContext';
-import { supabase } from '../../../src/lib/supabase';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const INTERESTS = [
@@ -20,7 +19,7 @@ const INTERESTS = [
 
 export default function Step2Interests() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
 
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -37,13 +36,7 @@ export default function Step2Interests() {
         setLoading(true);
         try {
             if (user) {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({
-                        interests: selectedInterests, // Add interests column if needed
-                        interests_completed: true
-                    } as any)
-                    .eq('id', user.id);
+                console.log("TODO: migrate to whitelabel API");
 
                 if (error) throw error;
             }

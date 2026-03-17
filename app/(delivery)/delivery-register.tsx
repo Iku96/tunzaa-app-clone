@@ -10,15 +10,16 @@ import {
     Platform,
     TouchableWithoutFeedback,
     Keyboard,
-    Alert // ✅ Added Alert import
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../src/lib/supabase';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 
 export default function DeliveryRegisterScreen() {
     const router = useRouter();
+    const { register, requestOTP } = useTunzaaAuth();
 
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
@@ -36,7 +37,7 @@ export default function DeliveryRegisterScreen() {
     // Custom error message for name
     const [nameErrorMsg, setNameErrorMsg] = useState('');
 
-    // ✅ VALIDATION LOGIC
+    // Validation logic
     const isValid = () => {
         const isNameValid = !errors.fullName && fullName.trim().split(' ').length >= 2;
         const isPhoneValid = phone.length === 9;
@@ -46,18 +47,13 @@ export default function DeliveryRegisterScreen() {
 
     const handleNameChange = (text: string) => {
         setFullName(text);
-
-        // 1. Check for invalid characters (numbers/symbols)
         const hasInvalidChars = /[^a-zA-Z\s\-\']/.test(text);
-
-        // 2. Check for single name
         const isSingleName = text.trim().split(' ').length < 2;
 
         if (hasInvalidChars) {
             setErrors(prev => ({ ...prev, fullName: true }));
             setNameErrorMsg('Jina haliwezi kuwa na namba au alama');
         } else {
-            // Reset error if chars are valid (we handle single name error on blur or button press)
             setErrors(prev => ({ ...prev, fullName: false }));
             setNameErrorMsg('');
         }
@@ -88,30 +84,21 @@ export default function DeliveryRegisterScreen() {
 
         setLoading(true);
         try {
-            // 1. Sign Up (Initiates OTP)
-            const { data, error: signUpError } = await supabase.auth.signUp({
-                phone: `+255${phone}`,
-                password: password,
-                options: {
-                    data: {
-                        full_name: fullName,
-                        role: 'delivery',
-                    }
-                }
-            });
+            const nameParts = fullName.trim().split(' ');
+            const firstName = nameParts[0];
+            const lastName = nameParts.slice(1).join(' ');
 
-            if (signUpError) throw signUpError;
+            // 1. Request OTP first
+            await requestOTP(`+255${phone}`);
 
-            // ✅ CRITICAL FIX: Removed "if (data.session)" check.
-            // Phone Auth does NOT create a session until OTP is verified.
-            // We assume success if no error was thrown.
-
-            // 2. Navigate to OTP Screen
+            // 2. Navigate to OTP Screen with registration data
             router.push({
                 pathname: '/delivery-otp' as any,
                 params: {
                     phone: phone,
                     fullName: fullName,
+                    firstName: firstName,
+                    lastName: lastName,
                     password: password
                 }
             });
