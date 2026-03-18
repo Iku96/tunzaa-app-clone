@@ -1,38 +1,144 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Search, Filter, LayoutGrid, Download, Plus } from 'lucide-react-native';
+import { ArrowLeft, Search, Filter, LayoutGrid, Download, Plus, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import Svg, { G, Circle } from 'react-native-svg';
+import { productsApi, Product } from '../../src/services/products';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 
 const { width } = Dimensions.get('window');
 
-// Mock Data
-const INVENTORY_DATA = [
-    { id: '1', product: 'Total Beats Air', model: 'AirPods Max', price: '140,000/=', stock: 24, status: 'In Stock' },
-    { id: '2', product: 'Home Bass Rocks', model: 'Bluetooth Speaker', price: '130,000/=', stock: 5, status: 'Low Stock' },
-    { id: '3', product: 'Wireless Charger', model: 'Qi Pad', price: '45,000/=', stock: 0, status: 'Out of Stock' },
-    { id: '4', product: 'Smart Watch X', model: 'Series 7', price: '250,000/=', stock: 12, status: 'In Stock' },
-];
-
 export default function InventoryScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
     const [search, setSearch] = useState('');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [total, setTotal] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
 
-    // Donut Chart Logic (Mock values)
+    // Get vendor profile 
+    const vendorProfile = user?.profiles?.find(p => p.role === 'vendor' || p.role === 'business') as any;
+    const vendorId = vendorProfile?.metadata?.vendor_id || vendorProfile?.vendor_id;
+
+    const fetchProducts = async () => {
+        if (!vendorId) {
+            setLoading(false);
+            return;
+        }
+        
+        try {
+            setLoading(true);
+            const response = await productsApi.getProducts({
+                vendor_id: vendorId,
+                skip: (page - 1) * limit,
+                limit: limit,
+                query: search || undefined
+            });
+            setProducts(response.items);
+            setTotal(response.total);
+        } catch (error) {
+            console.error('Error fetching inventory:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, [page, limit, vendorId]);
+
+    // Handle search with debounce in a real app, but for now simple trigger
+    const handleSearch = () => {
+        if (page !== 1) setPage(1);
+        else fetchProducts();
+    };
+
+    // Donut Chart Logic (Mock or semi-real)
     const size = 180;
     const strokeWidth = 35;
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     
-    // Percentages: In Stock (77%), Low Stock (16%), Out of Stock (6%)
+    // For now, these remain mock for visual representation
     const inStock = 77;
     const lowStock = 16;
     const outOfStock = 7;
 
-    const inStockOffset = 0;
-    const lowStockOffset = (inStock / 100) * circumference;
-    const outOfStockOffset = ((inStock + lowStock) / 100) * circumference;
+    const totalPages = Math.ceil(total / limit);
+
+    const renderPagination = () => {
+        if (total === 0) return null;
+
+        const pages = [];
+        const maxPagesToShow = 5;
+        let startPage = Math.max(1, page - 2);
+        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage < maxPagesToShow - 1) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        return (
+            <View style={styles.paginationFooter}>
+                <Text style={styles.resultsCountText}>
+                    Showing {Math.min(total, (page - 1) * limit + 1)} to {Math.min(total, page * limit)} of {total} results
+                </Text>
+                
+                <View style={styles.pagerContainer}>
+                    <TouchableOpacity 
+                        style={[styles.pagerBtn, page === 1 && styles.pagerBtnDisabled]} 
+                        onPress={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        <ChevronLeft size={20} color={page === 1 ? "#9CA3AF" : "#111827"} />
+                    </TouchableOpacity>
+
+                    {startPage > 1 && (
+                        <>
+                            <TouchableOpacity style={styles.pagerBtn} onPress={() => setPage(1)}>
+                                <Text style={styles.pagerText}>1</Text>
+                            </TouchableOpacity>
+                            {startPage > 2 && <Text style={styles.pagerDots}>...</Text>}
+                        </>
+                    )}
+
+                    {pages.map(p => (
+                        <TouchableOpacity 
+                            key={p} 
+                            style={[styles.pagerBtn, page === p && styles.pagerBtnActive]}
+                            onPress={() => setPage(p)}
+                        >
+                            <Text style={[styles.pagerText, page === p && styles.pagerTextActive]}>{p}</Text>
+                        </TouchableOpacity>
+                    ))}
+
+                    {endPage < totalPages && (
+                        <>
+                            {endPage < totalPages - 1 && <Text style={styles.pagerDots}>...</Text>}
+                            <TouchableOpacity style={styles.pagerBtn} onPress={() => setPage(totalPages)}>
+                                <Text style={styles.pagerText}>{totalPages}</Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
+
+                    <TouchableOpacity 
+                        style={[styles.pagerBtn, page === totalPages && styles.pagerBtnDisabled]} 
+                        onPress={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages || totalPages === 0}
+                    >
+                        <ChevronRight size={20} color={page === totalPages || totalPages === 0 ? "#9CA3AF" : "#111827"} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.safe} edges={['top']}>
@@ -54,7 +160,6 @@ export default function InventoryScreen() {
                 <View style={styles.chartContainer}>
                     <Svg width={size} height={size}>
                         <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
-                            {/* In Stock - Green */}
                             <Circle
                                 cx={size / 2}
                                 cy={size / 2}
@@ -65,7 +170,6 @@ export default function InventoryScreen() {
                                 strokeDashoffset={0}
                                 fill="transparent"
                             />
-                            {/* Low Stock - Orange/Red */}
                             <Circle
                                 cx={size / 2}
                                 cy={size / 2}
@@ -78,7 +182,6 @@ export default function InventoryScreen() {
                                 rotation={(inStock / 100) * 360}
                                 origin={`${size / 2}, ${size / 2}`}
                             />
-                            {/* Out of Stock - Grey */}
                             <Circle
                                 cx={size / 2}
                                 cy={size / 2}
@@ -93,21 +196,25 @@ export default function InventoryScreen() {
                             />
                         </G>
                     </Svg>
+                    <View style={styles.chartCenterText}>
+                        <Text style={styles.chartCenterNumber}>{total}</Text>
+                        <Text style={styles.chartCenterLabel}>Products</Text>
+                    </View>
                 </View>
 
                 {/* Chart Legend Labels */}
                 <View style={styles.legendRow}>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#01AC00' }]} />
-                        <Text style={styles.legendText}>In Stock (24)</Text>
+                        <Text style={styles.legendText}>In Stock</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#FBBF24' }]} />
-                        <Text style={styles.legendText}>Low Stock (05)</Text>
+                        <Text style={styles.legendText}>Low Stock</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#6B7280' }]} />
-                        <Text style={styles.legendText}>Out of stock (02)</Text>
+                        <Text style={styles.legendText}>Out of stock</Text>
                     </View>
                 </View>
 
@@ -120,10 +227,11 @@ export default function InventoryScreen() {
                             placeholder="Search..."
                             value={search}
                             onChangeText={setSearch}
+                            onSubmitEditing={handleSearch}
                             placeholderTextColor="#9CA3AF"
                         />
                     </View>
-                    <TouchableOpacity style={styles.iconBtn}>
+                    <TouchableOpacity style={styles.iconBtn} onPress={handleSearch}>
                         <LayoutGrid size={20} color="#FFFFFF" strokeWidth={2.5} />
                     </TouchableOpacity>
                     <TouchableOpacity style={[styles.iconBtn, { backgroundColor: '#425BA4' }]}>
@@ -142,24 +250,36 @@ export default function InventoryScreen() {
 
                 {/* Table Header */}
                 <View style={styles.tableHeader}>
-                    <Text style={[styles.tableHeaderText, { flex: 2 }]}>PRODUCT</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 2.2 }]}>PRODUCT</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>MODEL NUMBER</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'right' }]}>PRODUCT PRICE</Text>
                 </View>
 
                 {/* Table Content */}
-                {INVENTORY_DATA.map((item, index) => (
-                    <View key={item.id} style={[styles.tableRow, index % 2 === 1 && styles.alternateRow]}>
-                        <Text style={[styles.tableRowText, { flex: 2 }]} numberOfLines={1}>{item.product}</Text>
-                        <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'center' }]} numberOfLines={1}>{item.model}</Text>
-                        <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'right' }]}>{item.price}</Text>
+                {loading ? (
+                    <ActivityIndicator size="large" color="#3A5BA9" style={{ marginVertical: 30 }} />
+                ) : products.length === 0 ? (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>No products found</Text>
                     </View>
-                ))}
+                ) : (
+                    products.map((item, index) => (
+                        <View key={item._id} style={[styles.tableRow, index % 2 === 1 && styles.alternateRow]}>
+                            <Text style={[styles.tableRowText, { flex: 2.2 }]} numberOfLines={1}>{item.name}</Text>
+                            <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'center' }]} numberOfLines={1}>{item.sku || '---'}</Text>
+                            <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'right' }]}>{item.base_price.toLocaleString()}/=</Text>
+                        </View>
+                    ))
+                )}
 
-                {/* Pagination Placeholder */}
-                <View style={styles.paginationRow}>
-                    <Text style={styles.paginationText}>10 results per page</Text>
+                {/* Pagination */}
+                {renderPagination()}
+                
+                {/* Results per page selection placeholder */}
+                <View style={styles.resultsPerPageRow}>
+                    <Text style={styles.resultsPerPageText}>{limit} results per page</Text>
                 </View>
+
             </ScrollView>
         </SafeAreaView>
     );
@@ -305,12 +425,79 @@ const styles = StyleSheet.create({
         color: '#111827',
         fontWeight: '500',
     },
-    paginationRow: {
-        alignItems: 'flex-end',
-        marginTop: 20,
-        paddingBottom: 20,
+    emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
     },
-    paginationText: {
+    emptyText: {
+        fontSize: 16,
+        color: '#6B7280',
+    },
+    chartCenterText: {
+        position: 'absolute',
+        alignItems: 'center',
+    },
+    chartCenterNumber: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    chartCenterLabel: {
+        fontSize: 12,
+        color: '#6B7280',
+    },
+    paginationFooter: {
+        marginTop: 30,
+        paddingBottom: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
+        paddingTop: 20,
+    },
+    resultsCountText: {
+        fontSize: 13,
+        color: '#9CA3AF',
+        marginBottom: 16,
+    },
+    pagerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    pagerBtn: {
+        minWidth: 36,
+        height: 36,
+        borderRadius: 4,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    pagerBtnActive: {
+        backgroundColor: '#425BA4',
+        borderColor: '#425BA4',
+    },
+    pagerBtnDisabled: {
+        opacity: 0.5,
+    },
+    pagerText: {
+        fontSize: 14,
+        color: '#111827',
+        fontWeight: '500',
+    },
+    pagerTextActive: {
+        color: '#FFFFFF',
+    },
+    pagerDots: {
+        color: '#9CA3AF',
+        fontSize: 16,
+        paddingHorizontal: 4,
+    },
+    resultsPerPageRow: {
+        alignItems: 'flex-end',
+        marginBottom: 20,
+    },
+    resultsPerPageText: {
         fontSize: 12,
         color: '#9CA3AF',
     }
