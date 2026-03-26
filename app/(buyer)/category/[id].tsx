@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Dimensions, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
@@ -84,7 +85,7 @@ export default function CategoryScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
             <View style={styles.container}>
                 {/* Header */}
                 <View style={[styles.header, isAllCategories && styles.headerCentered]}>

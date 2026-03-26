@@ -76,7 +76,7 @@ Learn from these so they are not repeated.
 ### SafeAreaView overlaps on iOS/Android
 
 - **Context:** Screens inside groups like `(delivery)` or `(buyer)` without navigation headers may render content overlapping the device status bar or physical notches.
-- **Practice:** Standardize the use of `SafeAreaView` from `react-native-safe-area-context` across all root container views by explicitly providing the `edges={['top']}` prop. Example: `<SafeAreaView style={styles.container} edges={['top']}>`.
+- **Practice:** **CRITICAL: Across the entire app, ALL pages (including new ones like search or category) MUST observe the safe area by explicitly providing the `edges={['top']}` prop to the root `SafeAreaView`.** Example: `<SafeAreaView style={styles.container} edges={['top']}>`. There are no exceptions.
 
 ### Merchant Profile Persistence (Marketplace vs User Profile)
 

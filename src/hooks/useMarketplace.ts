@@ -64,6 +64,7 @@ const CATEGORY_ICON_MAP: Record<string, string> = {
     'garden': 'leaf-outline',
     'phones': 'phone-portrait-outline',
     'computers': 'laptop-outline',
+    'shisha': 'flame-outline',
 };
 
 function getCategoryIcon(name: string): string {
