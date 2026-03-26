@@ -301,11 +301,11 @@ export default function Step3Map() {
                         {/* FOOTER */}
                         <View style={styles.footer}>
                             <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                                <Text style={styles.buttonTextOutline}>{t.onboardingStep1Back}</Text>
+                                <Text style={styles.buttonTextOutline}>{t.commonBack}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.nextButton} onPress={handleSave} disabled={loading}>
-                                <Text style={styles.buttonText}>{loading ? t.onboardingStep1Saving : t.onboardingStep3Save}</Text>
+                                <Text style={styles.buttonText}>{loading ? t.commonSaving : t.onboardingStep3Save}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
