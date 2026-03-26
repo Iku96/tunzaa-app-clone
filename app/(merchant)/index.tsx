@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, LayoutGrid, PlusSquare, MoreHorizontal, Calendar, Maximize2 } from 'lucide-react-native';
 
-// Import our cohesive sidebar menu
+// Import our cohesive components
 import SidebarMenu from '../../src/components/merchant/SidebarMenu';
+import CalendarModal from '../../src/components/merchant/CalendarModal';
 
 import { useMerchantPulse, PulseOrder } from '../../src/hooks/useMerchantPulse';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
@@ -24,6 +25,11 @@ export default function MerchantDashboardScreen() {
     const [showDebug, setShowDebug] = useState(false);
     const [apiTestResult, setApiTestResult] = useState<string | null>(null);
     const [apiTestLoading, setApiTestLoading] = useState(false);
+
+    // Calendar Selection State
+    const [startDate, setStartDate] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    const [endDate, setEndDate] = useState(() => new Date());
+    const [calendarMode, setCalendarMode] = useState<'start' | 'end' | null>(null);
 
     // Auth context - for debugging
     const { user, isAuthenticated, isLoading: authLoading } = useTunzaaAuth();
@@ -127,26 +133,48 @@ export default function MerchantDashboardScreen() {
                 {/* Date Selection Row */}
                 <View style={styles.dateSectionContainer}>
                     <View style={styles.dateRow}>
-                        <TouchableOpacity style={styles.datePill}>
+                        <TouchableOpacity style={styles.datePill} onPress={() => setCalendarMode('start')}>
                             <Calendar size={14} color="#6B7280" style={{ marginRight: 6 }} />
                             <Text style={styles.dateText}>
-                                {new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                                {startDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                             </Text>
                         </TouchableOpacity>
 
                         <Text style={styles.dateDash}>-</Text>
 
-                        <TouchableOpacity style={styles.datePill}>
+                        <TouchableOpacity style={styles.datePill} onPress={() => setCalendarMode('end')}>
                             <Calendar size={14} color="#6B7280" style={{ marginRight: 6 }} />
                             <Text style={styles.dateText}>
-                                {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                                {endDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                             </Text>
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.reportText}>
-                        Report : {new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })} - {new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
+                        Report : {startDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })} - {endDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                     </Text>
                 </View>
+
+                {/* Calendar Modal */}
+                <CalendarModal 
+                    isVisible={calendarMode !== null}
+                    initialDate={calendarMode === 'start' ? startDate : endDate}
+                    onClose={() => setCalendarMode(null)}
+                    onSelectDate={(selectedDate) => {
+                        if (calendarMode === 'start') {
+                            setStartDate(selectedDate);
+                            // Avoid end date being before start date
+                            if (selectedDate > endDate) {
+                                setEndDate(selectedDate);
+                            }
+                        } else {
+                            setEndDate(selectedDate);
+                            // Avoid start date being after end date
+                            if (selectedDate < startDate) {
+                                setStartDate(selectedDate);
+                            }
+                        }
+                    }}
+                />
 
                 {/* Main Blue Payments Card */}
                 <View style={styles.mainBlueCard}>

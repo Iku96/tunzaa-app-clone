@@ -14,8 +14,9 @@ export default function MerchantLayout() {
     useEffect(() => {
         // Only redirect if explicitly trying to access a PROTECTED merchant route while unauthenticated
         if (!isLoading && !isAuthenticated && isInsideMerchant && !isOnboarding) {
-            console.log('🛡️ [MerchantLayout] Unauthorized access attempted, redirecting to splash...');
-            router.replace('/');
+            console.log('🛡️ [MerchantLayout] Unauthorized access attempted, redirecting to language selection...');
+            // Use /language directly to avoid the splash screen delay and potential "index" route issues
+            router.replace('/language');
         }
     }, [isAuthenticated, isLoading, isInsideMerchant, isOnboarding]);
 

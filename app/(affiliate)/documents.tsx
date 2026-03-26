@@ -10,8 +10,8 @@ export default function AffiliateDocumentsScreen() {
     const [idUploaded, setIdUploaded] = useState(false);
 
     const handleNext = () => {
-        // Complete onboarding and go to profile
-        router.push('/(affiliate)/profile' as any);
+        // Complete onboarding and go to dashboard
+        router.push('/(affiliate)/' as any);
     };
 
     const handleBack = () => {

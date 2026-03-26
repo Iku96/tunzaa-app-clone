@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Dimensions, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Dimensions, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, ChevronDown, Check, Camera, Plus, Trash2, ArrowLeft, RefreshCcw, CheckCircle2 } from 'lucide-react-native';
@@ -22,8 +22,9 @@ export default function AddProductScreen() {
 
     // Get vendor details
     const vendorProfile = user?.profiles?.find(p => p.role === 'vendor' || p.role === 'business') as any;
-    const vendorId = vendorProfile?.metadata?.vendor_id || vendorProfile?.vendor_id;
-    const storeId = vendorProfile?.metadata?.store_id || vendorProfile?.store_id;
+    const vendorId = vendorProfile?.profile_id || vendorProfile?.metadata?.vendor_id || vendorProfile?.vendor_id;
+    const storeId = vendorProfile?.profile_id || vendorProfile?.metadata?.store_id || vendorProfile?.store_id;
+
 
     // Step 1 State
     const [name, setName] = useState('');
@@ -96,7 +97,8 @@ export default function AddProductScreen() {
             // 1. Upload images if any
             const uploadedImages: { url: string; is_primary: boolean }[] = [];
             for (let i = 0; i < localImages.length; i++) {
-                const uploadResult = await uploadApi.uploadFile(localImages[i]);
+                const filename = `product_${Date.now()}_${i}.jpg`;
+                const uploadResult = await uploadApi.uploadFile(localImages[i], filename);
                 uploadedImages.push({
                     url: uploadResult.url,
                     is_primary: i === 0
@@ -110,15 +112,15 @@ export default function AddProductScreen() {
                 name,
                 slug: name.toLowerCase().replace(/ /g, '-'),
                 description,
-                sku: modelNumber,
+                sku: modelNumber || `SKU-${Date.now()}`,
                 category_ids: [categoryId],
-                base_price: parseFloat(price.replace(/,/g, '')),
-                inventory_quantity: parseInt(stock, 10),
-                weight: parseFloat(weightValue),
+                base_price: parseFloat(price.replace(/,/g, '')) || 0,
+                inventory_quantity: parseInt(stock, 10) || 0,
+                weight: parseFloat(weightValue) || 1,
                 dimensions: {
-                    length: parseFloat(length),
-                    width: parseFloat(widthVal),
-                    height: parseFloat(height)
+                    length: parseFloat(length) || 1,
+                    width: parseFloat(widthVal) || 1,
+                    height: parseFloat(height) || 1
                 },
                 images: uploadedImages,
                 has_variants: colors.length > 0,
@@ -297,63 +299,24 @@ export default function AddProductScreen() {
 
     const renderStep3 = () => (
         <View style={styles.stepContent}>
-            <Text style={styles.requiredText}>*-Require</Text>
+            <Text style={styles.requiredText}>Review your product details before finishing.</Text>
 
-            <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Product Name<Text style={styles.requiredStar}>*</Text></Text>
-                <TextInput
-                    style={styles.input}
-                    value={name}
-                    editable={false}
-                />
-            </View>
+            <View style={styles.summaryBox}>
+                <View style={styles.summarySection}>
+                    <Text style={styles.summaryLabel}>Basic Information</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Name:</Text> {name || 'Not provided'}</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Type:</Text> {type}</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Category:</Text> {selectedCategory ? selectedCategory.name : 'Not provided'}</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Description:</Text> {description || 'Not provided'}</Text>
+                </View>
 
-            <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Product Name<Text style={styles.requiredStar}>*</Text></Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Model Number (e.g. SM0765B)"
-                    value={modelNumber}
-                    onChangeText={setModelNumber}
-                />
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Measure</Text>
-                <TouchableOpacity style={styles.dropdown}>
-                    <Text style={styles.dropdownText}>{measureUnit}</Text>
-                    <ChevronDown size={14} color="#6B7280" />
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Height</Text>
-                <TextInput
-                    style={styles.input}
-                    keyboardType="numeric"
-                    value={height}
-                    onChangeText={setHeight}
-                />
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Width</Text>
-                <TextInput
-                    style={styles.input}
-                    keyboardType="numeric"
-                    value={widthVal}
-                    onChangeText={setWidthVal}
-                />
-            </View>
-
-            <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Length</Text>
-                <TextInput
-                    style={styles.input}
-                    keyboardType="numeric"
-                    value={length}
-                    onChangeText={setLength}
-                />
+                <View style={styles.summarySection}>
+                    <Text style={styles.summaryLabel}>Details & Pricing</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Price:</Text> Tsh {price || '0'}</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Stock:</Text> {stock || '0'} available</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Weight:</Text> {weightValue || '0'} {weightUnit}</Text>
+                    <Text style={styles.summaryText}><Text style={styles.summaryBold}>Images:</Text> {localImages.length} attached</Text>
+                </View>
             </View>
         </View>
     );
@@ -371,28 +334,33 @@ export default function AddProductScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* Stepper */}
-            <View style={styles.stepperContainer}>
-                <View style={styles.stepperRow}>
-                    <View style={[styles.stepCircle, step >= 1 && styles.stepCircleActive]}>
-                        <Text style={[styles.stepNumber, step >= 1 && styles.stepNumberActive]}>1</Text>
-                    </View>
-                    <View style={[styles.stepLine, step >= 2 && styles.stepLineActive]} />
-                    <View style={[styles.stepCircle, step >= 2 && styles.stepCircleActive]}>
-                        <Text style={[styles.stepNumber, step >= 2 && styles.stepNumberActive]}>2</Text>
-                    </View>
-                    <View style={[styles.stepLine, step >= 3 && styles.stepLineActive]} />
-                    <View style={[styles.stepCircle, step >= 3 && styles.stepCircleActive]}>
-                        <Text style={[styles.stepNumber, step >= 3 && styles.stepNumberActive]}>3</Text>
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                {/* Stepper */}
+                <View style={styles.stepperContainer}>
+                    <View style={styles.stepperRow}>
+                        <View style={[styles.stepCircle, step >= 1 && styles.stepCircleActive]}>
+                            <Text style={[styles.stepNumber, step >= 1 && styles.stepNumberActive]}>1</Text>
+                        </View>
+                        <View style={[styles.stepLine, step >= 2 && styles.stepLineActive]} />
+                        <View style={[styles.stepCircle, step >= 2 && styles.stepCircleActive]}>
+                            <Text style={[styles.stepNumber, step >= 2 && styles.stepNumberActive]}>2</Text>
+                        </View>
+                        <View style={[styles.stepLine, step >= 3 && styles.stepLineActive]} />
+                        <View style={[styles.stepCircle, step >= 3 && styles.stepCircleActive]}>
+                            <Text style={[styles.stepNumber, step >= 3 && styles.stepNumberActive]}>3</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {step === 1 && renderStep1()}
-                {step === 2 && renderStep2()}
-                {step === 3 && renderStep3()}
-            </ScrollView>
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    {step === 1 && renderStep1()}
+                    {step === 2 && renderStep2()}
+                    {step === 3 && renderStep3()}
+                </ScrollView>
+            </KeyboardAvoidingView>
 
             {/* Footer Actions */}
             <View style={styles.footer}>
@@ -787,6 +755,35 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '600',
         color: '#FFFFFF',
+    },
+    summaryBox: {
+        backgroundColor: '#F9FAFB',
+        borderRadius: 12,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    summarySection: {
+        marginBottom: 20,
+    },
+    summaryLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#3A5BA9',
+        marginBottom: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+        paddingBottom: 4,
+    },
+    summaryText: {
+        fontSize: 14,
+        color: '#4B5563',
+        marginBottom: 6,
+        lineHeight: 20,
+    },
+    summaryBold: {
+        fontWeight: '600',
+        color: '#111827',
     },
     modalOverlay: {
         flex: 1,

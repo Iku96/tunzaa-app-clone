@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 
 export default function Step3Location() {
     const router = useRouter();
+    const { t } = useLanguage();
 
     return (
         <View style={styles.container}>
@@ -10,9 +12,9 @@ export default function Step3Location() {
 
                 {/* Top Content */}
                 <View>
-                    <Text style={styles.title}>Eneo La Duka</Text>
+                    <Text style={styles.title}>{t.onboardingStep3Title}</Text>
                     <Text style={styles.subtitle}>
-                        Wezesha wateja kufuata bidhaa kwa urahisi kwa kuweka eneo la duka lako.
+                        {t.onboardingStep3Subtitle}
                     </Text>
 
                     <View style={styles.card}>
@@ -23,7 +25,7 @@ export default function Step3Location() {
                                 style={{ width: 24, height: 24, marginRight: 10 }}
                                 resizeMode="contain"
                             />
-                            <Text style={styles.cardTitle}>Weka eneo la duka</Text>
+                            <Text style={styles.cardTitle}>{t.onboardingStep3CardTitle}</Text>
                         </View>
                         <View style={styles.divider} />
 
@@ -33,17 +35,17 @@ export default function Step3Location() {
                                 style={styles.manualButton}
                                 onPress={() => router.push('/(merchant)/onboarding/step-3-manual')}
                             >
-                                <Text style={styles.manualButtonText}>Weka kwa kutumia maandishi</Text>
+                                <Text style={styles.manualButtonText}>{t.onboardingStep3ManualButton}</Text>
                             </TouchableOpacity>
 
-                            <Text style={styles.orText}>Au</Text>
+                            <Text style={styles.orText}>{t.onboardingStep3Or}</Text>
 
                             {/* GPS Button */}
                             <TouchableOpacity
                                 style={styles.gpsButton}
                                 onPress={() => router.push('/(merchant)/onboarding/step-3-map')}
                             >
-                                <Text style={styles.gpsButtonText}>Chagua kwenye ramani</Text>
+                                <Text style={styles.gpsButtonText}>{t.onboardingStep3GPSButton}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -52,12 +54,12 @@ export default function Step3Location() {
                 {/* Footer Buttons */}
                 <View style={styles.footer}>
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Text style={styles.backButtonText}>Rudi</Text>
+                        <Text style={styles.backButtonText}>{t.onboardingStep1Back}</Text>
                     </TouchableOpacity>
 
                     {/* Disabled Endelea */}
                     <View style={[styles.nextButton, { opacity: 0.5 }]}>
-                        <Text style={styles.nextButtonText}>Endelea</Text>
+                        <Text style={styles.nextButtonText}>{t.onboardingStep1Next}</Text>
                     </View>
                 </View>
 

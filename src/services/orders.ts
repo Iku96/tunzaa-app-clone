@@ -228,6 +228,17 @@ export const usePayOrder = () => {
     });
 };
 
+export const useGetVendorOrders = (
+    params: GetVendorOrdersParams,
+    enabled: boolean = true
+) => {
+    return useQuery({
+        queryKey: ["vendorOrders", params],
+        queryFn: () => orderApi.getVendorOrders(params),
+        enabled: enabled && !!params.vendor_id,
+    });
+};
+
 export const useGetOrders = (
     params?: GetOrdersParams,
     enabled: boolean = true

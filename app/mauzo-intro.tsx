@@ -7,39 +7,43 @@ import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 const { width, height } = Dimensions.get('window');
 
 // Define slides data
-const SLIDES = [
-    {
-        id: '1',
-        title: 'Usimamizi Wa Bidhaa',
-        description: 'Tunasahilisha mchakato wa usimamizi wa bidhaa kwa kutumia zana rahisi zetu ambazo unaweza kuongeza, kuhariri, na kufuta bidhaa kwa urahisi.',
-        image: require('../assets/mauzo-intro-illustration.png'),
-    },
-    {
-        id: '2',
-        title: 'Usimamizi Wa Maagizo',
-        description: 'Usimamie hisa zako, mauzo, na habari za wateja katika mahali pamoja, ili uweze kufikia data hii kwa urahisi popote na wakati wowote.',
-        image: require('../assets/mauzo-intro-illustration screen 2.png'),
-    },
-    {
-        id: '3',
-        title: 'Usimamizi Wa Mfuko',
-        description: 'Tumia zana yetu ya usimamizi wa fedha kuhakikisha uangalizi na kushughulikia mtiririko wa fedha wa taasisi ya kifedha.',
-        image: require('../assets/mauzo-intro-illustration screen 3.png'),
-    },
-    {
-        id: '4',
-        title: 'Usimamizi Wa Utoaji',
-        description: 'Inaendeshwa na zana za kidijitali ili kuhakikisha kuwa bidhaa zinasogezwa kwa usalama na kwa ufanisi hadi zimfikie mteja wa mwisho.',
-        image: require('../assets/mauzo-intro-illustration screen 4.png'),
-    },
-];
+import { useLanguage } from '../src/contexts/LanguageContext';
 
 export default function MauzoIntro() {
     const router = useRouter();
+    const { t } = useLanguage();
     const { flow } = useLocalSearchParams<{ flow: string }>();
     const { isAuthenticated } = useTunzaaAuth();
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
+
+    // Define slides data inside the component to use translations
+    const SLIDES = [
+        {
+            id: '1',
+            title: t.mauzoSlide1Title,
+            description: t.mauzoSlide1Desc,
+            image: require('../assets/mauzo-intro-illustration.png'),
+        },
+        {
+            id: '2',
+            title: t.mauzoSlide2Title,
+            description: t.mauzoSlide2Desc,
+            image: require('../assets/mauzo-intro-illustration screen 2.png'),
+        },
+        {
+            id: '3',
+            title: t.mauzoSlide3Title,
+            description: t.mauzoSlide3Desc,
+            image: require('../assets/mauzo-intro-illustration screen 3.png'),
+        },
+        {
+            id: '4',
+            title: t.mauzoSlide4Title,
+            description: t.mauzoSlide4Desc,
+            image: require('../assets/mauzo-intro-illustration screen 4.png'),
+        },
+    ];
 
     const handleBack = () => {
         if (currentIndex > 0) {
@@ -153,7 +157,7 @@ export default function MauzoIntro() {
                     onPress={handleCreateAccount}
                     activeOpacity={0.8}
                 >
-                    <Text style={styles.createButtonText}>Create an account</Text>
+                    <Text style={styles.createButtonText}>{t.mauzoCreateAccount}</Text>
                 </TouchableOpacity>
 
                 {/* Skip Link */}
@@ -163,7 +167,7 @@ export default function MauzoIntro() {
                         onPress={handleSkip}
                         activeOpacity={0.7}
                     >
-                        <Text style={styles.skipText}>Skip</Text>
+                        <Text style={styles.skipText}>{t.loginSkip}</Text>
                         <ArrowRight size={20} color="#FFFFFF" />
                     </TouchableOpacity>
 
@@ -173,7 +177,7 @@ export default function MauzoIntro() {
                         onPress={() => router.push('/login')}
                         style={styles.loginLink}
                     >
-                        <Text style={styles.loginText}>Already have an account? <Text style={styles.loginTextBold}>Sign In</Text></Text>
+                        <Text style={styles.loginText}>{t.mauzoAlreadyAccount} <Text style={styles.loginTextBold}>{t.mauzoSignIn}</Text></Text>
                     </TouchableOpacity>
                 </View>
             </View>

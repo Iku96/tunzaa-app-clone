@@ -56,22 +56,55 @@ export default function ActivitySettingsScreen() {
                 </View>
 
                 <SectionHeader title="Purchased" />
-                <ActivityItem icon={ShoppingBag} label="Shopping activity" onPress={() => {}} />
+                <ActivityItem 
+                    icon={ShoppingBag} 
+                    label="Shopping activity" 
+                    onPress={() => router.push('/(merchant)/settings/spending-activity')} 
+                />
 
                 <SectionHeader title="Engagement" />
-                <ActivityItem icon={Heart} label="Likes" onPress={() => {}} />
-                <ActivityItem icon={Send} label="Share" onPress={() => {}} />
-                <ActivityItem icon={Bookmark} label="Wishlist" onPress={() => {}} />
+                <ActivityItem 
+                    icon={Heart} 
+                    label="Likes" 
+                    onPress={() => router.push('/(merchant)/settings/likes')}
+                />
+                <ActivityItem 
+                    icon={Send} 
+                    label="Shared" 
+                    onPress={() => router.push('/(merchant)/settings/share')}
+                />
+                <ActivityItem 
+                    icon={Bookmark} 
+                    label="Wishlist" 
+                    onPress={() => router.push('/(merchant)/settings/wishlist')}
+                />
 
                 <SectionHeader title="Content" />
-                <ActivityItem icon={Grid} label="Post" onPress={() => {}} />
+                <ActivityItem 
+                    icon={Grid} 
+                    label="Post" 
+                    onPress={() => router.push('/(merchant)/settings/posts-feed')}
+                />
 
                 <SectionHeader title="Payment" />
-                <ActivityItem icon={CreditCard} label="Orders & payment" onPress={() => {}} />
+                <ActivityItem 
+                    icon={CreditCard} 
+                    label="Orders and payment" 
+                    onPress={() => router.push('/(merchant)/settings/orders')}
+                />
 
                 <SectionHeader title="How you use Tunzaa" />
-                <ActivityItem icon={Clock} label="Time spent" onPress={() => {}} />
-                <ActivityItem icon={Search} label="Recent search" isLast={true} onPress={() => {}} />
+                <ActivityItem 
+                    icon={Clock} 
+                    label="Time spent" 
+                    onPress={() => router.push('/(merchant)/settings/time-usage')}
+                />
+                <ActivityItem 
+                    icon={Search} 
+                    label="Recent search" 
+                    isLast={true} 
+                    onPress={() => router.push('/(merchant)/settings/recent-search')} 
+                />
             </ScrollView>
         </SafeAreaView>
     );

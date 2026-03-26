@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
 
 // ✅ STATIC DATA 
@@ -29,6 +30,7 @@ const LOCATION_DATA: any = {
 export default function Step3Manual() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
+    const { t } = useLanguage();
 
     // Form State
     const [region, setRegion] = useState('');      // Mkoa
@@ -42,7 +44,7 @@ export default function Step3Manual() {
 
     const handleSave = async () => {
         if (!region || !municipal || !ward) {
-            alert("Tafadhali chagua Mkoa, Wilaya na Kata.");
+            alert(t.onboardingStep3ValidationLocation);
             return;
         }
 
@@ -148,21 +150,21 @@ export default function Step3Manual() {
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.staticContent}>
-                        <Text style={styles.title}>Eneo La Duka</Text>
+                        <Text style={styles.title}>{t.onboardingStep3Title}</Text>
                         <Text style={styles.subtitle}>
-                            Jaza taarifa za eneo lako kwa usahihi ili wateja wakupate kwa urahisi.
+                            {t.onboardingStep3ManualSubtitle}
                         </Text>
 
                         <View style={styles.formContent}>
-                            {renderAutocomplete("Region (Mkoa)", region, setRegion, 'region', "Mfano: Dar es Salaam", 40)}
-                            {renderAutocomplete("Municipal (Wilaya)", municipal, setMunicipal, 'municipal', "Mfano: Kinondoni", 30)}
-                            {renderAutocomplete("Ward (Kata)", ward, setWard, 'ward', "Mfano: Kijitonyama", 20)}
+                            {renderAutocomplete(t.onboardingStep3RegionLabel, region, setRegion, 'region', t.onboardingStep3RegionPlaceholder, 40)}
+                            {renderAutocomplete(t.onboardingStep3MunicipalLabel, municipal, setMunicipal, 'municipal', t.onboardingStep3MunicipalPlaceholder, 30)}
+                            {renderAutocomplete(t.onboardingStep3WardLabel, ward, setWard, 'ward', t.onboardingStep3WardPlaceholder, 20)}
 
                             <View style={[styles.inputGroup, { zIndex: 1 }]}>
-                                <Text style={styles.label}>Maelezo ya ziada</Text>
+                                <Text style={styles.label}>{t.onboardingStep3NotesLabel}</Text>
                                 <TextInput
                                     style={[styles.input, styles.textArea]}
-                                    placeholder="Mfano: Mtaa wa saba, karibu na duka la dawa..."
+                                    placeholder={t.onboardingStep3NotesPlaceholder}
                                     value={extraInfo}
                                     onChangeText={setExtraInfo}
                                     placeholderTextColor="#9CA3AF"
@@ -175,11 +177,11 @@ export default function Step3Manual() {
 
                         <View style={styles.footer}>
                             <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                                <Text style={styles.buttonTextWhite}>Rudi</Text>
+                                <Text style={styles.buttonTextWhite}>{t.onboardingStep1Back}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.nextButton} onPress={handleSave} disabled={loading}>
-                                <Text style={styles.buttonText}>{loading ? 'Inahifadhi...' : 'Hifadhi'}</Text>
+                                <Text style={styles.buttonText}>{loading ? t.onboardingStep1Saving : t.onboardingStep3Save}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

@@ -43,10 +43,10 @@ export default function RoleScreen() {
         setIsBusinessExpanded(!isBusinessExpanded);
     };
 
-    const handleBusinessOptionSelect = (option: string) => {
-        if (option === 'Provide delivery Services') {
+    const handleBusinessOptionSelect = (value: string) => {
+        if (value === 'delivery') {
             router.push({ pathname: '/mauzo-intro', params: { flow: 'delivery' } });
-        } else if (option === 'Join as Affiliate Marketer') {
+        } else if (value === 'affiliate') {
             router.push('/(affiliate)/register' as any);
         } else {
             // For "Sell products" or other business options, register first
@@ -65,10 +65,10 @@ export default function RoleScreen() {
     });
 
     const businessOptions = [
-        "Sell products / Services",
-        "Provide delivery Services",
-        "Offer loans and financial services",
-        "Join as Affiliate Marketer"
+        { label: t.roleScreenOptionSell, value: 'sell' },
+        { label: t.roleScreenOptionDelivery, value: 'delivery' },
+        { label: t.roleScreenOptionFinancial, value: 'financial' },
+        { label: t.roleScreenOptionAffiliate, value: 'affiliate' }
     ];
 
     return (
@@ -109,7 +109,7 @@ export default function RoleScreen() {
                         color: '#2C3D6D',
                     }}
                 >
-                    {t.roleScreenTitle || "Choose what describes you best"}
+                    {t.roleScreenTitle}
                 </Text>
             </View>
 
@@ -137,7 +137,7 @@ export default function RoleScreen() {
                             fontWeight: '400',
                         }}
                     >
-                        {t.roleScreenDescription || "Achieve your financial goals through a save-to-buy model.\nBusinesses sell, deliver and offer financial services."}
+                        {t.roleScreenDescription}
                     </Text>
                 </View>
             </View>
@@ -158,17 +158,17 @@ export default function RoleScreen() {
                         borderRadius: 40,
                     }}
                     className="items-center justify-center"
-                    accessibilityLabel="I'm a buyer"
+                    accessibilityLabel={t.roleScreenBuyer}
                     accessibilityRole="button"
                 >
                     <Text className="text-white text-[16px] font-medium">
-                        {t.roleScreenBuyer || "I'm a buyer"}
+                        {t.roleScreenBuyer}
                     </Text>
                 </TouchableOpacity>
 
                 {/* OR Separator */}
                 <Text className="text-center text-[#6B7280] text-[14px] font-medium my-1">
-                    {t.roleScreenOr || "OR"}
+                    {t.roleScreenOr}
                 </Text>
 
                 {/* Business Button Group */}
@@ -187,7 +187,7 @@ export default function RoleScreen() {
                         className="flex-row items-center justify-center relative"
                     >
                         <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-                            {t.roleScreenBusiness || "I'm a business"}
+                            {t.roleScreenBusiness}
                         </Text>
 
                         <Animated.View
@@ -224,7 +224,7 @@ export default function RoleScreen() {
                             {businessOptions.map((option, index) => (
                                 <TouchableOpacity
                                     key={index}
-                                    onPress={() => handleBusinessOptionSelect(option)}
+                                    onPress={() => handleBusinessOptionSelect(option.value)}
                                     style={{
                                         paddingVertical: 12,
                                         marginBottom: index < businessOptions.length - 1 ? 8 : 0,
@@ -238,7 +238,7 @@ export default function RoleScreen() {
                                             textAlign: 'center',
                                         }}
                                     >
-                                        {option}
+                                        {option.label}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
@@ -256,7 +256,7 @@ export default function RoleScreen() {
                 <TouchableOpacity
                     onPress={handleSkip}
                     className="flex-row items-center gap-x-2 p-3"
-                    accessibilityLabel="Skip"
+                    accessibilityLabel={t.roleScreenSkip}
                     accessibilityRole="button"
                 >
                     <Text
@@ -268,7 +268,7 @@ export default function RoleScreen() {
                             color: '#6B7280'
                         }}
                     >
-                        {t.roleScreenSkip || "Skip"}
+                        {t.roleScreenSkip}
                     </Text>
                     <ArrowRight size={20} color="#6B7280" />
                 </TouchableOpacity>
@@ -285,7 +285,7 @@ export default function RoleScreen() {
                             textDecorationLine: 'underline'
                         }}
                     >
-                        Already have an account? Sign In
+                        {t.roleScreenAlreadyAccount}
                     </Text>
                 </TouchableOpacity>
             </View>

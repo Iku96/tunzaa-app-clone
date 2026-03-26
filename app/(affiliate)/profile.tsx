@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, Dimensions, ActivityIndicator, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, MoreHorizontal, ChevronDown, MapPin, Share2, Grid, PlaySquare, CheckCircle } from 'lucide-react-native';
@@ -14,6 +14,7 @@ export default function AffiliateProfileScreen() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
     const [activeTab, setActiveTab] = useState<'grid' | 'video'>('grid');
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
 
     // Fetch affiliate-specific data
     const userId = user?.user_id || user?.id || '';
@@ -21,11 +22,40 @@ export default function AffiliateProfileScreen() {
 
     // Derive display values from auth context + affiliate data
     const displayName = affiliate?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Affiliate';
-    const profilePicture = affiliate?.profile_picture || user?.profile_picture || undefined;
+    const profilePicture = affiliate?.profile_picture || undefined;
     const affiliateStatus = affiliate?.status || 'pending';
 
     const handleBack = () => {
-        router.push('/home' as any); // Or wherever appropriate
+        router.push('/(affiliate)/' as any);
+    };
+
+    const handleInsights = () => {
+        setIsMenuVisible(false);
+        router.push('/(affiliate)/customer-insights' as any);
+    };
+
+    const handleOrders = () => {
+        setIsMenuVisible(false);
+        router.push('/(affiliate)/orders-sales' as any);
+    };
+
+    const handlePerformance = () => {
+        setIsMenuVisible(false);
+        router.push('/(affiliate)/product-performance' as any);
+    };
+
+    const handleDashboard = () => {
+        setIsMenuVisible(false);
+        router.push('/(affiliate)/' as any);
+    };
+
+    const handleWithdrawals = () => {
+        setIsMenuVisible(false);
+        router.push('/(affiliate)/withdrawals' as any);
+    };
+
+    const toggleMenu = () => {
+        setIsMenuVisible(!isMenuVisible);
     };
 
     return (
@@ -36,13 +66,13 @@ export default function AffiliateProfileScreen() {
                     <ArrowLeft size={24} color="#111827" />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.headerTitleContainer}>
+                <TouchableOpacity style={styles.headerTitleContainer} onPress={toggleMenu}>
                     <Text style={styles.headerTitle}>{displayName}</Text>
                     <ChevronDown size={16} color="#4B5563" style={{ marginLeft: 4 }} />
                     <View style={styles.onlineDot} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.headerBtn}>
+                <TouchableOpacity style={styles.headerBtn} onPress={toggleMenu}>
                     <MoreHorizontal size={24} color="#111827" />
                 </TouchableOpacity>
             </View>
@@ -69,41 +99,39 @@ export default function AffiliateProfileScreen() {
 
                     {/* Stats List */}
                     <View style={styles.statsList}>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{affiliate?.total_referrals || 0}</Text>
-                            <Text style={styles.statLabel}>Referrals</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{affiliate?.total_earnings ? `${affiliate.total_earnings}` : '0'}</Text>
-                            <Text style={styles.statLabel}>Earnings</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statValue}>{affiliateStatus === 'active' ? '✓' : '⏳'}</Text>
-                            <Text style={styles.statLabel}>Status</Text>
-                        </View>
+                        <TouchableOpacity style={styles.statItem} onPress={handleInsights}>
+                            <Text style={styles.statValue}>120</Text>
+                            <Text style={styles.statLabel}>Post</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.statItem} onPress={handleInsights}>
+                            <Text style={styles.statValue}>30K</Text>
+                            <Text style={styles.statLabel}>Followers</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.statItem} onPress={handleInsights}>
+                            <Text style={styles.statValue}>30K</Text>
+                            <Text style={styles.statLabel}>Following</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Profile Info Section */}
                 <View style={styles.infoSection}>
                     <View style={styles.nameRow}>
-                        <Text style={styles.shopName}>{affiliate?.name || displayName}</Text>
+                        <Text style={styles.shopName}>{affiliate?.name || 'Gadget Shop'}</Text>
                         <View style={styles.verifiedBadge}>
                             <CheckCircle size={14} color="#059669" />
                             <Text style={styles.verifiedText}>Verified</Text>
                         </View>
-                    </View>
-
-                    <View style={styles.locationRankRow}>
-                        <View style={styles.locationContainer}>
-                            <MapPin size={14} color="#4B5563" />
-                            <Text style={styles.locationText}>Kinondoni, Dar es salaam</Text>
-                        </View>
 
                         <View style={styles.rankContainer}>
-                            <Ionicons name="diamond" size={12} color="#06B6D4" />
+                            <Ionicons name="diamond" size={14} color="#06B6D4" />
                             <Text style={styles.rankText}>Diamond</Text>
                         </View>
+                    </View>
+
+                    <View style={styles.locationContainer}>
+                        <MapPin size={14} color="#4B5563" />
+                        <Text style={styles.locationText}>Kinondoni, Dar es salaam</Text>
                     </View>
                 </View>
 
@@ -137,8 +165,16 @@ export default function AffiliateProfileScreen() {
 
                 {/* Grid Content */}
                 {activeTab === 'grid' ? (
-                    <View style={styles.emptyStateContainer}>
-                        <Text style={styles.emptyStateText}>No posts yet. Start sharing to grow your affiliate reach!</Text>
+                    <View style={styles.gridContainer}>
+                        {/* Mock image data */}
+                        {[1, 2, 3].map((item) => (
+                            <View key={item} style={styles.gridItem}>
+                                <Image
+                                    source={{ uri: `https://picsum.photos/seed/${item}/200` }}
+                                    style={styles.gridImage}
+                                />
+                            </View>
+                        ))}
                     </View>
                 ) : (
                     <View style={styles.emptyStateContainer}>
@@ -147,6 +183,55 @@ export default function AffiliateProfileScreen() {
                 )}
 
             </ScrollView>
+
+            {/* Navigation Menu Modal */}
+            <Modal
+                visible={isMenuVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsMenuVisible(false)}
+            >
+                <Pressable 
+                    style={styles.modalOverlay} 
+                    onPress={() => setIsMenuVisible(false)}
+                >
+                    <View style={styles.menuContent}>
+                        <Text style={styles.menuHeader}>Affiliate Actions</Text>
+                        
+                        <TouchableOpacity style={styles.menuItem} onPress={handleDashboard}>
+                            <Ionicons name="stats-chart" size={20} color="#3A5BA9" />
+                            <Text style={styles.menuItemText}>My Dashboard (Earnings))</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.menuItem} onPress={handlePerformance}>
+                            <Ionicons name="cube" size={20} color="#3A5BA9" />
+                            <Text style={styles.menuItemText}>Product Performance</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.menuItem} onPress={handleInsights}>
+                            <Ionicons name="people" size={20} color="#3A5BA9" />
+                            <Text style={styles.menuItemText}>Customer Insights</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.menuItem} onPress={handleOrders}>
+                            <Ionicons name="cart" size={20} color="#3A5BA9" />
+                            <Text style={styles.menuItemText}>Orders and Sales</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.menuItem} onPress={handleWithdrawals}>
+                            <Ionicons name="cash" size={20} color="#3A5BA9" />
+                            <Text style={styles.menuItemText}>Withdrawal history</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.menuDivider} />
+
+                        <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={() => setIsMenuVisible(false)}>
+                            <Ionicons name="close-circle" size={20} color="#EF4444" />
+                            <Text style={[styles.menuItemText, { color: '#EF4444' }]}>Close Menu</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -256,11 +341,6 @@ const styles = StyleSheet.create({
         color: '#059669',
         marginLeft: 4,
     },
-    locationRankRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between', // Pushes rank to the right
-    },
     locationContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -273,10 +353,11 @@ const styles = StyleSheet.create({
     rankContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingRight: 10, // Slight indent from right edge
+        marginLeft: 'auto', // Pushes Diamond to the right
+        paddingRight: 10,
     },
     rankText: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: '500',
         color: '#06B6D4', // Cyan
         marginLeft: 4,
@@ -330,14 +411,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        paddingTop: 8,
+        paddingTop: 16,
     },
     gridItem: {
         width: imageSize,
         height: imageSize,
         marginBottom: 6,
         backgroundColor: '#F3F4F6', // Placeholder
-        borderRadius: 4,
         overflow: 'hidden',
     },
     gridImage: {
@@ -352,5 +432,49 @@ const styles = StyleSheet.create({
     emptyStateText: {
         color: '#9CA3AF',
         fontSize: 14,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    menuContent: {
+        width: width * 0.85,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: 24,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    menuHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#111827',
+        marginBottom: 24,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    menuItemText: {
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#111827',
+        marginLeft: 16,
+    },
+    menuDivider: {
+        height: 1,
+        width: '100%',
+        backgroundColor: '#F3F4F6',
+        marginVertical: 10,
     }
 });

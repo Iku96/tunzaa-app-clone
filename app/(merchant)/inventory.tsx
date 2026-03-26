@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Search, Filter, LayoutGrid, Download, Plus, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { ArrowLeft, Search, Filter, LayoutGrid, Download, Plus, ChevronLeft, ChevronRight, ChevronDown, PlusSquare, Check } from 'lucide-react-native';
 import Svg, { G, Circle } from 'react-native-svg';
 import { productsApi, Product } from '../../src/services/products';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import AddProductModal from '../../src/components/merchant/AddProductModal';
 
 const { width } = Dimensions.get('window');
 
@@ -18,10 +19,40 @@ export default function InventoryScreen() {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [stats, setStats] = useState({ inStock: 0, lowStock: 0, outOfStock: 0 });
+    const [statsLoading, setStatsLoading] = useState(true);
+    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+    const [isLimitModalVisible, setIsLimitModalVisible] = useState(false);
 
     // Get vendor profile 
     const vendorProfile = user?.profiles?.find(p => p.role === 'vendor' || p.role === 'business') as any;
     const vendorId = vendorProfile?.metadata?.vendor_id || vendorProfile?.vendor_id;
+
+    const fetchInventoryStats = async () => {
+        if (!vendorId) return;
+        try {
+            setStatsLoading(true);
+            // Fetch a larger sample to calculate distribution
+            const response = await productsApi.getProducts({
+                vendor_id: vendorId,
+                limit: 200, // Limit for stats calculation
+            });
+            
+            let inS = 0, lowS = 0, outS = 0;
+            response.items.forEach(p => {
+                const qty = p.inventory_quantity || 0;
+                const threshold = p.low_stock_threshold || 5;
+                if (qty <= 0) outS++;
+                else if (qty <= threshold) lowS++;
+                else inS++;
+            });
+            setStats({ inStock: inS, lowStock: lowS, outOfStock: outS });
+        } catch (error) {
+            console.error('Error fetching inventory stats:', error);
+        } finally {
+            setStatsLoading(false);
+        }
+    };
 
     const fetchProducts = async () => {
         if (!vendorId) {
@@ -47,6 +78,10 @@ export default function InventoryScreen() {
     };
 
     useEffect(() => {
+        fetchInventoryStats();
+    }, [vendorId]);
+
+    useEffect(() => {
         fetchProducts();
     }, [page, limit, vendorId]);
 
@@ -56,16 +91,16 @@ export default function InventoryScreen() {
         else fetchProducts();
     };
 
-    // Donut Chart Logic (Mock or semi-real)
-    const size = 180;
+    // Donut Chart Logic
+    const size = 200;
     const strokeWidth = 35;
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     
-    // For now, these remain mock for visual representation
-    const inStock = 77;
-    const lowStock = 16;
-    const outOfStock = 7;
+    const totalStats = stats.inStock + stats.lowStock + stats.outOfStock || 1;
+    const inStockPct = (stats.inStock / totalStats) * 100;
+    const lowStockPct = (stats.lowStock / totalStats) * 100;
+    const outOfStockPct = (stats.outOfStock / totalStats) * 100;
 
     const totalPages = Math.ceil(total / limit);
 
@@ -87,10 +122,6 @@ export default function InventoryScreen() {
 
         return (
             <View style={styles.paginationFooter}>
-                <Text style={styles.resultsCountText}>
-                    Showing {Math.min(total, (page - 1) * limit + 1)} to {Math.min(total, page * limit)} of {total} results
-                </Text>
-                
                 <View style={styles.pagerContainer}>
                     <TouchableOpacity 
                         style={[styles.pagerBtn, page === 1 && styles.pagerBtnDisabled]} 
@@ -136,6 +167,9 @@ export default function InventoryScreen() {
                         <ChevronRight size={20} color={page === totalPages || totalPages === 0 ? "#9CA3AF" : "#111827"} />
                     </TouchableOpacity>
                 </View>
+                <Text style={styles.resultsCountText}>
+                    Showing {Math.min(total, (page - 1) * limit + 1)} to {Math.min(total, page * limit)} of {total} results
+                </Text>
             </View>
         );
     };
@@ -148,9 +182,7 @@ export default function InventoryScreen() {
                     <ArrowLeft size={24} color="#111827" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Inventory</Text>
-                <TouchableOpacity style={styles.headerBtn} onPress={() => router.push('/(merchant)/add-product')}>
-                    <Plus size={24} color="#3A5BA9" />
-                </TouchableOpacity>
+                <View style={{ width: 32 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -177,21 +209,21 @@ export default function InventoryScreen() {
                                 stroke="#FBBF24"
                                 strokeWidth={strokeWidth}
                                 strokeDasharray={circumference}
-                                strokeDashoffset={circumference - (lowStock / 100) * circumference}
+                                strokeDashoffset={circumference - (lowStockPct / 100) * circumference}
                                 fill="transparent"
-                                rotation={(inStock / 100) * 360}
+                                rotation={(inStockPct / 100) * 360}
                                 origin={`${size / 2}, ${size / 2}`}
                             />
                             <Circle
                                 cx={size / 2}
                                 cy={size / 2}
                                 r={radius}
-                                stroke="#6B7280"
+                                stroke="#EF4444"
                                 strokeWidth={strokeWidth}
                                 strokeDasharray={circumference}
-                                strokeDashoffset={circumference - (outOfStock / 100) * circumference}
+                                strokeDashoffset={circumference - (outOfStockPct / 100) * circumference}
                                 fill="transparent"
-                                rotation={((inStock + lowStock) / 100) * 360}
+                                rotation={((inStockPct + lowStockPct) / 100) * 360}
                                 origin={`${size / 2}, ${size / 2}`}
                             />
                         </G>
@@ -206,15 +238,15 @@ export default function InventoryScreen() {
                 <View style={styles.legendRow}>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#01AC00' }]} />
-                        <Text style={styles.legendText}>In Stock</Text>
+                        <Text style={styles.legendText}>In Stock({stats.inStock})</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#FBBF24' }]} />
-                        <Text style={styles.legendText}>Low Stock</Text>
+                        <Text style={styles.legendText}>Low Stock({stats.lowStock})</Text>
                     </View>
                     <View style={styles.legendItem}>
-                        <View style={[styles.dot, { backgroundColor: '#6B7280' }]} />
-                        <Text style={styles.legendText}>Out of stock</Text>
+                        <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
+                        <Text style={styles.legendText}>Out of stock({stats.outOfStock})</Text>
                     </View>
                 </View>
 
@@ -224,33 +256,50 @@ export default function InventoryScreen() {
                         <Search size={18} color="#9CA3AF" style={styles.searchIcon} />
                         <TextInput
                             style={styles.searchInput}
-                            placeholder="Search..."
+                            placeholder="Search...."
                             value={search}
                             onChangeText={setSearch}
                             onSubmitEditing={handleSearch}
                             placeholderTextColor="#9CA3AF"
                         />
                     </View>
-                    <TouchableOpacity style={styles.iconBtn} onPress={handleSearch}>
-                        <LayoutGrid size={20} color="#FFFFFF" strokeWidth={2.5} />
+                    <TouchableOpacity 
+                        style={styles.greenSquareBtn}
+                        onPress={() => setIsAddModalVisible(true)}
+                    >
+                        <PlusSquare size={20} color="#FFFFFF" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.iconBtn, { backgroundColor: '#425BA4' }]}>
+                    <TouchableOpacity style={styles.blueSquareBtn}>
                         <Download size={20} color="#FFFFFF" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Filter Row */}
-                <View style={styles.filterRow}>
-                    <Text style={styles.filterLabel}>Filter by</Text>
-                    <TouchableOpacity style={styles.filterDropdown}>
-                        <Filter size={14} color="#6B7280" style={{ marginRight: 6 }} />
-                        <Text style={styles.filterText}>Status</Text>
-                    </TouchableOpacity>
+                {/* Results and Filter Row */}
+                <View style={styles.resultsHeaderRow}>
+                    <View style={styles.resultsPerPageContainer}>
+                        <Text style={styles.resultsLabel}>Show</Text>
+                        <TouchableOpacity 
+                            style={styles.limitDropdown}
+                            onPress={() => setIsLimitModalVisible(true)}
+                        >
+                            <Text style={styles.limitText}>{limit}</Text>
+                            <ChevronDown size={14} color="#6B7280" />
+                        </TouchableOpacity>
+                        <Text style={styles.resultsLabel}>entries</Text>
+                    </View>
+                    
+                    <View style={styles.filterContainer}>
+                        <Text style={styles.filterByLabel}>Filter by</Text>
+                        <TouchableOpacity style={styles.filterDropdown}>
+                            <Text style={styles.filterValueText}>Status</Text>
+                            <ChevronDown size={14} color="#6B7280" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 {/* Table Header */}
                 <View style={styles.tableHeader}>
-                    <Text style={[styles.tableHeaderText, { flex: 2.2 }]}>PRODUCT</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 2 }]}>PRODUCT</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>MODEL NUMBER</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'right' }]}>PRODUCT PRICE</Text>
                 </View>
@@ -264,8 +313,8 @@ export default function InventoryScreen() {
                     </View>
                 ) : (
                     products.map((item, index) => (
-                        <View key={item._id} style={[styles.tableRow, index % 2 === 1 && styles.alternateRow]}>
-                            <Text style={[styles.tableRowText, { flex: 2.2 }]} numberOfLines={1}>{item.name}</Text>
+                        <View key={item._id} style={styles.tableRow}>
+                            <Text style={[styles.tableRowText, { flex: 2, fontWeight: '700' }]} numberOfLines={1}>{item.name}</Text>
                             <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'center' }]} numberOfLines={1}>{item.sku || '---'}</Text>
                             <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'right' }]}>{item.base_price.toLocaleString()}/=</Text>
                         </View>
@@ -274,13 +323,51 @@ export default function InventoryScreen() {
 
                 {/* Pagination */}
                 {renderPagination()}
-                
-                {/* Results per page selection placeholder */}
-                <View style={styles.resultsPerPageRow}>
-                    <Text style={styles.resultsPerPageText}>{limit} results per page</Text>
-                </View>
 
             </ScrollView>
+
+            <AddProductModal 
+                visible={isAddModalVisible} 
+                onClose={() => setIsAddModalVisible(false)}
+                onSuccess={() => {
+                    setIsAddModalVisible(false);
+                    fetchProducts();
+                }}
+            />
+
+            {/* Limit Selection Modal */}
+            <Modal
+                visible={isLimitModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsLimitModalVisible(false)}
+            >
+                <TouchableOpacity 
+                    style={styles.modalOverlay} 
+                    activeOpacity={1} 
+                    onPress={() => setIsLimitModalVisible(false)}
+                >
+                    <View style={styles.limitModalContent}>
+                        <Text style={styles.limitModalTitle}>Show items per page</Text>
+                        {[10, 20, 50, 100].map((val) => (
+                            <TouchableOpacity 
+                                key={val}
+                                style={[styles.limitOption, limit === val && styles.limitOptionActive]}
+                                onPress={() => {
+                                    setLimit(val);
+                                    setPage(1);
+                                    setIsLimitModalVisible(false);
+                                }}
+                            >
+                                <Text style={[styles.limitOptionText, limit === val && styles.limitOptionTextActive]}>
+                                    {val} items
+                                </Text>
+                                {limit === val && <Check size={18} color="#01AC00" />}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -319,119 +406,8 @@ const styles = StyleSheet.create({
     chartContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        height: 200,
+        height: 220,
         marginBottom: 20,
-    },
-    legendRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 30,
-    },
-    legendItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginRight: 6,
-    },
-    legendText: {
-        fontSize: 12,
-        color: '#111827',
-        fontWeight: '500',
-    },
-    searchRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        marginBottom: 20,
-    },
-    searchInputContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F9FAFB',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        height: 48,
-    },
-    searchIcon: {
-        marginRight: 8,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 14,
-        color: '#111827',
-    },
-    iconBtn: {
-        width: 48,
-        height: 48,
-        backgroundColor: '#01AC00',
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    filterRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    filterLabel: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginRight: 10,
-    },
-    filterDropdown: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-    },
-    filterText: {
-        fontSize: 13,
-        color: '#111827',
-        fontWeight: '500',
-    },
-    tableHeader: {
-        flexDirection: 'row',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-        backgroundColor: '#FFFFFF',
-    },
-    tableHeaderText: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        color: '#9CA3AF',
-        letterSpacing: 0.5,
-    },
-    tableRow: {
-        flexDirection: 'row',
-        paddingVertical: 16,
-    },
-    alternateRow: {
-        backgroundColor: '#F9FAFB',
-    },
-    tableRowText: {
-        fontSize: 13,
-        color: '#111827',
-        fontWeight: '500',
-    },
-    emptyContainer: {
-        padding: 40,
-        alignItems: 'center',
-    },
-    emptyText: {
-        fontSize: 16,
-        color: '#6B7280',
     },
     chartCenterText: {
         position: 'absolute',
@@ -446,44 +422,230 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#6B7280',
     },
+    legendRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 30,
+        paddingHorizontal: 10,
+    },
+    legendItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    dot: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        marginRight: 8,
+    },
+    legendText: {
+        fontSize: 12,
+        color: '#6B7280',
+        fontWeight: '500',
+    },
+    searchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginBottom: 20,
+    },
+    searchInputContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        height: 48,
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+        color: '#111827',
+    },
+    greenSquareBtn: {
+        width: 44,
+        height: 44,
+        backgroundColor: '#01AC00',
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    blueSquareBtn: {
+        width: 44,
+        height: 44,
+        backgroundColor: '#425BA4',
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    resultsHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    resultsPerPageContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    resultsLabel: {
+        fontSize: 14,
+        color: '#6B7280',
+        marginHorizontal: 8,
+    },
+    limitDropdown: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F3F4F6',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    limitText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#111827',
+        marginRight: 4,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    limitModalContent: {
+        width: width * 0.8,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 24,
+        elevation: 5,
+    },
+    limitModalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#111827',
+        marginBottom: 16,
+    },
+    limitOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    limitOptionActive: {
+        backgroundColor: '#F0FDF4',
+    },
+    limitOptionText: {
+        fontSize: 16,
+        color: '#374151',
+    },
+    limitOptionTextActive: {
+        color: '#01AC00',
+        fontWeight: '600',
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    filterByLabel: {
+        fontSize: 14,
+        color: '#111827',
+        marginRight: 12,
+    },
+    filterDropdown: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+    },
+    filterValueText: {
+        fontSize: 14,
+        color: '#111827',
+        fontWeight: '500',
+        marginRight: 10,
+    },
+    tableHeader: {
+        flexDirection: 'row',
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 4,
+    },
+    tableHeaderText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#6B7280',
+        letterSpacing: 0.2,
+    },
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: 20,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    tableRowText: {
+        fontSize: 13,
+        color: '#111827',
+    },
+    emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#6B7280',
+    },
     paginationFooter: {
         marginTop: 30,
-        paddingBottom: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#F3F4F6',
-        paddingTop: 20,
+        paddingBottom: 40,
+        gap: 20,
     },
     resultsCountText: {
+        textAlign: 'center',
         fontSize: 13,
         color: '#9CA3AF',
-        marginBottom: 16,
     },
     pagerContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 8,
+        gap: 10,
     },
     pagerBtn: {
-        minWidth: 36,
-        height: 36,
-        borderRadius: 4,
+        width: 40,
+        height: 40,
+        borderRadius: 6,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
         borderColor: '#E5E7EB',
     },
     pagerBtnActive: {
-        backgroundColor: '#425BA4',
-        borderColor: '#425BA4',
+        backgroundColor: '#3A5BA9',
+        borderColor: '#3A5BA9',
     },
     pagerBtnDisabled: {
-        opacity: 0.5,
+        opacity: 0.3,
     },
     pagerText: {
         fontSize: 14,
         color: '#111827',
-        fontWeight: '500',
+        fontWeight: 'bold',
     },
     pagerTextActive: {
         color: '#FFFFFF',
@@ -492,13 +654,5 @@ const styles = StyleSheet.create({
         color: '#9CA3AF',
         fontSize: 16,
         paddingHorizontal: 4,
-    },
-    resultsPerPageRow: {
-        alignItems: 'flex-end',
-        marginBottom: 20,
-    },
-    resultsPerPageText: {
-        fontSize: 12,
-        color: '#9CA3AF',
     }
 });

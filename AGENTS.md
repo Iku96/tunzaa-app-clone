@@ -48,7 +48,7 @@ Instructions from the project owner. Treat these as requirements for all work on
 
 - **UI + backend in harmony:** Every UI change that needs data or persistence should ship with the corresponding backend (Supabase, REST, AsyncStorage, etc.) in the same change set where possible.
 - **i18n:** Use ISO 639-1 language codes. Supported languages live in `src/constants/languages.ts`; translations in `src/i18n/translations.ts`. Use `useLanguage()` and `t` in screens for all user-facing copy.
-- **Comments:** File-level JSDoc, inline comments for non-obvious logic and major JSX sections. Naming: PascalCase components, UPPER_SNAKE_CASE for true constants.
+- **Keyboard UX:** Whenever you add an input box anywhere, always wrap the screen content or the specific input area in a `KeyboardAvoidingView` (with `behavior={Platform.OS === 'ios' ? 'padding' : 'height'}`) to ensure the keyboard doesn't overlap the input box. Use `ScrollView` inside the wrapper for better scrollability.
 
 ---
 

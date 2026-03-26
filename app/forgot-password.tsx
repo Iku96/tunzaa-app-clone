@@ -6,8 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
  * Forgot Password Screen (Stub)
  * TODO: Implement forgot password flow
  */
+import { useLanguage } from '../src/contexts/LanguageContext';
+
 export default function ForgotPasswordScreen() {
     const router = useRouter();
+    const { t } = useLanguage();
 
     return (
         <SafeAreaView style={styles.safe}>
@@ -17,9 +20,9 @@ export default function ForgotPasswordScreen() {
                 </TouchableOpacity>
 
                 <View style={styles.content}>
-                    <Text style={styles.title}>Forgot Password</Text>
+                    <Text style={styles.title}>{t.forgotPasswordTitle}</Text>
                     <Text style={styles.subtitle}>
-                        Password recovery feature coming soon.
+                        {t.forgotPasswordSubtitle}
                     </Text>
                 </View>
             </View>

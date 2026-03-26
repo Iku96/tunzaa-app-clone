@@ -55,7 +55,7 @@ export default function LanguageScreen() {
                         accessibilityLabel={isExpanded ? 'Collapse language list' : 'Expand language list'}
                         accessibilityRole="button"
                     >
-                        <Text style={styles.pickerHeaderText}>Choose preferred language</Text>
+                        <Text style={styles.pickerHeaderText}>{t.languageScreenChoosePreferred}</Text>
                         <Text style={styles.chevron}>{isExpanded ? '∧' : '›'}</Text>
                     </TouchableOpacity>
 
@@ -102,7 +102,7 @@ export default function LanguageScreen() {
                         accessibilityLabel="Skip language selection"
                         accessibilityRole="button"
                     >
-                        <Text style={styles.skipText}>Skip</Text>
+                        <Text style={styles.skipText}>{t.languageScreenSkip}</Text>
                         <Text style={styles.skipChevron}>→</Text>
                     </TouchableOpacity>
                 </View>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, Animated, Dimensions, StyleSheet, Modal, TouchableWithoutFeedback, Image } from 'react-native';
 import { 
     LayoutGrid, 
@@ -33,6 +33,14 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
     const router = useRouter();
     const pathname = usePathname();
     const slideAnim = useRef(new Animated.Value(-width)).current; // Start completely off-screen
+    const [isLoansExpanded, setIsLoansExpanded] = useState(false);
+
+    useEffect(() => {
+        if (pathname === '/(merchant)/loan-services' || pathname === '/(merchant)/loans/requests') {
+            setIsLoansExpanded(true);
+        }
+    }, [pathname]);
+
 
     // Find vendor profile and extract details
     const vendorProfile = user?.profiles?.find(p => p.role === 'vendor') as any;
@@ -169,22 +177,64 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             <Text style={[styles.navText, isActive('/(merchant)/live-orders') && styles.activeNavText]}>Orders and sales</Text>
                         </TouchableOpacity>
 
-                        {/* Customer Profile (linked to Store Profile) */}
+                        {/* Business Profile (linked to Business Profile social view) */}
                         <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(merchant)/store-profile') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(merchant)/store-profile')}
+                            style={[styles.navItem, isActive('/(merchant)/business-profile') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(merchant)/business-profile')}
                         >
                             <User size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(merchant)/store-profile') && styles.activeNavText]}>Customer Profile</Text>
+                            <Text style={[styles.navText, isActive('/(merchant)/business-profile') && styles.activeNavText]}>Business Profile</Text>
                         </TouchableOpacity>
 
-                        {/* Loans (with dropdown) */}
-                        <TouchableOpacity style={styles.navItemRow}>
+                        {/* Payment History */}
+                        <TouchableOpacity 
+                            style={[styles.navItem, isActive('/(merchant)/payment-history') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(merchant)/payment-history')}
+                        >
+                            <Wallet size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(merchant)/payment-history') && styles.activeNavText]}>Payment History</Text>
+                        </TouchableOpacity>
+
+                        {/* Loans Group */}
+                        <TouchableOpacity 
+                            style={[styles.navItemRow, (isActive('/(merchant)/loan-services') || isActive('/(merchant)/loans/requests')) && styles.activeNavItem]}
+                            onPress={() => setIsLoansExpanded(!isLoansExpanded)}
+                        >
                             <View style={styles.navItemLeft}>
-                                <Wallet size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                                <Text style={styles.navText}>Loans</Text>
+                                <Briefcase size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                                <Text style={[styles.navText, (isActive('/(merchant)/loan-services') || isActive('/(merchant)/loans/requests')) && styles.activeNavText]}>Loans</Text>
                             </View>
-                            <ChevronDown size={18} color="#111827" />
+                            <ChevronDown 
+                                size={20} 
+                                color="#111827" 
+                                style={{ transform: [{ rotate: isLoansExpanded ? '180deg' : '0deg' }] }} 
+                            />
+                        </TouchableOpacity>
+
+                        {isLoansExpanded && (
+                            <View style={styles.submenuContainer}>
+                                <TouchableOpacity 
+                                    style={[styles.submenuItem, isActive('/(merchant)/loan-services') && styles.activeSubmenuItem]}
+                                    onPress={() => navigateTo('/(merchant)/loan-services')}
+                                >
+                                    <Text style={[styles.submenuText, isActive('/(merchant)/loan-services') && styles.activeSubmenuText]}>Apply for Loan</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={[styles.submenuItem, isActive('/(merchant)/loans/requests') && styles.activeSubmenuItem]}
+                                    onPress={() => navigateTo('/(merchant)/loans/requests')}
+                                >
+                                    <Text style={[styles.submenuText, isActive('/(merchant)/loans/requests') && styles.activeSubmenuText]}>View Requests</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {/* Customer Insights */}
+                        <TouchableOpacity 
+                            style={[styles.navItem, isActive('/(merchant)/customer-insights') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(merchant)/customer-insights')}
+                        >
+                            <Users size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(merchant)/customer-insights') && styles.activeNavText]}>Customer Insights</Text>
                         </TouchableOpacity>
 
                         {/* Logout */}
@@ -317,6 +367,28 @@ const styles = StyleSheet.create({
     },
     activeNavText: {
         fontSize: 15,
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    submenuContainer: {
+        paddingLeft: 44, // Align with text
+        marginBottom: 8,
+    },
+    submenuItem: {
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        marginBottom: 4,
+    },
+    activeSubmenuItem: {
+        backgroundColor: '#EEF2FF',
+    },
+    submenuText: {
+        fontSize: 14,
+        color: '#4B5563',
+    },
+    activeSubmenuText: {
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#111827',
     }

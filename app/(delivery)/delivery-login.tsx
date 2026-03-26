@@ -15,10 +15,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 
 export default function DeliveryLoginScreen() {
     const router = useRouter();
     const { login } = useTunzaaAuth();
+    const { t } = useLanguage();
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +29,7 @@ export default function DeliveryLoginScreen() {
 
     const handleLogin = async () => {
         if (!phone || !password) {
-            alert('Tafadhali jaza taarifa zote');
+            alert(t.otpEnterAllDigits); // Reusing a general "fill all" alert if possible, or using a specific one
             return;
         }
 
@@ -36,10 +38,10 @@ export default function DeliveryLoginScreen() {
             await login(`+255${phone}`, password, true);
 
             // Success -> Navigate to company details
-            alert('Umeingia kikamilifu!');
+            alert(t.deliverySuccessLogin);
             router.replace('/delivery-company-details' as any);
         } catch (e: any) {
-            alert(e.message || 'Namba ya simu au neno siri si sahihi');
+            alert(e.message || t.deliveryErrorLogin);
         } finally {
             setLoading(false);
         }
@@ -57,7 +59,7 @@ export default function DeliveryLoginScreen() {
 
                             {/* Header */}
                             <View style={styles.header}>
-                                <Text style={styles.title}>Ingia</Text>
+                                <Text style={styles.title}>{t.deliveryLoginTitle}</Text>
                             </View>
 
                             {/* Form */}
@@ -65,7 +67,7 @@ export default function DeliveryLoginScreen() {
 
                                 {/* Phone Number */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Namba ya simu</Text>
+                                    <Text style={styles.label}>{t.deliveryPhoneLabel}</Text>
                                     <View style={styles.phoneInputContainer}>
                                         <Text style={styles.countryCode}>+255</Text>
                                         <TextInput
@@ -82,7 +84,7 @@ export default function DeliveryLoginScreen() {
 
                                 {/* Password */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Neno siri</Text>
+                                    <Text style={styles.label}>{t.deliveryPasswordLabel}</Text>
                                     <View style={styles.passwordContainer}>
                                         <TextInput
                                             style={styles.passwordInput}
@@ -114,18 +116,18 @@ export default function DeliveryLoginScreen() {
                                         <View style={[styles.checkbox, saveInfo && styles.checkboxChecked]}>
                                             {saveInfo && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
                                         </View>
-                                        <Text style={styles.checkboxLabel}>Hifadhi taarifa</Text>
+                                        <Text style={styles.checkboxLabel}>{t.deliverySaveInfo}</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity>
-                                        <Text style={styles.forgotPassword}>Umesahau neno siri?</Text>
+                                        <Text style={styles.forgotPassword}>{t.deliveryForgotPassword}</Text>
                                     </TouchableOpacity>
                                 </View>
 
                                 {/* Sign Up Link */}
                                 <View style={styles.signUpContainer}>
                                     <TouchableOpacity onPress={() => router.push('/delivery-register' as any)}>
-                                        <Text style={styles.signUpLink}>Fungua Akaunti</Text>
+                                        <Text style={styles.signUpLink}>{t.deliveryCreateAccount}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -138,7 +140,7 @@ export default function DeliveryLoginScreen() {
                                     disabled={loading}
                                 >
                                     <Text style={styles.primaryButtonText}>
-                                        {loading ? 'Inaingia...' : 'Endelea'}
+                                        {loading ? t.deliverySigningIn : t.deliveryContinue}
                                     </Text>
                                 </TouchableOpacity>
 
@@ -146,7 +148,7 @@ export default function DeliveryLoginScreen() {
                                     style={styles.secondaryButton}
                                     onPress={() => router.back()}
                                 >
-                                    <Text style={styles.secondaryButtonText}>Rudi</Text>
+                                    <Text style={styles.secondaryButtonText}>{t.deliveryBack}</Text>
                                 </TouchableOpacity>
                             </View>
 

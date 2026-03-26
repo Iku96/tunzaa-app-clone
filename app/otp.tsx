@@ -4,6 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, Acti
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../src/contexts/LanguageContext';
 
 /**
  * OTP Screen (Verify & create password)
@@ -15,6 +16,7 @@ export default function OTPScreen() {
     const { phone_number, flow, first_name, last_name, password, role, email } = params;
     
     const { verifyOTP, requestOTP, register, createVendor, refreshProfile, saveAuthResponse, getUserDetails } = useTunzaaAuth();
+    const { t } = useLanguage();
 
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(30);
@@ -86,7 +88,7 @@ export default function OTPScreen() {
     const handleContinue = async () => {
         const code = otpDigits.join('');
         if (code.length !== 6) {
-            Alert.alert('Invalid Code', 'Please enter all 6 digits');
+            Alert.alert(t.otpInvalidCode, t.otpEnterAllDigits);
             return;
         }
         setIsVerifying(true);
@@ -141,15 +143,15 @@ export default function OTPScreen() {
                     // Default fallback logic
                     router.push({ pathname: '/create-password', params: { phone_number } } as any);
                 }
-            } else {
-                Alert.alert('Verification Failed', 'Invalid code. Please try again.');
+                } else {
+                    Alert.alert(t.otpVerifyFailed, t.otpInvalidCode + '. ' + t.otpInstruction);
+                }
+            } catch (error: any) {
+                console.error('❌ OTP verification failed:', error);
+                Alert.alert(t.otpVerifyFailed, error.message || t.otpVerifyFailed);
+            } finally {
+                setIsVerifying(false);
             }
-        } catch (error: any) {
-            console.error('❌ OTP verification failed:', error);
-            Alert.alert('Verification Failed', error.message || 'Failed to verify code. Please try again.');
-        } finally {
-            setIsVerifying(false);
-        }
     };
 
     return (
@@ -161,7 +163,7 @@ export default function OTPScreen() {
                         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                             <Ionicons name="arrow-back" size={20} color="#1D1E1F" />
                         </TouchableOpacity>
-                        <Text style={styles.title}>Verify & create password</Text>
+                        <Text style={styles.title}>{t.otpTitle}</Text>
                     </View>
 
                     {/* Logo */}
@@ -175,7 +177,7 @@ export default function OTPScreen() {
 
                     {/* Instruction */}
                     <Text style={styles.instruction}>
-                        Enter the 6-digit code sent to your phone number or email
+                        {t.otpInstruction}
                     </Text>
 
                     {/* OTP Boxes */}
@@ -200,12 +202,12 @@ export default function OTPScreen() {
                     {/* Resend Row */}
                     <View style={styles.resendContainer}>
                         <Text style={styles.resendText}>
-                            Didn't receive code?{' '}
+                            {t.otpNoCode}{' '}
                             <Text
                                 style={[styles.resendLink, timer > 0 && styles.resendDisabled]}
                                 onPress={handleResend}
                             >
-                                Resend
+                                {t.otpResend}
                             </Text>
                         </Text>
                     </View>
@@ -213,7 +215,7 @@ export default function OTPScreen() {
                     {/* Timer */}
                     <View style={styles.timerContainer}>
                         <Ionicons name="time-outline" size={16} color="#666666" />
-                        <Text style={styles.timerText}>Resend code in {timer}s</Text>
+                        <Text style={styles.timerText}>{t.otpTimer} {timer}s</Text>
                     </View>
 
                     {/* Continue Button */}
@@ -221,14 +223,14 @@ export default function OTPScreen() {
                         {isVerifying ? (
                             <ActivityIndicator color="#FFFFFF" />
                         ) : (
-                            <Text style={styles.continueButtonText}>Continue</Text>
+                            <Text style={styles.continueButtonText}>{t.otpContinue}</Text>
                         )}
                     </TouchableOpacity>
                 </View>
 
                 {/* Skip Button - Pinned to Bottom */}
                 <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
-                    <Text style={styles.skipText}>Skip</Text>
+                    <Text style={styles.skipText}>{t.loginSkip}</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>
             </View>

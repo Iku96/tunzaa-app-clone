@@ -1,12 +1,14 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
 export default function Step4Review() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const { t } = useLanguage();
 
     const [locationData, setLocationData] = useState({
         region: params.region as string || '...',
@@ -40,9 +42,9 @@ export default function Step4Review() {
             <View style={styles.contentWrapper}>
 
                 <View>
-                    <Text style={styles.title}>Hakiki Taarifa</Text>
+                    <Text style={styles.title}>{t.onboardingStep4Title}</Text>
                     <Text style={styles.subtitle}>
-                        Hakiki taarifa za duka lako kabla ya kuendelea.
+                        {t.onboardingStep4Subtitle}
                     </Text>
 
                     {/* WHITE CARD CONTAINER */}
@@ -57,7 +59,7 @@ export default function Step4Review() {
                                     style={styles.customIcon}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.cardTitle}>Eneo la Duka</Text>
+                                <Text style={styles.cardTitle}>{t.onboardingStep3Title}</Text>
                             </View>
 
                             {/* CUSTOM EDIT BUTTON */}
@@ -70,7 +72,7 @@ export default function Step4Review() {
                                     style={styles.editIcon}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.editButtonText}>Hariri</Text>
+                                <Text style={styles.editButtonText}>{t.onboardingStep4Edit}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -80,25 +82,25 @@ export default function Step4Review() {
                         <View style={styles.gridContainer}>
                             {/* Row 1, Col 1: Mkoa */}
                             <View style={styles.gridItem}>
-                                <Text style={styles.detailLabel}>Mkoa</Text>
+                                <Text style={styles.detailLabel}>{t.onboardingStep3RegionLabel}</Text>
                                 <Text style={styles.detailValue}>{locationData.region}</Text>
                             </View>
 
                             {/* Row 1, Col 2: Wilaya */}
                             <View style={styles.gridItem}>
-                                <Text style={styles.detailLabel}>Wilaya</Text>
+                                <Text style={styles.detailLabel}>{t.onboardingStep3MunicipalLabel}</Text>
                                 <Text style={styles.detailValue}>{locationData.municipal}</Text>
                             </View>
 
                             {/* Row 2, Col 1: Kata */}
                             <View style={styles.gridItem}>
-                                <Text style={styles.detailLabel}>Kata</Text>
+                                <Text style={styles.detailLabel}>{t.onboardingStep3WardLabel}</Text>
                                 <Text style={styles.detailValue}>{locationData.ward}</Text>
                             </View>
 
                             {/* Row 2, Col 2: Maelezo */}
                             <View style={styles.gridItem}>
-                                <Text style={styles.detailLabel}>Maelezo ya ziada</Text>
+                                <Text style={styles.detailLabel}>{t.onboardingStep4NotesLabel}</Text>
                                 <Text style={styles.notesValue} numberOfLines={3}>
                                     {locationData.notes}
                                 </Text>
@@ -109,9 +111,9 @@ export default function Step4Review() {
 
                         {/* "ONGEZA DUKA" LINK */}
                         <View style={styles.cardFooterLink}>
-                            <Text style={styles.textLinkQuestion}>Una Duka zaidi ya eneo moja? </Text>
+                            <Text style={styles.textLinkQuestion}>{t.onboardingStep4MultiLocationQuestion} </Text>
                             <TouchableOpacity onPress={() => alert('Add Shop clicked')}>
-                                <Text style={styles.textLinkAction}>Ongeza Duka</Text>
+                                <Text style={styles.textLinkAction}>{t.onboardingStep4AddShop}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -122,14 +124,14 @@ export default function Step4Review() {
                 {/* FOOTER BUTTONS */}
                 <View style={styles.footer}>
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Text style={styles.backButtonText}>Rudi</Text>
+                        <Text style={styles.backButtonText}>{t.onboardingStep1Back}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={styles.nextButton}
                         onPress={() => router.push('/(merchant)/onboarding/step-5')}
                     >
-                        <Text style={styles.nextButtonText}>Endelea</Text>
+                        <Text style={styles.nextButtonText}>{t.onboardingStep1Next}</Text>
                     </TouchableOpacity>
                 </View>
 

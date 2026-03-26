@@ -23,11 +23,11 @@ export default function MerchantDashboardScreen() {
         setIsSidebarOpen(false);
     };
 
-    // Orders Mock Data
-    const almostCompletedOrders = [
-        { id: '1', product: 'Wireless Charger', orders: '189', percentage: '95%' },
-        { id: '2', product: 'Wireless Charger', orders: '189', percentage: '95%' },
-    ];
+    // Orders data — will be dynamic from orders API
+    const totalOrdersPlaced = 0;
+    const totalCompletedOrders = 0;
+    const almostCompletedOrders: { id: string; product: string; orders: string; percentage: string }[] = [];
+    const topSellingProducts: { id: string; product: string; sales: string; growth: string }[] = [];
 
     return (
         <SafeAreaView style={styles.safe} edges={['top']}>
@@ -96,7 +96,7 @@ export default function MerchantDashboardScreen() {
                     {/* Orders Placed */}
                     <View style={styles.summaryCard}>
                         <Text style={styles.summarySubtitle}>Total Orders Placed</Text>
-                        <Text style={styles.summaryTitle}>158</Text>
+                        <Text style={styles.summaryTitle}>{totalOrdersPlaced}</Text>
                         <TouchableOpacity style={styles.viewDetailsBtn}>
                             <Text style={styles.viewDetailsText}>View Details</Text>
                         </TouchableOpacity>
@@ -105,7 +105,7 @@ export default function MerchantDashboardScreen() {
                     {/* Completed Orders */}
                     <View style={styles.summaryCard}>
                         <Text style={styles.summarySubtitle}>Total Completed Orders</Text>
-                        <Text style={styles.summaryTitle}>129</Text>
+                        <Text style={styles.summaryTitle}>{totalCompletedOrders}</Text>
                         <TouchableOpacity style={styles.viewDetailsBtn}>
                             <Text style={styles.viewDetailsText}>View Details</Text>
                         </TouchableOpacity>
@@ -157,17 +157,20 @@ export default function MerchantDashboardScreen() {
                         <Text style={[styles.tableHeadText, { flex: 1, textAlign: 'right' }]}>Growth</Text>
                     </View>
 
-                    <View style={[styles.tableRow, styles.tableRowBorder]}>
-                        <Text style={[styles.tableRowText, { flex: 2 }]}>Wireless Charger</Text>
-                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center' }]}>1,250</Text>
-                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right', color: '#01AC00' }]}>+12%</Text>
-                    </View>
-
-                    <View style={styles.tableRow}>
-                        <Text style={[styles.tableRowText, { flex: 2 }]}>Smart Watch Series 7</Text>
-                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center' }]}>850</Text>
-                        <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right', color: '#01AC00' }]}>+8%</Text>
-                    </View>
+                    {topSellingProducts.length > 0 ? topSellingProducts.map((item, index) => (
+                        <View key={item.id} style={[
+                            styles.tableRow,
+                            index !== topSellingProducts.length - 1 && styles.tableRowBorder
+                        ]}>
+                            <Text style={[styles.tableRowText, { flex: 2 }]} numberOfLines={1}>{item.product}</Text>
+                            <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center' }]}>{item.sales}</Text>
+                            <Text style={[styles.tableRowText, { flex: 1, textAlign: 'right', color: '#01AC00' }]}>{item.growth}</Text>
+                        </View>
+                    )) : (
+                        <View style={{ padding: 20, alignItems: 'center' }}>
+                            <Text style={{ color: '#9CA3AF', fontSize: 13 }}>No sales data yet</Text>
+                        </View>
+                    )}
                 </View>
 
             </ScrollView>

@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../services/auth';
 import { socialAuth } from '../services/social-auth';
+import { uploadApi } from '../services/upload';
+import { vendorsApi } from '../services/vendors';
 import { saveTokens, clearTokens, getAccessToken, getUserId, setUserId } from '../utils/storage';
 import { STORAGE_KEYS } from '../services/config';
 import type {
@@ -17,7 +19,6 @@ import type {
     PasswordResetConfirmResponse,
     CreateVendorBody,
     CreateDeliveryPartnerBody,
-    UserProfile, // Added UserProfile type import
 } from '../services/types';
 
 // ---- Types ----
@@ -47,6 +48,7 @@ export interface TunzaaUser {
     tenant_id: string;
     provider: string;
     firebase_uid: string | null;
+    created_at?: string;
 }
 
 interface TunzaaAuthContextType {
@@ -136,6 +138,21 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
             userData = authResponse.user;
         }
 
+        // Normalize profiles: prefer metadata.business_name over generic display_name,
+        // and ensure both snake_case and camelCase fields are present
+        const rawProfiles = authResponse.profiles || userData.profiles || [];
+        const normalizedProfiles = rawProfiles.map((p: any) => {
+            const meta = p.metadata || {};
+            const resolvedDisplayName = meta.business_name || p.display_name || p.displayName || '';
+            return {
+                ...p,
+                profile_id: p.profile_id || p.profileId,
+                profileId: p.profileId || p.profile_id,
+                display_name: resolvedDisplayName,
+                displayName: resolvedDisplayName,
+            };
+        });
+
         const tunzaaUser: TunzaaUser = {
             id: authResponse.id || userData.id || userData.user_id,
             user_id: authResponse.user_id || userData.user_id || userData.id,
@@ -147,12 +164,13 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
             is_active: authResponse.is_active ?? userData.is_active,
             is_verified: authResponse.is_verified ?? userData.is_verified,
             activeProfileRole: authResponse.activeProfileRole || authResponse.active_profile_role || userData.active_profile_role || userData.activeProfileRole,
-            profiles: authResponse.profiles || userData.profiles || [],
+            profiles: normalizedProfiles,
             roles: authResponse.roles || userData.roles || [],
             permissions: authResponse.permissions || userData.permissions || [],
             tenant_id: authResponse.tenant_id || userData.tenant_id,
             provider: authResponse.provider || userData.provider,
             firebase_uid: authResponse.firebase_uid || userData.firebase_uid,
+            created_at: authResponse.created_at || userData.created_at,
         };
 
         setUser(tunzaaUser);
@@ -272,11 +290,20 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         try {
             const freshData = await authApi.getUserDetails(user.user_id);
 
+            // Normalize profiles so both snake_case and camelCase fields are present
+            const normalizedProfiles = (freshData.profiles || user.profiles || []).map((p: any) => ({
+                ...p,
+                profile_id: p.profile_id || p.profileId,
+                profileId: p.profileId || p.profile_id,
+                display_name: p.display_name || p.displayName,
+                displayName: p.displayName || p.display_name,
+            }));
+
             // Merge fresh server data with existing user data
             const updatedUser: TunzaaUser = {
                 ...user,
                 ...freshData,
-                profiles: freshData.profiles || user.profiles,
+                profiles: normalizedProfiles,
                 roles: freshData.roles || user.roles,
                 is_verified: freshData.is_verified ?? user.is_verified,
                 activeProfileRole: freshData.activeProfileRole || freshData.active_profile_role || user.activeProfileRole,
@@ -344,8 +371,8 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         
         console.log(`📝 [AuthContext] updateVendor called for vendor: ${vendorId}, profile: ${profileId}`);
 
-        let final_logo_url = vendorData.store?.branding?.logo_url || vendorData.branding?.logo_url || vendorData.logo_url;
-        let final_banner_url = vendorData.store?.banners?.[0] || vendorData.branding?.banner_url || vendorData.banner_url;
+        let final_logo_url = (vendorData as any).store?.branding?.logo_url || (vendorData as any).logo_url;
+        let final_banner_url = (vendorData as any).store?.banners?.[0] || (vendorData as any).banner_url;
 
         // 1. Handle Image Uploads if local URIs are provided
         try {
@@ -370,20 +397,21 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
 
         const updatedProfiles = user.profiles.map(p => {
             if (p.profile_id === profileId || p.profileId === profileId) {
-                const business_name = vendorData.business_name || vendorData.display_name || p.metadata?.business_name || p.business_name;
+                const business_name = vendorData.business_name || vendorData.display_name || p.metadata?.business_name || (p as any).business_name;
+                const extraMeta = (vendorData as any)._extra_metadata || {};
                 
                 return {
                     ...p,
                     display_name: vendorData.display_name || p.display_name,
                     displayName: vendorData.display_name || p.displayName,
-                    business_name: business_name,
                     metadata: {
                         ...p.metadata,
+                        ...extraMeta,
                         business_name: business_name,
                         banner_url: final_banner_url || p.metadata?.banner_url,
                         logo_url: final_logo_url || p.metadata?.logo_url,
                         image_url: final_logo_url || p.metadata?.logo_url,
-                        description: vendorData.store?.description || vendorData.description || p.metadata?.description,
+                        description: (vendorData as any).store?.description || (vendorData as any).description || p.metadata?.description,
                     }
                 };
             }
@@ -395,41 +423,76 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(optimisticallyUpdatedUser));
 
         try {
-            // 3. Parallel API calls (Marketplace + User Profile)
-            const final_business_name = vendorData.business_name || vendorData.display_name || currentMetadata.business_name;
-
-            await Promise.all([
-                authApi.updateVendor(vendorId, {
-                    ...vendorData,
-                    business_name: final_business_name,
-                    store: {
-                        ...vendorData.store,
-                        branding: {
-                            ...vendorData.store?.branding,
-                            logo_url: final_logo_url || currentMetadata.logo_url
-                        },
-                        banners: final_banner_url ? [final_banner_url] : (vendorData.store?.banners || (currentMetadata.banner_url ? [currentMetadata.banner_url] : []))
+            // 3. Resolve the REAL marketplace vendor_id
+            // If vendorId === profileId, it's likely a profile_id, not a marketplace vendor_id
+            let resolvedVendorId = vendorId;
+            if (vendorId === profileId) {
+                console.log('⚠️ [AuthContext] vendorId === profileId, looking up real marketplace vendor_id...');
+                try {
+                    const vendorsResponse = await vendorsApi.getVendors({ limit: 50 });
+                    const matchedVendor = vendorsResponse.items?.find(
+                        (v: any) => v.user_id === user.user_id || v.user?.user_id === user.user_id
+                    );
+                    if (matchedVendor?.vendor_id) {
+                        resolvedVendorId = matchedVendor.vendor_id;
+                        console.log(`✅ [AuthContext] Found real marketplace vendor_id: ${resolvedVendorId}`);
+                    } else {
+                        console.warn('⚠️ [AuthContext] Could not find marketplace vendor, proceeding with profile_id');
                     }
-                } as any),
+                } catch (lookupError) {
+                    console.warn('⚠️ [AuthContext] Vendor lookup failed:', lookupError);
+                }
+            }
+
+            // 4. Parallel API calls (Marketplace + User Profile)
+            const final_business_name = vendorData.business_name || vendorData.display_name || currentMetadata.business_name;
+            const extraMetaForApi = (vendorData as any)._extra_metadata || {};
+
+            const apiPromises: Promise<any>[] = [
                 authApi.updateUserProfile(user.user_id, profileId, {
                     display_name: vendorData.display_name || final_business_name,
                     metadata: {
                         ...currentMetadata,
+                        ...extraMetaForApi,
                         business_name: final_business_name,
                         banner_url: final_banner_url || currentMetadata.banner_url,
                         logo_url: final_logo_url || currentMetadata.logo_url,
                         image_url: final_logo_url || currentMetadata.logo_url,
-                        description: vendorData.store?.description || vendorData.description || currentMetadata.description,
-                        is_onboarded: true
+                        description: (vendorData as any).store?.description || (vendorData as any).description || currentMetadata.description,
+                        is_onboarded: true,
+                        vendor_id: resolvedVendorId, // Always persist the resolved vendor_id
                     }
                 })
-            ]);
+            ];
 
-            console.log('✅ [AuthContext] Vendor and Profile updated on server, refreshing...');
-            await refreshProfile();
+            // Only call marketplace API if we have a real vendor_id
+            if (resolvedVendorId && resolvedVendorId !== profileId) {
+                apiPromises.push(
+                    authApi.updateVendor(resolvedVendorId, {
+                        ...vendorData,
+                        business_name: final_business_name,
+                        store: {
+                            ...vendorData.store,
+                            branding: {
+                                ...vendorData.store?.branding,
+                                logo_url: final_logo_url || currentMetadata.logo_url
+                            },
+                            banners: final_banner_url ? [final_banner_url] : (vendorData.store?.banners || (currentMetadata.banner_url ? [currentMetadata.banner_url] : []))
+                        }
+                    } as any)
+                );
+            }
+
+            await Promise.all(apiPromises);
+
+            console.log('✅ [AuthContext] Profile updated on server. Optimistic state is correct, skipping refreshProfile.');
+            // DO NOT call refreshProfile here — the optimistic update (line ~371) is already correct.
+            // refreshProfile would fetch potentially stale server data and overwrite the user's edit.
             return true;
         } catch (error) {
-            console.error('❌ [AuthContext] updateVendor API failed:', error);
+            console.error('❌ [AuthContext] updateVendor API failed, reverting to server state:', error);
+            // On failure, revert optimistic update by fetching fresh data
+            try { await refreshProfile(); } catch (_) {}
             throw error;
         }
     }, [user, refreshProfile]);
@@ -502,17 +565,19 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
             const profileId = newProfile?.profile_id || newProfile?.profileId;
             
             if (profileId) {
-                console.log(`🔄 [AuthContext] Syncing metadata for NEW vendor profile: ${profileId}`);
+                const actualVendorId = response.vendor_id || response.id || response.data?.vendor_id || response.data?.id;
+                console.log(`🔄 [AuthContext] Syncing metadata for NEW vendor profile: ${profileId}, vendorId: ${actualVendorId}`);
+                
                 await authApi.updateUserProfile(userIdToUse, profileId, {
-                    display_name: vendorData.display_name,
+                    display_name: vendorData.display_name || vendorData.business_name,
                     metadata: {
                         business_name: vendorData.business_name,
-                        banner_url,
-                        logo_url,
-                        image_url: logo_url,
-                        description: vendorData.store?.description,
+                        banner_url: banner_url || '',
+                        logo_url: logo_url || '',
+                        image_url: logo_url || '',
+                        description: vendorData.store?.description || (vendorData as any).description,
                         is_onboarded: true,
-                        vendor_id: response.vendor_id || response.id // Store the actual marketplace vendor ID
+                        vendor_id: actualVendorId 
                     }
                 });
             }
@@ -521,7 +586,8 @@ export function TunzaaAuthProvider({ children }: { children: React.ReactNode }) 
         }
 
         // Final refresh to ensure context state is perfectly in sync
-        await refreshProfile();
+        // But we wait a bit for the server to catch up
+        setTimeout(() => refreshProfile(), 1000);
         
         return response;
     }, [user, restoreSessionIfMissing, refreshProfile, updateVendor]);

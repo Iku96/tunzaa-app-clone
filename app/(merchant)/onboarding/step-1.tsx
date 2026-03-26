@@ -3,11 +3,13 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 import * as DocumentPicker from 'expo-document-picker';
 
 export default function Step1Documents() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
+    const { t } = useLanguage();
 
     const [license, setLicense] = useState('');
     const [tin, setTin] = useState('');
@@ -45,7 +47,7 @@ export default function Step1Documents() {
                 // and save the URLs. For now, we save the text numbers.
                 console.log("TODO: migrate to whitelabel API");
 
-                if (error) throw error;
+                // if (error) throw error;
             }
             router.push('/(merchant)/onboarding/step-2');
         } catch (e) {
@@ -58,24 +60,24 @@ export default function Step1Documents() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Hati Za Biashara</Text>
+            <Text style={styles.title}>{t.onboardingStep1Title}</Text>
             <Text style={styles.subtitle}>
-                Ni muhimu kuambatanisha hati za biashara kwa usalama zaidi wa akaunti yako.
+                {t.onboardingStep1Subtitle}
             </Text>
 
             <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 40 }}>
                 <View style={styles.card}>
                     <View style={styles.formHeader}>
                         <Ionicons name="cloud-upload-outline" size={20} color="#84CC16" />
-                        <Text style={styles.formHeaderText}>Pakia taarifa zifuatazo</Text>
+                        <Text style={styles.formHeaderText}>{t.onboardingStep1UploadInfo}</Text>
                     </View>
 
                     {/* License Section */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Leseni ya Biashara</Text>
+                        <Text style={styles.label}>{t.onboardingStep1License}</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Ingiza namba ya leseni"
+                            placeholder={t.onboardingStep1LicensePlaceholder}
                             value={license}
                             onChangeText={setLicense}
                             placeholderTextColor="#9CA3AF"
@@ -83,17 +85,17 @@ export default function Step1Documents() {
                         <TouchableOpacity style={styles.uploadButton} onPress={() => pickDocument(setLicenseFile)}>
                             <Ionicons name={licenseFile ? "checkmark-circle" : "attach"} size={20} color={licenseFile ? "#84CC16" : "#4B5563"} />
                             <Text style={[styles.uploadText, licenseFile && { color: '#84CC16' }]}>
-                                {licenseFile ? licenseFile.name : 'Pakia Leseni (PDF/Picha)'}
+                                {licenseFile ? licenseFile.name : t.onboardingStep1LicenseUpload}
                             </Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* TIN Section */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>TIN ya Biashara</Text>
+                        <Text style={styles.label}>{t.onboardingStep1TIN}</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Ingiza namba ya TIN"
+                            placeholder={t.onboardingStep1TINPlaceholder}
                             keyboardType="numeric"
                             value={tin}
                             onChangeText={setTin}
@@ -102,17 +104,17 @@ export default function Step1Documents() {
                         <TouchableOpacity style={styles.uploadButton} onPress={() => pickDocument(setTinFile)}>
                             <Ionicons name={tinFile ? "checkmark-circle" : "attach"} size={20} color={tinFile ? "#84CC16" : "#4B5563"} />
                             <Text style={[styles.uploadText, tinFile && { color: '#84CC16' }]}>
-                                {tinFile ? tinFile.name : 'Pakia TIN (PDF/Picha)'}
+                                {tinFile ? tinFile.name : t.onboardingStep1TINUpload}
                             </Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* BRELA Section */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Cheti cha usajili BRELA</Text>
+                        <Text style={styles.label}>{t.onboardingStep1BRELA}</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Ingiza namba ya usajili"
+                            placeholder={t.onboardingStep1BRELAPlaceholder}
                             value={brela}
                             onChangeText={setBrela}
                             placeholderTextColor="#9CA3AF"
@@ -120,24 +122,24 @@ export default function Step1Documents() {
                         <TouchableOpacity style={styles.uploadButton} onPress={() => pickDocument(setBrelaFile)}>
                             <Ionicons name={brelaFile ? "checkmark-circle" : "attach"} size={20} color={brelaFile ? "#84CC16" : "#4B5563"} />
                             <Text style={[styles.uploadText, brelaFile && { color: '#84CC16' }]}>
-                                {brelaFile ? brelaFile.name : 'Pakia Cheti (PDF/Picha)'}
+                                {brelaFile ? brelaFile.name : t.onboardingStep1BRELAUpload}
                             </Text>
                         </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity onPress={() => router.push('/(merchant)/onboarding/step-2')}>
-                        <Text style={styles.skipLink}>Weka baadaye</Text>
+                        <Text style={styles.skipLink}>{t.onboardingStep1Skip}</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
 
             <View style={styles.footer}>
                 <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Text style={styles.buttonTextOutline}>Rudi</Text>
+                    <Text style={styles.buttonTextOutline}>{t.onboardingStep1Back}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.nextButton} onPress={handleNext} disabled={loading}>
-                    <Text style={styles.buttonText}>{loading ? 'Inahifadhi...' : 'Endelea'}</Text>
+                    <Text style={styles.buttonText}>{loading ? t.onboardingStep1Saving : t.onboardingStep1Next}</Text>
                 </TouchableOpacity>
             </View>
         </View>

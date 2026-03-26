@@ -15,12 +15,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../src/contexts/LanguageContext';
 
 /**
  * Sign In Screen (Welcome Back)
  * Matches screenshot pixel-perfectly with responsive maxWidth layout
  */
 export default function LoginScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { role: targetRole } = useLocalSearchParams<{ role?: string }>();
 
@@ -133,8 +135,8 @@ export default function LoginScreen() {
                         <View style={styles.contentWrapper}>
                             {/* Header */}
                             <View style={styles.header}>
-                                <Text style={styles.title}>Welcome Back</Text>
-                                <Text style={styles.subtitle}>Enter your details to sign in</Text>
+                                <Text style={styles.title}>{t.loginTitle}</Text>
+                                <Text style={styles.subtitle}>{t.loginSubtitle}</Text>
                             </View>
 
                             {/* Logo */}
@@ -151,7 +153,7 @@ export default function LoginScreen() {
                                 {/* Username/Email Input */}
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Enter Username or Email"
+                                    placeholder={t.loginInputPlaceholder}
                                     placeholderTextColor="#9CA3AF"
                                     value={usernameOrEmail}
                                     onChangeText={setUsernameOrEmail}
@@ -162,7 +164,7 @@ export default function LoginScreen() {
                                 <View style={styles.passwordContainer}>
                                     <TextInput
                                         style={styles.passwordInput}
-                                        placeholder="Enter password"
+                                        placeholder={t.loginPasswordPlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                         value={password}
                                         onChangeText={setPassword}
@@ -186,7 +188,7 @@ export default function LoginScreen() {
                                     onPress={() => router.push('/forgot-password')}
                                     style={styles.forgotPasswordContainer}
                                 >
-                                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                                    <Text style={styles.forgotPassword}>{t.loginForgotPassword}</Text>
                                 </TouchableOpacity>
                             </View>
 
@@ -201,19 +203,22 @@ export default function LoginScreen() {
                                     {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                 </View>
                                 <Text style={styles.termsText}>
-                                    I agree to the <Text style={styles.termsLink} onPress={() => router.push('/terms')}>Terms and Conditions</Text>
+                                    {t.loginAgreedTerms.split('Terms and Conditions')[0]}
+                                    <Text style={styles.termsLink} onPress={() => router.push('/terms')}>
+                                        {t.registerTermsLink}
+                                    </Text>
+                                    {t.loginAgreedTerms.split('Terms and Conditions')[1]}
                                 </Text>
                             </TouchableOpacity>
 
-                            {/* Login Button */}
                             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                                <Text style={styles.loginButtonText}>Log In</Text>
+                                <Text style={styles.loginButtonText}>{t.loginButton}</Text>
                             </TouchableOpacity>
 
                             {/* Divider */}
                             <View style={styles.dividerRow}>
                                 <View style={styles.dividerLine} />
-                                <Text style={styles.dividerText}>or continue with</Text>
+                                <Text style={styles.dividerText}>{t.loginOrContinue}</Text>
                                 <View style={styles.dividerLine} />
                             </View>
 
@@ -238,16 +243,15 @@ export default function LoginScreen() {
 
                             {/* Sign Up Link */}
                             <View style={styles.signUpContainer}>
-                                <Text style={styles.signUpText}>Don't have an account? </Text>
-                                <TouchableOpacity onPress={() => router.push('/register')}>
-                                    <Text style={styles.signUpLink}>Sign up</Text>
+                                <TouchableOpacity onPress={() => router.push('/register')} className="flex-row items-center">
+                                    <Text style={styles.signUpText}>{t.loginNoAccount}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
 
                         {/* Skip Button - Pinned to Bottom */}
                         <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
-                            <Text style={styles.skipText}>Skip</Text>
+                            <Text style={styles.skipText}>{t.loginSkip}</Text>
                             <Text style={styles.skipArrow}>→</Text>
                         </TouchableOpacity>
                     </View>

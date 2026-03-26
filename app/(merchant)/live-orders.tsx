@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, TextInput } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, ChevronDown, Filter } from 'lucide-react-native';
+import { ArrowLeft, ChevronDown, Filter, Search } from 'lucide-react-native';
 import Svg, { G, Circle } from 'react-native-svg';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import { useGetOrderStatusDistribution } from '../../src/services/reports';
+import { orderApi, Order } from '../../src/services/orders';
+import { useQuery } from '@tanstack/react-query';
 
 const { width } = Dimensions.get('window');
 
@@ -11,38 +15,53 @@ type OrderFilter = 'Completed' | 'Installments' | 'Pending';
 
 export default function OrdersAndSalesScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
     const [activeFilter, setActiveFilter] = useState<OrderFilter>('Completed');
+    
+    // Get vendor profile 
+    const vendorProfile = user?.profiles?.find(p => p.role === 'vendor' || p.role === 'business') as any;
+    const vendorId = vendorProfile?.metadata?.vendor_id || vendorProfile?.vendor_id;
+
+    // Fetch Distribution
+    const { data: distributionData, isLoading: distLoading } = useGetOrderStatusDistribution(vendorId);
+
+    // Fetch Orders
+    const { data: ordersData, isLoading: ordersLoading } = useQuery({
+        queryKey: ['vendorOrders', vendorId, activeFilter],
+        queryFn: () => orderApi.getVendorOrders({
+            vendor_id: vendorId,
+            status: activeFilter === 'Completed' ? 'delivered' : activeFilter === 'Pending' ? 'pending' : undefined,
+            limit: 10
+        }),
+        enabled: !!vendorId
+    });
+
+    // Process Distribution for Chart
+    const stats = {
+        completed: 0,
+        installments: 0,
+        pending: 0,
+        total: 0
+    };
+
+    distributionData?.data.forEach(item => {
+        const count = item.order_count || 0;
+        stats.total += count;
+        if (item.status === 'delivered') stats.completed += count;
+        else if (item.status === 'pending') stats.pending += count;
+        else stats.installments += count; // Default other to installments for now
+    });
 
     // Donut Chart Logic
-    const size = 180;
+    const size = 200;
     const strokeWidth = 35;
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     
-    // Percentages (Mock for UI)
-    const completed = 65;
-    const installments = 25;
-    const pending = 10;
-
-    // Table Data based on filter
-    const getTableData = () => {
-        if (activeFilter === 'Completed') {
-            return [
-                { id: '321', name: '2 Mugs', time: '10/07/2026' },
-                { id: '322', name: '2 LG Speakers', time: 'Installments' },
-            ];
-        } else if (activeFilter === 'Installments') {
-            return [
-                { id: '121', name: '2 Mugs', price: '140,000/=' },
-                { id: '122', name: '2 LG Speakers', price: '25,000/=' },
-            ];
-        } else {
-            return [
-                { id: '221', name: '2 Mugs', status: 'Blocked' },
-                { id: '222', name: '2 LG Speakers', status: 'Installments' },
-            ];
-        }
-    };
+    const totalForPct = stats.total || 1;
+    const completedPct = (stats.completed / totalForPct) * 100;
+    const installmentsPct = (stats.installments / totalForPct) * 100;
+    const pendingPct = (stats.pending / totalForPct) * 100;
 
     return (
         <SafeAreaView style={styles.safe} edges={['top']}>
@@ -62,47 +81,53 @@ export default function OrdersAndSalesScreen() {
                 <View style={styles.chartContainer}>
                     <Svg width={size} height={size}>
                         <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
-                            <Circle
-                                cx={size / 2}
-                                cy={size / 2}
-                                r={radius}
-                                stroke="#01AC00"
-                                strokeWidth={strokeWidth}
-                                strokeDasharray={circumference}
-                                strokeDashoffset={0}
-                                fill="transparent"
-                            />
-                            <Circle
-                                cx={size / 2}
-                                cy={size / 2}
-                                r={radius}
-                                stroke="#425BA4"
-                                strokeWidth={strokeWidth}
-                                strokeDasharray={circumference}
-                                strokeDashoffset={circumference - (installments / 100) * circumference}
-                                fill="transparent"
-                                rotation={(completed / 100) * 360}
-                                origin={`${size / 2}, ${size / 2}`}
-                            />
-                            <Circle
-                                cx={size / 2}
-                                cy={size / 2}
-                                r={radius}
-                                stroke="#FF4D4D"
-                                strokeWidth={strokeWidth}
-                                strokeDasharray={circumference}
-                                strokeDashoffset={circumference - (pending / 100) * circumference}
-                                fill="transparent"
-                                rotation={((completed + installments) / 100) * 360}
-                                origin={`${size / 2}, ${size / 2}`}
-                            />
+                            {completedPct > 0 && (
+                                <Circle
+                                    cx={size / 2}
+                                    cy={size / 2}
+                                    r={radius}
+                                    stroke="#01AC00"
+                                    strokeWidth={strokeWidth}
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={circumference - (completedPct / 100) * circumference}
+                                    fill="transparent"
+                                />
+                            )}
+                            {installmentsPct > 0 && (
+                                <Circle
+                                    cx={size / 2}
+                                    cy={size / 2}
+                                    r={radius}
+                                    stroke="#425BA4"
+                                    strokeWidth={strokeWidth}
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={circumference - (installmentsPct / 100) * circumference}
+                                    fill="transparent"
+                                    rotation={(completedPct / 100) * 360}
+                                    origin={`${size / 2}, ${size / 2}`}
+                                />
+                            )}
+                            {pendingPct > 0 && (
+                                <Circle
+                                    cx={size / 2}
+                                    cy={size / 2}
+                                    r={radius}
+                                    stroke="#FF4D4D"
+                                    strokeWidth={strokeWidth}
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={circumference - (pendingPct / 100) * circumference}
+                                    fill="transparent"
+                                    rotation={((completedPct + installmentsPct) / 100) * 360}
+                                    origin={`${size / 2}, ${size / 2}`}
+                                />
+                            )}
                         </G>
                     </Svg>
                     
                     <View style={styles.chartCenterTextContainer}>
-                        <Text style={styles.chartCenterNumber}>164</Text>
+                        <Text style={styles.chartCenterNumber}>{stats.total}</Text>
                         <Text style={styles.chartCenterLabel}>Total Orders Placed on Your Store</Text>
-                        <Text style={styles.chartCenterDate}>1 March - 10 March</Text>
+                        <Text style={styles.chartCenterDate}>Summary</Text>
                     </View>
                 </View>
 
@@ -110,15 +135,15 @@ export default function OrdersAndSalesScreen() {
                 <View style={styles.legendRow}>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#01AC00' }]} />
-                        <Text style={styles.legendText}>65 Completed Orders</Text>
+                        <Text style={styles.legendText}>{stats.completed} Completed Orders</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#425BA4' }]} />
-                        <Text style={styles.legendText}>25 Installments orders</Text>
+                        <Text style={styles.legendText}>{stats.installments} Installments orders</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.dot, { backgroundColor: '#FF4D4D' }]} />
-                        <Text style={styles.legendText}>Pending Orders</Text>
+                        <Text style={styles.legendText}>{stats.pending} Pending Orders</Text>
                     </View>
                 </View>
 
@@ -160,19 +185,27 @@ export default function OrdersAndSalesScreen() {
                         <Text style={[styles.tableHeaderText, { flex: 1 }]}>Order Number</Text>
                         <Text style={[styles.tableHeaderText, { flex: 2, textAlign: 'center' }]}>Product name</Text>
                         <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'right' }]}>
-                            {activeFilter === 'Completed' ? 'Expected delivery Time' : activeFilter === 'Installments' ? 'Price' : 'Order State'}
+                            {activeFilter === 'Completed' ? 'Total Price' : activeFilter === 'Installments' ? 'Status' : 'Order State'}
                         </Text>
                     </View>
 
-                    {getTableData().map((item, index) => (
-                        <View key={item.id} style={[styles.tableRow, index % 2 === 1 && styles.alternateRow]}>
-                            <Text style={[styles.tableRowText, { flex: 1 }]}>#{item.id}</Text>
-                            <Text style={[styles.tableRowText, { flex: 2, textAlign: 'center' }]}>{item.name}</Text>
-                            <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'right' }]}>
-                                {(item as any).time || (item as any).price || (item as any).status}
-                            </Text>
-                        </View>
-                    ))}
+                    {ordersLoading ? (
+                        <ActivityIndicator color="#425BA4" style={{ margin: 20 }} />
+                    ) : ordersData?.items.length === 0 ? (
+                        <Text style={{ textAlign: 'center', margin: 20, color: '#9CA3AF' }}>No orders found</Text>
+                    ) : (
+                        ordersData?.items.map((item, index) => (
+                            <View key={item.order_id} style={[styles.tableRow, index % 2 === 1 && styles.alternateRow]}>
+                                <Text style={[styles.tableRowText, { flex: 1 }]}>#{item.order_number.slice(-5)}</Text>
+                                <Text style={[styles.tableRowText, { flex: 2, textAlign: 'center' }]} numberOfLines={1}>
+                                    {item.items[0]?.name || 'Unknown'}
+                                </Text>
+                                <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'right' }]}>
+                                    {activeFilter === 'Completed' ? `${item.totals.total.toLocaleString()}/=` : item.status}
+                                </Text>
+                            </View>
+                        ))
+                    )}
                 </View>
 
             </ScrollView>

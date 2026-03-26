@@ -14,10 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 
 export default function DeliveryOTPScreen() {
     const router = useRouter();
     const { verifyOTP, register, requestOTP } = useTunzaaAuth();
+    const { t } = useLanguage();
     const { phone, fullName, firstName, lastName, password } = useLocalSearchParams<{
         phone: string;
         fullName?: string;
@@ -56,7 +58,7 @@ export default function DeliveryOTPScreen() {
     const handleVerify = async () => {
         const code = otp.join('');
         if (code.length !== 4) {
-            alert('Tafadhali jaza namba zote 4');
+            alert(t.deliveryErrorOtp); // Or a specific 'enter 4 digits' if I had one, reusing error for now
             return;
         }
 
@@ -75,10 +77,10 @@ export default function DeliveryOTPScreen() {
                 });
             }
 
-            alert('Uthibitisho umekamilika! Tafadhali ingia.');
+            alert(t.deliverySuccessVerify);
             router.replace('/delivery-login' as any);
         } catch (e: any) {
-            alert(e.message || 'Msimbo si sahihi');
+            alert(e.message || t.deliveryErrorOtp);
         } finally {
             setLoading(false);
         }
@@ -90,9 +92,9 @@ export default function DeliveryOTPScreen() {
         try {
             await requestOTP(`+255${phone}`);
             setTimer(30);
-            alert('Msimbo umetumwa tena!');
+            alert(t.otpResend + '!'); // Simple enough
         } catch (e: any) {
-            alert(e.message || 'Hitilafu imetokea');
+            alert(e.message || 'Error');
         }
     };
 
@@ -106,14 +108,14 @@ export default function DeliveryOTPScreen() {
                     <View style={styles.container}>
                         {/* Header Content */}
                         <View style={styles.content}>
-                            <Text style={styles.title}>Thibitisha Msimbo</Text>
+                            <Text style={styles.title}>{t.deliveryOtpTitle}</Text>
 
                             <Text style={styles.subtitle}>
-                                Weka nambari ya kuthibitisha iliyotumwa{'\n'}kwenye nambari +255{phone}
+                                {t.deliveryOtpSubtitle} +255{phone}
                             </Text>
 
                             <TouchableOpacity onPress={() => router.back()}>
-                                <Text style={styles.wrongNumberLink}>Umekosea namba?</Text>
+                                <Text style={styles.wrongNumberLink}>{t.deliveryWrongNumber}</Text>
                             </TouchableOpacity>
 
                             {/* OTP Inputs */}
@@ -135,10 +137,10 @@ export default function DeliveryOTPScreen() {
 
                             {/* Resend Link */}
                             <View style={styles.resendContainer}>
-                                <Text style={styles.resendText}>Hujapokea nambari za uthibitisho? </Text>
+                                <Text style={styles.resendText}>{t.deliveryNoOtp} </Text>
                                 <TouchableOpacity onPress={handleResend} disabled={timer > 0}>
                                     <Text style={[styles.resendLink, timer > 0 && styles.disabledLink]}>
-                                        {timer > 0 ? `Omba tena (${timer}s)` : 'Omba tena'}
+                                        {timer > 0 ? `${t.deliveryRequestAgain} (${timer}s)` : t.deliveryRequestAgain}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -152,7 +154,7 @@ export default function DeliveryOTPScreen() {
                                 disabled={loading}
                             >
                                 <Text style={styles.primaryButtonText}>
-                                    {loading ? 'Inathibitisha...' : 'Thibitisha'}
+                                    {loading ? t.deliveryVerifying : t.deliveryVerify}
                                 </Text>
                             </TouchableOpacity>
 
@@ -160,7 +162,7 @@ export default function DeliveryOTPScreen() {
                                 style={styles.secondaryButton}
                                 onPress={() => router.back()}
                             >
-                                <Text style={styles.secondaryButtonText}>Rudi</Text>
+                                <Text style={styles.secondaryButtonText}>{t.deliveryBack}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

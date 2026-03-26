@@ -199,12 +199,12 @@ export default function RegisterScreen() {
                                 {/* Header */}
                                 <View style={styles.header}>
                                     <Text style={styles.title}>
-                                        {userRole === 'merchant' ? 'Create business account' : 'Create an account'}
+                                        {userRole === 'merchant' ? t.registerTitleMerchant : t.registerTitleBuyer}
                                     </Text>
                                     <Text style={styles.subtitle}>
                                         {isPreFilled 
-                                            ? 'Confirm your details and create a password' 
-                                            : 'Please fill in your details to get started'}
+                                            ? t.registerSubtitlePreFilled 
+                                            : t.registerSubtitleEmpty}
                                     </Text>
                                 </View>
 
@@ -221,7 +221,7 @@ export default function RegisterScreen() {
                                 <View style={styles.formContainer}>
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Enter your first name"
+                                        placeholder={t.registerFirstNamePlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                         value={firstName}
                                         onChangeText={setFirstName}
@@ -229,7 +229,7 @@ export default function RegisterScreen() {
                                     />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Enter your second name"
+                                        placeholder={t.registerLastNamePlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                         value={secondName}
                                         onChangeText={setSecondName}
@@ -237,7 +237,7 @@ export default function RegisterScreen() {
                                     />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Enter phone number or email"
+                                        placeholder={t.registerPhoneEmailPlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                         value={phoneOrEmail}
                                         onChangeText={setPhoneOrEmail}
@@ -246,7 +246,7 @@ export default function RegisterScreen() {
                                     />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Create a password"
+                                        placeholder={t.registerPasswordPlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                         value={password}
                                         onChangeText={setPassword}
@@ -266,19 +266,22 @@ export default function RegisterScreen() {
                                         {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                     </View>
                                     <Text style={styles.termsText}>
-                                        I agree to the <Text style={styles.termsLink} onPress={() => router.push('/terms')}>Terms and Conditions</Text>
+                                        {t.loginAgreedTerms.split('Terms and Conditions')[0]}
+                                        <Text style={styles.termsLink} onPress={() => router.push('/terms')}>
+                                            {t.registerTermsLink}
+                                        </Text>
+                                        {t.loginAgreedTerms.split('Terms and Conditions')[1]}
                                     </Text>
                                 </TouchableOpacity>
 
-                                {/* Create button */}
                                 <TouchableOpacity style={styles.createButton} onPress={handleCreateAccount}>
-                                    <Text style={styles.createButtonText}>Create Account</Text>
+                                    <Text style={styles.createButtonText}>{t.registerButton}</Text>
                                 </TouchableOpacity>
 
                                 {/* Divider with lines */}
                                 <View style={styles.dividerRow}>
                                     <View style={styles.dividerLine} />
-                                    <Text style={styles.dividerText}>or continue with</Text>
+                                    <Text style={styles.dividerText}>{t.loginOrContinue}</Text>
                                     <View style={styles.dividerLine} />
                                 </View>
 
@@ -303,9 +306,8 @@ export default function RegisterScreen() {
 
                                 {/* Login */}
                                 <View style={styles.loginContainer}>
-                                    <Text style={styles.loginText}>Already have an account? </Text>
-                                    <TouchableOpacity onPress={handleLogin}>
-                                        <Text style={styles.loginLink}>Log in</Text>
+                                    <TouchableOpacity onPress={handleLogin} className="flex-row items-center">
+                                        <Text style={styles.loginText}>{t.registerAlreadyAccount}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -313,7 +315,7 @@ export default function RegisterScreen() {
 
                         {/* Bottom section: Skip pinned */}
                         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-                            <Text style={styles.skipText}>Skip</Text>
+                            <Text style={styles.skipText}>{t.loginSkip}</Text>
                             <Text style={styles.skipArrow}>→</Text>
                         </TouchableOpacity>
                     </View>

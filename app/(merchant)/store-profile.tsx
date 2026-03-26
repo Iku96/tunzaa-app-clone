@@ -16,7 +16,8 @@ export default function StoreProfileScreen() {
     const { user, refreshProfile, updateVendor } = useTunzaaAuth() as any;
     
     // Find the vendor profile
-    const vendorProfile = user?.profiles?.find(p => p.role === 'vendor') || {} as any;
+    // Find the vendor/business profile
+    const vendorProfile = user?.profiles?.find((p: any) => p.role === 'vendor' || p.role === 'business') || {} as any;
     const metadata = vendorProfile?.metadata || {};
     const branding = vendorProfile?.branding || {};
 

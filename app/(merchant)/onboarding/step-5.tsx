@@ -4,6 +4,7 @@ import { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,6 +13,7 @@ type DocType = 'license' | 'tin' | 'brela' | null;
 export default function Step5Documents() {
     const router = useRouter();
     const { isAuthenticated, createVendor, refreshProfile, user } = useTunzaaAuth();
+    const { t } = useLanguage();
     
     const [loading, setLoading] = useState(false);
     const [activeSection, setActiveSection] = useState<DocType>(null);
@@ -207,8 +209,8 @@ export default function Step5Documents() {
                                     style={styles.uploadIcon}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.uploadTextPrimary}>Bonyeza hapa kupakia</Text>
-                                <Text style={styles.uploadTextSecondary}>PDF, PNG au JPG (Max 5MB)</Text>
+                                <Text style={styles.uploadTextPrimary}>{t.onboardingStep5UploadPrimary}</Text>
+                                <Text style={styles.uploadTextSecondary}>{t.onboardingStep5UploadSecondary}</Text>
                             </TouchableOpacity>
                         ) : (
                             <View>
@@ -228,7 +230,7 @@ export default function Step5Documents() {
                                 </View>
                                 <View style={styles.successContainer}>
                                     <CheckCircle size={14} color="#84CC16" style={{ marginRight: 6 }} />
-                                    <Text style={styles.successText}>Hati imepakiwa kikamilifu</Text>
+                                    <Text style={styles.successText}>{t.onboardingStep5UploadSuccess}</Text>
                                 </View>
                             </View>
                         )}
@@ -246,9 +248,9 @@ export default function Step5Documents() {
             >
                 <View style={styles.contentWrapper}>
                     <View>
-                        <Text style={styles.title}>Hati Za Biashara</Text>
+                        <Text style={styles.title}>{t.onboardingStep5Title}</Text>
                         <Text style={styles.subtitle}>
-                            Ni muhimu kuambatanisha hati za biashara kwa usalama zaidi wa akaunti yako.
+                            {t.onboardingStep5Subtitle}
                         </Text>
 
                         <View style={styles.card}>
@@ -258,25 +260,25 @@ export default function Step5Documents() {
                                     style={styles.headerIcon}
                                     resizeMode="contain"
                                 />
-                                <Text style={styles.cardHeaderTitle}>Pakia taarifa zifuatazo</Text>
+                                <Text style={styles.cardHeaderTitle}>{t.onboardingStep5CardHeader}</Text>
                             </View>
 
                             <View style={styles.accordionContainer}>
                                 <RenderAccordionItem
                                     id="license"
-                                    label="Leseni ya Biashara"
+                                    label={t.onboardingStep5License}
                                     file={licenseFile}
                                     setFile={setLicenseFile}
                                 />
                                 <RenderAccordionItem
                                     id="tin"
-                                    label="TIN ya Biashara"
+                                    label={t.onboardingStep5TIN}
                                     file={tinFile}
                                     setFile={setTinFile}
                                 />
                                 <RenderAccordionItem
                                     id="brela"
-                                    label="Cheti cha usajili BRELA"
+                                    label={t.onboardingStep5BRELA}
                                     file={brelaFile}
                                     setFile={setBrelaFile}
                                 />
@@ -289,7 +291,7 @@ export default function Step5Documents() {
                                     style={{ opacity: loading ? 0.7 : 1 }}
                                 >
                                     <Text style={styles.skipText}>
-                                        {loading ? 'Subiri...' : 'Weka baadae'}
+                                        {loading ? t.onboardingStep5Wait : t.onboardingStep5SkipLater}
                                     </Text>
                                 </TouchableOpacity>
                             </View>
@@ -298,7 +300,7 @@ export default function Step5Documents() {
 
                     <View style={styles.footer}>
                         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                            <Text style={styles.backButtonText}>Rudi</Text>
+                            <Text style={styles.backButtonText}>{t.onboardingStep1Back}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -307,7 +309,7 @@ export default function Step5Documents() {
                             disabled={loading}
                         >
                             <Text style={styles.nextButtonText}>
-                                {loading ? 'Inapakia...' : 'Endelea'}
+                                {loading ? t.onboardingStep5Uploading : t.onboardingStep1Next}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -322,12 +324,12 @@ export default function Step5Documents() {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Hongera!</Text>
+                        <Text style={styles.modalTitle}>{t.onboardingStep5SuccessModalTitle}</Text>
                         <Text style={styles.modalDescription}>
-                            Tumepokea hati zako. Subiri kidogo tunapokagua maelezo katika saa 24 hadi 48 zijazo.
+                            {t.onboardingStep5SuccessModalDescription}
                         </Text>
                         <TouchableOpacity onPress={handleFinishOnboarding} style={styles.modalButton}>
-                            <Text style={styles.modalButtonText}>Sawa</Text>
+                            <Text style={styles.modalButtonText}>{t.onboardingStep5SuccessModalButton}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

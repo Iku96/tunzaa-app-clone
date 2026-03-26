@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -12,6 +13,7 @@ const { height } = Dimensions.get('window');
 export default function Step2Details() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
+    const { t } = useLanguage();
 
     const [shopName, setShopName] = useState('');
     const [phone, setPhone] = useState(user?.phone_number || '');
@@ -24,7 +26,7 @@ export default function Step2Details() {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-                alert('Samahani, tunahitaji ruhusa ya kufikia picha zako.');
+                alert(t.onboardingStep2PermissionError);
                 return;
             }
             const result = await ImagePicker.launchImageLibraryAsync({
@@ -44,7 +46,7 @@ export default function Step2Details() {
 
     const handleNext = async () => {
         if (!shopName.trim()) {
-            alert('Tafadhali weka jina la kampuni au duka lako.');
+            alert(t.onboardingStep2ValidationShopName);
             return;
         }
 
@@ -86,9 +88,9 @@ export default function Step2Details() {
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.staticContent}>
-                        <Text style={styles.title}>Weka Taarifa Za Duka</Text>
+                        <Text style={styles.title}>{t.onboardingStep2Title}</Text>
                         <Text style={styles.subtitle}>
-                            Logo, jina la duka na maelezo ya duka ni muhimu katika kuunda duka lako Tunzaa.
+                            {t.onboardingStep2Subtitle}
                         </Text>
 
                         <View style={styles.card}>
@@ -104,7 +106,7 @@ export default function Step2Details() {
                                     {logoImage ? (
                                         <Image source={{ uri: logoImage }} style={styles.logoImage} />
                                     ) : (
-                                        <Text style={styles.logoText}>Weka logo*</Text>
+                                        <Text style={styles.logoText}>{t.onboardingStep2AddLogo}</Text>
                                     )}
                                     <View style={styles.plusBadge}>
                                         <Ionicons name="add" size={14} color="#3A5BA9" />
@@ -114,23 +116,23 @@ export default function Step2Details() {
 
                             <View style={styles.formContent}>
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Jina la kampuni</Text>
+                                    <Text style={styles.label}>{t.onboardingStep2CompanyName}</Text>
                                     <TextInput
                                         style={styles.input}
                                         value={shopName}
                                         onChangeText={setShopName}
-                                        placeholder="Weka jina la kampuni"
+                                        placeholder={t.onboardingStep2CompanyNamePlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                     />
                                 </View>
 
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Namba ya simu ya duka</Text>
+                                    <Text style={styles.label}>{t.onboardingStep2Phone}</Text>
                                     <TextInput
                                         style={styles.input}
                                         value={phone}
                                         onChangeText={setPhone}
-                                        placeholder="Mfano: +255 700 000 000"
+                                        placeholder={t.onboardingStep2PhonePlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                         keyboardType="phone-pad"
                                     />
@@ -138,20 +140,20 @@ export default function Step2Details() {
 
                                 <View style={styles.inputGroup}>
                                     <View style={{ flexDirection: 'row' }}>
-                                        <Text style={styles.label}>Weka Maelezo zaidi <Text style={{ color: 'red' }}>*</Text></Text>
+                                        <Text style={styles.label}>{t.onboardingStep2Description} <Text style={{ color: 'red' }}>*</Text></Text>
                                     </View>
                                     <TextInput
                                         style={[styles.input, styles.textArea]}
-                                        placeholder="Weka maelezo hapa"
+                                        placeholder={t.onboardingStep2DescriptionPlaceholder}
                                         value={description}
                                         onChangeText={setDescription}
                                         placeholderTextColor="#9CA3AF"
                                         multiline
                                         textAlignVertical="top"
                                     />
-                                    <Text style={styles.charCount}>Isizidi maneno 240</Text>
+                                    <Text style={styles.charCount}>{t.onboardingStep2CharLimit}</Text>
                                 </View>
-                                <Text style={styles.requiredText}>Sehemu ya lazima <Text style={{ color: 'red' }}>*</Text></Text>
+                                <Text style={styles.requiredText}>{t.onboardingStep2Required} <Text style={{ color: 'red' }}>*</Text></Text>
                             </View>
                         </View>
                     </View>
@@ -160,10 +162,10 @@ export default function Step2Details() {
                 {/* Footer Pinned Outside Scroll */}
                 <View style={styles.footer}>
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Text style={styles.buttonTextOutline}>Rudi</Text>
+                        <Text style={styles.buttonTextOutline}>{t.onboardingStep1Back}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.nextButton} onPress={handleNext} disabled={loading}>
-                        <Text style={styles.buttonText}>{loading ? 'Inahifadhi...' : 'Endelea'}</Text>
+                        <Text style={styles.buttonText}>{loading ? t.onboardingStep1Saving : t.onboardingStep1Next}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
