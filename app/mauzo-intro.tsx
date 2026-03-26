@@ -64,10 +64,10 @@ export default function MauzoIntro() {
 
     const handleSkip = () => {
         if (flow === 'delivery') {
-            router.push('/delivery-register');
+            router.push('/delivery-login');
         } else {
             // Register an account first
-            router.push({ pathname: '/register', params: { role: 'merchant' } });
+            router.push({ pathname: '/login', params: { role: 'merchant' } });
         }
     };
 
@@ -180,7 +180,7 @@ export default function MauzoIntro() {
                     <View style={styles.divider} />
 
                     <TouchableOpacity
-                        onPress={() => router.push('/login')}
+                        onPress={() => flow === 'delivery' ? router.push('/delivery-login') : router.push({ pathname: '/login', params: { role: 'merchant' } })}
                         style={styles.loginLink}
                     >
                         <Text style={styles.loginText}>{t.mauzoAlreadyAccount} <Text style={styles.loginTextBold}>{t.mauzoSignIn}</Text></Text>

@@ -67,14 +67,23 @@ export default function LoginScreen() {
 
             // Navigate based on user role and context intent
             const serverRole = response.activeProfileRole || response.active_profile_role;
-            const hasVendorProfile = response.profiles?.some((p: any) => p.role === 'vendor');
+            const hasVendorProfile = response.profiles?.some((p: any) => p.role === 'vendor' || p.role === 'merchant');
+            const hasDeliveryProfile = response.profiles?.some((p: any) => p.role === 'driver' || p.role === 'delivery');
             
-            console.log(`🧭 [Login] Redirecting. Target: ${targetRole}, Server: ${serverRole}, HasVendor: ${hasVendorProfile}`);
+            console.log(`🧭 [Login] Redirecting. Target: ${targetRole}, Server: ${serverRole}, HasVendor: ${hasVendorProfile}, HasDelivery: ${hasDeliveryProfile}`);
 
-            if (targetRole === 'merchant' && hasVendorProfile) {
+            if (targetRole === 'delivery' && hasDeliveryProfile) {
+                router.replace('/(delivery)/home' as any);
+            } else if (targetRole === 'delivery') {
+                router.replace('/delivery-company-details' as any);
+            } else if (targetRole === 'merchant' && hasVendorProfile) {
                 router.replace('/(merchant)' as any);
+            } else if (targetRole === 'merchant') {
+                router.replace('/(merchant)/onboarding/step-1' as any);
             } else if (serverRole === 'vendor') {
                 router.replace('/(merchant)' as any);
+            } else if ((serverRole as string) === 'driver' || serverRole === 'delivery') {
+                router.replace('/(delivery)/home' as any);
             } else {
                 router.replace('/(buyer)' as any);
             }
@@ -168,7 +177,7 @@ export default function LoginScreen() {
                                         placeholderTextColor="#9CA3AF"
                                         value={password}
                                         onChangeText={setPassword}
-                                        autoCapitalize="none" secureTextEntry={!showPassword}
+                                        secureTextEntry={!showPassword}
                                         autoCapitalize="none"
                                     />
                                     <TouchableOpacity

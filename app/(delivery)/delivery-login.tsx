@@ -35,11 +35,17 @@ export default function DeliveryLoginScreen() {
 
         setLoading(true);
         try {
-            await login(`+255${phone}`, password, true);
+            const response = await login(`+255${phone}`, password, true);
 
-            // Success -> Navigate to company details
+            const hasDeliveryProfile = response.profiles?.some((p: any) => p.role === 'driver' || p.role === 'delivery');
+
+            // Success -> Navigate to company details or home if already registered
             alert(t.deliverySuccessLogin);
-            router.replace('/delivery-company-details' as any);
+            if (hasDeliveryProfile) {
+                router.replace('/(delivery)/home' as any);
+            } else {
+                router.replace('/delivery-company-details' as any);
+            }
         } catch (e: any) {
             alert(e.message || t.deliveryErrorLogin);
         } finally {

@@ -12,6 +12,7 @@ module.exports = function (api) {
                     root: ["."],
                     alias: {
                         "@": ["./src", "."],
+                        "react-native-maps": "@teovilla/react-native-web-maps",
                     },
                 },
             ],
