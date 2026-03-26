@@ -3,6 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NotificationService } from '../../../../src/services/notifications';
+
+const STORAGE_KEY = '@buyer_reminder_settings';
 
 export default function ReminderScreen() {
     const router = useRouter();
@@ -12,6 +16,66 @@ export default function ReminderScreen() {
     const [paymentDue, setPaymentDue] = useState(false);
     const [goalProgress, setGoalProgress] = useState(false);
 
+    // Load settings on mount
+    React.useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const saved = await AsyncStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    setUpcoming(parsed.upcoming ?? false);
+                    setPaymentDue(parsed.paymentDue ?? false);
+                    setGoalProgress(parsed.goalProgress ?? false);
+                }
+            } catch (err) {
+                console.error("Failed to load settings:", err);
+            }
+        };
+        loadSettings();
+    }, []);
+
+    // Save settings when they change
+    const saveSettings = async (updates: any) => {
+        try {
+            const current = { 
+                upcoming, 
+                paymentDue, 
+                goalProgress,
+                ...updates 
+            };
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+        } catch (err) {
+            console.error("Failed to save settings:", err);
+        }
+    };
+
+    const toggleUpcoming = async (value: boolean) => {
+        setUpcoming(value);
+        saveSettings({ upcoming: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendPaymentReminder('Tsh. 25,000', 'Tomorrow');
+        }
+    };
+
+    const togglePaymentDue = async (value: boolean) => {
+        setPaymentDue(value);
+        saveSettings({ paymentDue: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendPaymentReminder('Tsh. 25,000', 'Today');
+        }
+    };
+
+    const toggleGoalProgress = async (value: boolean) => {
+        setGoalProgress(value);
+        saveSettings({ goalProgress: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendGoalReminder('Savings Goal', '50%');
+        }
+    };
+
     const renderToggleItem = (icon: string, label: string, value: boolean, onValueChange: (val: boolean) => void) => (
         <View style={styles.itemContainer}>
             <View style={styles.itemLeft}>
@@ -19,7 +83,7 @@ export default function ReminderScreen() {
                 <Text style={styles.itemTitle}>{label}</Text>
             </View>
             <Switch
-                trackColor={{ false: '#E5E7EB', true: '#4A55A2' }}
+                trackColor={{ false: '#E5E7EB', true: '#425BA4' }}
                 thumbColor={'#FFFFFF'}
                 ios_backgroundColor="#E5E7EB"
                 onValueChange={onValueChange}
@@ -40,9 +104,9 @@ export default function ReminderScreen() {
             </View>
 
             <View style={styles.content}>
-                {renderToggleItem('time-outline', 'Upcoming payments', upcoming, setUpcoming)}
-                {renderToggleItem('calendar-outline', 'Payment due date', paymentDue, setPaymentDue)}
-                {renderToggleItem('pie-chart-outline', 'Goal progress', goalProgress, setGoalProgress)}
+                {renderToggleItem('time-outline', 'Upcoming payments', upcoming, toggleUpcoming)}
+                {renderToggleItem('calendar-outline', 'Payment due date', paymentDue, togglePaymentDue)}
+                {renderToggleItem('pie-chart-outline', 'Goal progress', goalProgress, toggleGoalProgress)}
             </View>
         </SafeAreaView>
     );

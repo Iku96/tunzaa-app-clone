@@ -1,6 +1,8 @@
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, Dimensions, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { useMarketplace } from '../../src/hooks/useMarketplace';
@@ -23,7 +25,43 @@ export default function BuyerHome() {
     const displayName = user
         ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'
         : 'User';
-    const displayImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=4A55A2`;
+        
+    const [displayImage, setDisplayImage] = useState(`https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=4A55A2`);
+    
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadProfilePic = async () => {
+                const userId = user?.user_id || user?.id;
+                let picUrl = null;
+                
+                if (user?.profiles) {
+                    const buyerProfile = user.profiles.find((p: any) => p.role === 'buyer') || user.profiles[0];
+                    if (buyerProfile && buyerProfile.metadata?.profile_picture) {
+                        picUrl = buyerProfile.metadata.profile_picture;
+                    }
+                }
+                
+                if (userId && !picUrl) {
+                    try {
+                        const storedExtras = await AsyncStorage.getItem(`@tunzaa_profile_extras_${userId}`);
+                        if (storedExtras) {
+                            const localData = JSON.parse(storedExtras);
+                            if (localData.profile_picture) {
+                                picUrl = localData.profile_picture;
+                            }
+                        }
+                    } catch(e) {}
+                }
+                
+                if (picUrl) {
+                    setDisplayImage(picUrl);
+                } else {
+                    setDisplayImage(`https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=4A55A2`);
+                }
+            };
+            loadProfilePic();
+        }, [user, displayName])
+    );
 
     const handleProductPress = (id: string) => {
         router.push(`/(buyer)/product/${id}`);
@@ -39,7 +77,7 @@ export default function BuyerHome() {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#4A55A2" />
+            <StatusBar barStyle="light-content" backgroundColor="#425BA4" />
 
             {/* Extended Blue Header */}
             <View style={styles.headerContainer}>
@@ -92,7 +130,7 @@ export default function BuyerHome() {
                         </TouchableOpacity>
                     </View>
                     {loading && categories.length === 0 ? (
-                        <ActivityIndicator size="small" color="#4A55A2" style={{ padding: 20 }} />
+                        <ActivityIndicator size="small" color="#425BA4" style={{ padding: 20 }} />
                     ) : (
                         <View style={styles.categoriesGrid}>
                             {categories.map((cat, index) => (
@@ -102,7 +140,7 @@ export default function BuyerHome() {
                                     onPress={() => handleCategoryPress(cat.id)}
                                 >
                                     <View style={[styles.categoryIconCircle, { backgroundColor: index % 2 === 0 ? '#EFF6FF' : '#F3F4F6' }]}>
-                                        <Ionicons name={cat.icon as any} size={22} color="#4A55A2" />
+                                        <Ionicons name={cat.icon as any} size={22} color="#425BA4" />
                                     </View>
                                     <Text style={styles.categoryName} numberOfLines={1}>{cat.name}</Text>
                                 </TouchableOpacity>
@@ -120,7 +158,7 @@ export default function BuyerHome() {
                         </TouchableOpacity>
                     </View>
                     {loading && products.length === 0 ? (
-                        <ActivityIndicator size="large" color="#4A55A2" style={{ padding: 40 }} />
+                        <ActivityIndicator size="large" color="#425BA4" style={{ padding: 40 }} />
                     ) : products.length === 0 ? (
                         <View style={{ padding: 40, alignItems: 'center' }}>
                             <Text style={{ color: '#6B7280', fontSize: 14 }}>No products available yet.</Text>
@@ -150,7 +188,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     headerContainer: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingHorizontal: 20,
         paddingBottom: 30, // Increased padding bottom for spacious feel
         borderBottomLeftRadius: 32, // More rounded
@@ -233,7 +271,7 @@ const styles = StyleSheet.create({
     },
     seeAll: {
         fontSize: 14,
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: '600',
     },
     categoriesGrid: {

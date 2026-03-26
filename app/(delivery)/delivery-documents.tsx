@@ -279,9 +279,9 @@ export default function DeliveryDocumentsScreen() {
                     {/* Right side: Edit icon when closed, ChevronUp when open */}
                     <View style={styles.headerRight}>
                         {isActive ? (
-                            <ChevronUp size={20} color="#315BA9" />
+                            <ChevronUp size={20} color="#425BA4" />
                         ) : (
-                            <Edit size={20} color="#315BA9" />
+                            <Edit size={20} color="#425BA4" />
                         )}
                     </View>
                 </TouchableOpacity>
@@ -505,11 +505,11 @@ const styles = StyleSheet.create({
 
     safe: {
         flex: 1,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     container: {
         flex: 1,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     contentContainer: {
         flexGrow: 1,
@@ -582,15 +582,15 @@ const styles = StyleSheet.create({
     },
     accordionHeaderActive: {
         backgroundColor: '#EFF6FF',
-        borderColor: '#315BA9',
+        borderColor: '#425BA4',
     },
     accordionTitle: {
         fontSize: 14,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '500',
     },
     accordionTitleActive: {
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
     },
     headerRight: {

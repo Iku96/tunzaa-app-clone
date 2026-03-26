@@ -162,7 +162,6 @@ export default function DeliveryRegisterScreen() {
                                             value={phone}
                                             onChangeText={handlePhoneChange}
                                             keyboardType="phone-pad"
-                                            placeholder="787 118 486"
                                             placeholderTextColor="#9CA3AF"
                                             maxLength={9}
                                         />
@@ -183,7 +182,7 @@ export default function DeliveryRegisterScreen() {
                                             style={styles.passwordInput}
                                             value={password}
                                             onChangeText={handlePasswordChange}
-                                            secureTextEntry={!showPassword}
+                                            autoCapitalize="none" secureTextEntry={!showPassword}
                                             placeholder="••••••"
                                             placeholderTextColor="#9CA3AF"
                                         />
@@ -194,7 +193,7 @@ export default function DeliveryRegisterScreen() {
                                             <Ionicons
                                                 name={showPassword ? "eye-off-outline" : "eye-outline"}
                                                 size={24}
-                                                color="#315BA9"
+                                                color="#425BA4"
                                             />
                                         </TouchableOpacity>
                                     </View>
@@ -208,7 +207,7 @@ export default function DeliveryRegisterScreen() {
 
                                 {/* Info & Login Link */}
                                 <View style={styles.infoRow}>
-                                    <Ionicons name="information-circle-outline" size={20} color="#315BA9" />
+                                    <Ionicons name="information-circle-outline" size={20} color="#425BA4" />
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
                                         <Text style={styles.infoText}>Zingatia kuweka tarakimu 6 au zaidi</Text>
                                         <TouchableOpacity onPress={() => router.push('/delivery-login' as any)}>
@@ -274,7 +273,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#315BA9',
+        color: '#425BA4',
         fontFamily: 'Gilroy-Bold',
         marginBottom: 8,
     },
@@ -303,7 +302,7 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         fontSize: 16,
         fontWeight: '600',
-        color: '#315BA9',
+        color: '#425BA4',
     },
     inputError: {
         borderColor: '#EF4444',
@@ -338,7 +337,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 14,
         fontSize: 16,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
     },
     passwordContainer: {
@@ -354,7 +353,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 14,
         fontSize: 24,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
         letterSpacing: 4,
     },
@@ -369,13 +368,13 @@ const styles = StyleSheet.create({
     },
     infoText: {
         fontSize: 13,
-        color: '#315BA9',
+        color: '#425BA4',
         marginLeft: 8,
         flex: 1,
     },
     loginLink: {
         fontSize: 13,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '700',
         textDecorationLine: 'underline',
     },
@@ -395,7 +394,7 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     primaryButton: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
         borderRadius: 8,
         paddingVertical: 16,
         alignItems: 'center',
@@ -416,7 +415,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     secondaryButtonText: {
-        color: '#315BA9',
+        color: '#425BA4',
         fontSize: 16,
         fontWeight: '600',
     },

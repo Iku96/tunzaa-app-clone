@@ -58,7 +58,7 @@ export default function OrdersPaymentsScreen() {
                         <Text style={styles.legendText}>Installments (80%)</Text>
                     </View>
                     <View style={styles.legendItem}>
-                        <View style={[styles.legendDot, { backgroundColor: '#4A55A2' }]} />
+                        <View style={[styles.legendDot, { backgroundColor: '#425BA4' }]} />
                         <Text style={styles.legendText}>one-time payment (20%)</Text>
                     </View>
                 </View>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     overviewCard: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 16,
         padding: 20,
         marginBottom: 32,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         borderRadius: 80,
         borderWidth: 24,
         borderColor: '#22C55E', // Main color for installments
-        borderTopColor: '#4A55A2', // Secondary color for one-time
+        borderTopColor: '#425BA4', // Secondary color for one-time
         alignItems: 'center',
         justifyContent: 'center',
         transform: [{ rotate: '45deg' }] // Adjust starting angle
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     activeBadge: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingHorizontal: 12,
         paddingVertical: 4,
         borderRadius: 16,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 4,
     },
     progressText: {

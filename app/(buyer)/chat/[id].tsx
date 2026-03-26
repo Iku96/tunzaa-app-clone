@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
     myMessageContent: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderBottomRightRadius: 4,
     },
     theirMessageContent: {
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         justifyContent: 'center',
         alignItems: 'center',
     },

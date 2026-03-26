@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     tunzaaLogoText: {
         fontSize: 28,
         fontWeight: '900',
-        color: '#4A55A2',
+        color: '#425BA4',
         letterSpacing: 2,
         marginBottom: 12,
     },
@@ -186,13 +186,13 @@ const styles = StyleSheet.create({
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         marginRight: 8,
     },
     paymentTypeText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     orderNumberText: {
         fontSize: 13,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     },
     downloadBtn: {
         flexDirection: 'row',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         paddingVertical: 16,
         marginHorizontal: 24,

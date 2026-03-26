@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, History, Receipt, CircleDashed } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NotificationService } from '../../../src/services/notifications';
 
 const STORAGE_KEY = '@merchant_reminder_settings';
 
@@ -47,19 +48,31 @@ export default function RemindersSettingsScreen() {
         }
     };
 
-    const toggleUpcoming = (value: boolean) => {
+    const toggleUpcoming = async (value: boolean) => {
         setUpcomingPayments(value);
         saveSettings({ upcomingPayments: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendPaymentReminder('Tsh. 15,000', 'Tomorrow');
+        }
     };
 
-    const toggleDueDate = (value: boolean) => {
+    const toggleDueDate = async (value: boolean) => {
         setPaymentDueDate(value);
         saveSettings({ paymentDueDate: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendPaymentReminder('Tsh. 15,000', 'Today');
+        }
     };
 
-    const toggleGoal = (value: boolean) => {
+    const toggleGoal = async (value: boolean) => {
         setGoalProgress(value);
         saveSettings({ goalProgress: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendGoalReminder('Monthly Sales', '85%');
+        }
     };
 
     const ReminderItem = ({ icon: Icon, label, value, onToggle }: any) => (

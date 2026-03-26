@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     },
     blueLine: {
         width: 3,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 2,
         height: 14,
         marginRight: 6,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     redText: { color: '#EF4444' },
-    blueText: { color: '#4A55A2' },
+    blueText: { color: '#425BA4' },
     greenText: { color: '#22C55E' },
     arrowContainer: {
         alignItems: 'center',
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
         width: 28,
         height: 28,
         borderRadius: 14,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
@@ -365,8 +365,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     checked: {
-        backgroundColor: '#4A55A2',
-        borderColor: '#4A55A2',
+        backgroundColor: '#425BA4',
+        borderColor: '#425BA4',
     },
     disclaimerText: {
         fontSize: 12,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     submitButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     modalBalanceRow: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         width: '100%',
         padding: 16,
         borderRadius: 8,

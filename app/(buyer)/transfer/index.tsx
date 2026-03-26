@@ -243,11 +243,11 @@ const styles = StyleSheet.create({
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 3,
     },
     transferButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 14,
         borderRadius: 30, // standard pill shape
         alignItems: 'center',

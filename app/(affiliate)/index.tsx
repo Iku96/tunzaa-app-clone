@@ -33,7 +33,7 @@ export default function AffiliateDashboardScreen() {
     const [isMenuVisible, setIsMenuVisible] = useState(false);
 
     const handleBack = () => {
-        router.push('/home' as any);
+        router.push('/(buyer)' as any);
     };
 
     const handleWithdraw = () => {

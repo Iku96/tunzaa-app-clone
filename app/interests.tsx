@@ -87,7 +87,7 @@ export default function InterestsScreen() {
                 </ScrollView>
 
                 {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
                     <Text style={styles.skipText}>Skip</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>

@@ -26,11 +26,11 @@ export default function DeliveryBottomNav() {
                 <Ionicons
                     name={isActive('/(delivery)/home') ? "cube" : "cube-outline"}
                     size={24}
-                    color={isActive('/(delivery)/home') ? "#315BA9" : "#6B7280"}
+                    color={isActive('/(delivery)/home') ? "#425BA4" : "#6B7280"}
                 />
                 <Text style={[
                     styles.label,
-                    { color: isActive('/(delivery)/home') ? "#315BA9" : "#6B7280" }
+                    { color: isActive('/(delivery)/home') ? "#425BA4" : "#6B7280" }
                 ]}>
                     Delivery
                 </Text>
@@ -45,11 +45,11 @@ export default function DeliveryBottomNav() {
                 <Ionicons
                     name={isActive('/(delivery)/profile') ? "person" : "person-outline"}
                     size={24}
-                    color={isActive('/(delivery)/profile') ? "#315BA9" : "#6B7280"}
+                    color={isActive('/(delivery)/profile') ? "#425BA4" : "#6B7280"}
                 />
                 <Text style={[
                     styles.label,
-                    { color: isActive('/(delivery)/profile') ? "#315BA9" : "#6B7280" }
+                    { color: isActive('/(delivery)/profile') ? "#425BA4" : "#6B7280" }
                 ]}>
                     Profile
                 </Text>

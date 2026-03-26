@@ -62,7 +62,7 @@ export default function OrderSummaryScreen() {
 
                     {isLoading || !product ? (
                         <View style={{ padding: 40, alignItems: 'center' }}>
-                            <ActivityIndicator size="large" color="#4A55A2" />
+                            <ActivityIndicator size="large" color="#425BA4" />
                             <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading order details...</Text>
                         </View>
                     ) : (
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     },
     productName: {
         fontSize: 14,
-        color: '#4A55A2', // Blueish per screenshot
+        color: '#425BA4', // Blueish per screenshot
         marginBottom: 4,
     },
     productPrice: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     },
     tagText: {
         fontSize: 10,
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: '500',
     },
     actionsRow: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
     },
     qtyBtnActive: {
-        backgroundColor: '#4A55A2', // Blue plus button
+        backgroundColor: '#425BA4', // Blue plus button
     },
     qtyText: {
         fontSize: 14,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     },
     fullPayBtn: {
         flex: 1,
-        backgroundColor: '#4A55A2', // Blue
+        backgroundColor: '#425BA4', // Blue
         borderRadius: 25,
         paddingVertical: 12,
         alignItems: 'center',
@@ -404,11 +404,11 @@ const styles = StyleSheet.create({
         borderTopColor: '#F3F4F6',
     },
     checkoutBtn: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
-        shadowColor: "#4A55A2",
+        shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

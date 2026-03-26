@@ -90,7 +90,7 @@ export default function AddressScreen() {
                             {prefilledLocation || "172 Nda Mkojoma Road, Maki, Dar Es Salaam, TZ..."}
                         </Text>
                         <View style={styles.mapIconBox}>
-                            <Ionicons name="map-outline" size={20} color="#4A55A2" />
+                            <Ionicons name="map-outline" size={20} color="#425BA4" />
                         </View>
                     </TouchableOpacity>
 
@@ -191,8 +191,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     typeButtonActive: {
-        backgroundColor: '#4A55A2',
-        borderColor: '#4A55A2',
+        backgroundColor: '#425BA4',
+        borderColor: '#425BA4',
     },
     typeIcon: {
         marginRight: 6,
@@ -266,11 +266,11 @@ const styles = StyleSheet.create({
         paddingBottom: Platform.OS === 'ios' ? 0 : 20,
     },
     saveButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
-        shadowColor: "#4A55A2",
+        shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

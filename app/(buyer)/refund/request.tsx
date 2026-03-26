@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     totalValue: {
         fontSize: 15,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     sectionTitle: {
         fontSize: 16,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
         marginLeft: 4,
     },
     submitButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
@@ -443,10 +443,10 @@ const styles = StyleSheet.create({
     modalTotalValue: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     confirmButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         width: '100%',
         paddingVertical: 14,
         borderRadius: 30, // Much more rounded

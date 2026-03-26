@@ -92,7 +92,7 @@ export default function ChatListScreen() {
     const renderEmptyState = () => (
         <View style={styles.emptyState}>
             <View style={styles.emptyIconContainer}>
-                <Ionicons name="chatbubble-ellipses-outline" size={32} color="#4A55A2" />
+                <Ionicons name="chatbubble-ellipses-outline" size={32} color="#425BA4" />
             </View>
             <Text style={styles.emptyText}>Chart will appear here after you have sent or received a message</Text>
         </View>

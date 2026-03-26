@@ -46,7 +46,7 @@ export default function CreatorsScreen() {
     };
 
     const handleSkip = () => {
-        router.push('/home');
+        router.push('/(buyer)');
     };
 
     const getInitials = (name: string) => {

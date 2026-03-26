@@ -26,7 +26,7 @@ export default function LoginFacebookScreen() {
             return;
         }
         console.log('Facebook Login:', { phoneNumber, password });
-        router.push('/home');
+        router.push('/(buyer)');
     };
 
     const handleSocialLogin = async (provider: string) => {
@@ -99,7 +99,7 @@ export default function LoginFacebookScreen() {
                                 placeholderTextColor="#666666"
                                 value={password}
                                 onChangeText={setPassword}
-                                secureTextEntry={!showPassword}
+                                autoCapitalize="none" secureTextEntry={!showPassword}
                             />
                             <TouchableOpacity
                                 onPress={() => setShowPassword(!showPassword)}
@@ -174,7 +174,7 @@ export default function LoginFacebookScreen() {
                 </View>
 
                 {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
                     <Text style={styles.skipText}>Skip</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>

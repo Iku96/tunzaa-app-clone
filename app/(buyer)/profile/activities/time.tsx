@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     activeTab: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     tabText: {
         fontSize: 14,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     },
     barFill: {
         width: '100%',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 4,
     },
     xAxisLabel: {
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
         color: '#9CA3AF',
     },
     activeXAxisLabel: {
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: '600',
     },
 });

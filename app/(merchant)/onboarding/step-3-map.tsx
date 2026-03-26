@@ -253,12 +253,20 @@ export default function Step3Map() {
                                 ref={mapRef}
                                 style={styles.map}
                                 region={mapRegion}
-                                onPress={(e) => onLocationChange(e.nativeEvent.coordinate)}
+                                onPress={(e) => {
+                                    if (e?.nativeEvent?.coordinate) {
+                                        onLocationChange(e.nativeEvent.coordinate);
+                                    }
+                                }}
                             >
                                 <Marker
                                     coordinate={mapRegion}
                                     draggable
-                                    onDragEnd={(e) => onLocationChange(e.nativeEvent.coordinate)}
+                                    onDragEnd={(e) => {
+                                        if (e?.nativeEvent?.coordinate) {
+                                            onLocationChange(e.nativeEvent.coordinate);
+                                        }
+                                    }}
                                     pinColor="#84CC16"
                                 >
                                     <Callout>

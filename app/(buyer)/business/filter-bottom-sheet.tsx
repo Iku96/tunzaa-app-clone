@@ -198,13 +198,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     outerCircleActive: {
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
     },
     innerCircle: {
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     switchRow: {
         flexDirection: 'row',
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
         marginTop: 16,
     },
     applyButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',

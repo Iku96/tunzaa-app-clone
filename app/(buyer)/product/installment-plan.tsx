@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     productName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 4,
     },
     productPrice: {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     freqButtonActive: {
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
         backgroundColor: '#EFF6FF',
     },
     freqText: {
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     freqTextActive: {
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: '600',
     },
     customFreqRow: {
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     setOwnTime: {
-        color: '#4A55A2',
+        color: '#425BA4',
         fontSize: 14,
         fontWeight: '500',
         textDecorationLine: 'underline',
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     highlightText: {
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: 'bold',
     },
     modalButton: {

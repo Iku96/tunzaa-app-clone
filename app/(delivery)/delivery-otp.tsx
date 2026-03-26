@@ -27,7 +27,7 @@ export default function DeliveryOTPScreen() {
         lastName?: string;
         password?: string;
     }>();
-    const [otp, setOtp] = useState(['', '', '', '']);
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const inputs = useRef<Array<TextInput | null>>([]);
     const [loading, setLoading] = useState(false);
     const [timer, setTimer] = useState(30);
@@ -44,7 +44,7 @@ export default function DeliveryOTPScreen() {
         newOtp[index] = text;
         setOtp(newOtp);
 
-        if (text && index < 3) {
+        if (text && index < 5) {
             inputs.current[index + 1]?.focus();
         }
     };
@@ -57,7 +57,7 @@ export default function DeliveryOTPScreen() {
 
     const handleVerify = async () => {
         const code = otp.join('');
-        if (code.length !== 4) {
+        if (code.length !== 6) {
             alert(t.deliveryErrorOtp); // Or a specific 'enter 4 digits' if I had one, reusing error for now
             return;
         }
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#315BA9', // Blue
+        color: '#425BA4', // Blue
         fontFamily: 'Gilroy-Bold',
         marginBottom: 16,
         textAlign: 'center',
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     },
     wrongNumberLink: {
         fontSize: 14,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
         textDecorationLine: 'underline',
         marginBottom: 40,
@@ -212,20 +212,20 @@ const styles = StyleSheet.create({
     otpContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
-        gap: 16,
+        gap: 8,
         marginBottom: 32,
         width: '100%',
     },
     otpInput: {
-        width: 60,
-        height: 60,
+        width: 48,
+        height: 56,
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#E5E7EB',
         borderRadius: 12,
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#315BA9',
+        color: '#425BA4',
         textAlign: 'center',
         // Shadow for iOS
         shadowColor: '#000',
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     },
     resendLink: {
         fontSize: 14,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
         textDecorationLine: 'underline',
     },
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     primaryButton: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
         borderRadius: 8,
         paddingVertical: 16,
         alignItems: 'center',
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     secondaryButtonText: {
-        color: '#315BA9',
+        color: '#425BA4',
         fontSize: 16,
         fontWeight: '600',
     },

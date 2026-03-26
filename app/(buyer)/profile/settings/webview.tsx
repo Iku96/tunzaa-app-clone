@@ -100,14 +100,14 @@ const styles = StyleSheet.create({
     statementText: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         lineHeight: 40,
         marginBottom: 48,
     },
     docTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 8,
     },
     publishedDate: {

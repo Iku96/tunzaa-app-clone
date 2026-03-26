@@ -46,7 +46,7 @@ export default function HelpCenterScreen() {
                         <TouchableOpacity style={styles.contactCard} onPress={() => router.push('/(buyer)/support/live-chat')}>
                             <View style={styles.contactLeft}>
                                 <View style={styles.iconCircle}>
-                                    <Ionicons name="chatbubbles-outline" size={24} color="#4A55A2" />
+                                    <Ionicons name="chatbubbles-outline" size={24} color="#425BA4" />
                                 </View>
                                 <View>
                                     <Text style={styles.contactTitle}>Live Chat</Text>
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     },
     activeTab: {
         borderBottomWidth: 2,
-        borderBottomColor: '#4A55A2',
+        borderBottomColor: '#425BA4',
     },
     tabText: {
         fontSize: 15,

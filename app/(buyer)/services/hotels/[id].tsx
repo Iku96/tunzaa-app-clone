@@ -20,7 +20,7 @@ export default function HotelDetailsScreen() {
                     <Ionicons name="bed-outline" size={64} color="#D1D5DB" />
                     <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 16 }}>Hotel not found</Text>
                     <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
-                        <Text style={{ color: '#4A55A2', fontWeight: '600' }}>Go Back</Text>
+                        <Text style={{ color: '#425BA4', fontWeight: '600' }}>Go Back</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -87,7 +87,7 @@ export default function HotelDetailsScreen() {
                         </View>
                         <Text style={styles.reviewCount}>{hotel.reviews.toLocaleString()} reviews</Text>
                         <View style={styles.dotSeparator} />
-                        <Ionicons name="location" size={14} color="#4A55A2" />
+                        <Ionicons name="location" size={14} color="#425BA4" />
                         <Text style={styles.location}>{hotel.location}, {hotel.city}</Text>
                     </View>
 
@@ -104,7 +104,7 @@ export default function HotelDetailsScreen() {
                                 <Ionicons
                                     name={getAmenityIcon(a)}
                                     size={16}
-                                    color="#4A55A2"
+                                    color="#425BA4"
                                 />
                                 <Text style={styles.amenityText}>{a}</Text>
                             </View>
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     price: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     actions: {
         flexDirection: 'row',
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     amenityText: {
         fontSize: 12,
         fontWeight: '500',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     mapPlaceholder: {
         height: 180,
@@ -328,20 +328,20 @@ const styles = StyleSheet.create({
     footerPrice: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     footerPeriod: {
         fontSize: 12,
         color: '#9CA3AF',
     },
     bookButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         height: 52,
         paddingHorizontal: 32,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: "#4A55A2",
+        shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 10,

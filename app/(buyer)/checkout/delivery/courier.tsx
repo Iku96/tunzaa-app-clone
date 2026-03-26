@@ -13,7 +13,7 @@ export default function CourierSelectionScreen() {
         <View style={styles.stepperContainer}>
             <View style={styles.step}>
                 <View style={[styles.stepCircle, styles.stepCircleCompleted]}>
-                    <Ionicons name="checkmark" size={14} color="#4A55A2" />
+                    <Ionicons name="checkmark" size={14} color="#425BA4" />
                 </View>
                 <Text style={[styles.stepText, styles.stepTextCompleted]}>STEP 1</Text>
                 <Text style={styles.stepSubText}>Choose Method</Text>
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
         width: 14,
         height: 14,
         borderRadius: 7,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     stepNumber: {
         fontSize: 12,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
         color: '#4B5563',
     },
     stepTextActive: {
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     stepSubText: {
         fontSize: 10,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     radioCardSelected: {
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
         borderWidth: 1.5,
     },
     radioOuter: {
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     radioTextContainer: {
         flex: 1,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     courierCardSelected: {
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
         borderWidth: 1.5,
         backgroundColor: '#FFFFFF',
         shadowColor: "#000",
@@ -429,11 +429,11 @@ const styles = StyleSheet.create({
         paddingBottom: 30, // Extra padding for safe area logic
     },
     continueButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
-        shadowColor: "#4A55A2",
+        shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

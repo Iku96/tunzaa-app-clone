@@ -43,7 +43,7 @@ export default function ChangePasswordScreen() {
                     onChangeText={setValue}
                     placeholder={placeholder}
                     placeholderTextColor="#9CA3AF"
-                    secureTextEntry={!show}
+                    autoCapitalize="none" secureTextEntry={!show}
                 />
                 <TouchableOpacity onPress={() => setShow(!show)} style={styles.eyeIcon}>
                     <Ionicons name={show ? "eye-outline" : "eye-off-outline"} size={20} color="#9CA3AF" />

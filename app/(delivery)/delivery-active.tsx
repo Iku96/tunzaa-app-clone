@@ -25,7 +25,7 @@ export default function DeliveryActiveScreen() {
                 <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
                     <Text>No active delivery found.</Text>
                     <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
-                        <Text style={{ color: '#3B5998' }}>Go Back</Text>
+                        <Text style={{ color: '#425BA4' }}>Go Back</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -81,7 +81,7 @@ export default function DeliveryActiveScreen() {
 
                 {/* Delivery Section */}
                 <View style={[styles.sectionHeader, { marginTop: 10 }]}>
-                    <View style={[styles.dot, { backgroundColor: '#315BA9' }]} />
+                    <View style={[styles.dot, { backgroundColor: '#425BA4' }]} />
                     <Text style={styles.sectionTitle}>Delivery details (To)</Text>
                 </View>
 
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     },
     bigCallButton: {
         flexDirection: 'row',
-        backgroundColor: '#3B5998',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         height: 48,
         alignItems: 'center',

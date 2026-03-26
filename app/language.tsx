@@ -3,14 +3,8 @@ import { View, Text, TouchableOpacity, Pressable, Image, StyleSheet, ScrollView 
 import { useRouter } from 'expo-router';
 import { useLanguage } from '../src/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '../src/constants/languages';
+import { ChevronRight, ChevronUp, ArrowRight } from 'lucide-react-native';
 
-/**
- * Language Selection Screen (Redesigned)
- * 
- * Shows expanded language list by default with collapse/expand functionality.
- * User can select their preferred language from the visible list.
- * Matches demo app design.
- */
 export default function LanguageScreen() {
     const router = useRouter();
     const { locale, setLocale, t } = useLanguage();
@@ -18,7 +12,6 @@ export default function LanguageScreen() {
 
     const handleLanguageSelect = async (code: string) => {
         await setLocale(code);
-        // Add small delay so user can see the green selection highlight before navigating
         setTimeout(() => router.push('/role'), 200);
     };
 
@@ -52,14 +45,18 @@ export default function LanguageScreen() {
                     <TouchableOpacity
                         style={styles.pickerHeader}
                         onPress={toggleExpand}
+                        activeOpacity={0.7}
                         accessibilityLabel={isExpanded ? 'Collapse language list' : 'Expand language list'}
                         accessibilityRole="button"
                     >
                         <Text style={styles.pickerHeaderText}>{t.languageScreenChoosePreferred}</Text>
-                        <Text style={styles.chevron}>{isExpanded ? '∧' : '›'}</Text>
+                        {isExpanded 
+                            ? <ChevronUp size={20} color="#1F2937" /> 
+                            : <ChevronRight size={20} color="#1F2937" />
+                        }
                     </TouchableOpacity>
 
-                    {/* Language List (Shown when expanded) */}
+                    {/* Language List */}
                     {isExpanded && (
                         <View style={styles.languageList}>
                             {SUPPORTED_LANGUAGES.map((lang, index) => {
@@ -103,7 +100,7 @@ export default function LanguageScreen() {
                         accessibilityRole="button"
                     >
                         <Text style={styles.skipText}>{t.languageScreenSkip}</Text>
-                        <Text style={styles.skipChevron}>→</Text>
+                        <ArrowRight size={18} color="#3B5191" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -127,33 +124,32 @@ const styles = StyleSheet.create({
     },
     title: {
         textAlign: 'center',
+        fontFamily: 'Gilroy-SemiBold',
         fontSize: 20,
         fontWeight: '600',
-        color: '#1F2937',
+        color: '#1D1E1F',
         marginTop: 17,
-        width: 231,
-        height: 35,
         alignSelf: 'center',
     },
     logoContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 87,
-        width: 111,
-        height: 111,
+        marginTop: 65,
         alignSelf: 'center',
+        width: 260, // Increased size still
+        height: 95,
     },
     logo: {
         width: '100%',
         height: '100%',
     },
     pickerCard: {
-        marginTop: 0,
-        backgroundColor: '#EEF2FF',
+        marginTop: 40,
+        backgroundColor: '#F3F4F6', // Dimmed background
         borderRadius: 12,
         overflow: 'hidden',
         alignSelf: 'center',
-        width: 300, // Slightly wider for better spacing
+        width: 310, // Not full width! Maintained narrow look
     },
     pickerHeader: {
         flexDirection: 'row',
@@ -161,42 +157,36 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 18,
         paddingHorizontal: 20,
-        backgroundColor: '#E0E7FF',
+        backgroundColor: '#F3F4F6',
     },
     pickerHeaderText: {
         fontSize: 16,
         fontWeight: '500',
         color: '#1F2937',
     },
-    chevron: {
-        fontSize: 18,
-        color: '#1F2937',
-    },
     languageList: {
-        backgroundColor: '#EEF2FF',
+        backgroundColor: '#F3F4F6',
     },
     languageOption: {
-        paddingVertical: 14, // Closer to Figma screenshot
+        paddingVertical: 18, // Increased padding makes the box longer (taller) instead of wider
         paddingHorizontal: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E7EB', // Lighter divider
-        backgroundColor: '#EEF2FF',
+        borderBottomWidth: 0, // No border as requested
+        backgroundColor: '#F3F4F6',
     },
     languageOptionLast: {
-        borderBottomWidth: 0,
-        paddingBottom: 14, // Consistent padding
+        paddingBottom: 18,
     },
     languageOptionSelected: {
-        backgroundColor: '#00C853', // Solid green bar for selected language
+        backgroundColor: '#00C853', // Solid green bar for default
     },
     languageText: {
         fontSize: 14,
-        lineHeight: 20,
-        color: '#374151',
+        color: '#2C3D6D',
         textAlign: 'center',
+        fontWeight: '400',
     },
     languageTextSelected: {
-        color: '#FFFFFF', // White text on green
+        color: '#FFFFFF',
         fontWeight: '600',
     },
     skipContainer: {
@@ -204,19 +194,15 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         alignItems: 'center',
         paddingBottom: 48,
-        paddingHorizontal: 24,
     },
     skipButton: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 6,
     },
     skipText: {
-        color: '#4A6CF7', // Blue to match Figma
+        color: '#3B5191',
         fontSize: 16,
-        marginRight: 6,
-    },
-    skipChevron: {
-        color: '#4A6CF7', // Blue to match Figma
-        fontSize: 16,
+        fontWeight: '500',
     },
 });

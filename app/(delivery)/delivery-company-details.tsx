@@ -16,7 +16,7 @@ export default function DeliveryCompanyDetails() {
     const { user } = useTunzaaAuth();
 
     const [companyName, setCompanyName] = useState('');
-    const [phone, setPhone] = useState('+255 787 118 486');
+    const [phone, setPhone] = useState('');
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
     const [coverImage, setCoverImage] = useState<string | null>(null);
@@ -144,7 +144,7 @@ export default function DeliveryCompanyDetails() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     contentContainer: {
         flexGrow: 1,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingBottom: 40,
         paddingTop: 20,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     backButton: {
         width: 154,

@@ -79,7 +79,7 @@ export default function ProductStoriesScreen() {
 
                 {story.mediaType === 'video' && (
                     <View style={styles.playButtonOverlay}>
-                        <Ionicons name="play" size={24} color="#4A55A2" style={styles.playIcon} />
+                        <Ionicons name="play" size={24} color="#425BA4" style={styles.playIcon} />
                     </View>
                 )}
 
@@ -256,13 +256,13 @@ const styles = StyleSheet.create({
     },
     activeDot: {
         width: 16, // Pill shape
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     buyNowStrip: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingHorizontal: 20,
         paddingVertical: 14,
     },

@@ -18,7 +18,7 @@ export default function SuccessScreen() {
 
             <View style={styles.content}>
                 <View style={styles.iconContainer}>
-                    <Ionicons name="checkmark-circle" size={80} color="#4A55A2" />
+                    <Ionicons name="checkmark-circle" size={80} color="#425BA4" />
                 </View>
 
                 <Text style={styles.title}>Congratulation Fem!</Text>
@@ -95,15 +95,15 @@ const styles = StyleSheet.create({
     progressFill: {
         width: '10%',
         height: '100%',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     progressText: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     button: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         paddingHorizontal: 32,
         borderRadius: 30,

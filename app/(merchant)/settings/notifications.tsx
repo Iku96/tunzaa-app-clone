@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Truck, BadgePercent, Smartphone } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NotificationService } from '../../../src/services/notifications';
 
 const STORAGE_KEY = '@merchant_notification_settings';
 
@@ -47,19 +48,31 @@ export default function NotificationsSettingsScreen() {
         }
     };
 
-    const toggleDelivery = (value: boolean) => {
+    const toggleDelivery = async (value: boolean) => {
         setDeliveryAlerts(value);
         saveSettings({ deliveryAlerts: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendDeliveryAlert('TZ-9824', 'Shipped');
+        }
     };
 
-    const togglePromotions = (value: boolean) => {
+    const togglePromotions = async (value: boolean) => {
         setPromotions(value);
         saveSettings({ promotions: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendPromotionAlert('50% Off Top Selling Electronics');
+        }
     };
 
-    const toggleSystem = (value: boolean) => {
+    const toggleSystem = async (value: boolean) => {
         setSystemMessages(value);
         saveSettings({ systemMessages: value });
+        if (value) {
+            await NotificationService.registerForPushNotificationsAsync();
+            await NotificationService.sendSystemMessage('Your store profile was successfully updated.');
+        }
     };
 
     const NotificationItem = ({ icon: Icon, label, value, onToggle }: any) => (

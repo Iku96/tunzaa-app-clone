@@ -83,7 +83,7 @@ export default function DeliverySetupScreen() {
                 <View style={styles.addressSection}>
                     <View style={styles.addressRow}>
                         <View style={styles.addressIcon}>
-                            <Ionicons name="location-outline" size={20} color="#4A55A2" />
+                            <Ionicons name="location-outline" size={20} color="#425BA4" />
                         </View>
                         <View style={styles.addressDetails}>
                             <Text style={styles.addressLabel}>Postal Address</Text>
@@ -94,7 +94,7 @@ export default function DeliverySetupScreen() {
 
                     <View style={styles.addressRow}>
                         <View style={styles.addressIcon}>
-                            <Ionicons name="navigate-outline" size={20} color="#4A55A2" />
+                            <Ionicons name="navigate-outline" size={20} color="#425BA4" />
                         </View>
                         <View style={styles.addressDetails}>
                             <Text style={styles.addressLabel}>Drop-off Address</Text>
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bubbleContent: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         padding: 12,
         borderRadius: 12,
         marginBottom: -2,
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 12,
         borderLeftColor: 'transparent',
         borderRightColor: 'transparent',
-        borderTopColor: '#4A55A2',
+        borderTopColor: '#425BA4',
     },
     bottomSheet: {
         position: 'absolute',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     activeType: {
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
         backgroundColor: '#EFF6FF',
     },
     radioCircle: {
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
         height: 18,
         borderRadius: 9,
         borderWidth: 2,
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     typeTitle: {
         fontSize: 14,
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     confirmButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',

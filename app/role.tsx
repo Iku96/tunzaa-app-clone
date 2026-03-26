@@ -24,7 +24,11 @@ export default function RoleScreen() {
     const rotateAnim = useRef(new Animated.Value(0)).current;
 
     const handleBack = () => {
-        router.back();
+        if (router.canGoBack()) {
+            router.back();
+        } else {
+            router.replace('/language');
+        }
     };
 
     const handleBuyerSelect = () => {
@@ -49,19 +53,19 @@ export default function RoleScreen() {
         } else if (value === 'affiliate') {
             router.push('/(affiliate)/register' as any);
         } else {
-            // For "Sell products" or other business options, register first
-            router.push({ pathname: '/register', params: { role: 'merchant' } });
+            // For "Sell products" or other business options, show intro screens first
+            router.push({ pathname: '/mauzo-intro', params: { flow: value } });
         }
     };
 
     const handleSkip = () => {
-        router.push('/home');
+        router.push('/(buyer)');
     };
 
-    // Interpolate rotation for chevron: 0 -> '0deg', 1 -> '90deg'
+    // Interpolate rotation for chevron: 0 -> '0deg', 1 -> '-90deg'
     const rotation = rotateAnim.interpolate({
         inputRange: [0, 1],
-        outputRange: ['0deg', '90deg'],
+        outputRange: ['0deg', '-90deg'],
     });
 
     const businessOptions = [
@@ -208,16 +212,17 @@ export default function RoleScreen() {
                                 width: '100%',
                                 maxWidth: 320,
                                 backgroundColor: '#FFFFFF',
-                                borderRadius: 20,
-                                paddingHorizontal: 20,
-                                paddingVertical: 20,
-                                marginTop: -16,
+                                borderBottomLeftRadius: 20,
+                                borderBottomRightRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingBottom: 16,
+                                marginTop: -26,
                                 paddingTop: 36,
                                 shadowColor: '#000',
                                 shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 12,
-                                elevation: 4,
+                                shadowOpacity: 0.05,
+                                shadowRadius: 10,
+                                elevation: 3,
                                 zIndex: 10,
                             }}
                         >
@@ -226,8 +231,10 @@ export default function RoleScreen() {
                                     key={index}
                                     onPress={() => handleBusinessOptionSelect(option.value)}
                                     style={{
-                                        paddingVertical: 12,
-                                        marginBottom: index < businessOptions.length - 1 ? 8 : 0,
+                                        backgroundColor: '#F3F5F9', // Light grey/blue background for each item
+                                        borderRadius: 8,
+                                        paddingVertical: 14,
+                                        marginTop: index === 0 ? 0 : 8,
                                     }}
                                 >
                                     <Text
@@ -252,7 +259,7 @@ export default function RoleScreen() {
               - Replaced 'top: 780' with 'mt-auto'
               - This pushes the Skip button to the bottom of the screen content
             */}
-            <View className="mt-auto pt-5 pb-1 items-center justify-center">
+            <View className="mt-auto pt-5 pb-10 items-center justify-center">
                 <TouchableOpacity
                     onPress={handleSkip}
                     className="flex-row items-center gap-x-2 p-3"
@@ -265,28 +272,12 @@ export default function RoleScreen() {
                             fontSize: 16,
                             fontWeight: '500',
                             letterSpacing: -0.24,
-                            color: '#6B7280'
+                            color: '#3B5191'
                         }}
                     >
                         {t.roleScreenSkip}
                     </Text>
-                    <ArrowRight size={20} color="#6B7280" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={() => router.push({ pathname: '/login', params: { role: isBusinessExpanded ? 'merchant' : 'buyer' } })}
-                    className="mt-2 mb-8"
-                >
-                    <Text
-                        style={{
-                            fontFamily: 'System',
-                            fontSize: 14,
-                            color: '#2C3D6D',
-                            textDecorationLine: 'underline'
-                        }}
-                    >
-                        {t.roleScreenAlreadyAccount}
-                    </Text>
+                    <ArrowRight size={20} color="#3B5191" />
                 </TouchableOpacity>
             </View>
         </ScrollView >

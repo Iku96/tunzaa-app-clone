@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { NotificationService, addNotificationResponseListener } from '../src/services/notifications';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -44,6 +45,25 @@ export default function RootLayout() {
             SplashScreen.hideAsync();
         }
     }, [loaded, error]);
+
+    // Register for push notifications on app startup (safe for Expo Go)
+    useEffect(() => {
+        NotificationService.registerForPushNotificationsAsync()
+            .then(token => {
+                if (token) console.log('✅ Push token:', token);
+            })
+            .catch(err => console.warn('Push registration skipped:', err));
+
+        // Listen for notification taps (returns null in Expo Go)
+        const sub = addNotificationResponseListener(response => {
+            const data = response.notification.request.content.data;
+            console.log('📲 Notification tapped with data:', data);
+        });
+
+        return () => {
+            sub?.remove();
+        };
+    }, []);
 
     if (!loaded && !error) {
         return null;

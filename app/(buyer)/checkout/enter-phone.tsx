@@ -211,11 +211,11 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     payButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',
-        shadowColor: "#4A55A2",
+        shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

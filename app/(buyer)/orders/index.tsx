@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 12,
         paddingBottom: 16,
-        backgroundColor: '#4A55A2', // Theme blue for header
+        backgroundColor: '#425BA4', // Theme blue for header
     },
     backButton: {
         padding: 4,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     tabsContainer: {
         flexDirection: 'row',
         paddingHorizontal: 0,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingBottom: 0,
     },
     tab: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 4,
     },
     progressText: {
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     payButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         paddingVertical: 14,
         alignItems: 'center',

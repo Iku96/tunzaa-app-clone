@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     etaBubble: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         padding: 12,
         borderRadius: 12,
         alignSelf: 'flex-start',
@@ -197,14 +197,14 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     activeStepIcon: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     stepLabel: {
         fontSize: 10,
         color: '#9CA3AF',
     },
     activeStepLabel: {
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: '600',
     },
     stepLine: {
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
         zIndex: -1,
     },
     activeStepLine: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     divider: {
         height: 1,
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     contactButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         flexDirection: 'row',

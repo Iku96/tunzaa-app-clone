@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF', // To seamlessly blend the bottom if card is short
     },
     headerBackground: {
-        backgroundColor: '#4A55A2', // Match theme blue
+        backgroundColor: '#425BA4', // Match theme blue
         height: 180,
         position: 'absolute',
         top: 0,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     metaValue: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 4,
     },
     dateText: {
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     payBtn: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         paddingVertical: 16,
         alignItems: 'center',

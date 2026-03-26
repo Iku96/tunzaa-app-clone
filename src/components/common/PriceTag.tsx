@@ -11,7 +11,7 @@ interface PriceTagProps extends TextProps {
 export default function PriceTag({
     price,
     currency = 'Tsh.',
-    color = '#4A55A2', // Brand Blue 
+    color = '#425BA4', // Brand Blue 
     size = 14,
     bold = true,
     style,

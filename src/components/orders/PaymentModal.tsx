@@ -101,7 +101,7 @@ export default function PaymentModal({ visible, onClose, amount, onPaymentSucces
                                 value={pin}
                                 onChangeText={setPin}
                                 placeholder="Enter PIN"
-                                secureTextEntry
+                                autoCapitalize="none" secureTextEntry
                                 keyboardType="numeric"
                                 autoFocus
                             />
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     },
     pinInput: {
         borderBottomWidth: 1,
-        borderBottomColor: '#4A55A2',
+        borderBottomColor: '#425BA4',
         fontSize: 18,
         paddingVertical: 8,
         marginBottom: 40,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     },
     sendText: {
         fontSize: 16,
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: 'bold',
     },
 });

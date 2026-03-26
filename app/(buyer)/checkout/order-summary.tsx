@@ -231,12 +231,12 @@ const styles = StyleSheet.create({
     itemName: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 2,
     },
     tag: {
         fontSize: 10,
-        color: '#4A55A2', // Blue
+        color: '#425BA4', // Blue
         backgroundColor: '#EFF6FF',
         alignSelf: 'flex-start',
         paddingHorizontal: 6,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     qtyButtonAdd: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     qtyText: {
         marginHorizontal: 12,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     },
     fullPaymentButton: {
         flex: 1,
-        backgroundColor: '#4A55A2', // Blue
+        backgroundColor: '#425BA4', // Blue
         paddingVertical: 12,
         borderRadius: 24,
         alignItems: 'center',

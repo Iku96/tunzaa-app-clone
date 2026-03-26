@@ -48,7 +48,7 @@ export default function ShareSheet({ visible, onClose, shopName }: ShareSheetPro
                             https://tunzaa.co.tz/shops/{shopName.toLowerCase().replace(/\s/g, '-')}
                         </Text>
                         <TouchableOpacity style={styles.copyButton}>
-                            <Ionicons name="copy-outline" size={18} color="#4A55A2" />
+                            <Ionicons name="copy-outline" size={18} color="#425BA4" />
                         </TouchableOpacity>
                     </View>
 

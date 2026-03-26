@@ -7,12 +7,14 @@ import { PRODUCTS } from '../../../src/data/products';
 import { productsApi, Product as ApiProduct } from '../../../src/services/products';
 import VendorBadge from '../../../src/components/common/VendorBadge';
 import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function ProductDetailScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
+    const { isAuthenticated } = useTunzaaAuth();
     const [loading, setLoading] = useState(true);
 
     // Product data - try API first, fall back to static
@@ -87,7 +89,7 @@ export default function ProductDetailScreen() {
         return (
             <SafeAreaView style={styles.safeArea}>
                 <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                    <ActivityIndicator size="large" color="#4A55A2" />
+                    <ActivityIndicator size="large" color="#425BA4" />
                     <Text style={{ marginTop: 12, color: '#6B7280' }}>Loading product...</Text>
                 </View>
             </SafeAreaView>
@@ -233,7 +235,23 @@ export default function ProductDetailScreen() {
                 <View style={styles.actionBar}>
                     <TouchableOpacity
                         style={styles.buyButton}
-                        onPress={() => router.push({ pathname: '/(buyer)/cart/summary', params: { productId: product.id } })}
+                        onPress={() => {
+                            if (!isAuthenticated) {
+                                import('react-native').then(rn => {
+                                    rn.Alert.alert(
+                                        'Account Required',
+                                        'Please login or create an account to buy items.',
+                                        [
+                                            { text: 'Cancel', style: 'cancel' },
+                                            { text: 'Login', onPress: () => router.push('/login') },
+                                            { text: 'Create Account', onPress: () => router.push('/register') }
+                                        ]
+                                    );
+                                });
+                                return;
+                            }
+                            router.push({ pathname: '/(buyer)/cart/summary', params: { productId: product.id } });
+                        }}
                         activeOpacity={0.9}
                     >
                         <Text style={styles.buyButtonText}>Add To Cart</Text>
@@ -315,7 +333,7 @@ const styles = StyleSheet.create({
     price: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#4A55A2', // Deep Brand Blue
+        color: '#425BA4', // Deep Brand Blue
     },
     actions: {
         flexDirection: 'row',
@@ -352,7 +370,7 @@ const styles = StyleSheet.create({
     },
     changeLocationText: {
         fontSize: 12,
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: '500',
         marginLeft: 24, // Align with text above (icon width + gap)
     },
@@ -459,12 +477,12 @@ const styles = StyleSheet.create({
         borderTopColor: '#F3F4F6',
     },
     buyButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30, // Rounded pill
         alignItems: 'center',
         // Shadow
-        shadowColor: "#4A55A2",
+        shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,

@@ -72,7 +72,7 @@ export default function DeliveryLocation() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     contentWrapper: {
         flex: 1,

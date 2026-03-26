@@ -149,7 +149,7 @@ export default function DeleteAccountScreen() {
                             <TextInput
                                 style={styles.modalInput}
                                 placeholder="Enter password to continue"
-                                secureTextEntry={!isPasswordVisible}
+                                autoCapitalize="none" secureTextEntry={!isPasswordVisible}
                                 value={password}
                                 onChangeText={setPassword}
                             />

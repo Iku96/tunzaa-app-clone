@@ -38,7 +38,9 @@
         "INTERNET",
         "ACCESS_NETWORK_STATE",
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
+        "ACCESS_FINE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
       ]
     },
     "web": {
@@ -50,6 +52,13 @@
       "expo-secure-store",
       "expo-font",
       "expo-dev-client",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#425BA4"
+        }
+      ],
       [
         "expo-build-properties",
         {

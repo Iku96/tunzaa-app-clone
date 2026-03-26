@@ -26,7 +26,7 @@ export default function LoginXScreen() {
             return;
         }
         console.log('X Login:', { email, password });
-        router.push('/home');
+        router.push('/(buyer)');
     };
 
     const handleSocialLogin = async (provider: string) => {
@@ -100,7 +100,7 @@ export default function LoginXScreen() {
                                 placeholderTextColor="#9CA3AF"
                                 value={password}
                                 onChangeText={setPassword}
-                                secureTextEntry={!showPassword}
+                                autoCapitalize="none" secureTextEntry={!showPassword}
                             />
                             <TouchableOpacity
                                 onPress={() => setShowPassword(!showPassword)}
@@ -175,7 +175,7 @@ export default function LoginXScreen() {
                 </View>
 
                 {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
                     <Text style={styles.skipText}>Skip</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>

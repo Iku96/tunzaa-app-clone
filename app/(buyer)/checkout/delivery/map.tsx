@@ -96,7 +96,7 @@ export default function MapScreen() {
                     {/* Map Pin Center */}
                     <View style={styles.centerPinContainer}>
                         <View style={styles.pinWrapper}>
-                            <Ionicons name="location" size={40} color="#4A55A2" />
+                            <Ionicons name="location" size={40} color="#425BA4" />
                             <View style={styles.pinDot} />
                         </View>
                     </View>
@@ -120,7 +120,7 @@ export default function MapScreen() {
                 {/* Bottom Sheet Card */}
                 <View style={styles.bottomCard}>
                     <View style={styles.addressRow}>
-                        <Ionicons name="location" size={22} color="#4A55A2" style={styles.addressIcon} />
+                        <Ionicons name="location" size={22} color="#425BA4" style={styles.addressIcon} />
                         <Text style={styles.addressText} numberOfLines={2}>
                             172 Nda Mkojoma Road, Maki Dar Es Salaam, TZ
                         </Text>
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
     confirmButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingVertical: 16,
         borderRadius: 30,
         alignItems: 'center',

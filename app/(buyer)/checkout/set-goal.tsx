@@ -160,7 +160,7 @@ export default function SetGoalScreen() {
 
                 {isLoading || !product ? (
                     <View style={{ flex: 1, padding: 40, alignItems: 'center', justifyContent: 'center' }}>
-                        <ActivityIndicator size="large" color="#4A55A2" />
+                        <ActivityIndicator size="large" color="#425BA4" />
                         <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading installment details...</Text>
                     </View>
                 ) : (

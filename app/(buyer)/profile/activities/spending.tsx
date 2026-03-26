@@ -90,7 +90,7 @@ export default function SpendingActivitiesScreen() {
                             <View style={styles.gridHeader}>
                                 <Text style={styles.gridValue}>{item.value}</Text>
                                 <View style={styles.trendBadge}>
-                                    <Ionicons name="arrow-up" size={10} color="#4A55A2" />
+                                    <Ionicons name="arrow-up" size={10} color="#425BA4" />
                                     <Text style={styles.trendText}>{item.trend}</Text>
                                 </View>
                             </View>
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     activeTab: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     tabText: {
         fontSize: 14,
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
         color: '#4B5563',
     },
     overviewCard: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 16,
         padding: 20,
         marginBottom: 24,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     gridValue: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginRight: 8,
     },
     trendBadge: {
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     },
     trendText: {
         fontSize: 10,
-        color: '#4A55A2',
+        color: '#425BA4',
         fontWeight: '600',
         marginLeft: 2,
     },

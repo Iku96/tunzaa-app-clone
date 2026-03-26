@@ -129,7 +129,7 @@ export default function OTPScreen() {
                         } else if (role === 'buyer') {
                             router.replace('/(buyer)' as any);
                         } else {
-                            router.replace('/home' as any);
+                            router.replace('/(buyer)' as any);
                         }
                     } catch (regErr: any) {
                         console.error('❌ [OTP] Registration/Vendor creation failed:', regErr);
@@ -229,7 +229,7 @@ export default function OTPScreen() {
                 </View>
 
                 {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
                     <Text style={styles.skipText}>{t.loginSkip}</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>

@@ -21,7 +21,7 @@ export default function ScreenGallery() {
         { name: 'Complete Profile', route: '/complete-profile' },
         { name: 'Choose Role', route: '/role' },
         { name: 'Choose Language', route: '/language' },
-        { name: 'Home', route: '/home' },
+        { name: 'Home', route: '/(buyer)' },
     ];
 
     return (

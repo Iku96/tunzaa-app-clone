@@ -133,11 +133,11 @@ export default function DeliveryTrackingScreen() {
                         <>
                             {/* Blue route line and Car icon simulation */}
                             <Ionicons name="location" size={36} color="#22C55E" style={{ position: 'absolute', top: '30%', right: '30%' }} />
-                            <Ionicons name="car" size={32} color="#4A55A2" style={{ position: 'absolute', top: '45%', left: '45%' }} />
+                            <Ionicons name="car" size={32} color="#425BA4" style={{ position: 'absolute', top: '45%', left: '45%' }} />
                             <View style={styles.mockRouteLine} />
                         </>
                     ) : (
-                        <Ionicons name="location" size={40} color="#4A55A2" style={{ position: 'absolute', top: '40%', left: '40%' }} />
+                        <Ionicons name="location" size={40} color="#425BA4" style={{ position: 'absolute', top: '40%', left: '40%' }} />
                     )}
                 </View>
             </View>
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
         height: 80,
         borderLeftWidth: 4,
         borderBottomWidth: 4,
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
         borderBottomLeftRadius: 16,
     },
     overlay: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         borderWidth: 5,
         borderColor: '#E0E7FF',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         marginRight: 16,
     },
     greenRing: {
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
     },
     confirmBtn: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         paddingVertical: 16,
         alignItems: 'center',
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     },
     okBtn: {
         width: '100%',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         paddingVertical: 14,
         alignItems: 'center',
@@ -411,10 +411,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     hNodeActive: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     hNodeCurrent: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderWidth: 4,
         borderColor: '#E0E7FF',
     },
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     },
     callBtn: {
         flexDirection: 'row',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         paddingVertical: 16,
         justifyContent: 'center',

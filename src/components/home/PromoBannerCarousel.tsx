@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         position: 'relative',
         // Shadow
-        shadowColor: '#4A55A2',
+        shadowColor: '#425BA4',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.2,
         shadowRadius: 12,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     },
     dotActive: {
         width: 24,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     dotInactive: {
         width: 8,

@@ -15,6 +15,15 @@ export default function CategoryScreen() {
     const [loading, setLoading] = useState(true);
     const [categoryProducts, setCategoryProducts] = useState<any[]>([]);
     const [apiCategories, setApiCategories] = useState<ApiCategory[]>([]);
+    const [searchText, setSearchText] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchText);
+        }, 400);
+        return () => clearTimeout(handler);
+    }, [searchText]);
 
     const isAllCategories = id === 'all';
     const categoryName = isAllCategories ? 'All Categories' : (CATEGORIES.find(c => c.id === id)?.name || 'Category');
@@ -32,7 +41,12 @@ export default function CategoryScreen() {
                     }
                 } else {
                     // Fetch products for this category
-                    const res = await productsApi.getProducts({ category_id: id as string, limit: 30, is_active: true });
+                    const res = await productsApi.getProducts({ 
+                        category_id: id as string, 
+                        limit: 30, 
+                        is_active: true,
+                        query: debouncedSearch || undefined
+                    });
                     if (res?.items?.length > 0) {
                         console.log(`\u2705 [Category] Loaded ${res.items.length} products for category ${id}`);
                         setCategoryProducts(res.items.map(p => ({
@@ -61,7 +75,13 @@ export default function CategoryScreen() {
             }
         };
         fetchData();
-    }, [id]);
+    }, [id, debouncedSearch]);
+
+    // Derived filtered categories for "All Categories" view
+    const displayedCategories = apiCategories.length > 0 ? apiCategories : CATEGORIES as any[];
+    const filteredCategories = displayedCategories.filter((c: any) => 
+        (c.name || '').toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -84,6 +104,8 @@ export default function CategoryScreen() {
                                 placeholder={isAllCategories ? "Search for categories" : "Smart watch"}
                                 placeholderTextColor="#9CA3AF"
                                 style={styles.searchInput}
+                                value={searchText}
+                                onChangeText={setSearchText}
                             />
                             {!isAllCategories && (
                                 <TouchableOpacity>
@@ -93,7 +115,7 @@ export default function CategoryScreen() {
                         </View>
                         {!isAllCategories && (
                             <TouchableOpacity style={styles.filterBtn}>
-                                <Ionicons name="options-outline" size={20} color="#4A55A2" />
+                                <Ionicons name="options-outline" size={20} color="#425BA4" />
                             </TouchableOpacity>
                         )}
                     </View>
@@ -101,38 +123,23 @@ export default function CategoryScreen() {
                     {isAllCategories ? (
                         /* ALL CATEGORIES LAYOUT */
                         loading ? (
-                            <ActivityIndicator size="large" color="#4A55A2" style={{ padding: 40 }} />
+                            <ActivityIndicator size="large" color="#425BA4" style={{ padding: 40 }} />
                         ) : (
                             <View style={styles.allCatsContainer}>
-                                {apiCategories.length > 0 ? (
-                                    <View style={styles.gridContainer}>
-                                        {apiCategories.map((cat) => (
-                                            <TouchableOpacity
-                                                key={cat.category_id}
-                                                style={styles.gridCard}
-                                                onPress={() => router.push(`/(buyer)/category/${cat.category_id}`)}
-                                            >
-                                                <View style={styles.iconCircle}>
-                                                    <Ionicons name="grid-outline" size={24} color="#4A55A2" />
-                                                </View>
-                                                <Text style={styles.cardText}>{cat.name}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                ) : (
-                                    <View style={styles.gridContainer}>
-                                        {CATEGORIES.map((cat) => (
-                                            <TouchableOpacity key={cat.id} style={styles.gridCard}
-                                                onPress={() => router.push(`/(buyer)/category/${cat.id}`)}
-                                            >
-                                                <View style={styles.iconCircle}>
-                                                    <Ionicons name={cat.icon as any} size={24} color="#4A55A2" />
-                                                </View>
-                                                <Text style={styles.cardText}>{cat.name}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                )}
+                                <View style={styles.gridContainer}>
+                                    {filteredCategories.map((cat) => (
+                                        <TouchableOpacity
+                                            key={cat.category_id || cat.id}
+                                            style={styles.gridCard}
+                                            onPress={() => router.push(`/(buyer)/category/${cat.category_id || cat.id}`)}
+                                        >
+                                            <View style={styles.iconCircle}>
+                                                <Ionicons name={(cat.icon as any) || 'grid-outline'} size={24} color="#425BA4" />
+                                            </View>
+                                            <Text style={styles.cardText}>{cat.name}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
                         )
                     ) : (
@@ -141,7 +148,7 @@ export default function CategoryScreen() {
                             {/* Sort Tabs */}
                             <View style={styles.tabsRow}>
                                 <TouchableOpacity style={styles.activeTab}>
-                                    <Ionicons name="caret-up" size={12} color="#4A55A2" />
+                                    <Ionicons name="caret-up" size={12} color="#425BA4" />
                                     <Text style={styles.activeTabText}>Best matches</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.tab}>
@@ -156,7 +163,7 @@ export default function CategoryScreen() {
 
                             {/* Grid Content */}
                             {loading ? (
-                                <ActivityIndicator size="large" color="#4A55A2" style={{ padding: 40 }} />
+                                <ActivityIndicator size="large" color="#425BA4" style={{ padding: 40 }} />
                             ) : (
                                 <View style={styles.productGrid}>
                                     {categoryProducts.length > 0 ? (
@@ -307,7 +314,7 @@ const styles = StyleSheet.create({
     activeTabText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     tab: {
         flexDirection: 'row',
@@ -338,7 +345,7 @@ const styles = StyleSheet.create({
     goHomeBtn: {
         paddingVertical: 12,
         paddingHorizontal: 24,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 20,
     },
     goHomeText: {

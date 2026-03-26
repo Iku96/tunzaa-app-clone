@@ -153,7 +153,7 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     header: {
         flexDirection: 'row',
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     itemName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         flex: 1,
         marginRight: 8,
     },
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
     },
     qtyButtonAdd: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     qtyText: {
         marginHorizontal: 8,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     },
     changeLocation: {
         fontSize: 10,
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 8,
         marginLeft: 16,
     },

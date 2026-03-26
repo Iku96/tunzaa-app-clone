@@ -159,7 +159,7 @@ export default function AccountScreen() {
                             activeOpacity={0.8}
                         >
                             <View style={styles.completionContent}>
-                                <Ionicons name="person-circle-outline" size={20} color="#4A55A2" />
+                                <Ionicons name="person-circle-outline" size={20} color="#425BA4" />
                                 <View style={styles.completionTextCol}>
                                     <Text style={styles.completionTitle}>
                                         Complete your profile – {percent}%
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     coinText: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     offerClaimText: {
         fontSize: 13,
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     collectButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         paddingHorizontal: 20,
         paddingVertical: 8,
         borderRadius: 20,
@@ -457,6 +457,6 @@ const styles = StyleSheet.create({
     progressFill: {
         height: '100%',
         borderRadius: 3,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
 });

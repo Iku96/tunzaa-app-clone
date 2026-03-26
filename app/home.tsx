@@ -8,14 +8,10 @@ import { useLanguage } from '../src/contexts/LanguageContext';
  * Uses StyleSheet (not NativeWind className) to avoid Android native prop type issues.
  * Copy is translated via useLanguage().t.
  */
+import { Redirect } from 'expo-router';
+
 export default function HomeScreen() {
-    const { t } = useLanguage();
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>{t.homeWelcome}</Text>
-            <Text style={styles.subtitle}>{t.homeComingSoon}</Text>
-        </View>
-    );
+    return <Redirect href="/(buyer)" />;
 }
 
 const styles = StyleSheet.create({

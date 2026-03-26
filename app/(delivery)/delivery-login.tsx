@@ -75,7 +75,6 @@ export default function DeliveryLoginScreen() {
                                             value={phone}
                                             onChangeText={setPhone}
                                             keyboardType="phone-pad"
-                                            placeholder="787 118 486"
                                             placeholderTextColor="#9CA3AF"
                                             maxLength={9}
                                         />
@@ -90,7 +89,7 @@ export default function DeliveryLoginScreen() {
                                             style={styles.passwordInput}
                                             value={password}
                                             onChangeText={setPassword}
-                                            secureTextEntry={!showPassword}
+                                            autoCapitalize="none" secureTextEntry={!showPassword}
                                             placeholder="••••••"
                                             placeholderTextColor="#9CA3AF"
                                         />
@@ -101,7 +100,7 @@ export default function DeliveryLoginScreen() {
                                             <Ionicons
                                                 name={showPassword ? "eye-off-outline" : "eye-outline"}
                                                 size={24}
-                                                color="#315BA9"
+                                                color="#425BA4"
                                             />
                                         </TouchableOpacity>
                                     </View>
@@ -180,7 +179,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#315BA9',
+        color: '#425BA4',
         fontFamily: 'Gilroy-Bold',
     },
     formContainer: {
@@ -213,7 +212,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 14,
         fontSize: 16,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
     },
     passwordContainer: {
@@ -229,7 +228,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 14,
         fontSize: 24,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
         letterSpacing: 4,
     },
@@ -258,16 +257,16 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     checkboxChecked: {
-        backgroundColor: '#315BA9',
-        borderColor: '#315BA9',
+        backgroundColor: '#425BA4',
+        borderColor: '#425BA4',
     },
     checkboxLabel: {
         fontSize: 14,
-        color: '#315BA9',
+        color: '#425BA4',
     },
     forgotPassword: {
         fontSize: 14,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
     },
     signUpContainer: {
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
     },
     signUpLink: {
         fontSize: 16,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '700',
         textDecorationLine: 'underline',
     },
@@ -285,7 +284,7 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     primaryButton: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
         borderRadius: 8,
         paddingVertical: 16,
         alignItems: 'center',
@@ -306,7 +305,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     secondaryButtonText: {
-        color: '#315BA9',
+        color: '#425BA4',
         fontSize: 16,
         fontWeight: '600',
     },

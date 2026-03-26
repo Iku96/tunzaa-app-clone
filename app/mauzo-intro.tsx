@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, StatusBar, FlatList } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, ScrollView, StatusBar, FlatList } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react-native';
@@ -84,24 +84,30 @@ export default function MauzoIntro() {
 
     const renderItem = ({ item }: { item: typeof SLIDES[0] }) => (
         <View style={styles.slide}>
-            {/* Illustration Area */}
-            <View style={styles.imageContainer}>
-                <Image
-                    source={item.image}
-                    style={styles.illustration}
-                    resizeMode="contain"
-                />
-            </View>
+            <ScrollView 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingBottom: 20 }}
+                style={{ width: '100%' }}
+            >
+                {/* Illustration Area */}
+                <View style={styles.imageContainer}>
+                    <Image
+                        source={item.image}
+                        style={styles.illustration}
+                        resizeMode="contain"
+                    />
+                </View>
 
-            {/* Text Content */}
-            <View style={styles.textWrapper}>
-                <Text style={styles.title}>
-                    {item.title}
-                </Text>
-                <Text style={styles.description}>
-                    {item.description}
-                </Text>
-            </View>
+                {/* Text Content */}
+                <View style={styles.textWrapper}>
+                    <Text style={styles.title}>
+                        {item.title}
+                    </Text>
+                    <Text style={styles.description}>
+                        {item.description}
+                    </Text>
+                </View>
+            </ScrollView>
         </View>
     );
 
@@ -211,24 +217,26 @@ const styles = StyleSheet.create({
     },
     slide: {
         width: width,
+        flex: 1,
         alignItems: 'center',
         paddingHorizontal: 24,
     },
     imageContainer: {
-        height: height * 0.45, // Responsive height for illustration area
+        flex: 1, // Changed from fixed height to flexible
+        minHeight: 250, // Ensure it never completely disappears
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
-        marginTop: 20,
+        marginTop: 10,
     },
     illustration: {
         width: '100%',
         height: '100%',
-        maxHeight: 350,
+        maxHeight: 300, // Limit max size so it doesn't push text too far
     },
     textWrapper: {
         alignItems: 'center',
-        marginTop: 20,
+        paddingVertical: 10,
         width: '100%',
     },
     title: {

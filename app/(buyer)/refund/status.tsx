@@ -97,7 +97,7 @@ export default function RefundStatusScreen() {
 
                     {/* Estimated Completion */}
                     <View style={styles.estimatedCard}>
-                        <Ionicons name="calendar-outline" size={20} color="#4A55A2" />
+                        <Ionicons name="calendar-outline" size={20} color="#425BA4" />
                         <View style={{ marginLeft: 12 }}>
                             <Text style={styles.estimatedLabel}>Estimated Completion</Text>
                             <Text style={styles.estimatedValue}>January 25, 2024 (72 hours business days)</Text>
@@ -141,7 +141,7 @@ export default function RefundStatusScreen() {
 
                 {/* Help */}
                 <View style={styles.helpCard}>
-                    <Ionicons name="information-circle-outline" size={20} color="#4A55A2" />
+                    <Ionicons name="information-circle-outline" size={20} color="#425BA4" />
                     <View style={{ marginLeft: 12, flex: 1 }}>
                         <Text style={styles.helpTitle}>Need Help?</Text>
                         <Text style={styles.helpText}>
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     totalValue: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     estimatedCard: {
         flexDirection: 'row',
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     estimatedLabel: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 2,
     },
     estimatedValue: {
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     helpTitle: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 4,
     },
     helpText: {

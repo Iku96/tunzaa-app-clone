@@ -107,7 +107,7 @@ export default function TransferStatusScreen() {
                     </View>
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Net Adjustment (To):</Text>
-                        <Text style={[styles.summaryValue, { color: '#4A55A2' }]}>+Tsh {netAdjustment.toLocaleString()}</Text>
+                        <Text style={[styles.summaryValue, { color: '#425BA4' }]}>+Tsh {netAdjustment.toLocaleString()}</Text>
                     </View>
 
                     <View style={styles.divider} />
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 8,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     statusTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 4,
     },
     statusDescription: {

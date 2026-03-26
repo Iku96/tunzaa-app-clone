@@ -85,7 +85,7 @@ export default function HotelListScreen() {
                     {/* Search Context — Tappable to open search modal */}
                     <TouchableOpacity style={styles.searchContext} onPress={() => setShowSearchModal(true)}>
                         <View style={styles.searchRow}>
-                            <Ionicons name="location-outline" size={16} color="#4A55A2" />
+                            <Ionicons name="location-outline" size={16} color="#425BA4" />
                             <Text style={styles.searchText}>{city}</Text>
                         </View>
                         <View style={styles.metaRow}>
@@ -137,7 +137,7 @@ export default function HotelListScreen() {
                                 {/* Location */}
                                 <View style={styles.fieldSection}>
                                     <Text style={styles.fieldLabel}>
-                                        <Ionicons name="location-outline" size={16} color="#4A55A2" /> Destination
+                                        <Ionicons name="location-outline" size={16} color="#425BA4" /> Destination
                                     </Text>
                                     <View style={styles.cityOptions}>
                                         {HOTEL_CITIES.map((c) => (
@@ -155,7 +155,7 @@ export default function HotelListScreen() {
                                 {/* Dates */}
                                 <View style={styles.fieldSection}>
                                     <Text style={styles.fieldLabel}>
-                                        <Ionicons name="calendar-outline" size={16} color="#4A55A2" /> Dates
+                                        <Ionicons name="calendar-outline" size={16} color="#425BA4" /> Dates
                                     </Text>
                                     <View style={styles.dateRow}>
                                         <TouchableOpacity style={styles.dateBox} onPress={() => {
@@ -184,21 +184,21 @@ export default function HotelListScreen() {
                                 {/* Guests */}
                                 <View style={styles.fieldSection}>
                                     <Text style={styles.fieldLabel}>
-                                        <Ionicons name="people-outline" size={16} color="#4A55A2" /> Guests
+                                        <Ionicons name="people-outline" size={16} color="#425BA4" /> Guests
                                     </Text>
                                     <View style={styles.guestRow}>
                                         <TouchableOpacity
                                             style={styles.guestBtn}
                                             onPress={() => setGuests(Math.max(1, guests - 1))}
                                         >
-                                            <Ionicons name="remove" size={20} color="#4A55A2" />
+                                            <Ionicons name="remove" size={20} color="#425BA4" />
                                         </TouchableOpacity>
                                         <Text style={styles.guestCount}>{guests}</Text>
                                         <TouchableOpacity
                                             style={styles.guestBtn}
                                             onPress={() => setGuests(Math.min(10, guests + 1))}
                                         >
-                                            <Ionicons name="add" size={20} color="#4A55A2" />
+                                            <Ionicons name="add" size={20} color="#425BA4" />
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     cardPrice: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     cardPeriod: {
         fontSize: 10,
@@ -441,8 +441,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     cityChipActive: {
-        backgroundColor: '#4A55A2',
-        borderColor: '#4A55A2',
+        backgroundColor: '#425BA4',
+        borderColor: '#425BA4',
     },
     cityChipText: {
         fontSize: 13,
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
     },
     dateTap: {
         fontSize: 9,
-        color: '#4A55A2',
+        color: '#425BA4',
         marginTop: 4,
     },
     guestRow: {
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
         height: 44,
         borderRadius: 22,
         borderWidth: 1.5,
-        borderColor: '#4A55A2',
+        borderColor: '#425BA4',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -511,14 +511,14 @@ const styles = StyleSheet.create({
     },
     searchButton: {
         flexDirection: 'row',
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         height: 56,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
         gap: 10,
         marginTop: 8,
-        shadowColor: "#4A55A2",
+        shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 10,

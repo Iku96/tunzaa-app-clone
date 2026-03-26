@@ -21,7 +21,7 @@ export default function DeliveryPreviewScreen() {
                 <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
                     <Text>No active delivery found.</Text>
                     <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
-                        <Text style={{ color: '#3B5998' }}>Go Back</Text>
+                        <Text style={{ color: '#425BA4' }}>Go Back</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -90,7 +90,7 @@ export default function DeliveryPreviewScreen() {
                         <View style={styles.section}>
                             <View style={styles.sectionHeader}>
                                 {/* Negative margin to align with the border line from the previous section */}
-                                <View style={[styles.dot, { backgroundColor: '#315BA9', marginLeft: 0 }]} />
+                                <View style={[styles.dot, { backgroundColor: '#425BA4', marginLeft: 0 }]} />
                                 <Text style={styles.sectionTitle}>Delivery details (To)</Text>
                             </View>
 
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
         fontWeight: '400',
     },
     startButton: {
-        backgroundColor: '#3B5998', // Dark blue from screenshot
+        backgroundColor: '#425BA4', // Dark blue from screenshot
         borderRadius: 24,
         height: 48,
         alignItems: 'center',

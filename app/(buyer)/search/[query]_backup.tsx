@@ -51,7 +51,7 @@ const SearchProductCard = ({ product }: { product: typeof PRODUCTS[0] }) => {
                         <Text style={styles.vendorName}>{product.vendor.name}</Text>
                         <Text style={styles.vendorMeta}>Supplier since 2024</Text>
                         <View style={styles.locationRow}>
-                            <Ionicons name="location-outline" size={10} color="#4A55A2" />
+                            <Ionicons name="location-outline" size={10} color="#425BA4" />
                             <Text style={styles.locationText}>{product.vendor.location}</Text>
                         </View>
                     </View>
@@ -139,14 +139,14 @@ export default function SearchScreen() {
                     </View>
 
                     <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
-                        <Ionicons name="options-outline" size={20} color="#4A55A2" />
+                        <Ionicons name="options-outline" size={20} color="#425BA4" />
                     </TouchableOpacity>
                 </View>
 
                 {/* Sort Tabs */}
                 <View style={styles.tabsRow}>
                     <TouchableOpacity style={styles.activeTab}>
-                        <Ionicons name="caret-up" size={12} color="#4A55A2" />
+                        <Ionicons name="caret-up" size={12} color="#425BA4" />
                         <Text style={styles.activeTabText}>Best matches</Text>
                     </TouchableOpacity>
 
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     activeTabText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     tab: {
         flexDirection: 'row',
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     cardPrice: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
         marginBottom: 6,
     },
     cardSpecs: {

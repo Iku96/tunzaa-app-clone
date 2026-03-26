@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 13, // Matches standard 13-14pt
         fontWeight: '600',
-        color: '#4A55A2', // Primary theme blue matching the text in the screenshot
+        color: '#425BA4', // Primary theme blue matching the text in the screenshot
         paddingRight: 8,
     },
     heartButton: {
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     qtyButtonAdd: {
-        backgroundColor: '#4A55A2', // Solid blue for the + pill
+        backgroundColor: '#425BA4', // Solid blue for the + pill
     },
     qtyText: {
         marginHorizontal: 8,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
     },
     buyNowButton: {
-        backgroundColor: '#4A55A2', // Matches new dark branding
+        backgroundColor: '#425BA4', // Matches new dark branding
         borderRadius: 8, // More squared
         paddingVertical: 12,
         alignItems: 'center',

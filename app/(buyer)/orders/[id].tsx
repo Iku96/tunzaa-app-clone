@@ -58,7 +58,7 @@ export default function OrderDetailsScreen() {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#4A55A2" />
+            <StatusBar barStyle="light-content" backgroundColor="#425BA4" />
 
             {/* Header */}
             <SafeAreaView edges={['top']} style={styles.header}>
@@ -74,7 +74,7 @@ export default function OrderDetailsScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {isLoading ? (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 }}>
-                        <ActivityIndicator size="large" color="#4A55A2" />
+                        <ActivityIndicator size="large" color="#425BA4" />
                         <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading order details...</Text>
                     </View>
                 ) : !apiOrder ? (
@@ -97,7 +97,7 @@ export default function OrderDetailsScreen() {
                                         strokeWidth={strokeWidth}
                                     />
                                     <Circle
-                                        stroke="#4A55A2"
+                                        stroke="#425BA4"
                                         fill="none"
                                         cx={center}
                                         cy={center}
@@ -179,7 +179,7 @@ export default function OrderDetailsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#4A55A2', // Blue background for top half
+        backgroundColor: '#425BA4', // Blue background for top half
     },
     header: {
         paddingHorizontal: 20,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     progressText: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#4A55A2',
+        color: '#425BA4',
     },
     progressLabel: {
         fontSize: 12,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     },
     orderNumber: {
         fontSize: 14,
-        color: '#4A55A2',
+        color: '#425BA4',
         alignSelf: 'flex-start',
         fontWeight: '600',
         marginBottom: 4,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     primaryButton: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         width: '100%',
         paddingVertical: 16,
         borderRadius: 30,

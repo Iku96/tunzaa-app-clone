@@ -19,15 +19,10 @@ export default function WelcomeScreen() {
         if (isLoading) return; // Wait for session restoration
 
         const timer = setTimeout(() => {
-            if (isAuthenticated && user) {
-                // User is authenticated, but we don't land them directly in a dashboard
-                // per user request "I don't wanna be logged in directly when the app loads".
-                // Instead, we show the Role screen so they can choose their entry point.
-                console.log('🚀 [Splash] Authenticated, showing Role screen for choice');
-                router.replace('/role');
-            } else {
-                router.replace('/language');
-            }
+            // Always show the language selection screen first on app load,
+            // regardless of auth state. The language screen leads to the role screen.
+            console.log('🚀 [Splash] Navigating to language selection');
+            router.replace('/language');
         }, 1500);
 
         return () => clearTimeout(timer);

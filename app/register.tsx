@@ -173,7 +173,7 @@ export default function RegisterScreen() {
     };
 
     const handleSkip = () => {
-        router.push('/home');
+        router.push('/(buyer)');
     };
 
     return (
@@ -250,7 +250,7 @@ export default function RegisterScreen() {
                                         placeholderTextColor="#9CA3AF"
                                         value={password}
                                         onChangeText={setPassword}
-                                        secureTextEntry
+                                        autoCapitalize="none" secureTextEntry
                                         autoCapitalize="none"
                                     />
                                 </View>

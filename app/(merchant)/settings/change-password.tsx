@@ -75,7 +75,7 @@ export default function ChangePasswordScreen() {
                             onChangeText={setCurrentPassword}
                             placeholder="**********"
                             placeholderTextColor="#9CA3AF"
-                            secureTextEntry={!showCurrent}
+                            autoCapitalize="none" secureTextEntry={!showCurrent}
                         />
                         <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)} style={styles.eyeIcon}>
                             {showCurrent ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
@@ -92,7 +92,7 @@ export default function ChangePasswordScreen() {
                             onChangeText={setNewPassword}
                             placeholder="At least 8 characters"
                             placeholderTextColor="#9CA3AF"
-                            secureTextEntry={!showNew}
+                            autoCapitalize="none" secureTextEntry={!showNew}
                         />
                         <TouchableOpacity onPress={() => setShowNew(!showNew)} style={styles.eyeIcon}>
                             {showNew ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}
@@ -109,7 +109,7 @@ export default function ChangePasswordScreen() {
                             onChangeText={setConfirmPassword}
                             placeholder="At least 8 characters"
                             placeholderTextColor="#9CA3AF"
-                            secureTextEntry={!showConfirm}
+                            autoCapitalize="none" secureTextEntry={!showConfirm}
                         />
                         <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeIcon}>
                             {showConfirm ? <EyeOff size={20} color="#9CA3AF" /> : <Eye size={20} color="#9CA3AF" />}

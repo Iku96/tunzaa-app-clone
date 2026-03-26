@@ -83,13 +83,13 @@ export default function ShopProfileScreen() {
 
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#4A55A2" />
+                    <ActivityIndicator size="large" color="#425BA4" />
                 </View>
             ) : error || !shop ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={{ color: 'red' }}>{error || 'Shop not found'}</Text>
                     <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
-                        <Text style={{ color: '#4A55A2' }}>Go Back</Text>
+                        <Text style={{ color: '#425BA4' }}>Go Back</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     },
     primaryBtn: {
         flex: 1,
-        backgroundColor: '#4A55A2', // Brand Blue
+        backgroundColor: '#425BA4', // Brand Blue
         paddingVertical: 12,
         borderRadius: 8,
         alignItems: 'center',

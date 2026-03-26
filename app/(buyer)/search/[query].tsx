@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { productsApi } from '../../../src/services/products';
 import { PRODUCTS } from '../../../src/data/products';
+import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
+import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -43,7 +45,7 @@ const ListProductCard = ({ product }: { product: typeof PRODUCTS[0] }) => {
                         <Text style={styles.vendorNameList}>{product.vendor.name}</Text>
                         <Text style={styles.vendorMetaList}>Supplier since 2024</Text>
                         <View style={styles.locationRowList}>
-                            <Ionicons name="location-outline" size={10} color="#4A55A2" />
+                            <Ionicons name="location-outline" size={10} color="#425BA4" />
                             <Text style={styles.locationTextList}>Dar, Mikocheni</Text>
                         </View>
                     </View>
@@ -83,9 +85,41 @@ const GridProductCard = ({ product }: { product: typeof PRODUCTS[0] }) => {
 export default function SearchScreen() {
     const { query } = useLocalSearchParams();
     const router = useRouter();
-    const [searchText, setSearchText] = useState(query as string || '');
+    const [searchText, setSearchText] = useState((query === 'all' ? '' : query as string) || '');
     const [loading, setLoading] = useState(false);
-    const [results, setResults] = useState<any[]>(PRODUCTS.slice(0, 6)); // Default mockup results
+    const [results, setResults] = useState<any[]>([]); // Dynamic results
+
+    // Fetch dynamic data
+    useEffect(() => {
+        const fetchResults = async () => {
+            setLoading(true);
+            try {
+                // If query is empty, maybe fetch recent or generic
+                const searchQuery = searchText.trim();
+                let res;
+                if (searchQuery) {
+                    res = await productsApi.searchProducts(searchQuery, { limit: 30 });
+                } else {
+                    res = await productsApi.getProducts({ limit: 30, is_active: true });
+                }
+                
+                if (res?.items && res.items.length > 0) {
+                    setResults(res.items.map(mapApiProductToUI));
+                } else {
+                    setResults([]);
+                }
+            } catch (e: any) {
+                console.warn('⚠️ [SearchScreen] API failed:', e.message);
+                // Optional fallback to static if absolutely necessary, but empty is better
+                setResults([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchResults, 400); // 400ms debounce
+        return () => clearTimeout(timeoutId);
+    }, [searchText]);
 
     // UI States
     const [viewMode, setViewMode] = useState<'list' | 'gallery'>('list');
@@ -231,7 +265,7 @@ export default function SearchScreen() {
                             <Switch
                                 value={nearbyShops}
                                 onValueChange={setNearbyShops}
-                                trackColor={{ false: '#E5E7EB', true: '#4A55A2' }}
+                                trackColor={{ false: '#E5E7EB', true: '#425BA4' }}
                                 thumbColor="#FFFFFF"
                             />
                         </View>
@@ -244,14 +278,14 @@ export default function SearchScreen() {
                                     style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleActive]}
                                     onPress={() => setViewMode('list')}
                                 >
-                                    <Ionicons name="list" size={16} color={viewMode === 'list' ? '#4A55A2' : '#9CA3AF'} />
+                                    <Ionicons name="list" size={16} color={viewMode === 'list' ? '#425BA4' : '#9CA3AF'} />
                                     <Text style={[styles.viewToggleText, viewMode === 'list' && styles.viewToggleTextActive]}>List</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.viewToggleBtn, viewMode === 'gallery' && styles.viewToggleActive]}
                                     onPress={() => setViewMode('gallery')}
                                 >
-                                    <Ionicons name="grid-outline" size={16} color={viewMode === 'gallery' ? '#4A55A2' : '#9CA3AF'} />
+                                    <Ionicons name="grid-outline" size={16} color={viewMode === 'gallery' ? '#425BA4' : '#9CA3AF'} />
                                     <Text style={[styles.viewToggleText, viewMode === 'gallery' && styles.viewToggleTextActive]}>Gallery</Text>
                                 </TouchableOpacity>
                             </View>
@@ -320,11 +354,11 @@ export default function SearchScreen() {
                 {/* Sort Tabs Row */}
                 <View style={[styles.tabsRow, isImageSearchMode && { justifyContent: 'flex-start', gap: 24, paddingHorizontal: 20 }]}>
                     <TouchableOpacity style={styles.tab} onPress={() => setSortMode('matches')}>
-                        <Ionicons name="caret-up" size={12} color={sortMode === 'matches' ? '#4A55A2' : '#FFFFFF'} />
+                        <Ionicons name="caret-up" size={12} color={sortMode === 'matches' ? '#425BA4' : '#FFFFFF'} />
                         <Text style={[styles.tabText, sortMode === 'matches' && styles.activeTabText]}>Best matches</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.tab} onPress={() => setSortMode('sales')}>
-                        <Ionicons name="caret-up" size={12} color={sortMode === 'sales' ? '#4A55A2' : '#FFFFFF'} />
+                        <Ionicons name="caret-up" size={12} color={sortMode === 'sales' ? '#425BA4' : '#FFFFFF'} />
                         <Text style={[styles.tabText, sortMode === 'sales' && styles.activeTabText]}>Top sales</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.tab} onPress={() => setSortMode('price')}>
@@ -335,13 +369,22 @@ export default function SearchScreen() {
                     {/* View Toggle Icon explicitly in Image Mode Toolbar as seen in screenshot */}
                     {isImageSearchMode && (
                         <TouchableOpacity style={[styles.filterBtn, { marginLeft: 'auto', width: 44, height: 44, borderRadius: 22 }]} onPress={() => setViewMode(viewMode === 'list' ? 'gallery' : 'list')}>
-                            <Ionicons name="options-outline" size={18} color="#4A55A2" />
+                            <Ionicons name="options-outline" size={18} color="#425BA4" />
                         </TouchableOpacity>
                     )}
                 </View>
 
                 {/* List or Grid */}
-                {viewMode === 'list' ? (
+                {loading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <ActivityIndicator size="large" color="#425BA4" />
+                    </View>
+                ) : results.length === 0 ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+                        <Ionicons name="search-outline" size={48} color="#D1D5DB" style={{ marginBottom: 16 }} />
+                        <Text style={{ fontSize: 16, color: '#6B7280', textAlign: 'center' }}>No products found matching "{searchText}".</Text>
+                    </View>
+                ) : viewMode === 'list' ? (
                     <FlatList
                         data={results}
                         keyExtractor={item => item.id}
@@ -426,8 +469,8 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     filterBtnActive: {
-        backgroundColor: '#4A55A2',
-        borderColor: '#4A55A2',
+        backgroundColor: '#425BA4',
+        borderColor: '#425BA4',
         width: 'auto',
         paddingHorizontal: 16,
         borderRadius: 24,
@@ -452,7 +495,7 @@ const styles = StyleSheet.create({
     },
     tab: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     tabText: { fontSize: 13, color: '#6B7280', fontWeight: '500' },
-    activeTabText: { color: '#4A55A2', fontWeight: 'bold' },
+    activeTabText: { color: '#425BA4', fontWeight: 'bold' },
     listContent: { paddingHorizontal: 16, paddingBottom: 24 },
 
     // List Card styling matching specific search screenshot
@@ -568,7 +611,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 16,
     },
-    imageSearchTitle: { fontSize: 16, fontWeight: 'bold', color: '#4A55A2', marginBottom: 24 },
+    imageSearchTitle: { fontSize: 16, fontWeight: 'bold', color: '#425BA4', marginBottom: 24 },
     outlineBtn: {
         width: '100%',
         flexDirection: 'row',
@@ -667,7 +710,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
     },
     filterSectionTitle: {
         fontSize: 16,
@@ -682,8 +725,8 @@ const styles = StyleSheet.create({
     viewToggleBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 6 },
     viewToggleActive: { backgroundColor: '#FFFFFF', shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
     viewToggleText: { fontSize: 13, color: '#9CA3AF', fontWeight: '500' },
-    viewToggleTextActive: { color: '#4A55A2', fontWeight: 'bold' },
+    viewToggleTextActive: { color: '#425BA4', fontWeight: 'bold' },
     filterFooter: { padding: 24, paddingTop: 16, paddingBottom: 40, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-    applyBtn: { backgroundColor: '#4A55A2', paddingVertical: 16, borderRadius: 24, alignItems: 'center' },
+    applyBtn: { backgroundColor: '#425BA4', paddingVertical: 16, borderRadius: 24, alignItems: 'center' },
     applyBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
 });

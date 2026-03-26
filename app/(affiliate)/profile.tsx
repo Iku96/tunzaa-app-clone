@@ -137,7 +137,7 @@ export default function AffiliateProfileScreen() {
 
                 {/* Profile Actions */}
                 <View style={styles.actionsRow}>
-                    <TouchableOpacity style={styles.editButton}>
+                    <TouchableOpacity style={styles.editButton} onPress={() => router.push('/(affiliate)/edit-profile' as any)}>
                         <Text style={styles.editButtonText}>Edit Profile</Text>
                     </TouchableOpacity>
 

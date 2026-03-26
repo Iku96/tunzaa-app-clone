@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     sendButton: {
-        backgroundColor: '#4A55A2', // Theme blue
+        backgroundColor: '#425BA4', // Theme blue
         borderRadius: 24,
         paddingVertical: 16,
         alignItems: 'center',

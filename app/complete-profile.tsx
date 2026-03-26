@@ -16,7 +16,7 @@ export default function CompleteProfileScreen() {
 
     const handleContinue = () => {
         console.log('Profile:', { gender, dateOfBirth, location });
-        router.push('/home');
+        router.push('/(buyer)');
     };
 
     return (
@@ -96,7 +96,7 @@ export default function CompleteProfileScreen() {
                 </View>
 
                 {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
                     <Text style={styles.skipText}>Skip</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>

@@ -88,7 +88,7 @@ export default function BestsellersScreen() {
             </ScrollView>
 
             <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
-                <Ionicons name="options-outline" size={20} color="#4A55A2" />
+                <Ionicons name="options-outline" size={20} color="#425BA4" />
             </TouchableOpacity>
         </View>
     );

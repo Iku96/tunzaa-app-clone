@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     amountText: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#315BA9', // Tunzaa blue
+        color: '#425BA4', // Tunzaa blue
     },
     routeContainer: {
         flexDirection: 'row',
@@ -236,8 +236,9 @@ const styles = StyleSheet.create({
     },
     routeLine: {
         flex: 1,
-        height: 1,
-        backgroundColor: '#E5E7EB',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+        borderStyle: 'dashed',
     },
     routeIconWrapper: {
         paddingHorizontal: 8,
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
     acceptButton: {
         flex: 1,
         height: 48,
-        backgroundColor: '#3B5998', // Matching the darker blue from screenshot
+        backgroundColor: '#425BA4', // Matching the darker blue from screenshot
         borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     },
     undoText: {
         fontSize: 15,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '500',
     }
 });

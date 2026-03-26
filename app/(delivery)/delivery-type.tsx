@@ -237,7 +237,7 @@ export default function DeliveryTypeScreen() {
                                         name={type.icon}
                                         size={24}
                                         // Color: White if selected, Blue if not
-                                        color={isSelected ? '#FFFFFF' : '#315BA9'}
+                                        color={isSelected ? '#FFFFFF' : '#425BA4'}
                                         style={styles.optionIcon}
                                     />
 
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
      */
     safe: {
         flex: 1,
-        backgroundColor: '#315BA9',  // Tunzaa brand blue
+        backgroundColor: '#425BA4',  // Tunzaa brand blue
     },
 
     /**
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
      */
     container: {
         flex: 1,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
 
     // ------------------------------------------------------------------------
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     optionLabel: {
         flex: 1,           // Takes remaining space
         fontSize: 16,
-        color: '#315BA9',  // Tunzaa Blue
+        color: '#425BA4',  // Tunzaa Blue
         fontWeight: '500',
     },
 
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
     modalNextButton: {
         width: '100%',
         height: 56,
-        backgroundColor: '#3B5998', // Darker blue from the screenshot
+        backgroundColor: '#425BA4', // Darker blue from the screenshot
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',

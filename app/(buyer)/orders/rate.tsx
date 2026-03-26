@@ -44,7 +44,7 @@ export default function RateDeliveryScreen() {
 
                 <View style={styles.successContent}>
                     <View style={styles.successIconWrapper}>
-                        <Ionicons name="star" size={40} color="#4A55A2" />
+                        <Ionicons name="star" size={40} color="#425BA4" />
                     </View>
 
                     <Text style={styles.successTitle}>Thanks for rating!</Text>
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     submitBtn: {
-        backgroundColor: '#4A55A2',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         paddingVertical: 16,
         alignItems: 'center',

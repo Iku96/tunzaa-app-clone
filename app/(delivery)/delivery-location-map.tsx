@@ -227,12 +227,20 @@ export default function DeliveryLocationMap() {
                                 ref={mapRef}
                                 style={styles.map}
                                 region={mapRegion}
-                                onPress={(e) => onLocationChange(e.nativeEvent.coordinate)}
+                                onPress={(e) => {
+                                    if (e?.nativeEvent?.coordinate) {
+                                        onLocationChange(e.nativeEvent.coordinate);
+                                    }
+                                }}
                             >
                                 <Marker
                                     coordinate={mapRegion}
                                     draggable
-                                    onDragEnd={(e) => onLocationChange(e.nativeEvent.coordinate)}
+                                    onDragEnd={(e) => {
+                                        if (e?.nativeEvent?.coordinate) {
+                                            onLocationChange(e.nativeEvent.coordinate);
+                                        }
+                                    }}
                                     pinColor="#84CC16"
                                 >
                                     <Callout>
@@ -282,7 +290,7 @@ export default function DeliveryLocationMap() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#315BA9' },
+    container: { flex: 1, backgroundColor: '#425BA4' },
     contentContainer: { flexGrow: 1, paddingBottom: 40 },
     staticContent: { paddingHorizontal: 20, paddingTop: 0, zIndex: 2 },
     title: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'left', fontFamily: 'Gilroy-Bold' },

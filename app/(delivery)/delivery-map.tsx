@@ -54,7 +54,7 @@ export default function DeliveryMapScreen() {
                 {/* Route Line */}
                 <Polyline
                     coordinates={MOCK_POLYLINE}
-                    strokeColor="#315BA9"
+                    strokeColor="#425BA4"
                     strokeWidth={3}
                     lineDashPattern={[10, 10]} // Dashed line to match design
                 />
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         marginBottom: -10, // overlap line
     },
     tooltip: {
-        backgroundColor: '#3B5998',
+        backgroundColor: '#425BA4',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     tooltipConnector: {
         width: 2,
         height: 30,
-        backgroundColor: '#3B5998',
+        backgroundColor: '#425BA4',
     },
     scooterMarkerCircle: {
         width: 44,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
         width: 28,
         height: 28,
         borderRadius: 14,
-        backgroundColor: '#3B5998',
+        backgroundColor: '#425BA4',
         alignItems: 'center',
         justifyContent: 'center',
     },

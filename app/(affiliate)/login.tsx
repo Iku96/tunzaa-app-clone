@@ -56,7 +56,7 @@ export default function AffiliateLoginScreen() {
                                 style={styles.passwordInput}
                                 placeholder="Enter password"
                                 placeholderTextColor="#9CA3AF"
-                                secureTextEntry={!showPassword}
+                                autoCapitalize="none" secureTextEntry={!showPassword}
                                 value={password}
                                 onChangeText={setPassword}
                             />

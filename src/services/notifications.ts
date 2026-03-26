@@ -1,102 +1,157 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiClient } from "./client";
-import {
-  Notification,
-  GetNotificationsResponse,
-  GetNotificationsParams,
-} from "./types/notifications";
+import { Platform } from 'react-native';
 
-export const notificationsApi = {
-  // Get User's Notifications
-  getNotifications: async (
-    params?: GetNotificationsParams
-  ): Promise<GetNotificationsResponse> => {
-    const searchParams = new URLSearchParams();
+/**
+ * Lazy-loaded native modules — expo-device and expo-notifications crash in
+ * Expo Go because their native code isn't bundled.  We import them lazily so
+ * the rest of the app still loads.  Every helper method below gracefully
+ * degrades when the modules are unavailable.
+ */
+let Device: typeof import('expo-device') | null = null;
+let Notifications: typeof import('expo-notifications') | null = null;
 
-    if (params?.user_id) {
-      searchParams.append("user_id", params.user_id);
+try {
+    Device = require('expo-device');
+} catch {
+    console.warn('expo-device not available (expected in Expo Go)');
+}
+
+try {
+    Notifications = require('expo-notifications');
+
+    // Set global notification handler when the module IS available
+    if (Notifications) {
+        Notifications.setNotificationHandler({
+            handleNotification: async () => ({
+                shouldShowAlert: true,
+                shouldPlaySound: true,
+                shouldSetBadge: false,
+                shouldShowBanner: true,
+                shouldShowList: true,
+            }),
+        });
     }
-    if (params?.type) {
-      searchParams.append("type", params.type);
+} catch {
+    console.warn('expo-notifications not available (expected in Expo Go)');
+}
+
+export class NotificationService {
+    /**
+     * Request permissions and get the Expo push token.
+     * Returns undefined when running inside Expo Go.
+     */
+    static async registerForPushNotificationsAsync() {
+        if (!Notifications || !Device) {
+            console.log('Notifications not available in this environment');
+            return undefined;
+        }
+
+        let token: string | undefined;
+
+        if (Platform.OS === 'android') {
+            await Notifications.setNotificationChannelAsync('default', {
+                name: 'default',
+                importance: Notifications.AndroidImportance.MAX,
+                vibrationPattern: [0, 250, 250, 250],
+                lightColor: '#425BA4',
+            });
+        }
+
+        if (Device.isDevice) {
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                console.log('Push notification permission not granted');
+                return undefined;
+            }
+            token = (await Notifications.getExpoPushTokenAsync({
+                projectId: process.env.EXPO_PUBLIC_PROJECT_ID || 'tunzaa-clone',
+            })).data;
+            console.log('Expo Push Token:', token);
+        } else {
+            console.log('Must use physical device for push notifications');
+        }
+
+        return token;
     }
-    if (params?.status) {
-      searchParams.append("status", params.status);
+
+    /**
+     * Schedule a generic local notification.
+     * No-ops silently when expo-notifications is unavailable.
+     */
+    static async scheduleLocalNotification(
+        title: string,
+        body: string,
+        data: any = {},
+        trigger: any = null
+    ) {
+        if (!Notifications) return;
+
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title,
+                body,
+                data,
+                sound: 'default',
+            },
+            trigger,
+        });
     }
-    if (params?.skip !== undefined) {
-      searchParams.append("skip", params.skip.toString());
+
+    // --- Specific Use Cases ---
+
+    static async sendDeliveryAlert(orderId: string, status: string = 'Shipped') {
+        await this.scheduleLocalNotification(
+            '📦 Delivery Update',
+            `Your order #${orderId} is now ${status}. Tap to track.`,
+            { screen: 'orders', orderId }
+        );
     }
-    if (params?.limit !== undefined) {
-      searchParams.append("limit", params.limit.toString());
+
+    static async sendPromotionAlert(promoTitle: string) {
+        await this.scheduleLocalNotification(
+            '🎉 Special Offer',
+            `Check out this new promo: ${promoTitle}!`,
+            { screen: 'home' }
+        );
     }
 
-    const url = params?.user_id
-      ? `/notifications/user/${params.user_id}?${searchParams.toString()}`
-      : `/notifications/?${searchParams.toString()}`;
+    static async sendSystemMessage(message: string) {
+        await this.scheduleLocalNotification(
+            '⚙️ System Update',
+            message,
+            { screen: 'settings' }
+        );
+    }
 
-    const response = await apiClient.get<GetNotificationsResponse>(url);
-    return response.data;
-  },
+    static async sendPaymentReminder(amount: string, dueDate: string, trigger?: any) {
+        await this.scheduleLocalNotification(
+            '⏳ Payment Reminder',
+            `Your payment of ${amount} is due on ${dueDate}. Don't miss it!`,
+            { screen: 'payments' },
+            trigger
+        );
+    }
 
-  // Get Single Notification
-  getNotification: async (notificationId: string): Promise<Notification> => {
-    const response = await apiClient.get<Notification>(
-      `/notifications/${notificationId}`
-    );
-    return response.data;
-  },
+    static async sendGoalReminder(goalName: string, progress: string) {
+        await this.scheduleLocalNotification(
+            '🎯 Goal Progress',
+            `You are ${progress} complete with your goal: ${goalName}. Keep it up!`,
+            { screen: 'goals' }
+        );
+    }
+}
 
-  // Mark Notification as Read
-  markAsRead: async (notificationId: string): Promise<Notification> => {
-    const response = await apiClient.patch<Notification>(
-      `/notifications/${notificationId}/read`
-    );
-    return response.data;
-  },
-
-  // Mark All Notifications as Read for User
-  markAllAsRead: async (
-    userId: string
-  ): Promise<{ message: string; updated_count: number }> => {
-    const response = await apiClient.patch<{
-      message: string;
-      updated_count: number;
-    }>(`/notifications/user/${userId}/read-all`);
-    return response.data;
-  },
-};
-
-// React Query Hooks
-
-export const useGetNotifications = (
-  params?: GetNotificationsParams,
-  enabled: boolean = true
-) => {
-  return useQuery({
-    queryKey: ["notifications", params],
-    queryFn: () => notificationsApi.getNotifications(params),
-    enabled,
-  });
-};
-
-export const useGetNotification = (
-  notificationId: string,
-  enabled: boolean = true
-) => {
-  return useQuery({
-    queryKey: ["notification", notificationId],
-    queryFn: () => notificationsApi.getNotification(notificationId),
-    enabled: enabled && !!notificationId,
-  });
-};
-
-export const useMarkAsRead = () => {
-  return useMutation({
-    mutationFn: notificationsApi.markAsRead,
-  });
-};
-
-export const useMarkAllAsRead = () => {
-  return useMutation({
-    mutationFn: notificationsApi.markAllAsRead,
-  });
-};
+/**
+ * Helper to add a notification response listener (safe for Expo Go).
+ * Returns a subscription that can be removed, or null if unavailable.
+ */
+export function addNotificationResponseListener(
+    callback: (response: any) => void
+) {
+    if (!Notifications) return null;
+    return Notifications.addNotificationResponseReceivedListener(callback);
+}

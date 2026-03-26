@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     },
     activeTab: {
         borderBottomWidth: 2,
-        borderBottomColor: '#3B5998', // Tunzaa blue
+        borderBottomColor: '#425BA4', // Tunzaa blue
     },
     tabText: {
         fontSize: 14,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     activeTabText: {
-        color: '#3B5998',
+        color: '#425BA4',
         fontWeight: '600',
     },
     scrollView: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
         fontWeight: '400',
     },
     logoutButton: {
-        backgroundColor: '#3B5998',
+        backgroundColor: '#425BA4',
         borderRadius: 24,
         height: 48,
         alignItems: 'center',

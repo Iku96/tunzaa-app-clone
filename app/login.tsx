@@ -168,7 +168,7 @@ export default function LoginScreen() {
                                         placeholderTextColor="#9CA3AF"
                                         value={password}
                                         onChangeText={setPassword}
-                                        secureTextEntry={!showPassword}
+                                        autoCapitalize="none" secureTextEntry={!showPassword}
                                         autoCapitalize="none"
                                     />
                                     <TouchableOpacity
@@ -250,7 +250,7 @@ export default function LoginScreen() {
                         </View>
 
                         {/* Skip Button - Pinned to Bottom */}
-                        <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/home')}>
+                        <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
                             <Text style={styles.skipText}>{t.loginSkip}</Text>
                             <Text style={styles.skipArrow}>→</Text>
                         </TouchableOpacity>
