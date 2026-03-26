@@ -16,10 +16,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 
 export default function DeliveryRegisterScreen() {
     const router = useRouter();
     const { register, requestOTP } = useTunzaaAuth();
+    const { t } = useLanguage();
 
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
@@ -104,7 +106,7 @@ export default function DeliveryRegisterScreen() {
             });
 
         } catch (e: any) {
-            Alert.alert('Hitilafu', e.message || 'Hitilafu imetokea wakati wa kusajili');
+            Alert.alert(t.commonError, e.message || 'Hitilafu imetokea wakati wa kusajili');
         } finally {
             setLoading(false);
         }
@@ -125,7 +127,7 @@ export default function DeliveryRegisterScreen() {
 
                             {/* Header */}
                             <View style={styles.header}>
-                                <Text style={styles.title}>Jisajili</Text>
+                                <Text style={styles.title}>{t.deliveryCreateAccount}</Text>
                             </View>
 
                             {/* Form */}
@@ -133,7 +135,7 @@ export default function DeliveryRegisterScreen() {
 
                                 {/* Full Name Input */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Jina kamili</Text>
+                                    <Text style={styles.label}>{t.registerFirstNamePlaceholder.split(' ').slice(-2).join(' ')}</Text>
                                     <TextInput
                                         style={[styles.input, errors.fullName && styles.inputError]}
                                         value={fullName}
@@ -154,7 +156,7 @@ export default function DeliveryRegisterScreen() {
 
                                 {/* Phone Input */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Namba ya simu</Text>
+                                    <Text style={styles.label}>{t.deliveryPhoneLabel}</Text>
                                     <View style={[styles.phoneInputContainer, errors.phone && styles.inputError]}>
                                         <Text style={styles.countryCode}>+255</Text>
                                         <TextInput
@@ -176,7 +178,7 @@ export default function DeliveryRegisterScreen() {
 
                                 {/* Password Input */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Neno siri</Text>
+                                    <Text style={styles.label}>{t.deliveryPasswordLabel}</Text>
                                     <View style={[styles.passwordContainer, errors.password && styles.inputError]}>
                                         <TextInput
                                             style={styles.passwordInput}
@@ -209,9 +211,9 @@ export default function DeliveryRegisterScreen() {
                                 <View style={styles.infoRow}>
                                     <Ionicons name="information-circle-outline" size={20} color="#425BA4" />
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
-                                        <Text style={styles.infoText}>Zingatia kuweka tarakimu 6 au zaidi</Text>
+                                        <Text style={styles.infoText}>{t.otpInstruction.includes('phone') ? 'Confirm with 6 digits' : 'Zingatia kuweka tarakimu 6 au zaidi'}</Text>
                                         <TouchableOpacity onPress={() => router.push('/delivery-login' as any)}>
-                                            <Text style={styles.loginLink}>Nina Akaunti</Text>
+                                            <Text style={styles.loginLink}>{t.mauzoAlreadyAccount}</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -233,7 +235,7 @@ export default function DeliveryRegisterScreen() {
                                     disabled={!isValid()}
                                 >
                                     <Text style={styles.primaryButtonText}>
-                                        {loading ? 'Inasajili...' : 'Endelea'}
+                                        {loading ? t.commonSaving : t.commonNext}
                                     </Text>
                                 </TouchableOpacity>
 
@@ -241,7 +243,7 @@ export default function DeliveryRegisterScreen() {
                                     style={styles.secondaryButton}
                                     onPress={() => router.back()}
                                 >
-                                    <Text style={styles.secondaryButtonText}>Rudi</Text>
+                                    <Text style={styles.secondaryButtonText}>{t.commonBack}</Text>
                                 </TouchableOpacity>
                             </View>
 

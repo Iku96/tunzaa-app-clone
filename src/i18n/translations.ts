@@ -205,6 +205,14 @@ export interface TranslationKeys {
     roleScreenOptionFinancial: string;
     roleScreenOptionAffiliate: string;
     roleScreenAlreadyAccount: string;
+    // --- Common ---
+    commonNext: string;
+    commonBack: string;
+    commonSaving: string;
+    commonSuccess: string;
+    commonError: string;
+    commonTryAgain: string;
+    commonLoading: string;
 }
 
 /** English (default). */
@@ -386,6 +394,13 @@ const en: TranslationKeys = {
     roleScreenOptionFinancial: "Offer loans and financial services",
     roleScreenOptionAffiliate: "Join as Affiliate Marketer",
     roleScreenAlreadyAccount: "Already have an account? Sign In",
+    commonNext: "Continue",
+    commonBack: "Back",
+    commonSaving: "Saving...",
+    commonSuccess: "Success!",
+    commonError: "Error",
+    commonTryAgain: "Please try again",
+    commonLoading: "Loading...",
 };
 
 /** Swahili. */
@@ -567,6 +582,13 @@ const sw: TranslationKeys = {
     roleScreenOptionFinancial: "Toa mikopo na huduma za kifedha",
     roleScreenOptionAffiliate: "Jiunge kama Muuzaji wa Ushirika",
     roleScreenAlreadyAccount: "Tayari una akaunti? Ingia",
+    commonNext: "Endelea",
+    commonBack: "Rudi",
+    commonSaving: "Inahifadhi...",
+    commonSuccess: "Mafanikio!",
+    commonError: "Hitilafu",
+    commonTryAgain: "Tafadhali jaribu tena",
+    commonLoading: "Inapakia...",
 };
 
 /** French. */
@@ -748,6 +770,13 @@ const fr: TranslationKeys = {
     roleScreenOptionFinancial: "Offrir des prêts et services financiers",
     roleScreenOptionAffiliate: "Rejoindre en tant que marketeur affilié",
     roleScreenAlreadyAccount: "Vous avez déjà un compte ? Connexion",
+    commonNext: "Continuer",
+    commonBack: "Retour",
+    commonSaving: "Enregistrement...",
+    commonSuccess: "Succès !",
+    commonError: "Erreur",
+    commonTryAgain: "Veuillez réessayer",
+    commonLoading: "Chargement...",
 };
 
 /** Arabic. */
@@ -929,6 +958,13 @@ const ar: TranslationKeys = {
     roleScreenOptionFinancial: "تقديم القروض والخدمات المالية",
     roleScreenOptionAffiliate: "الانضمام كمسوق بالعمولة",
     roleScreenAlreadyAccount: "لديك حساب بالفعل؟ تسجيل الدخول",
+    commonNext: "متابعة",
+    commonBack: "رجوع",
+    commonSaving: "جاري الحفظ...",
+    commonSuccess: "تم بنجاح!",
+    commonError: "خطأ",
+    commonTryAgain: "يرجى المحاولة مرة أخرى",
+    commonLoading: "جاري التحميل...",
 };
 
 /** Spanish. */
