@@ -89,7 +89,6 @@
           "iosUrlScheme": "com.googleusercontent.apps.230701056851-pkf15en5cledgeas3ui62menv1ja1som"
         }
       ],
-      "react-native-maps",
       "expo-apple-authentication",
       "@react-native-community/datetimepicker"
     ],
