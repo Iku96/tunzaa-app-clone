@@ -1,86 +1,71 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav from '../../../src/components/navigation/BottomNav';
+import { useCartCombined, useCartTotals } from '../../../src/stores/cart';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 const { width } = Dimensions.get('window');
 
-// Mock Cart Items
-const INITIAL_CART = [
-    {
-        id: '1',
-        name: 'Dinning chair',
-        image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&auto=format&fit=crop&q=60',
-        rating: 4.8,
-        reviews: 50,
-        price: 450000,
-        deliveryFee: 2500,
-        warranty: '1 year warranty',
-        quantity: 1
-    },
-    {
-        id: '2',
-        name: 'Long Sofa',
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=60',
-        rating: 4.8,
-        reviews: 50,
-        price: 650000,
-        deliveryFee: 2500,
-        warranty: '1 year warranty',
-        quantity: 1
-    },
-    {
-        id: '3',
-        name: 'Nike Air Jordan',
-        image: 'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500&auto=format&fit=crop&q=60',
-        rating: 4.8,
-        reviews: 50,
-        price: 650000,
-        deliveryFee: 2500,
-        warranty: '1 year warranty',
-        quantity: 1
-    }
-];
-
 export default function CartScreen() {
     const router = useRouter();
-    const [cartItems, setCartItems] = useState(INITIAL_CART);
+    const { user } = useTunzaaAuth();
 
-    const updateQuantity = (id: string, increment: boolean) => {
-        setCartItems(prev => prev.map(item => {
-            if (item.id === id) {
-                const newQty = increment ? item.quantity + 1 : Math.max(0, item.quantity - 1);
-                return { ...item, quantity: newQty };
-            }
-            return item;
-        }).filter(item => item.quantity > 0)); // Remove if qty becomes 0
+    // Remote + Optimistic Cart State
+    const {
+        cart,
+        isLoading,
+        updateCartItemQuantity,
+        removeCartItemMutation
+    } = useCartCombined(user?.user_id || '');
+
+    const { data: totalsData } = useCartTotals(cart?.cart_id || '');
+
+    const updateQuantity = (cartItem: any, increment: boolean) => {
+        const currentQty = cartItem.quantity;
+        const newQty = increment ? currentQty + 1 : Math.max(0, currentQty - 1);
+
+        if (newQty === 0 && cart) {
+            removeCartItemMutation.mutate({
+                cartId: cart.cart_id,
+                item: {
+                    item_id: cartItem.item_id,
+                    product_id: cartItem.product_id,
+                    variant_id: cartItem.variant_id,
+                    quantity: cartItem.quantity,
+                    unit_price: cartItem.unit_price,
+                    added_at: cartItem.added_at,
+                    metadata: cartItem.metadata
+                }
+            });
+        } else {
+            updateCartItemQuantity(cartItem.product_id, cartItem.metadata?.sku, newQty);
+        }
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const subtotal = totalsData?.subtotal || cart?.items.reduce((sum, item) => sum + ((item.unit_price || 0) * item.quantity), 0) || 0;
+    const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
-    const renderCartItem = (item) => (
-        <View key={item.id} style={styles.cartItem}>
-            {/* Checkbox Placeholder (Use Ionicons for visual only) */}
+    const renderCartItem = (item: any) => (
+        <View key={item.item_id || item.product_id} style={styles.cartItem}>
             <TouchableOpacity style={styles.checkbox}>
                 <Ionicons name="ellipse-outline" size={24} color="#D1D5DB" />
             </TouchableOpacity>
 
-            <Image source={{ uri: item.image }} style={styles.itemImage} />
+            <Image source={{ uri: item.image_url || 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&auto=format&fit=crop&q=60' }} style={styles.itemImage} />
 
             <View style={styles.itemDetails}>
                 <View style={styles.rowBetween}>
-                    <Text style={styles.itemName}>{item.name}</Text>
+                    <Text style={styles.itemName} numberOfLines={2}>{item.product_name || item.name || 'Product Item'}</Text>
 
-                    {/* Quantity Controls */}
                     <View style={styles.quantityControl}>
-                        <TouchableOpacity onPress={() => updateQuantity(item.id, false)} style={styles.qtyButton}>
+                        <TouchableOpacity onPress={() => updateQuantity(item, false)} style={styles.qtyButton}>
                             <Ionicons name="remove" size={16} color="#6B7280" />
                         </TouchableOpacity>
                         <Text style={styles.qtyText}>{item.quantity}</Text>
-                        <TouchableOpacity onPress={() => updateQuantity(item.id, true)} style={[styles.qtyButton, styles.qtyButtonAdd]}>
+                        <TouchableOpacity onPress={() => updateQuantity(item, true)} style={[styles.qtyButton, styles.qtyButtonAdd]}>
                             <Ionicons name="add" size={16} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
@@ -88,14 +73,14 @@ export default function CartScreen() {
 
                 <View style={styles.ratingRow}>
                     <Ionicons name="star" size={12} color="#FBBF24" />
-                    <Text style={styles.ratingText}>{item.rating} ({item.reviews})</Text>
+                    <Text style={styles.ratingText}>4.8 (50)</Text>
                 </View>
 
-                <Text style={styles.priceText}>Tsh {item.price.toLocaleString()}</Text>
+                <Text style={styles.priceText}>Tsh {item.unit_price?.toLocaleString() || 0}</Text>
 
                 <View style={styles.deliveryRow}>
                     <Ionicons name="location-outline" size={12} color="#6B7280" />
-                    <Text style={styles.deliveryText}>Estimated delivery fees: Tsh. {item.deliveryFee.toLocaleString()}</Text>
+                    <Text style={styles.deliveryText}>Estimated delivery fees: Tsh. 2,500</Text>
                 </View>
                 <TouchableOpacity>
                     <Text style={styles.changeLocation}>Change delivery location</Text>
@@ -103,7 +88,7 @@ export default function CartScreen() {
 
                 <View style={styles.warrantyRow}>
                     <Ionicons name="shield-checkmark-outline" size={12} color="#6B7280" />
-                    <Text style={styles.warrantyText}>{item.warranty}</Text>
+                    <Text style={styles.warrantyText}>1 year warranty</Text>
                 </View>
             </View>
         </View>
@@ -127,7 +112,16 @@ export default function CartScreen() {
                 </View>
 
                 <ScrollView contentContainerStyle={styles.cartList}>
-                    {cartItems.map(renderCartItem)}
+                    {isLoading ? (
+                        <ActivityIndicator size="large" color="#4A55A2" style={{ marginTop: 40 }} />
+                    ) : cart?.items?.length ? (
+                        cart.items.map(renderCartItem)
+                    ) : (
+                        <View style={{ alignItems: 'center', marginTop: 40 }}>
+                            <Ionicons name="cart-outline" size={48} color="#9CA3AF" />
+                            <Text style={{ marginTop: 16, color: '#6B7280' }}>Your cart is empty</Text>
+                        </View>
+                    )}
                 </ScrollView>
 
                 {/* Bottom Total Bar */}

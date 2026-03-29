@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { usePayOrder } from '../../../src/services/orders';
 
 const { width } = Dimensions.get('window');
 
@@ -47,24 +48,46 @@ const PAYMENT_METHODS = [
 
 export default function PaymentMethodScreen() {
     const router = useRouter();
-    const params = useLocalSearchParams();
+    const { order_id } = useLocalSearchParams();
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [isPaying, setIsPaying] = useState(false);
+
+    const payOrderMutation = usePayOrder();
 
     const handleSelect = (method: typeof PAYMENT_METHODS[0]) => {
         if (selectedId === method.id) {
-            setSelectedId(null); // Toggle collapse
+            setSelectedId(null);
         } else {
             setSelectedId(method.id);
         }
     };
 
-    const handleMakePayment = () => {
+    const handleMakePayment = async () => {
         if (!phoneNumber) {
             alert("Please enter a phone number");
             return;
         }
-        router.push('/(buyer)/order/123'); // Route to new tracking dashboard
+
+        if (!order_id) {
+            alert("Order reference missing. Please try again.");
+            return;
+        }
+
+        setIsPaying(true);
+        try {
+            await payOrderMutation.mutateAsync({
+                orderNumber: order_id as string,
+                data: { customer_msisdn: phoneNumber.replace('+', '') }
+            });
+            // Route to new tracking dashboard
+            router.push(`/(buyer)/order/${order_id}`);
+        } catch (error) {
+            console.error("Payment failed", error);
+            alert("Payment initiation failed. Please try again.");
+        } finally {
+            setIsPaying(false);
+        }
     };
 
     return (
@@ -123,8 +146,16 @@ export default function PaymentMethodScreen() {
                                             />
                                         </View>
 
-                                        <TouchableOpacity style={styles.makePaymentButton} onPress={handleMakePayment}>
-                                            <Text style={styles.makePaymentButtonText}>Make a Payment</Text>
+                                        <TouchableOpacity
+                                            style={styles.makePaymentButton}
+                                            onPress={handleMakePayment}
+                                            disabled={isPaying}
+                                        >
+                                            {isPaying ? (
+                                                <ActivityIndicator color="#FFF" />
+                                            ) : (
+                                                <Text style={styles.makePaymentButtonText}>Make a Payment</Text>
+                                            )}
                                         </TouchableOpacity>
                                     </View>
                                 )}

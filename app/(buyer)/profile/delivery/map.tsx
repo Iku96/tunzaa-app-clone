@@ -1,13 +1,48 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Modal, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MapView, { Marker, Polyline } from 'react-native-maps';
+import { useQuery } from '@tanstack/react-query';
+import { deliveryApi } from '../../../../src/services/delivery';
+
+const { width, height } = Dimensions.get('window');
 
 export default function DeliveryTrackingScreen() {
     const router = useRouter();
+    const { order_id } = useLocalSearchParams();
+
     // 0 = Review, 1 = Assigned Modal, 2 = Active Tracking
-    const [trackingState, setTrackingState] = useState(0);
+    const [trackingState, setTrackingState] = useState(order_id ? 2 : 0);
+
+    const mapRef = useRef<MapView>(null);
+
+    const { data: delivery, isLoading } = useQuery({
+        queryKey: ['delivery', 'order', order_id],
+        queryFn: () => deliveryApi.getDeliveryByOrder(order_id as string),
+        enabled: !!order_id && trackingState === 2,
+        refetchInterval: trackingState === 2 ? 3000 : false, // Poll only if active
+    });
+
+    const lastStageLocation = delivery?.stages && delivery.stages.length > 0
+        ? delivery.stages[delivery.stages.length - 1].location
+        : null;
+
+    const driverLat = lastStageLocation?.lat;
+    const driverLng = lastStageLocation?.lng;
+
+    useEffect(() => {
+        if (driverLat && driverLng && mapRef.current) {
+            mapRef.current.animateCamera({
+                center: {
+                    latitude: driverLat,
+                    longitude: driverLng,
+                },
+                zoom: 15,
+            }, { duration: 1000 });
+        }
+    }, [driverLat, driverLng]);
 
     const handleConfirm = () => {
         setTrackingState(1);
@@ -122,28 +157,65 @@ export default function DeliveryTrackingScreen() {
         <View style={styles.container}>
             {/* Map Placeholder */}
             <View style={styles.mapContainer}>
-                <Image
-                    source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&auto=format&fit=crop&q=80' }}
-                    style={styles.mapImage}
-                />
+                {trackingState === 2 && delivery ? (
+                    <MapView
+                        ref={mapRef}
+                        style={styles.mapImage}
+                        initialRegion={{
+                            latitude: driverLat || -6.7924,
+                            longitude: driverLng || 39.2083,
+                            latitudeDelta: 0.05,
+                            longitudeDelta: 0.05,
+                        }}
+                    >
+                        {/* Driver Location Marker */}
+                        {driverLat && driverLng && (
+                            <Marker
+                                coordinate={{ latitude: driverLat, longitude: driverLng }}
+                                title="Driver"
+                                description="Your driver is here"
+                            >
+                                <Ionicons name="car" size={32} color="#4A55A2" />
+                            </Marker>
+                        )}
 
-                {/* Simulated Pins/Route on Map */}
-                <View style={styles.mapOverlayLayer}>
-                    {trackingState === 2 ? (
-                        <>
-                            {/* Blue route line and Car icon simulation */}
-                            <Ionicons name="location" size={36} color="#22C55E" style={{ position: 'absolute', top: '30%', right: '30%' }} />
-                            <Ionicons name="car" size={32} color="#425BA4" style={{ position: 'absolute', top: '45%', left: '45%' }} />
-                            <View style={styles.mockRouteLine} />
-                        </>
-                    ) : (
-                        <Ionicons name="location" size={40} color="#425BA4" style={{ position: 'absolute', top: '40%', left: '40%' }} />
-                    )}
-                </View>
+                        {/* Dropoff Location Marker */}
+                        {delivery.dropoff_location?.lat && delivery.dropoff_location?.lng && (
+                            <Marker
+                                coordinate={{
+                                    latitude: delivery.dropoff_location.lat,
+                                    longitude: delivery.dropoff_location.lng
+                                }}
+                                title="Dropoff"
+                            >
+                                <Ionicons name="location" size={36} color="#22C55E" />
+                            </Marker>
+                        )}
+
+                        {/* Traveled Pinned Route */}
+                        {delivery.stages && delivery.stages.length > 0 && (
+                            <Polyline
+                                coordinates={delivery.stages
+                                    .filter((s: any) => s.location && s.location.lat && s.location.lng)
+                                    .map((s: any) => ({
+                                        latitude: s.location!.lat,
+                                        longitude: s.location!.lng
+                                    }))}
+                                strokeColor="#4A55A2" // Route blue
+                                strokeWidth={4}
+                            />
+                        )}
+                    </MapView>
+                ) : (
+                    <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&auto=format&fit=crop&q=80' }}
+                        style={styles.mapImage}
+                    />
+                )}
             </View>
 
             {/* Content Overlays */}
-            <SafeAreaView style={styles.overlay} edges={['top']}>
+            <SafeAreaView style={styles.overlay} edges={['top']} pointerEvents="box-none">
 
                 {/* Dynamic Header */}
                 <View style={styles.header}>

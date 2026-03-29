@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, ActivityIndicator, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGetOrders, useRequestRefund } from '../../../src/services/orders';
 
 export default function RefundRequestScreen() {
+    const { order_id } = useLocalSearchParams();
     const router = useRouter();
     const [reason, setReason] = useState('');
     const [notes, setNotes] = useState('');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    // Mock Data
+    // Live Integration Data
+    const { data: ordersData } = useGetOrders({ order_id: order_id as string }, !!order_id);
+    const { mutateAsync: requestRefund, isPending } = useRequestRefund();
+
+    const order = Array.isArray(ordersData) ? ordersData[0] : ordersData?.items?.[0];
+    const liveItem = order?.items?.[0];
+
     const product = {
-        name: 'AIR JORDAN NIKE',
-        quantity: 1,
+        name: liveItem?.name || 'Assorted Items',
+        quantity: liveItem?.quantity || 1,
         image: 'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500&auto=format&fit=crop&q=60',
-        paidAmount: 50000,
+        paidAmount: order?.totals?.total || 50000,
     };
 
     const chargingFee = product.paidAmount * 0.15;
@@ -25,9 +33,24 @@ export default function RefundRequestScreen() {
         setShowConfirmModal(true);
     };
 
-    const handleConfirm = () => {
-        setShowConfirmModal(false);
-        router.push('/(buyer)/refund/status');
+    const handleConfirm = async () => {
+        try {
+            if (order && order.order_number) {
+                await requestRefund({
+                    orderNumber: order.order_number,
+                    data: { reason: reason || 'Not Specified', notes }
+                });
+            }
+        } catch (error: any) {
+            console.error("Refund Request API Failed:", error);
+            // Non-blocking fail structure 
+        } finally {
+            setShowConfirmModal(false);
+            router.push({
+                pathname: '/(buyer)/refund/status',
+                params: { order_id: order_id }
+            });
+        }
     };
 
     return (
