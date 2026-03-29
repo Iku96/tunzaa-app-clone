@@ -10,8 +10,8 @@ import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
  */
 export default function OTPScreen() {
     const router = useRouter();
-    const { phone_number, flow } = useLocalSearchParams<{ phone_number: string; flow?: string }>();
-    const { verifyOTP, requestOTP } = useTunzaaAuth();
+    const { phone_number, flow, first_name, last_name, password, role, email } = useLocalSearchParams<any>();
+    const { verifyOTP, requestOTP, register } = useTunzaaAuth();
 
     const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(30);
@@ -68,11 +68,31 @@ export default function OTPScreen() {
             if (response.verified) {
                 // Navigate based on the flow
                 if (flow === 'register') {
-                    router.push({ pathname: '/create-password', params: { phone_number } } as any);
+                    // Phone verified, proceed with account creation
+                    try {
+                        const regResponse = await register({
+                            first_name: first_name || '',
+                            last_name: last_name || '',
+                            phone_number: phone_number,
+                            email: email || undefined,
+                            password: password || ''
+                        });
+                        console.log('✅ Registration successful:', regResponse.name);
+
+                        // Navigate based on role
+                        if (role === 'vendor' || regResponse.activeProfileRole === 'vendor' || regResponse.active_profile_role === 'vendor') {
+                            router.replace('/(merchant)' as any);
+                        } else {
+                            router.replace('/(buyer)' as any);
+                        }
+                    } catch (regError: any) {
+                        console.error('❌ Registration failed:', regError);
+                        Alert.alert('Registration Failed', regError.message || 'Failed to create account. Please try again.');
+                    }
                 } else if (flow === 'reset-password') {
                     router.push({ pathname: '/reset-password', params: { phone_number, reset_token: code } } as any);
                 } else {
-                    router.push({ pathname: '/create-password', params: { phone_number } } as any);
+                    router.replace('/login');
                 }
             } else {
                 Alert.alert('Verification Failed', 'Invalid code. Please try again.');

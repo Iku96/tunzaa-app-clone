@@ -1,57 +1,88 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCartCombined, useCartTotals } from '../../../src/stores/cart';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useCreateOrder } from '../../../src/services/orders';
 
 const { width } = Dimensions.get('window');
 
-// Mock Cart Data for Summary
-const SUMMARY_ITEMS = [
-    {
-        id: '1',
-        name: 'Smart Watch Series 5',
-        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60',
-        price: 45000,
-        quantity: 1,
-        tag: '#Best Seller'
-    },
-    {
-        id: '2',
-        name: 'Long Sofa',
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=60',
-        price: 655000,
-        quantity: 1,
-        tag: '#Best Seller'
-    },
-    {
-        id: '3',
-        name: 'Dinning chair',
-        image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&auto=format&fit=crop&q=60',
-        price: 450000,
-        quantity: 1,
-        tag: ''
-    }
-];
-
 export default function OrderSummaryScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
+    const { cart } = useCartCombined(user?.user_id || '');
+    const { data: totalsData } = useCartTotals(cart?.cart_id || '');
+    const createOrderMutation = useCreateOrder();
 
-    const subtotal = 35000; // Mock values based on screenshot
-    const discount = 0;
-    const deliveryFees = 10000;
-    const tax = 6300;
-    const totalCosts = 51300;
+    const summaryItems = cart?.items || [];
 
-    const renderSummaryItem = (item: typeof SUMMARY_ITEMS[0]) => (
-        <View key={item.id} style={styles.itemRow}>
-            <Image source={{ uri: item.image }} style={styles.itemImage} />
+    const subtotal = totalsData?.subtotal || summaryItems.reduce((sum, item) => sum + ((item.unit_price || 0) * item.quantity), 0);
+    const discount = totalsData?.discount || 0;
+    const deliveryFees = 2500; // Mock standard delivery fee
+    const tax = totalsData?.tax || Math.floor(subtotal * 0.18);
+    const totalCosts = subtotal - discount + deliveryFees + tax;
+
+    const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+
+    const handleCreateOrder = async (paymentType: 'full' | 'installment') => {
+        if (!cart || !user) return;
+        setIsCreatingOrder(true);
+        try {
+            const payload = {
+                cart_id: cart.cart_id,
+                user_id: user.user_id,
+                delivery_type_id: "standard",
+                shipping_address: {
+                    first_name: user.first_name || "Guest",
+                    last_name: user.last_name || "User",
+                    phone: user.phone_number || "+255000000000",
+                    email: user.email || "guest@tunzaa.com",
+                    city: "Dar es Salaam",
+                    country: "Tanzania",
+                    address_line1: "172 Nda Mkojoma Road",
+                    state_province: "Dar es Salaam",
+                    is_default: true,
+                    lat: "-6.7924",
+                    lng: "39.2083"
+                },
+                delivery_details: {
+                    partner_id: "dp_001",
+                    cost: deliveryFees
+                },
+                payment_details: {
+                    method: paymentType === 'full' ? 'mobile_money' : 'installment',
+                    amount: totalCosts,
+                    currency: "TZS",
+                    payment_gateway: "tunzaa_internal"
+                }
+            };
+
+            const order = await createOrderMutation.mutateAsync(payload);
+
+            if (paymentType === 'full') {
+                router.push(`/(buyer)/checkout/payment-method?order_id=${order.order_number}`);
+            } else {
+                router.push(`/(buyer)/product/installment-plan?order_id=${order.order_number}`);
+            }
+        } catch (error) {
+            console.error("Order Creation Failed: ", error);
+            alert("Failed to create order. Please try again.");
+        } finally {
+            setIsCreatingOrder(false);
+        }
+    };
+
+    const renderSummaryItem = (item: any) => (
+        <View key={item.item_id || item.product_id} style={styles.itemRow}>
+            <Image source={{ uri: item.image_url || 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&auto=format&fit=crop&q=60' }} style={styles.itemImage} />
             <View style={styles.itemDetails}>
                 <View style={styles.nameRow}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-                    {item.tag ? <Text style={styles.tag}>{item.tag}</Text> : null}
+                    <Text style={styles.itemName} numberOfLines={2}>{item.product_name || item.name}</Text>
+                    {/* Optional Tag placeholder */}
                 </View>
-                <Text style={styles.itemPrice}>Tsh. {item.price.toLocaleString()}</Text>
+                <Text style={styles.itemPrice}>Tsh. {item.unit_price?.toLocaleString() || 0}</Text>
 
                 <View style={styles.qtyRow}>
                     <TouchableOpacity style={styles.qtyButton}>
@@ -81,15 +112,15 @@ export default function OrderSummaryScreen() {
 
             <ScrollView contentContainerStyle={styles.content}>
                 {/* Single Card Header item per screenshot */}
-                {SUMMARY_ITEMS.length > 0 && renderSummaryItem(SUMMARY_ITEMS[0])}
+                {summaryItems.length > 0 && renderSummaryItem(summaryItems[0])}
 
-                <Text style={styles.orderTitle}>Order({SUMMARY_ITEMS.length} item)</Text>
+                <Text style={styles.orderTitle}>Order ({summaryItems.length} item{summaryItems.length !== 1 ? 's' : ''})</Text>
 
                 <View style={styles.orderListContainer}>
-                    {SUMMARY_ITEMS.map((item) => (
-                        <View key={item.id} style={styles.orderListItem}>
+                    {summaryItems.map((item) => (
+                        <View key={item.item_id || item.product_id} style={styles.orderListItem}>
                             <Text style={styles.orderListLabel}>Product</Text>
-                            <Text style={styles.orderListValue}>{item.name.toLowerCase()}</Text>
+                            <Text style={styles.orderListValue} numberOfLines={1}>{item.product_name || (item as any).name}</Text>
                         </View>
                     ))}
 
@@ -100,7 +131,7 @@ export default function OrderSummaryScreen() {
 
                     <View style={styles.orderListItem}>
                         <Text style={styles.orderListLabel}>Quantity</Text>
-                        <Text style={styles.orderListValue}>Items {SUMMARY_ITEMS[0].quantity}</Text>
+                        <Text style={styles.orderListValue}>Items {summaryItems.length > 0 ? summaryItems[0].quantity : 0}</Text>
                     </View>
                 </View>
 
@@ -132,17 +163,23 @@ export default function OrderSummaryScreen() {
             <View style={styles.bottomActions}>
                 <TouchableOpacity
                     style={styles.installmentButton}
-                    onPress={() => router.push('/(buyer)/product/installment-plan')} // Navigate to Installment Plan
+                    onPress={() => handleCreateOrder('installment')}
+                    disabled={isCreatingOrder}
                 >
                     <Text style={styles.installmentTitle}>Installment</Text>
-                    <Text style={styles.installmentSubtitle}>T.cost 10,000 Tsh/wki</Text>
+                    <Text style={styles.installmentSubtitle}>T.cost 10,000 Tsh/wk</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={styles.fullPaymentButton}
-                    onPress={() => router.push('/(buyer)/checkout/payment-method')} // Navigate to Payment Method
+                    onPress={() => handleCreateOrder('full')}
+                    disabled={isCreatingOrder}
                 >
-                    <Text style={styles.fullPaymentText}>Full Payment</Text>
+                    {isCreatingOrder ? (
+                        <ActivityIndicator color="#FFF" />
+                    ) : (
+                        <Text style={styles.fullPaymentText}>Full Payment</Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

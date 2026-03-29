@@ -84,78 +84,81 @@ function mapApiCategoryToUI(category: Category) {
     };
 }
 
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+
 export interface UseMarketplaceResult {
     products: ReturnType<typeof mapApiProductToUI>[];
     categories: ReturnType<typeof mapApiCategoryToUI>[];
     loading: boolean;
     error: string | null;
     refetch: () => void;
+    fetchNextPage: () => void;
+    hasNextPage: boolean;
+    isFetchingNextPage: boolean;
 }
 
-export function useMarketplace(): UseMarketplaceResult {
-    const [products, setProducts] = useState<any[]>([]);
-    const [categories, setCategories] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export function useMarketplace(params?: any): UseMarketplaceResult {
+    const categoriesQuery = useQuery({
+        queryKey: ['categories'],
+        queryFn: () => categoriesApi.getCategories().catch((e) => {
+            console.warn('⚠️ [useMarketplace] Categories API failed:', e.message);
+            return null;
+        }),
+        staleTime: 5 * 60 * 1000,
+    });
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            // Fetch both in parallel
-            const [productsRes, categoriesRes] = await Promise.all([
-                productsApi.getProducts({ limit: 20, is_active: true }).catch((e) => {
-                    console.warn('⚠️ [useMarketplace] Products API failed, using static fallback:', e.message);
-                    return null;
-                }),
-                categoriesApi.getCategories().catch((e) => {
-                    console.warn('⚠️ [useMarketplace] Categories API failed, using static fallback:', e.message);
-                    return null;
-                }),
-            ]);
-
-            // Products
-            if (productsRes && productsRes.items && productsRes.items.length > 0) {
-                console.log(`✅ [useMarketplace] Loaded ${productsRes.items.length} products from API`);
-                setProducts(productsRes.items.map(mapApiProductToUI));
-            } else {
-                console.log('ℹ️ [useMarketplace] No products from API, using static fallback');
-                setProducts(STATIC_PRODUCTS.map(p => ({
-                    ...p,
-                    image: typeof p.image === 'string' ? p.image : '',
-                })));
+    const productsQuery = useInfiniteQuery({
+        queryKey: ['products', params],
+        queryFn: async ({ pageParam = 0 }) => {
+            try {
+                return await productsApi.getProducts({ ...params, skip: pageParam as number, limit: 10, is_active: true });
+            } catch (error: any) {
+                console.warn('⚠️ [useMarketplace] Products API failed:', error.message);
+                return { items: [], total: 0, skip: pageParam as number, limit: 10 };
             }
+        },
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => {
+            const nextSkip = lastPage.skip + lastPage.limit;
+            return nextSkip < lastPage.total ? nextSkip : undefined;
+        },
+        staleTime: 5 * 60 * 1000,
+    });
 
-            // Categories
-            if (categoriesRes && categoriesRes.items && categoriesRes.items.length > 0) {
-                console.log(`✅ [useMarketplace] Loaded ${categoriesRes.items.length} categories from API`);
-                const mapped = categoriesRes.items
-                    .filter(c => c.is_active)
-                    .map(mapApiCategoryToUI);
-                setCategories(mapped.length > 0 ? mapped : STATIC_CATEGORIES);
-            } else {
-                console.log('ℹ️ [useMarketplace] No categories from API, using static fallback');
-                setCategories(STATIC_CATEGORIES.map(c => ({ ...c, slug: '', image_url: '' })));
-            }
+    // Handle Categories Fallback natively
+    const categoriesRes = categoriesQuery.data;
+    let categories = STATIC_CATEGORIES.map(c => ({ ...c, slug: '', image_url: '' }));
+    if (categoriesRes && categoriesRes.items && categoriesRes.items.length > 0) {
+        const mapped = categoriesRes.items.filter(c => c.is_active).map(mapApiCategoryToUI);
+        if (mapped.length > 0) categories = mapped;
+    }
 
-        } catch (e: any) {
-            console.error('❌ [useMarketplace] Failed to fetch marketplace data:', e.message);
-            setError(e.message || 'Failed to load marketplace data');
-            // Fall back to static data
-            setProducts(STATIC_PRODUCTS.map(p => ({
-                ...p,
-                image: typeof p.image === 'string' ? p.image : '',
-            })));
-            setCategories(STATIC_CATEGORIES.map(c => ({ ...c, slug: '', image_url: '' })));
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    // Handle Infinite Products Flattening + Fallback
+    const pages = productsQuery.data?.pages || [];
+    let products: ReturnType<typeof mapApiProductToUI>[] = [];
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    const hasAnyLiveItems = pages.some(page => page.items && page.items.length > 0);
 
-    return { products, categories, loading, error, refetch: fetchData };
+    if (hasAnyLiveItems) {
+        products = pages.flatMap(page => (page.items || []).map(mapApiProductToUI));
+    } else if (!productsQuery.isLoading) {
+        products = STATIC_PRODUCTS.map(p => ({
+            ...p,
+            image: typeof p.image === 'string' ? p.image : '',
+        }));
+    }
+
+    return {
+        products,
+        categories,
+        loading: categoriesQuery.isLoading || productsQuery.isLoading,
+        error: productsQuery.error ? (productsQuery.error as Error).message : null,
+        refetch: () => {
+            categoriesQuery.refetch();
+            productsQuery.refetch();
+        },
+        fetchNextPage: productsQuery.fetchNextPage,
+        hasNextPage: !!productsQuery.hasNextPage,
+        isFetchingNextPage: productsQuery.isFetchingNextPage,
+    };
 }

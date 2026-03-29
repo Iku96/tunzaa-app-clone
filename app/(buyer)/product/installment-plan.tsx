@@ -33,7 +33,7 @@ export default function InstallmentPlanScreen() {
     const handleMakePayment = () => {
         setShowSuccessModal(false);
         // Navigate to payment selection/input
-        router.push('/(buyer)/checkout/payment-input');
+        router.push(`/(buyer)/checkout/payment-input?order_id=${params.order_id || ''}`);
     };
 
     return (

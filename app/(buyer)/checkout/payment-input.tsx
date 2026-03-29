@@ -6,7 +6,7 @@ import { productsApi } from '../../../src/services/products';
 import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useCartCombined } from '../../../src/stores/cart';
-import { useCreateOrder } from '../../../src/services/orders';
+import { useCreateOrder, usePayOrder } from '../../../src/services/orders';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActivityIndicator } from 'react-native';
@@ -22,7 +22,7 @@ const SELECTED_METHOD = {
 
 export default function PaymentInputScreen() {
     const router = useRouter();
-    const { productId, amount: paramAmount } = useLocalSearchParams();
+    const { productId, amount: paramAmount, order_id } = useLocalSearchParams();
     const { user } = useTunzaaAuth();
 
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -40,10 +40,11 @@ export default function PaymentInputScreen() {
     // Hooks for checkout
     const { buyNow } = useCartCombined(user?.user_id || '');
     const { mutateAsync: createOrder } = useCreateOrder();
+    const { mutateAsync: payOrder } = usePayOrder();
 
     const handlePayment = async () => {
-        if (!user || !product) {
-            alert("Missing user or product details.");
+        if (!user) {
+            alert("Missing user details.");
             return;
         }
 
@@ -54,44 +55,54 @@ export default function PaymentInputScreen() {
 
         setIsProcessing(true);
         try {
-            // 1. Create a "Buy Now" temporary cart
-            const cartData = await buyNow({
-                product_id: product.id,
-                quantity: 1, // Defaulting to 1 for this static flow
-                sku: 'default',
-            });
+            if (order_id) {
+                // Paying for an existing order (e.g. Installment first payment)
+                await payOrder({
+                    orderNumber: order_id as string,
+                    data: {
+                        customer_msisdn: phoneNumber.replace('+', ''),
+                        plan_id: 'installment'
+                    }
+                });
+                router.replace(`/(buyer)/order/${order_id}`);
+            } else {
+                // "Buy Now" Direct Flow
+                if (!product) throw new Error("Product data missing");
 
-            // 2. Submit the order to Tunzaa 2.0 API
-            const order = await createOrder({
-                cart_id: cartData.cart_id,
-                shipping_address: {
-                    first_name: user?.first_name || 'User',
-                    last_name: user?.last_name || '',
-                    address_line1: 'Tunzaa Delivery Address',
-                    city: 'Dar es salaam',
-                    state_province: 'Dar es salaam',
-                    country: 'Tanzania',
-                    phone: phoneNumber,
-                    email: user?.email || '',
-                    is_default: true,
-                },
-                delivery_details: {
-                    partner_id: 'default_partner',
-                    cost: 10000,
-                },
-                payment_details: {
-                    method: 'mobile_money',
-                    amount: product.price, // Passing the true product price
-                    currency: 'TZS',
-                    payment_gateway: 'mpesa',
-                },
-                user_id: user.user_id,
-                delivery_type_id: 'standard',
-            });
+                const cartData = await buyNow({
+                    product_id: product.id,
+                    quantity: 1,
+                    sku: 'default',
+                });
 
-            // Success, navigate back to home
-            alert('Order Created Successfully! Redirecting to dashboard...');
-            router.replace('/(buyer)');
+                if (!cartData) throw new Error("Failed to create cart");
+
+                await createOrder({
+                    cart_id: cartData.cart_id,
+                    shipping_address: {
+                        first_name: user?.first_name || 'User',
+                        last_name: user?.last_name || '',
+                        address_line1: 'Tunzaa Delivery Address',
+                        city: 'Dar es salaam',
+                        state_province: 'Dar es salaam',
+                        country: 'Tanzania',
+                        phone: phoneNumber,
+                        email: user?.email || '',
+                        is_default: true,
+                    },
+                    delivery_details: {
+                        partner_id: 'default_partner', cost: 10000,
+                    },
+                    payment_details: {
+                        method: 'mobile_money', amount: product.price, currency: 'TZS', payment_gateway: 'mpesa',
+                    },
+                    user_id: user.user_id,
+                    delivery_type_id: 'standard',
+                });
+
+                alert('Order Created Successfully!');
+                router.replace('/(buyer)');
+            }
         } catch (error) {
             console.error("Payment Failed:", error);
             alert("Failed to process payment. Please try again.");

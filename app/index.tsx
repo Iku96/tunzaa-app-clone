@@ -31,11 +31,21 @@ export default function WelcomeScreen() {
 
             // Also check for Tunzaa's custom auth storage
             const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-            const userData = await AsyncStorage.getItem('user_data');
+            const userDataString = await AsyncStorage.getItem('user_data');
 
-            if (userData) {
-                router.replace('/(buyer)');
-                return;
+            if (userDataString) {
+                try {
+                    const user = JSON.parse(userDataString);
+                    const role = user.activeProfileRole || user.active_profile_role;
+                    if (role === 'vendor') {
+                        router.replace('/(merchant)');
+                    } else {
+                        router.replace('/(buyer)');
+                    }
+                    return;
+                } catch (parseError) {
+                    console.error('Failed to parse user data:', parseError);
+                }
             }
 
             router.replace('/language');

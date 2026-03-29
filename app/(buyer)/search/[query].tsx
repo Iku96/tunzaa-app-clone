@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { productsApi } from '../../../src/services/products';
 import { PRODUCTS } from '../../../src/data/products';
+import { useQuery } from '@tanstack/react-query';
+import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
+import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -83,9 +86,26 @@ const GridProductCard = ({ product }: { product: typeof PRODUCTS[0] }) => {
 export default function SearchScreen() {
     const { query } = useLocalSearchParams();
     const router = useRouter();
-    const [searchText, setSearchText] = useState(query as string || '');
-    const [loading, setLoading] = useState(false);
-    const [results, setResults] = useState<any[]>(PRODUCTS.slice(0, 6)); // Default mockup results
+    const initialQuery = query === 'all' ? '' : (query as string || '');
+    const [searchText, setSearchText] = useState(initialQuery);
+
+    const [debouncedSearch, setDebouncedSearch] = useState(initialQuery);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchText);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [searchText]);
+
+    const { data: searchData, isLoading } = useQuery({
+        queryKey: ['search', debouncedSearch],
+        queryFn: () => debouncedSearch.trim().length > 0
+            ? productsApi.searchProducts(debouncedSearch.trim(), { limit: 20 })
+            : productsApi.getProducts({ limit: 20 }),
+        staleTime: 60 * 1000,
+    });
+
+    const results = searchData?.items ? searchData.items.map(mapApiProductToUI) : [];
 
     // UI States
     const [viewMode, setViewMode] = useState<'list' | 'gallery'>('list');
@@ -341,7 +361,16 @@ export default function SearchScreen() {
                 </View>
 
                 {/* List or Grid */}
-                {viewMode === 'list' ? (
+                {isLoading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 }}>
+                        <ActivityIndicator size="large" color="#4A55A2" />
+                    </View>
+                ) : results.length === 0 ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 }}>
+                        <Ionicons name="search-outline" size={48} color="#D1D5DB" />
+                        <Text style={{ marginTop: 10, color: '#6B7280', fontSize: 16 }}>No products found</Text>
+                    </View>
+                ) : viewMode === 'list' ? (
                     <FlatList
                         data={results}
                         keyExtractor={item => item.id}

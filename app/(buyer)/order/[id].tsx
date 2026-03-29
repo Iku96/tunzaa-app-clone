@@ -4,26 +4,46 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Circle } from 'react-native-svg';
+import { useQuery } from '@tanstack/react-query';
+import { orderApi, usePayOrder } from '../../../src/services/orders';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 const { height } = Dimensions.get('window');
 
 export default function OrderDashboardScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
+    const { user } = useTunzaaAuth();
 
-    const [isFullyPaid, setIsFullyPaid] = useState(false);
     const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
     const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
-    const product = {
-        name: 'Living Sofa',
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=300',
-        orderNumber: '#8050722',
-        date: '22 Feb 2021',
-        productPrice: 35000,
-        deliveryAmount: 10000,
-        total: 45000,
-    };
+    // Polling Mechanism State
+    const [isPolling, setIsPolling] = useState(false);
+    const [hasPaidInstallment, setHasPaidInstallment] = useState(false); // To trigger success animation when poll goes from true -> false
+
+    const { data: ordersResponse, refetch, isLoading } = useQuery({
+        queryKey: ['order', id],
+        queryFn: () => orderApi.getOrders({ order_id: id as string }),
+        enabled: !!id,
+        refetchInterval: isPolling ? 3000 : false, // 3-second polling mechanism
+    });
+
+    // We get elements as array or object, safely extract
+    const orderData = Array.isArray(ordersResponse) ? ordersResponse : ordersResponse?.items;
+    const order = orderData && orderData.length > 0 ? orderData[0] : null;
+
+    const payOrderMutation = usePayOrder();
+
+    useEffect(() => {
+        // Stop polling when payment status succeeds
+        if (isPolling && order) {
+            if (order.payment_status === 'paid' || order.payment_status === 'partially_paid') {
+                setIsPolling(false);
+                setIsSuccessModalVisible(true);
+            }
+        }
+    }, [order, isPolling]);
 
     const CircleProgress = ({ percentage }: { percentage: number }) => {
         const size = 100;
@@ -64,14 +84,28 @@ export default function OrderDashboardScreen() {
         );
     };
 
-    const handlePaymentSelect = () => {
+    const handlePaymentSelect = async (methodName: string) => {
         setIsPaymentModalVisible(false);
-        setIsSuccessModalVisible(true);
+        if (!order || !user?.phone_number) {
+            alert("Missing user phone number or order details");
+            return;
+        }
+
+        try {
+            await payOrderMutation.mutateAsync({
+                orderNumber: order.order_id,
+                data: { customer_msisdn: user.phone_number.replace('+', ''), plan_id: 'installment' }
+            });
+            setIsPolling(true); // Begin heavy 3s polling
+            setHasPaidInstallment(true);
+        } catch (error) {
+            console.error("Installment push failed:", error);
+            alert("Failed to push installment request");
+        }
     };
 
     const handleSuccessClose = () => {
         setIsSuccessModalVisible(false);
-        setIsFullyPaid(true); // Update progress state after closing the success modal
     };
 
     const renderPaymentModal = () => (
@@ -88,10 +122,8 @@ export default function OrderDashboardScreen() {
                             { name: 'Tigo Pesa', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Tigo_logo.svg/1024px-Tigo_logo.svg.png' },
                             { name: 'Airtel Money', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Airtel_logo_2010.svg/512px-Airtel_logo_2010.svg.png' },
                             { name: 'Halo Pesa', logo: 'https://halotel.co.tz/assets/images/logo.png' },
-                            { name: 'Visa', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/1024px-Visa_Inc._logo.svg.png' },
-                            { name: 'Selcom Pay', logo: 'https://selcom.net/themes/selcom/assets/images/selcom-logo.png' }
                         ].map((method, index) => (
-                            <TouchableOpacity key={index} style={styles.paymentMethodRow} onPress={handlePaymentSelect}>
+                            <TouchableOpacity key={index} style={styles.paymentMethodRow} onPress={() => handlePaymentSelect(method.name)}>
                                 <View style={styles.paymentMethodLogoWrap}>
                                     <Image source={{ uri: method.logo }} style={styles.paymentMethodLogo} resizeMode="contain" />
                                 </View>
@@ -130,6 +162,26 @@ export default function OrderDashboardScreen() {
         </Modal>
     );
 
+    if (isLoading && !order) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text>Loading order...</Text>
+            </SafeAreaView>
+        );
+    }
+
+    if (!order) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text>Order not found</Text>
+            </SafeAreaView>
+        );
+    }
+
+    const orderItem = order.items?.[0]; // Get primary item
+    const paymentProgress = order.payment_status === 'paid' ? 100 : order.payment_status === 'partially_paid' ? 50 : 0;
+    const isFullyPaid = paymentProgress === 100;
+
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             {/* Header Area (Blue Background) */}
@@ -138,7 +190,7 @@ export default function OrderDashboardScreen() {
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Order</Text>
+                    <Text style={styles.headerTitle}>Order Tracking</Text>
                     <View style={{ width: 40 }} />
                 </View>
             </View>
@@ -149,15 +201,15 @@ export default function OrderDashboardScreen() {
 
                     {/* Top Row: Image & Progress Ring */}
                     <View style={styles.trackingTopRow}>
-                        <Image source={{ uri: product.image }} style={styles.productImage} />
-                        <CircleProgress percentage={isFullyPaid ? 100 : 70} />
+                        <Image source={{ uri: (orderItem as any)?.image_url || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=300' }} style={styles.productImage} />
+                        <CircleProgress percentage={paymentProgress} />
                     </View>
 
                     {/* Product Basic Info */}
                     <View style={styles.productInfoSection}>
-                        <Text style={styles.productName}>{product.name}</Text>
-                        <Text style={styles.metaValue}>{product.orderNumber}</Text>
-                        <Text style={styles.dateText}>{product.date}</Text>
+                        <Text style={styles.productName} numberOfLines={2}>{(orderItem as any)?.name || (orderItem as any)?.product_name || 'Product Item'}</Text>
+                        <Text style={styles.metaValue}>#{order.order_number}</Text>
+                        <Text style={styles.dateText}>{new Date(order.created_at || Date.now()).toLocaleDateString()}</Text>
                     </View>
 
                     {/* Divider */}
@@ -168,16 +220,16 @@ export default function OrderDashboardScreen() {
                         <Text style={styles.detailsTitle}>Order details</Text>
 
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Product</Text>
-                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tsh {product.productPrice.toLocaleString()}</Text>
+                            <Text style={styles.detailLabel}>Subtotal</Text>
+                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tsh {order.totals.subtotal?.toLocaleString()}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Delivery amount</Text>
-                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tsh {product.deliveryAmount.toLocaleString()}</Text>
+                            <Text style={styles.detailLabel}>Tax & Fees</Text>
+                            <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tsh {order.totals.tax?.toLocaleString()}</Text>
                         </View>
                         <View style={[styles.detailRow, { marginTop: 8 }]}>
                             <Text style={[styles.detailLabel, { fontWeight: 'bold' }]}>Total amount</Text>
-                            <Text style={[styles.detailValue, { color: '#2F48AE', fontWeight: 'bold', fontSize: 16 }]}>Tsh {product.total.toLocaleString()}</Text>
+                            <Text style={[styles.detailValue, { color: '#2F48AE', fontWeight: 'bold', fontSize: 16 }]}>Tsh {order.totals.total?.toLocaleString()}</Text>
                         </View>
                     </View>
 
@@ -186,10 +238,9 @@ export default function OrderDashboardScreen() {
                         <View style={styles.actionButtonsContainer}>
                             <TouchableOpacity
                                 style={styles.primaryBtn}
-                                onPress={() => router.push('/(buyer)/profile/delivery/map')}
+                                onPress={() => router.push(`/(buyer)/profile/delivery/map?order_id=${order.order_id}`)}
                             >
-                                <Text style={styles.primaryBtnText}>Receive your product</Text>
-                                {/* Added icon if appropriate, screenshot shows simple text but maybe right arrow. Let's keep it simple. */}
+                                <Text style={styles.primaryBtnText}>Live Delivery Map</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.outlineBtn}
@@ -197,13 +248,24 @@ export default function OrderDashboardScreen() {
                             >
                                 <Text style={styles.outlineBtnText}>Rate delivery</Text>
                             </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.outlineBtn, { marginTop: 12, borderColor: '#FEE2E2', backgroundColor: '#FEF2F2' }]}
+                                onPress={() => router.push({
+                                    pathname: '/(buyer)/refund/request',
+                                    params: { order_id: id as string }
+                                })}
+                            >
+                                <Text style={[styles.outlineBtnText, { color: '#EF4444' }]}>Request Refund</Text>
+                            </TouchableOpacity>
                         </View>
                     ) : (
                         <TouchableOpacity
-                            style={styles.payBtn}
-                            onPress={() => setIsPaymentModalVisible(true)}
+                            style={[styles.payBtn, isPolling && { opacity: 0.7 }]}
+                            onPress={() => !isPolling && setIsPaymentModalVisible(true)}
                         >
-                            <Text style={styles.payBtnText}>Pay Installment: Tsh 13,500</Text>
+                            <Text style={styles.payBtnText}>
+                                {isPolling ? 'Awaiting Payment Approval...' : 'Pay Installment: Tsh 10,000'}
+                            </Text>
                         </TouchableOpacity>
                     )}
 

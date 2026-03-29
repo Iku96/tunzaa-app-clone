@@ -16,7 +16,7 @@ import BottomNav from '../../src/components/navigation/BottomNav';
 export default function BuyerHome() {
     const { user } = useTunzaaAuth();
     const router = useRouter();
-    const { products, categories, loading, error } = useMarketplace();
+    const { products, categories, loading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useMarketplace();
     const { data: banners, isLoading: bannersLoading } = useBanners();
 
     // User display info from Tunzaa auth
@@ -79,6 +79,16 @@ export default function BuyerHome() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 style={styles.scrollView}
+                scrollEventThrottle={400}
+                onScroll={({ nativeEvent }) => {
+                    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+                    const paddingToBottom = 200;
+                    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
+                        if (hasNextPage && !isFetchingNextPage) {
+                            fetchNextPage();
+                        }
+                    }
+                }}
             >
                 {/* Promo Banner Carousel */}
                 <PromoBannerCarousel banners={banners} loading={bannersLoading} />
@@ -136,6 +146,11 @@ export default function BuyerHome() {
                     )}
                 </View>
 
+                {isFetchingNextPage && (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <ActivityIndicator size="small" color="#4A55A2" />
+                    </View>
+                )}
                 <View style={{ height: 100 }} />
             </ScrollView>
 

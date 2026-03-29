@@ -194,6 +194,15 @@ export const orderApi = {
         const response = await apiClient.post(`/orders/${orderNumber}/pay`, data);
         return response.data;
     },
+
+    /** Request a refund for an order */
+    requestRefund: async (
+        orderNumber: string,
+        data: { reason: string; notes?: string; items?: any[] }
+    ): Promise<any> => {
+        const response = await apiClient.post(`/orders/${orderNumber}/refund`, data);
+        return response.data;
+    },
 };
 
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -236,5 +245,17 @@ export const useGetOrders = (
         queryKey: ["orders", params],
         queryFn: () => orderApi.getOrders(params),
         enabled,
+    });
+};
+
+export const useRequestRefund = () => {
+    return useMutation({
+        mutationFn: ({
+            orderNumber,
+            data,
+        }: {
+            orderNumber: string;
+            data: { reason: string; notes?: string; items?: any[] };
+        }) => orderApi.requestRefund(orderNumber, data),
     });
 };
