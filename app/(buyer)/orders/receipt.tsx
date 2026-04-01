@@ -1,105 +1,146 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
 export default function ReceiptScreen() {
     const router = useRouter();
+    const { id } = useLocalSearchParams();
+
+    const orderData = {
+        id: id || '1203056',
+        date: '25 May 2024',
+        time: '14:30',
+        customer: 'Khadija Abdallah',
+        phone: '+255 768 000 000',
+        paymentMethod: 'NMB Bank',
+        status: 'Order delivered',
+        items: [
+            { name: 'Air Jordan Nike', qty: 1, price: 450000 },
+        ],
+        summary: {
+            totalPrice: 450000,
+            deliveryFee: 5000,
+            taxes: 81000, // 18%
+            discount: 0,
+            grandTotal: 536000
+        }
+    };
+
+    const formatPrice = (price: number) => {
+        return new Intl.NumberFormat('en-US').format(price);
+    };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+                    <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Receipt</Text>
                 <View style={{ width: 40 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-
-                {/* Physical-style Receipt Card */}
                 <View style={styles.receiptCard}>
-
-                    {/* Top Branding Section */}
-                    <View style={styles.brandSection}>
-                        <Text style={styles.tunzaaLogoText}>TUNZAA</Text>
-                        <View style={styles.paymentTypeRow}>
-                            <View style={styles.dot} />
-                            <Text style={styles.paymentTypeText}>Product Payments</Text>
+                    {/* Status Badge */}
+                    <View style={styles.statusBadgeContainer}>
+                        <View style={styles.statusBadge}>
+                            <Ionicons name="checkmark-circle" size={14} color="#22C55E" />
+                            <Text style={styles.statusBadgeText}>{orderData.status}</Text>
                         </View>
-                        <Text style={styles.orderNumberText}>Payment made for Order number #9087053</Text>
                     </View>
 
-                    <View style={styles.dashedDivider} />
+                    {/* Order ID & Date */}
+                    <View style={styles.receiptHeader}>
+                        <Text style={styles.orderIdLabel}>Order ID</Text>
+                        <Text style={styles.orderIdValue}>#{orderData.id}</Text>
+                        <Text style={styles.receiptDateTime}>{orderData.date} • {orderData.time}</Text>
+                    </View>
 
-                    <Text style={styles.dateText}>Nov 13, 2024 | 02:40 PM</Text>
+                    <View style={styles.divider} />
 
-                    {/* Main Receipt Info Rows */}
+                    {/* Customer Info */}
                     <View style={styles.infoSection}>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Service</Text>
-                            <Text style={styles.infoValue}>Vodacom Shop</Text>
+                        <Text style={styles.sectionLabel}>Customer</Text>
+                        <Text style={styles.customerName}>{orderData.customer}</Text>
+                        <Text style={styles.customerPhone}>{orderData.phone}</Text>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Items */}
+                    <View style={styles.infoSection}>
+                        <Text style={styles.sectionLabel}>Product Items</Text>
+                        {orderData.items.map((item, idx) => (
+                            <View key={idx} style={styles.itemRow}>
+                                <View style={styles.itemMain}>
+                                    <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                                    <Text style={styles.itemQty}>Qty: {item.qty}</Text>
+                                </View>
+                                <Text style={styles.itemPrice}>Tsh {formatPrice(item.price)}</Text>
+                            </View>
+                        ))}
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Payment Summary */}
+                    <View style={styles.summarySection}>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Total price</Text>
+                            <Text style={styles.summaryValue}>Tsh {formatPrice(orderData.summary.totalPrice)}</Text>
                         </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Method</Text>
-                            <Text style={styles.infoValue}>M-Pesa</Text>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Delivery fee</Text>
+                            <Text style={styles.summaryValue}>Tsh {formatPrice(orderData.summary.deliveryFee)}</Text>
                         </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Product Name</Text>
-                            <Text style={styles.infoValue}>Samsung Galaxy</Text>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Taxes (18%)</Text>
+                            <Text style={styles.summaryValue}>Tsh {formatPrice(orderData.summary.taxes)}</Text>
                         </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Amount</Text>
-                            <Text style={styles.infoValue}>1,500,000</Text>
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.summaryLabel}>Discount</Text>
+                            <Text style={styles.summaryValue}>- Tsh {formatPrice(orderData.summary.discount)}</Text>
                         </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Status</Text>
-                            <Text style={styles.statusValue}>Completed</Text>
+                        <View style={styles.grandTotalRow}>
+                            <Text style={styles.grandTotalLabel}>Grand Total</Text>
+                            <Text style={styles.grandTotalValue}>Tsh {formatPrice(orderData.summary.grandTotal)}</Text>
                         </View>
                     </View>
 
-                    <View style={styles.dashedDivider} />
+                    <View style={styles.divider} />
 
-                    {/* Breakdown Section */}
-                    <View style={styles.breakdownSection}>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Subtotal</Text>
-                            <Text style={styles.breakdownValue}>Tsh 35,000</Text>
-                        </View>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Discount</Text>
-                            <Text style={styles.breakdownValue}>Tsh 0</Text>
-                        </View>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Delivery Fees</Text>
-                            <Text style={styles.breakdownValue}>Tsh 10,000</Text>
-                        </View>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Tax (18%)</Text>
-                            <Text style={styles.breakdownValue}>Tsh 6,300</Text>
-                        </View>
-
-                        <View style={[styles.breakdownRow, { marginTop: 12 }]}>
-                            <Text style={styles.totalLabel}>Total costs</Text>
-                            <Text style={styles.totalValue}>Tsh. 51,300</Text>
+                    {/* Payment Method */}
+                    <View style={styles.paymentMethodSection}>
+                        <Text style={styles.sectionLabel}>Payment Method</Text>
+                        <View style={styles.methodRow}>
+                            <View style={styles.methodIconWrapper}>
+                                <Ionicons name="card-outline" size={18} color="#425BA4" />
+                            </View>
+                            <Text style={styles.methodName}>{orderData.paymentMethod}</Text>
                         </View>
                     </View>
-
-                    {/* Cutouts on the sides for receipt styling effect */}
-                    <View style={styles.leftCutout} />
-                    <View style={styles.rightCutout} />
-
-                    {/* Fixed Button At Bottom of Card */}
-                    <TouchableOpacity style={styles.downloadBtn} onPress={() => router.push('/(buyer)/orders' as any)}>
-                        <Ionicons name="download-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-                        <Text style={styles.downloadBtnText}>Download Receipt</Text>
-                    </TouchableOpacity>
-
                 </View>
 
+                {/* Actions */}
+                <View style={styles.actionsContainer}>
+                    <TouchableOpacity style={styles.downloadButton}>
+                        <Ionicons name="download-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <Text style={styles.downloadButtonText}>Download Receipt</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.shareButton}>
+                        <Ionicons name="share-social-outline" size={20} color="#425BA4" style={{ marginRight: 8 }} />
+                        <Text style={styles.shareButtonText}>Share</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.footerBrand}>
+                    <Text style={styles.footerBrandText}>Tunzaa Version 2.0</Text>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -108,178 +149,229 @@ export default function ReceiptScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F3F4F6', // Off-white/gray background highlights the white receipt card
+        backgroundColor: '#F9FAFB',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: 16,
-        paddingBottom: 20,
+        paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
     },
     backButton: {
         padding: 4,
     },
     headerTitle: {
-        flex: 1,
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#1A1A1A',
-        textAlign: 'center',
+        color: '#111827',
     },
     content: {
-        padding: 24,
-        alignItems: 'center',
+        padding: 20,
+        paddingBottom: 40,
     },
     receiptCard: {
         backgroundColor: '#FFFFFF',
-        width: '100%',
-        borderRadius: 16,
-        paddingVertical: 32,
+        borderRadius: 24,
+        padding: 24,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
-        shadowRadius: 12,
-        elevation: 4,
-        position: 'relative',
-    },
-    leftCutout: {
-        position: 'absolute',
-        left: -12,
-        top: '60%', // Approximately where the dashed divider is
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#F3F4F6',
-    },
-    rightCutout: {
-        position: 'absolute',
-        right: -12,
-        top: '60%',
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#F3F4F6',
-    },
-    brandSection: {
-        alignItems: 'center',
-        marginBottom: 20,
-        paddingHorizontal: 24,
-    },
-    tunzaaLogoText: {
-        fontSize: 28,
-        fontWeight: '900',
-        color: '#425BA4',
-        letterSpacing: 2,
-        marginBottom: 12,
-    },
-    paymentTypeRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#EEF2FF',
-        paddingHorizontal: 16,
-        paddingVertical: 6,
-        borderRadius: 16,
-        marginBottom: 16,
-    },
-    dot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: '#425BA4',
-        marginRight: 8,
-    },
-    paymentTypeText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#425BA4',
-    },
-    orderNumberText: {
-        fontSize: 13,
-        color: '#6B7280',
-        textAlign: 'center',
-    },
-    dashedDivider: {
-        height: 1,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderStyle: 'dashed',
-        backgroundColor: 'transparent',
-        marginVertical: 24,
-        marginHorizontal: 24,
-    },
-    dateText: {
-        fontSize: 13,
-        color: '#6B7280',
-        textAlign: 'right',
-        paddingHorizontal: 24,
+        shadowRadius: 15,
+        elevation: 5,
         marginBottom: 24,
     },
-    infoSection: {
-        paddingHorizontal: 24,
-    },
-    infoRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    infoLabel: {
-        fontSize: 14,
-        color: '#6B7280',
-    },
-    infoValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1F2937',
-    },
-    statusValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#22C55E', // Green for completed
-    },
-    breakdownSection: {
-        paddingHorizontal: 24,
-        marginBottom: 32,
-    },
-    breakdownRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+    statusBadgeContainer: {
+        alignItems: 'flex-end',
         marginBottom: 8,
     },
-    breakdownLabel: {
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ECFDF5',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 12,
+        gap: 4,
+    },
+    statusBadgeText: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#22C55E',
+    },
+    receiptHeader: {
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    orderIdLabel: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        marginBottom: 4,
+    },
+    orderIdValue: {
+        fontSize: 24,
+        fontWeight: '900',
+        color: '#111827',
+        marginBottom: 8,
+    },
+    receiptDateTime: {
         fontSize: 13,
         color: '#6B7280',
     },
-    breakdownValue: {
-        fontSize: 13,
-        fontWeight: '500',
-        color: '#1F2937',
+    divider: {
+        height: 1,
+        backgroundColor: '#F3F4F6',
+        marginVertical: 20,
     },
-    totalLabel: {
+    infoSection: {
+        gap: 8,
+    },
+    sectionLabel: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#9CA3AF',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 4,
+    },
+    customerName: {
         fontSize: 15,
         fontWeight: 'bold',
         color: '#1F2937',
     },
-    totalValue: {
+    customerPhone: {
+        fontSize: 13,
+        color: '#6B7280',
+    },
+    itemRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 4,
+    },
+    itemMain: {
+        flex: 1,
+        marginRight: 16,
+    },
+    itemName: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1F2937',
+        marginBottom: 2,
+    },
+    itemQty: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    itemPrice: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    summarySection: {
+        gap: 10,
+    },
+    summaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    summaryLabel: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    summaryValue: {
+        fontSize: 14,
+        color: '#1F2937',
+        fontWeight: '500',
+    },
+    grandTotalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 12,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
+    },
+    grandTotalLabel: {
         fontSize: 16,
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    grandTotalValue: {
+        fontSize: 18,
+        fontWeight: '900',
+        color: '#425BA4',
+    },
+    paymentMethodSection: {
+        gap: 12,
+    },
+    methodRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    methodIconWrapper: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    methodName: {
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#1F2937',
     },
-    downloadBtn: {
-        flexDirection: 'row',
+    actionsContainer: {
+        gap: 12,
+        marginBottom: 32,
+    },
+    downloadButton: {
         backgroundColor: '#425BA4',
-        borderRadius: 24,
         paddingVertical: 16,
-        marginHorizontal: 24,
+        borderRadius: 16,
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 16,
+        shadowColor: "#425BA4",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 4,
     },
-    downloadBtnText: {
+    downloadButtonText: {
         color: '#FFFFFF',
         fontSize: 15,
         fontWeight: 'bold',
+    },
+    shareButton: {
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 16,
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    shareButtonText: {
+        color: '#425BA4',
+        fontSize: 15,
+        fontWeight: 'bold',
+    },
+    footerBrand: {
+        alignItems: 'center',
+        paddingTop: 12,
+    },
+    footerBrandText: {
+        fontSize: 12,
+        color: '#9CA3AF',
     },
 });

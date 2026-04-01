@@ -5,6 +5,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useLanguage } from '../../../src/contexts/LanguageContext';
+import { useUploadFile } from '../../../src/services/upload';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,6 +15,7 @@ export default function Step5Documents() {
     const router = useRouter();
     const { isAuthenticated, createVendor, refreshProfile, user } = useTunzaaAuth();
     const { t } = useLanguage();
+    const { mutateAsync: uploadFile } = useUploadFile();
     
     const [loading, setLoading] = useState(false);
     const [activeSection, setActiveSection] = useState<DocType>(null);
@@ -52,15 +54,50 @@ export default function Step5Documents() {
 
         setLoading(true);
         try {
-            // Retrieve persisted shop details
+            // 1. Upload Documents first if they exist
+            const docsToUpload = [];
+            if (licenseFile) docsToUpload.push({ file: licenseFile, type: 'business_license' });
+            if (tinFile) docsToUpload.push({ file: tinFile, type: 'tin_certificate' });
+            if (brelaFile) docsToUpload.push({ file: brelaFile, type: 'brela_registration' });
+
+            const uploadedDocs = await Promise.all(
+                docsToUpload.map(async (doc) => {
+                    try {
+                        console.log(`📤 [Step5] Uploading ${doc.type}: ${doc.file.name}`);
+                        const result = await uploadFile({
+                            uri: doc.file.uri,
+                            filename: doc.file.name,
+                            mimeType: doc.file.mimeType
+                        });
+                        return {
+                            type: doc.type,
+                            url: result.url,
+                            name: doc.file.name
+                        };
+                    } catch (uploadErr) {
+                        console.error(`❌ [Step5] Failed to upload ${doc.type}:`, uploadErr);
+                        throw uploadErr;
+                    }
+                })
+            );
+
+            // 2. Retrieve persisted shop details
             const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-            const [savedShopName, savedPhone, savedDesc, savedLogo, savedCover, savedLocationStr] = await Promise.all([
+            const [
+                savedShopName, savedPhone, savedDesc, savedLogo, savedCover, savedLocationStr,
+                savedBankName, savedBankSwift, savedBankAccNumber, savedBankAccName
+            ] = await Promise.all([
                 AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_PHONE'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_DESCRIPTION'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_LOGO'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_COVER'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_LOCATION'),
+                // Real Bank Details
+                AsyncStorage.getItem('TEMP_ONBOARDING_BANK_NAME'),
+                AsyncStorage.getItem('TEMP_ONBOARDING_BANK_SWIFT'),
+                AsyncStorage.getItem('TEMP_ONBOARDING_BANK_ACC_NUMBER'),
+                AsyncStorage.getItem('TEMP_ONBOARDING_BANK_ACC_NAME'),
             ]);
             
             const location = savedLocationStr ? JSON.parse(savedLocationStr) as { region: string; municipal: string; ward: string; extraInfo: string } : null;
@@ -79,6 +116,8 @@ export default function Step5Documents() {
             console.log(`🏪 [Step5] Finalizing vendor profile for: ${vendorUserId}`);
             console.log(`📝 [Step5] Business Name: ${finalShopName}`);
             console.log(`📝 [Step5] Store Slug: ${storeSlug}`);
+            console.log(`📄 [Step5] Documents Uploaded: ${uploadedDocs.length}`);
+            console.log(`🏦 [Step5] Bank: ${savedBankName || 'None'}`);
 
             const vendorData = {
                 user: {
@@ -102,13 +141,13 @@ export default function Step5Documents() {
                 country: 'Tanzania',
                 tax_id: '',
                 bank_account: {
-                    bank_name: 'None',
-                    account_number: '0000000000',
-                    account_name: user?.name || 'Store Owner',
-                    swift_code: '',
+                    bank_name: savedBankName || 'None',
+                    account_number: savedBankAccNumber || '0000000000',
+                    account_name: savedBankAccName || user?.name || 'Store Owner',
+                    swift_code: savedBankSwift || '',
                     branch_code: '',
                 },
-                verification_documents: [],
+                verification_documents: uploadedDocs, // ✅ Now using real CDN URLs
                 commission_rate: '0',
                 store: {
                     store_name: finalShopName,
@@ -139,6 +178,10 @@ export default function Step5Documents() {
                 AsyncStorage.removeItem('TEMP_ONBOARDING_LOGO'),
                 AsyncStorage.removeItem('TEMP_ONBOARDING_COVER'),
                 AsyncStorage.removeItem('TEMP_ONBOARDING_LOCATION'),
+                AsyncStorage.removeItem('TEMP_ONBOARDING_BANK_NAME'),
+                AsyncStorage.removeItem('TEMP_ONBOARDING_BANK_SWIFT'),
+                AsyncStorage.removeItem('TEMP_ONBOARDING_BANK_ACC_NUMBER'),
+                AsyncStorage.removeItem('TEMP_ONBOARDING_BANK_ACC_NAME'),
             ]);
 
             // Refresh user profile to get the new vendor role

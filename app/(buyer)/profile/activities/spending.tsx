@@ -108,11 +108,12 @@ export default function SpendingActivitiesScreen() {
                         <TouchableOpacity key={activity.id} style={styles.activityItem}>
                             <View style={styles.activityInfo}>
                                 <Text style={styles.activityName}>{activity.title}</Text>
-                                <Text style={styles.activityMeta}>
-                                    {activity.date} • Tzs {activity.amount}
-                                </Text>
+                                <View style={styles.activityMetaRow}>
+                                    <Text style={styles.activityMeta}>{activity.date}</Text>
+                                    <Text style={styles.activityAmount}>Tzs {activity.amount}</Text>
+                                </View>
                             </View>
-                            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -129,35 +130,36 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
         backgroundColor: '#FFFFFF',
     },
     backButton: {
         padding: 4,
-        marginLeft: -4,
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        flex: 1,
         textAlign: 'center',
+        marginRight: 32,
     },
     scrollContent: {
         paddingTop: 24,
         paddingHorizontal: 20,
+        paddingBottom: 40,
     },
     tabContainer: {
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 8,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 12,
         padding: 4,
         marginBottom: 24,
     },
     tab: {
         flex: 1,
-        paddingVertical: 12,
+        paddingVertical: 10,
         alignItems: 'center',
         borderRadius: 8,
     },
@@ -200,30 +202,30 @@ const styles = StyleSheet.create({
     },
     overviewCard: {
         backgroundColor: '#425BA4',
-        borderRadius: 16,
-        padding: 20,
-        marginBottom: 24,
+        borderRadius: 20,
+        padding: 24,
+        marginBottom: 32,
     },
     cardHeaderRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 24,
     },
     cardTitle: {
         color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 14,
+        fontWeight: '500',
     },
     badge: {
-        backgroundColor: '#FFFFFF33',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
     },
     badgeText: {
         color: '#FFFFFF',
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: '500',
     },
     statsRow: {
@@ -235,18 +237,18 @@ const styles = StyleSheet.create({
     },
     statDivider: {
         width: 1,
-        height: 40,
-        backgroundColor: '#FFFFFF33',
+        height: 32,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
         marginHorizontal: 16,
     },
     statLabel: {
-        color: '#E0E7FF',
-        fontSize: 12,
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: 11,
         marginBottom: 4,
     },
     statValue: {
         color: '#FFFFFF',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
     },
     gridContainer: {
@@ -261,30 +263,24 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 16,
         marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 8,
-        elevation: 2,
         borderWidth: 1,
         borderColor: '#F3F4F6',
     },
     gridHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
         marginBottom: 12,
     },
     gridValue: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#425BA4',
-        marginRight: 8,
     },
     trendBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EEF2FF',
+        backgroundColor: '#EFF6FF',
         paddingHorizontal: 6,
         paddingVertical: 2,
         borderRadius: 12,
@@ -300,7 +296,7 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     recentSection: {
-        marginBottom: 40,
+        marginTop: 8,
     },
     recentTitle: {
         fontSize: 16,
@@ -310,14 +306,14 @@ const styles = StyleSheet.create({
     },
     recentSubtitle: {
         fontSize: 13,
-        color: '#6B7280',
+        color: '#9CA3AF',
         marginBottom: 16,
     },
     activityItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 14,
+        paddingVertical: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#F3F4F6',
     },
@@ -330,8 +326,18 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
         marginBottom: 4,
     },
+    activityMetaRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingRight: 16,
+    },
     activityMeta: {
         fontSize: 12,
-        color: '#6B7280',
+        color: '#9CA3AF',
+    },
+    activityAmount: {
+        fontSize: 12,
+        color: '#4B5563',
+        fontWeight: '500',
     },
 });

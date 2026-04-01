@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, StatusBar, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, StatusBar, Dimensions, Modal, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,8 +7,7 @@ import Svg, { Circle } from 'react-native-svg';
 import BottomNav from '../../../src/components/navigation/BottomNav';
 import PaymentModal from '../../../src/components/orders/PaymentModal';
 
-import { useGetOrder } from '../../../src/services/orders';
-import { ActivityIndicator } from 'react-native';
+import { useGetOrders, OrderItem } from '../../../src/services/orders';
 
 const { width } = Dimensions.get('window');
 
@@ -18,7 +17,8 @@ export default function OrderDetailsScreen() {
     const [paymentModalVisible, setPaymentModalVisible] = useState(false);
 
     // Fetch order by ID
-    const { data: apiOrder, isLoading } = useGetOrder(id as string, !!id);
+    const { data: ordersData, isLoading } = useGetOrders({ order_id: id as string }, !!id);
+    const apiOrder = Array.isArray(ordersData) ? ordersData[0] : (ordersData as any)?.items?.[0];
 
     const isCompleted = apiOrder?.status?.toLowerCase() === 'completed' || (apiOrder && apiOrder.payment_details?.amount >= apiOrder.totals?.total);
 
@@ -29,10 +29,10 @@ export default function OrderDetailsScreen() {
     const order = {
         id: apiOrder?.order_id || apiOrder?.order_number || id,
         date: new Date(apiOrder?.created_at || Date.now()).toLocaleDateString('en-GB'),
-        items: apiOrder?.items?.length > 0 ? apiOrder.items.map(i => ({
+        items: apiOrder?.items?.length > 0 ? apiOrder.items.map((i: OrderItem) => ({
             name: i.name,
             price: i.unit_price,
-            image: i.metadata?.image || 'https://via.placeholder.com/500?text=Order',
+            image: (i as any).metadata?.image || 'https://via.placeholder.com/500?text=Order',
             quantity: i.quantity
         })) : [{ name: 'Loading Item...', price: 0, image: 'https://via.placeholder.com/500', quantity: 1 }],
         paidAmount: paid,
@@ -172,6 +172,42 @@ export default function OrderDetailsScreen() {
                 amount={order.pendingAmount || 1000} // Mock amount
                 onPaymentSuccess={handlePaymentSuccess}
             />
+            {/* Congratulations Modal */}
+            <Modal
+                visible={order.progress >= 1 && !isLoading}
+                transparent={true}
+                animationType="fade"
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.congratulationsCard}>
+                        <TouchableOpacity 
+                            style={styles.closeModal} 
+                            onPress={() => router.push('/(buyer)/orders/receipt')}
+                        >
+                            <Ionicons name="close" size={20} color="#1F2937" />
+                        </TouchableOpacity>
+
+                        <View style={styles.celebrationIcon}>
+                            <Image 
+                                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3113/3113025.png' }} 
+                                style={{ width: 60, height: 60 }} 
+                            />
+                        </View>
+
+                        <Text style={styles.congratsTitle}>Congratulations Femi!</Text>
+                        <Text style={styles.congratsSubtitle}>
+                            You've successfully completed your installment payment for the <Text style={{ fontWeight: 'bold' }}>{order.items[0].name}</Text>.
+                        </Text>
+
+                        <TouchableOpacity 
+                            style={styles.viewReceiptBtn}
+                            onPress={() => router.push('/(buyer)/orders/receipt')}
+                        >
+                            <Text style={styles.viewReceiptBtnText}>View Receipt</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -323,5 +359,56 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+    congratulationsCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        padding: 32,
+        width: '100%',
+        alignItems: 'center',
+        position: 'relative',
+    },
+    closeModal: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        padding: 4,
+    },
+    celebrationIcon: {
+        marginBottom: 20,
+    },
+    congratsTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#1F2937',
+        textAlign: 'center',
+        marginBottom: 12,
+    },
+    congratsSubtitle: {
+        fontSize: 16,
+        color: '#6B7280',
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 32,
+    },
+    viewReceiptBtn: {
+        backgroundColor: '#425BA4',
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        borderRadius: 30,
+        width: '100%',
+        alignItems: 'center',
+    },
+    viewReceiptBtnText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

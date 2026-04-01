@@ -27,13 +27,15 @@ export default function SettingsScreen() {
         );
     };
 
-    const renderSettingItem = (icon: string, label: string, onPress?: () => void, isLast: boolean = false) => (
-        <TouchableOpacity style={[styles.itemContainer, isLast && styles.lastItem]} onPress={onPress}>
-            <View style={styles.itemContent}>
-                <Ionicons name={icon as any} size={24} color="#4B5563" style={styles.itemIcon} />
+    const renderSettingItem = (icon: string, label: string, onPress?: () => void) => (
+        <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
+            <View style={styles.itemLeft}>
+                <View style={styles.iconWrapper}>
+                    <Ionicons name={icon as any} size={20} color="#4B5563" />
+                </View>
                 <Text style={styles.itemLabel}>{label}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
         </TouchableOpacity>
     );
 
@@ -41,26 +43,39 @@ export default function SettingsScreen() {
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Settings</Text>
-                <View style={{ width: 32 }} />
+                <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.content}>
-                {renderSettingItem("briefcase-outline", "Your Activities", () => router.push('/(buyer)/profile/activities' as any))}
-                {renderSettingItem("notifications-outline", "In-App Notifications", () => router.push('/(buyer)/profile/settings/notifications' as any))}
-                {renderSettingItem("construct-outline", "Business tools and control", () => router.push('/(buyer)/profile/tools' as any))}
-                {renderSettingItem("alarm-outline", "Reminders", () => router.push('/(buyer)/profile/settings/reminder' as any))}
-                {renderSettingItem("cube-outline", "Delivery Method", () => router.push('/(buyer)/profile/delivery' as any))}
-                {renderSettingItem("document-text-outline", "Policies", () => router.push('/(buyer)/profile/settings/policies' as any))}
-                {renderSettingItem("globe-outline", "Language")}
-                {renderSettingItem("person-outline", "Account Manager", () => router.push('/(buyer)/profile/manager'))}
-                {renderSettingItem("log-out-outline", "Log out", handleSignOut, true)}
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                <View style={styles.section}>
+                    {renderSettingItem("briefcase-outline", "Your Activities", () => router.push('/(buyer)/profile/activities' as any))}
+                    {renderSettingItem("notifications-outline", "In-App Notifications", () => router.push('/(buyer)/profile/settings/notifications' as any))}
+                    {renderSettingItem("construct-outline", "Business tools and control", () => router.push('/(buyer)/profile/tools' as any))}
+                    {renderSettingItem("alarm-outline", "Reminders", () => router.push('/(buyer)/profile/settings/reminder' as any))}
+                    {renderSettingItem("cube-outline", "Delivery Method", () => router.push('/(buyer)/profile/delivery' as any))}
+                    {renderSettingItem("document-text-outline", "Policies", () => router.push('/(buyer)/profile/settings/policies' as any))}
+                    {renderSettingItem("globe-outline", "Language")}
+                    {renderSettingItem("person-outline", "Account Manager", () => router.push('/(buyer)/profile/manager'))}
+                </View>
+
+                <View style={styles.divider} />
+
+                <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+                    <View style={styles.itemLeft}>
+                        <View style={[styles.iconWrapper, { backgroundColor: '#FEE2E2' }]}>
+                            <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                        </View>
+                        <Text style={[styles.itemLabel, { color: '#EF4444' }]}>Log out</Text>
+                    </View>
+                </TouchableOpacity>
 
                 <View style={styles.footer}>
                     <Text style={styles.versionText}>Tunzaa Version 2.0</Text>
+                    <Text style={styles.subVersionText}>Beta Testing Release</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -70,28 +85,33 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F9FAFB',
     },
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 16,
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
         paddingVertical: 12,
         backgroundColor: '#FFFFFF',
         borderBottomWidth: 1,
         borderBottomColor: '#F3F4F6',
     },
-    iconButton: {
+    backButton: {
         padding: 4,
     },
     headerTitle: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold',
         color: '#111827',
     },
     content: {
-        paddingVertical: 10,
+        paddingTop: 8,
+        paddingBottom: 40,
+    },
+    section: {
+        backgroundColor: '#FFFFFF',
+        marginTop: 8,
     },
     itemContainer: {
         flexDirection: 'row',
@@ -99,30 +119,50 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 16,
         paddingHorizontal: 20,
-        // borderBottomWidth: 1,
-        // borderBottomColor: '#F3F4F6',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F9FAFB',
     },
-    lastItem: {
-        borderBottomWidth: 0,
+    logoutButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        backgroundColor: '#FFFFFF',
     },
-    itemContent: {
+    itemLeft: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    itemIcon: {
+    iconWrapper: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
         marginRight: 16,
     },
     itemLabel: {
-        fontSize: 16,
+        fontSize: 15,
         color: '#1F2937',
         fontWeight: '500',
     },
+    divider: {
+        height: 24,
+    },
     footer: {
-        paddingVertical: 40,
+        marginTop: 40,
         alignItems: 'center',
     },
     versionText: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#9CA3AF',
+        fontWeight: 'bold',
+    },
+    subVersionText: {
+        fontSize: 11,
+        color: '#9CA3AF',
+        marginTop: 4,
     },
 });

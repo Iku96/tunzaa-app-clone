@@ -1,115 +1,91 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width } = Dimensions.get('window');
-
-// Mock Data
-const CHATS = [
+const MOCK_CHATS = [
     {
         id: '1',
         name: 'Tunzaa shop',
-        verified: true,
-        lastMessage: 'Thank you for your order! Let me know if you have any questions..',
-        time: '2:30 PM',
-        unread: 1,
-        avatar: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=500&auto=format&fit=crop&q=60' // Mock logo
-    },
-    // Add more mock chats if needed for list state
+        lastMessage: 'Thank you for your order! Let me...',
+        time: '2:35 PM',
+        unreadCount: 1,
+        online: true,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/T-Mobile_Logo.svg/1000px-T-Mobile_Logo.svg.png'
+    }
 ];
 
 export default function ChatListScreen() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('All chats');
 
-    // Simulate empty state for other tabs
-    const chats = activeTab === 'All chats' ? CHATS : [];
-
-    const renderHeader = () => (
-        <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="#1F2937" />
-            </TouchableOpacity>
-
-            <View style={styles.titleContainer}>
-                <Text style={styles.headerTitle}>Recent Chats</Text>
-                <TouchableOpacity style={styles.newMessageButton}>
-                    <Ionicons name="create-outline" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
-
-    const renderTabs = () => (
-        <View style={styles.tabsContainer}>
-            {['All chats', 'Personal', 'Business'].map((tab) => (
-                <TouchableOpacity
-                    key={tab}
-                    style={[styles.tab, activeTab === tab && styles.activeTab]}
-                    onPress={() => setActiveTab(tab)}
-                >
-                    <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
-                </TouchableOpacity>
-            ))}
-        </View>
-    );
-
-    const renderChatItem = ({ item }: { item: typeof CHATS[0] }) => (
-        <TouchableOpacity
-            style={styles.chatItem}
-            onPress={() => router.push(`/(buyer)/chat/${item.id}`)}
-        >
-            <View style={styles.avatarContainer}>
-                <Image source={{ uri: item.avatar }} style={styles.avatar} />
-                <View style={styles.onlineIndicator} />
-            </View>
-
-            <View style={styles.chatContent}>
-                <View style={styles.chatHeader}>
-                    <View style={styles.nameRow}>
-                        <Text style={styles.name}>{item.name}</Text>
-                        {item.verified && <Ionicons name="checkmark-circle" size={16} color="#22C55E" />}
-                    </View>
-                    <Text style={styles.time}>{item.time}</Text>
-                </View>
-
-                <View style={styles.messageRow}>
-                    <Text style={[styles.lastMessage, item.unread > 0 && styles.unreadMessage]} numberOfLines={1}>
-                        {item.lastMessage}
-                    </Text>
-                    {item.unread > 0 && (
-                        <View style={styles.unreadBadge}>
-                            <Text style={styles.unreadText}>{item.unread}</Text>
-                        </View>
-                    )}
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
-
-    const renderEmptyState = () => (
-        <View style={styles.emptyState}>
-            <View style={styles.emptyIconContainer}>
-                <Ionicons name="chatbubble-ellipses-outline" size={32} color="#425BA4" />
-            </View>
-            <Text style={styles.emptyText}>Chart will appear here after you have sent or received a message</Text>
-        </View>
-    );
-
     return (
-        <SafeAreaView style={styles.container}>
-            {renderHeader()}
-            {renderTabs()}
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#1F2937" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Recent Chats</Text>
+                <TouchableOpacity style={styles.floatIcon}>
+                    <Ionicons name="chatbubble-ellipses-outline" size={24} color="#425BA4" />
+                </TouchableOpacity>
+            </View>
 
-            <FlatList
-                data={chats}
-                renderItem={renderChatItem}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.listContent}
-                ListEmptyComponent={renderEmptyState}
-            />
+            {/* Tabs */}
+            <View style={styles.tabsWrapper}>
+                {['All chats', 'Personal', 'Business'].map((tab) => {
+                    const isActive = activeTab === tab;
+                    return (
+                        <TouchableOpacity
+                            key={tab}
+                            style={[styles.tabBtn, isActive && styles.activeTabBtn]}
+                            onPress={() => setActiveTab(tab)}
+                        >
+                            <Text style={[styles.tabBtnText, isActive && styles.activeTabBtnText]}>{tab}</Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
+
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                {MOCK_CHATS.length === 0 ? (
+                    <View style={styles.emptyState}>
+                        <View style={styles.emptyIcon}>
+                            <Ionicons name="chatbubble-outline" size={32} color="#9CA3AF" />
+                        </View>
+                        <Text style={styles.emptyText}>Chart will appear here after you have sent or received a message</Text>
+                    </View>
+                ) : (
+                    MOCK_CHATS.map((chat) => (
+                        <TouchableOpacity
+                            key={chat.id}
+                            style={styles.chatItem}
+                            onPress={() => router.push(`/(buyer)/chat/${chat.id}`)}
+                        >
+                            <View style={styles.imageWrapper}>
+                                <Image source={{ uri: chat.image }} style={styles.chatImage} />
+                                {chat.online && <View style={styles.onlineStatus} />}
+                            </View>
+
+                            <View style={styles.chatInfo}>
+                                <View style={styles.chatRow}>
+                                    <Text style={styles.chatName}>{chat.name}</Text>
+                                    <Text style={styles.chatTime}>{chat.time}</Text>
+                                </View>
+                                <View style={styles.chatRow}>
+                                    <Text style={styles.lastMessage} numberOfLines={1}>{chat.lastMessage}</Text>
+                                    {chat.unreadCount > 0 && (
+                                        <View style={styles.unreadBadge}>
+                                            <Text style={styles.unreadText}>{chat.unreadCount}</Text>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    ))
+                )}
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -123,148 +99,63 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: 10,
-        marginBottom: 20,
+        paddingVertical: 12,
+        justifyContent: 'space-between',
     },
     backButton: {
         padding: 4,
-        marginRight: 16,
-    },
-    titleContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1F2937',
     },
-    newMessageButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: '#1E3A8A', // Dark blue
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    tabsContainer: {
-        flexDirection: 'row',
-        paddingHorizontal: 20,
-        marginBottom: 24,
-        gap: 12,
-    },
-    tab: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
+    floatIcon: {
+        width: 40,
+        height: 40,
         borderRadius: 20,
         backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    activeTab: {
-        backgroundColor: '#1E3A8A',
-    },
-    tabText: {
-        fontSize: 14,
-        color: '#6B7280',
-        fontWeight: '500',
-    },
-    activeTabText: {
-        color: '#FFFFFF',
-    },
-    listContent: {
-        flexGrow: 1,
-    },
-    chatItem: {
+    tabsWrapper: {
         flexDirection: 'row',
         paddingHorizontal: 20,
-        paddingVertical: 12,
-        alignItems: 'center',
+        gap: 12,
+        marginBottom: 24,
+        marginTop: 12,
     },
-    avatarContainer: {
-        position: 'relative',
-        marginRight: 16,
-    },
-    avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+    tabBtn: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
         backgroundColor: '#F3F4F6',
     },
-    onlineIndicator: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#22C55E',
-        position: 'absolute',
-        bottom: 2,
-        right: 2,
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
+    activeTabBtn: {
+        backgroundColor: '#425BA4',
     },
-    chatContent: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    chatHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    nameRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    name: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1F2937',
-    },
-    time: {
+    tabBtnText: {
         fontSize: 12,
-        color: '#9CA3AF',
-    },
-    messageRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    lastMessage: {
-        fontSize: 14,
         color: '#6B7280',
-        flex: 1,
-        marginRight: 8,
-    },
-    unreadMessage: {
-        color: '#1F2937',
         fontWeight: '500',
     },
-    unreadBadge: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: '#1E3A8A',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    unreadText: {
+    activeTabBtnText: {
         color: '#FFFFFF',
-        fontSize: 10,
-        fontWeight: 'bold',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingHorizontal: 20,
     },
     emptyState: {
         flex: 1,
-        justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 40,
-        marginTop: 100,
+        justifyContent: 'center',
+        paddingTop: 100,
     },
-    emptyIconContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 24,
+    emptyIcon: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
         backgroundColor: '#F3F4F6',
         justifyContent: 'center',
         alignItems: 'center',
@@ -272,8 +163,73 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 14,
-        color: '#6B7280',
+        color: '#9CA3AF',
         textAlign: 'center',
         lineHeight: 20,
+        paddingHorizontal: 40,
+    },
+    chatItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 24,
+        gap: 16,
+    },
+    imageWrapper: {
+        position: 'relative',
+    },
+    chatImage: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#F3F4F6',
+    },
+    onlineStatus: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: '#22C55E',
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+    },
+    chatInfo: {
+        flex: 1,
+    },
+    chatRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    chatName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1F2937',
+    },
+    chatTime: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    lastMessage: {
+        flex: 1,
+        fontSize: 14,
+        color: '#6B7280',
+        marginRight: 12,
+    },
+    unreadBadge: {
+        backgroundColor: '#425BA4',
+        minWidth: 18,
+        height: 18,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 4,
+    },
+    unreadText: {
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontWeight: 'bold',
     },
 });

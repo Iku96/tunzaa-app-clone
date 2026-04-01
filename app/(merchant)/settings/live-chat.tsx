@@ -4,27 +4,47 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, HelpCircle } from 'lucide-react-native';
 
+import { supportApi } from '../../../src/services/support';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+
 export default function LiveChatScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!description.trim()) {
             Alert.alert("Required", "Please describe your issue.");
             return;
         }
 
         setLoading(true);
-        // Simulate sending
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            // Find the vendor profile to get the vendor_id
+            const vendorProfile = user?.profiles?.find(p => p.role === 'vendor');
+            const vendorId = vendorProfile?.metadata?.vendor_id || (vendorProfile as any)?.vendor_id;
+
+            console.log('💬 [LiveChat] Creating support ticket...');
+            await supportApi.createTicket({
+                subject: 'Merchant Support Request',
+                initial_message: description.trim(),
+                category: 'support',
+                priority: 'normal',
+                vendor_id: vendorId,
+            });
+
             Alert.alert(
                 "Message Sent", 
                 "We've received your message and will get back to you within 2 minutes.",
                 [{ text: "OK", onPress: () => router.back() }]
             );
-        }, 1500);
+        } catch (error: any) {
+            console.error('❌ [LiveChat] Failed to send message:', error);
+            Alert.alert("Error", "Failed to send message. Please try again later.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

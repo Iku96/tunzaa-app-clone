@@ -56,27 +56,39 @@ export default function TrackingScreen() {
                     {statusStep === 0 ? 'Checking availability' : statusStep === 1 ? 'Arrives between 11:35 PM - 12:05 AM' : 'Enjoy your product!'}
                 </Text>
 
-                {/* Status Steps */}
-                <View style={styles.stepsContainer}>
-                    <View style={styles.stepItem}>
-                        <View style={[styles.stepIcon, statusStep >= 0 && styles.activeStepIcon]}>
-                            <Ionicons name="receipt-outline" size={16} color={statusStep >= 0 ? '#FFFFFF' : '#9CA3AF'} />
+                {/* Status Steps - High Fidelity */}
+                <View style={styles.statusStepsWrapper}>
+                    <View style={styles.stepCircleOuter}>
+                        <View style={[styles.stepCircleInner, statusStep >= 0 && styles.activeStepCircle]}>
+                            <Ionicons name="basket-outline" size={14} color={statusStep >= 0 ? "#FFF" : "#9CA3AF"} />
                         </View>
-                        <Text style={[styles.stepLabel, statusStep >= 0 && styles.activeStepLabel]}>Placed</Text>
+                        <Text style={[styles.stepLabelText, statusStep >= 0 && styles.activeStepLabelText]}>Picked up</Text>
                     </View>
-                    <View style={[styles.stepLine, statusStep >= 1 && styles.activeStepLine]} />
-                    <View style={styles.stepItem}>
-                        <View style={[styles.stepIcon, statusStep >= 1 && styles.activeStepIcon]}>
-                            <Ionicons name="bicycle-outline" size={16} color={statusStep >= 1 ? '#FFFFFF' : '#9CA3AF'} />
-                        </View>
-                        <Text style={[styles.stepLabel, statusStep >= 1 && styles.activeStepLabel]}>InTransit</Text>
+                    
+                    <View style={styles.dotsContainer}>
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <View key={i} style={[styles.statusDot, statusStep >= 1 && styles.activeStatusDot]} />
+                        ))}
                     </View>
-                    <View style={[styles.stepLine, statusStep >= 2 && styles.activeStepLine]} />
-                    <View style={styles.stepItem}>
-                        <View style={[styles.stepIcon, statusStep >= 2 && styles.activeStepIcon]}>
-                            <Ionicons name="home-outline" size={16} color={statusStep >= 2 ? '#FFFFFF' : '#9CA3AF'} />
+
+                    <View style={styles.stepCircleOuter}>
+                        <View style={[styles.stepCircleInner, statusStep >= 1 && styles.activeStepCircle]}>
+                            <Ionicons name="bicycle-outline" size={14} color={statusStep >= 1 ? "#FFF" : "#9CA3AF"} />
                         </View>
-                        <Text style={[styles.stepLabel, statusStep >= 2 && styles.activeStepLabel]}>Delivered</Text>
+                        <Text style={[styles.stepLabelText, statusStep >= 1 && styles.activeStepLabelText]}>In Transit</Text>
+                    </View>
+
+                    <View style={styles.dotsContainer}>
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <View key={i} style={[styles.statusDot, statusStep >= 2 && styles.activeStatusDot]} />
+                        ))}
+                    </View>
+
+                    <View style={styles.stepCircleOuter}>
+                        <View style={[styles.stepCircleInner, statusStep >= 2 && styles.activeStepCircle]}>
+                            <Ionicons name="home-outline" size={14} color={statusStep >= 2 ? "#FFF" : "#9CA3AF"} />
+                        </View>
+                        <Text style={[styles.stepLabelText, statusStep >= 2 && styles.activeStepLabelText]}>Delivered</Text>
                     </View>
                 </View>
 
@@ -176,6 +188,54 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#6B7280',
         marginBottom: 24,
+    },
+    statusStepsWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 32,
+        paddingHorizontal: 0,
+    },
+    stepCircleOuter: {
+        alignItems: 'center',
+        width: 70,
+    },
+    stepCircleInner: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    activeStepCircle: {
+        backgroundColor: '#425BA4',
+    },
+    stepLabelText: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        textAlign: 'center',
+    },
+    activeStepLabelText: {
+        color: '#425BA4',
+        fontWeight: '600',
+    },
+    dotsContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 4,
+        paddingBottom: 20, // Align with middle of circles
+    },
+    statusDot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#E5E7EB',
+    },
+    activeStatusDot: {
+        backgroundColor: '#425BA4',
     },
     stepsContainer: {
         flexDirection: 'row',

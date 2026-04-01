@@ -95,24 +95,23 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={styles.content}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Profile Stats Section */}
                 <View style={styles.profileSection}>
-                    <View style={styles.avatarRow}>
+                    <View style={styles.topRow}>
+                        <Image source={{ uri: avatarUrl }} style={styles.avatar} />
                         <View style={styles.statsContainer}>
-                            <Image
-                                source={{ uri: avatarUrl }}
-                                style={styles.avatar}
-                            />
-                            <View style={styles.statsTextContainer}>
-                                <View style={styles.statItem}>
-                                    <Text style={styles.statNumber}>{profileData.followers_count >= 1000 ? `${(profileData.followers_count / 1000).toFixed(1)}K` : profileData.followers_count}</Text>
-                                    <Text style={styles.statLabel}>Followers</Text>
-                                </View>
-                                <View style={styles.statItem}>
-                                    <Text style={styles.statNumber}>{profileData.following_count >= 1000 ? `${(profileData.following_count / 1000).toFixed(1)}K` : profileData.following_count}</Text>
-                                    <Text style={styles.statLabel}>Following</Text>
-                                </View>
+                            <View style={styles.statItem}>
+                                <Text style={styles.statNumber}>
+                                    {profileData.followers_count >= 1000 ? `${(profileData.followers_count / 1000).toFixed(1)}K` : profileData.followers_count}
+                                </Text>
+                                <Text style={styles.statLabel}>Followers</Text>
+                            </View>
+                            <View style={styles.statItem}>
+                                <Text style={styles.statNumber}>
+                                    {profileData.following_count >= 1000 ? `${(profileData.following_count / 1000).toFixed(1)}K` : profileData.following_count}
+                                </Text>
+                                <Text style={styles.statLabel}>Following</Text>
                             </View>
                         </View>
                     </View>
@@ -120,8 +119,8 @@ export default function ProfileScreen() {
                     <View style={styles.userInfo}>
                         <View style={styles.nameRow}>
                             <Text style={styles.name}>{displayName}</Text>
-                            {/* Verified Badge Placeholder */}
                             <View style={styles.verifiedBadge}>
+                                <Ionicons name="checkmark-circle" size={14} color="#60A5FA" />
                                 <Text style={styles.verifiedText}>Verified</Text>
                             </View>
                         </View>
@@ -140,7 +139,7 @@ export default function ProfileScreen() {
                             <Text style={styles.editProfileButtonText}>Edit Profile</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.shareButton} onPress={handleShareProfile}>
-                            <Ionicons name="share-social-outline" size={20} color="#4B5563" />
+                            <Ionicons name="share-social-outline" size={20} color="#1F2937" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -150,10 +149,76 @@ export default function ProfileScreen() {
                     <ProfileSetupBanner progress={0.6} points={53} onPress={() => router.push('/(buyer)/profile/edit')} />
                 </View>
 
+                {/* Promo Banner from Screenshot */}
+                <View style={styles.promoBannerContainer}>
+                    <View style={styles.promoBanner}>
+                        <View style={styles.promoContent}>
+                            <Text style={styles.promoTitle}>UP TO 80% OFF</Text>
+                            <View style={styles.promoActions}>
+                                <TouchableOpacity style={styles.promoButton}>
+                                    <Ionicons name="gift-outline" size={14} color="#425BA4" />
+                                    <Text style={styles.promoButtonText}>Claim Offer</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.promoButton, styles.promoButtonOutline]}>
+                                    <Text style={styles.promoButtonTextWhite}>Collect</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        <Image 
+                            source={{ uri: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&auto=format&fit=crop&q=60' }} 
+                            style={styles.promoImage} 
+                        />
+                    </View>
+                </View>
+
+                {/* Shortcuts Grid */}
+                <View style={styles.shortcutsGrid}>
+                    <View style={styles.shortcutRow}>
+                        <TouchableOpacity style={styles.shortcutItem}>
+                            <View style={styles.shortcutIconContainer}>
+                                <Ionicons name="bus-outline" size={24} color="#4B5563" />
+                            </View>
+                            <Text style={styles.shortcutLabel}>Shipped</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.shortcutItem}>
+                            <View style={styles.shortcutIconContainer}>
+                                <Ionicons name="cube-outline" size={24} color="#4B5563" />
+                            </View>
+                            <Text style={styles.shortcutLabel}>Received</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.shortcutItem} onPress={() => router.push('/(buyer)/orders/list')}>
+                            <View style={styles.shortcutIconContainer}>
+                                <Ionicons name="arrow-undo-outline" size={24} color="#4B5563" />
+                            </View>
+                            <Text style={styles.shortcutLabel}>Return</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.shortcutRow}>
+                        <TouchableOpacity style={styles.shortcutItem}>
+                            <View style={styles.shortcutIconContainer}>
+                                <Ionicons name="heart-outline" size={24} color="#4B5563" />
+                            </View>
+                            <Text style={styles.shortcutLabel}>Wishlist</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.shortcutItem} onPress={() => router.push('/(buyer)/refund')}>
+                            <View style={styles.shortcutIconContainer}>
+                                <Ionicons name="refresh-outline" size={24} color="#4B5563" />
+                            </View>
+                            <Text style={styles.shortcutLabel}>Refund</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.shortcutItem}>
+                            <View style={styles.shortcutIconContainer}>
+                                <Ionicons name="gift-outline" size={24} color="#4B5563" />
+                            </View>
+                            <Text style={styles.shortcutLabel}>Gift Card</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
                 {/* Recommended Section */}
                 <View style={styles.recommendedSection}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Recommended for You</Text>
+                        <Text style={styles.sectionTitle}>Discover More Deals</Text>
                         <TouchableOpacity>
                             <Text style={styles.seeAllText}>See All</Text>
                         </TouchableOpacity>
@@ -168,7 +233,6 @@ export default function ProfileScreen() {
                         contentContainerStyle={styles.productsList}
                     />
                 </View>
-
             </ScrollView>
         </SafeAreaView>
     );
@@ -192,7 +256,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold',
         color: '#111827',
     },
     content: {
@@ -200,43 +264,41 @@ const styles = StyleSheet.create({
     },
     profileSection: {
         paddingHorizontal: 20,
+        paddingTop: 16,
         marginBottom: 20,
     },
-    avatarRow: {
+    topRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
+        justifyContent: 'space-between',
+        marginBottom: 16,
     },
     avatar: {
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#E5E7EB',
-        marginRight: 24,
+        backgroundColor: '#F3F4F6',
     },
-    statsTextContainer: {
+    statsContainer: {
         flexDirection: 'row',
-        gap: 24,
+        gap: 32,
+        paddingRight: 20,
     },
     statItem: {
         alignItems: 'center',
     },
     statNumber: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#111827',
     },
     statLabel: {
         fontSize: 12,
         color: '#6B7280',
+        marginTop: 2,
     },
     userInfo: {
-        marginBottom: 16,
+        marginBottom: 20,
     },
     nameRow: {
         flexDirection: 'row',
@@ -250,14 +312,17 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
     verifiedBadge: {
-        backgroundColor: '#E0F2FE',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#EFF6FF',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+        gap: 4,
     },
     verifiedText: {
-        fontSize: 10,
-        color: '#0284C7',
+        fontSize: 11,
+        color: '#60A5FA',
         fontWeight: '600',
     },
     locationRow: {
@@ -265,7 +330,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     locationText: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6B7280',
         marginLeft: 4,
     },
@@ -275,11 +340,16 @@ const styles = StyleSheet.create({
     },
     editProfileButton: {
         flex: 1,
-        backgroundColor: '#1E3A8A', // Dark blue
-        paddingVertical: 10,
-        borderRadius: 8,
+        backgroundColor: '#425BA4',
+        paddingVertical: 12,
+        borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
+        shadowColor: "#425BA4",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
     },
     editProfileButtonText: {
         color: '#FFFFFF',
@@ -287,16 +357,94 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     shareButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 8,
-        borderWidth: 1,
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        borderWidth: 1.5,
         borderColor: '#E5E7EB',
         alignItems: 'center',
         justifyContent: 'center',
     },
     bannerContainer: {
+        paddingHorizontal: 20,
+        marginBottom: 20,
+    },
+    promoBannerContainer: {
+        paddingHorizontal: 20,
         marginBottom: 24,
+    },
+    promoBanner: {
+        backgroundColor: '#425BA4',
+        borderRadius: 24,
+        padding: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    promoContent: {
+        flex: 1,
+    },
+    promoTitle: {
+        fontSize: 18,
+        fontWeight: '900',
+        color: '#FFFFFF',
+        marginBottom: 16,
+    },
+    promoActions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    promoButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        gap: 4,
+    },
+    promoButtonOutline: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderWidth: 1,
+        borderColor: '#FFFFFF',
+    },
+    promoButtonText: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#425BA4',
+    },
+    promoButtonTextWhite: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+    },
+    promoImage: {
+        width: 100,
+        height: 120,
+        borderRadius: 12,
+        transform: [{ rotate: '15deg' }, { translateY: 10 }],
+    },
+    shortcutsGrid: {
+        paddingHorizontal: 20,
+        marginBottom: 32,
+    },
+    shortcutRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    shortcutItem: {
+        alignItems: 'center',
+        width: '30%',
+    },
+    shortcutIconContainer: {
+        marginBottom: 8,
+    },
+    shortcutLabel: {
+        fontSize: 12,
+        color: '#6B7280',
+        fontWeight: '500',
     },
     recommendedSection: {
         paddingHorizontal: 20,
@@ -305,22 +453,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1E3A8A', // Blue color for title based on screenshot
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1F2937',
     },
     seeAllText: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6B7280',
     },
     productsList: {
-        paddingRight: 20,
-    },
-    section: {
-        paddingHorizontal: 20,
-        marginTop: 20,
+        paddingBottom: 20,
     },
 });

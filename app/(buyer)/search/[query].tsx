@@ -3,10 +3,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { productsApi } from '../../../src/services/products';
 import { PRODUCTS } from '../../../src/data/products';
 import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
-import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -87,7 +88,9 @@ export default function SearchScreen() {
     const router = useRouter();
     const [searchText, setSearchText] = useState((query === 'all' ? '' : query as string) || '');
     const [loading, setLoading] = useState(false);
+    const [searchingByImage, setSearchingByImage] = useState(false);
     const [results, setResults] = useState<any[]>([]); // Dynamic results
+    const [searchImage, setSearchImage] = useState<string | null>(null);
 
     // Fetch dynamic data
     useEffect(() => {
@@ -135,12 +138,63 @@ export default function SearchScreen() {
     const [filterSort, setFilterSort] = useState<'newest' | 'oldest' | 'priceDesc' | 'priceAsc'>('newest');
     const [nearbyShops, setNearbyShops] = useState(false);
 
-    // Mock an Image Search selection
-    const handleImageSearchSelect = () => {
+    // Handle Image Search
+    const handleCameraLaunch = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Needed', 'We need camera access to search by image.');
+            return;
+        }
+
+        const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            performImageSearch(result.assets[0].uri);
+        }
+    };
+
+    const handleGalleryLaunch = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            performImageSearch(result.assets[0].uri);
+        }
+    };
+
+    const performImageSearch = async (imageUri: string) => {
+        setSearchImage(imageUri);
         setShowImageSearchModal(false);
-        setIsImageSearchMode(true);
-        setViewMode('gallery');
-        setShowPhotoPermissionModal(false); // Make sure this is closed if coming from gallery
+        setSearchingByImage(true);
+        setLoading(true);
+
+        try {
+            console.log('📷 [SearchScreen] Starting image search for:', imageUri);
+            const res = await productsApi.searchByImage(imageUri, { limit: 20 });
+            
+            if (res?.items) {
+                setResults(res.items.map(mapApiProductToUI));
+            }
+        } catch (e) {
+            console.error('❌ [SearchScreen] Image search failed:', e);
+            Alert.alert('Search Failed', 'Could not complete image search. Please try again.');
+        } finally {
+            setLoading(false);
+            setSearchingByImage(false);
+        }
+    };
+
+    const clearImageSearch = () => {
+        setSearchImage(null);
+        setSearchingByImage(false);
+        setSearchText(''); // Optional: clear text too
     };
 
     const renderImageSearchModal = () => (
@@ -153,17 +207,14 @@ export default function SearchScreen() {
                     </View>
                     <Text style={styles.imageSearchTitle}>Search with an image</Text>
 
-                    <TouchableOpacity style={styles.outlineBtn} onPress={() => {
-                        setShowImageSearchModal(false);
-                        setShowPhotoPermissionModal(true);
-                    }}>
+                    <TouchableOpacity style={styles.outlineBtn} onPress={handleGalleryLaunch}>
                         <Ionicons name="image-outline" size={20} color="#1A1A1A" style={{ marginRight: 8 }} />
                         <Text style={styles.outlineBtnText}>Choose from your gallery</Text>
                     </TouchableOpacity>
 
                     <Text style={styles.orText}>or</Text>
 
-                    <TouchableOpacity style={styles.outlineBtn} onPress={handleImageSearchSelect}>
+                    <TouchableOpacity style={styles.outlineBtn} onPress={handleCameraLaunch}>
                         <Ionicons name="camera-outline" size={20} color="#1A1A1A" style={{ marginRight: 8 }} />
                         <Text style={styles.outlineBtnText}>Take a photo</Text>
                     </TouchableOpacity>
@@ -204,7 +255,7 @@ export default function SearchScreen() {
                     {/* Mock grid of device photos */}
                     <View style={styles.galleryGrid}>
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((itm, i) => (
-                            <TouchableOpacity key={i} style={styles.galleryThumbWrapper} onPress={handleImageSearchSelect}>
+                            <TouchableOpacity key={i} style={styles.galleryThumbWrapper} onPress={handleGalleryLaunch}>
                                 <Image
                                     style={styles.galleryThumb}
                                     source={{ uri: `https://images.unsplash.com/photo-${1500000000000 + i}?w=400&q=80` }}
@@ -311,13 +362,13 @@ export default function SearchScreen() {
                         <Ionicons name="arrow-back" size={24} color="#1F2937" />
                     </TouchableOpacity>
 
-                    {isImageSearchMode ? (
+                    {searchImage ? (
                         <View style={styles.imageResultHeader}>
                             <Image
-                                source={{ uri: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=100' }}
+                                source={{ uri: searchImage }}
                                 style={styles.searchImageThumb}
                             />
-                            <TouchableOpacity onPress={() => setIsImageSearchMode(false)}>
+                            <TouchableOpacity onPress={clearImageSearch}>
                                 <Ionicons name="close" size={20} color="#9CA3AF" />
                             </TouchableOpacity>
                         </View>
@@ -347,12 +398,12 @@ export default function SearchScreen() {
                 </View>
 
                 {/* Info Text (only in Image Search Mode) */}
-                {isImageSearchMode && (
-                    <Text style={styles.imageSearchCountText}>123 items</Text>
+                {searchImage && (
+                    <Text style={styles.imageSearchCountText}>{results.length} items found</Text>
                 )}
 
                 {/* Sort Tabs Row */}
-                <View style={[styles.tabsRow, isImageSearchMode && { justifyContent: 'flex-start', gap: 24, paddingHorizontal: 20 }]}>
+                <View style={[styles.tabsRow, searchImage && { justifyContent: 'flex-start', gap: 24, paddingHorizontal: 20 }]}>
                     <TouchableOpacity style={styles.tab} onPress={() => setSortMode('matches')}>
                         <Ionicons name="caret-up" size={12} color={sortMode === 'matches' ? '#425BA4' : '#FFFFFF'} />
                         <Text style={[styles.tabText, sortMode === 'matches' && styles.activeTabText]}>Best matches</Text>
@@ -367,7 +418,7 @@ export default function SearchScreen() {
                     </TouchableOpacity>
 
                     {/* View Toggle Icon explicitly in Image Mode Toolbar as seen in screenshot */}
-                    {isImageSearchMode && (
+                    {searchImage && (
                         <TouchableOpacity style={[styles.filterBtn, { marginLeft: 'auto', width: 44, height: 44, borderRadius: 22 }]} onPress={() => setViewMode(viewMode === 'list' ? 'gallery' : 'list')}>
                             <Ionicons name="options-outline" size={18} color="#425BA4" />
                         </TouchableOpacity>

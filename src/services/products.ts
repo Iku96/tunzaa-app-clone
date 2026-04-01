@@ -105,4 +105,23 @@ export const productsApi = {
         );
         return response.data;
     },
+
+    searchByImage: async (
+        imageUri: string,
+        params?: SearchProductsParams
+    ): Promise<SearchProductsResponse> => {
+        console.log("📷 [ProductsApi] searchByImage called with:", imageUri);
+        // TODO: Implement real multipart/form-data upload to a vision/search endpoint
+        // For now, return generic results or an empty list
+        const response = await apiClient.get<SearchProductsResponse>(
+            "/products/",
+            {
+                params: { limit: 10, ...params },
+            }
+        );
+        return {
+            ...response.data,
+            query: "image_search"
+        };
+    },
 };

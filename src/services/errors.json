@@ -100,6 +100,13 @@
                     "action": "Check your credentials"
                 },
                 {
+                    "status": 401,
+                    "code": "UNAUTHORIZED",
+                    "message": "Invalid phone number or password",
+                    "technical": "Authentication failed - wrong credentials",
+                    "action": "Check your credentials"
+                },
+                {
                     "status": 403,
                     "code": "ACCOUNT_DISABLED",
                     "message": "Your account has been disabled. Please contact support",

@@ -79,6 +79,18 @@ export default function DeliverySetupScreen() {
                     </TouchableOpacity>
                 </View>
 
+                {/* Trusted Partners */}
+                <TouchableOpacity style={styles.partnerRow}>
+                    <View style={styles.partnerIcon}>
+                        <Ionicons name="shield-checkmark-outline" size={20} color="#425BA4" />
+                    </View>
+                    <View style={styles.partnerDetails}>
+                        <Text style={styles.partnerLabel}>Trusted partners</Text>
+                        <Text style={styles.partnerValue}>Delivered by Simba Couriers</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+
                 {/* Address Section */}
                 <View style={styles.addressSection}>
                     <View style={styles.addressRow}>
@@ -86,18 +98,7 @@ export default function DeliverySetupScreen() {
                             <Ionicons name="location-outline" size={20} color="#425BA4" />
                         </View>
                         <View style={styles.addressDetails}>
-                            <Text style={styles.addressLabel}>Postal Address</Text>
-                            <Text style={styles.addressValue} numberOfLines={1}>Dar es salaam, Kariakoo</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                    </View>
-
-                    <View style={styles.addressRow}>
-                        <View style={styles.addressIcon}>
-                            <Ionicons name="navigate-outline" size={20} color="#425BA4" />
-                        </View>
-                        <View style={styles.addressDetails}>
-                            <Text style={styles.addressLabel}>Drop-off Address</Text>
+                            <Text style={styles.addressLabel}>Drop-off address</Text>
                             <Text style={styles.addressValue} numberOfLines={1}>Delivery address: Wasafi Shoppers, Haile..</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -296,6 +297,35 @@ const styles = StyleSheet.create({
     addressSection: {
         gap: 16,
         marginBottom: 24,
+    },
+    partnerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        marginBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+        gap: 12,
+    },
+    partnerIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#EEF2FF',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    partnerDetails: {
+        flex: 1,
+    },
+    partnerLabel: {
+        fontSize: 12,
+        color: '#6B7280',
+    },
+    partnerValue: {
+        fontSize: 14,
+        color: '#1F2937',
+        fontWeight: '500',
     },
     addressRow: {
         flexDirection: 'row',

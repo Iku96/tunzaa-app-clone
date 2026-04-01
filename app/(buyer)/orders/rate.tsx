@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -44,7 +45,7 @@ export default function RateDeliveryScreen() {
 
                 <View style={styles.successContent}>
                     <View style={styles.successIconWrapper}>
-                        <Ionicons name="star" size={40} color="#425BA4" />
+                        <Ionicons name="star" size={36} color="#425BA4" />
                     </View>
 
                     <Text style={styles.successTitle}>Thanks for rating!</Text>
@@ -53,7 +54,7 @@ export default function RateDeliveryScreen() {
                     </Text>
 
                     <TouchableOpacity style={styles.submitBtn} onPress={handleDone}>
-                        <Text style={styles.submitBtnText}>Done Reviewing</Text>
+                        <Text style={styles.submitBtnText}>Go to Homepage</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>

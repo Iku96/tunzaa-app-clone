@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,57 +8,53 @@ const { width } = Dimensions.get('window');
 
 export default function RefundStatusScreen() {
     const router = useRouter();
+    const { order_id } = useLocalSearchParams();
 
-    // Mock Data
+    // Mock Data based on screenshots
     const refundData = {
         productName: 'Air Jordan Nike',
         status: 'Processing',
         amountPaid: 50000,
-        processingFee: 15000,
-        refundAmount: 35000,
-        requestedDate: 'Dec 15, 2025',
-        completedDate: 'Dec 20, 2025',
-        requestId: '#UN-84591',
-        submittedRes: 'Jan 18, 2024 at 2:30 PM',
-        receivingNumber: '07******5678',
-        reason: 'Financial Issues',
-        senderName: 'Tunzaa Holding Company',
-        accountNumber: '0197625525252555',
+        processingFee: 7500, // 15% of 50000
+        refundAmount: 42500,
+        returnId: '#45156371',
+        reason: 'Defective product',
+        quantity: '2 Items',
+        timeline: [
+            { id: 1, title: 'Return Requested', date: 'Dec 15, 2024 at 2:30 PM', status: 'completed' },
+            { id: 2, title: 'Return Approved', date: 'Dec 18, 2024 at 10:30 AM', status: 'completed' },
+            { id: 3, title: 'Product Picked Up', date: 'Today', status: 'current' },
+        ],
     };
 
     const renderTimeline = () => (
         <View style={styles.timelineContainer}>
-            <View style={styles.timelineRow}>
-                {/* Step 1: Submitted */}
-                <View style={styles.timelineStep}>
-                    <View style={[styles.stepIcon, styles.stepActive]}>
-                        <Ionicons name="documents-outline" size={14} color="#FFFFFF" />
+            {refundData.timeline.map((item, index) => (
+                <View key={item.id} style={styles.timelineItem}>
+                    <View style={styles.timelineLeft}>
+                        <View style={[
+                            styles.dot, 
+                            item.status === 'completed' && styles.dotCompleted,
+                            item.status === 'current' && styles.dotCurrent
+                        ]}>
+                            {item.status === 'completed' && <Ionicons name="checkmark" size={12} color="#FFFFFF" />}
+                        </View>
+                        {index < refundData.timeline.length - 1 && (
+                            <View style={[
+                                styles.connector,
+                                item.status === 'completed' && styles.connectorCompleted
+                            ]} />
+                        )}
                     </View>
-                    <Text style={[styles.stepLabel, styles.labelActive]}>Submitted</Text>
-                </View>
-
-                {/* Left Line */}
-                <View style={[styles.line, styles.lineActive]} />
-
-                {/* Step 2: Processing */}
-                <View style={styles.timelineStep}>
-                    <View style={[styles.stepIcon, styles.stepProcessing]}>
-                        <Ionicons name="sync" size={14} color="#3B82F6" />
+                    <View style={styles.timelineRight}>
+                        <Text style={[
+                            styles.timelineTitle,
+                            item.status === 'current' && styles.timelineTitleCurrent
+                        ]}>{item.title}</Text>
+                        <Text style={styles.timelineDate}>{item.date}</Text>
                     </View>
-                    <Text style={[styles.stepLabel, styles.labelProcessing]}>Processing</Text>
                 </View>
-
-                {/* Right Line */}
-                <View style={styles.line} />
-
-                {/* Step 3: Completed */}
-                <View style={styles.timelineStep}>
-                    <View style={styles.stepIconCompleted}>
-                        <Ionicons name="checkmark" size={14} color="#D1D5DB" />
-                    </View>
-                    <Text style={styles.stepLabel}>Completed</Text>
-                </View>
-            </View>
+            ))}
         </View>
     );
 
@@ -72,84 +68,72 @@ export default function RefundStatusScreen() {
                 <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.content}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                {/* Product Detail Card */}
+                <View style={styles.card}>
+                    <View style={styles.headerRow}>
+                        <View style={styles.productImagePlaceholder}>
+                            <Ionicons name="basket-outline" size={24} color="#425BA4" />
+                        </View>
+                        <View style={styles.productHeaderInfo}>
+                            <View style={styles.row}>
+                                <Text style={styles.productName}>{refundData.productName}</Text>
+                                <Text style={styles.priceText}>Tsh {refundData.amountPaid.toLocaleString()}</Text>
+                            </View>
+                            <Text style={styles.subText}>Order ID: #ORD123456</Text>
+                            <Text style={styles.subText}>Size: 42</Text>
+                            <Text style={styles.subText}>Seller: Tunzaa Shop</Text>
+                        </View>
+                    </View>
 
-                {/* Status Card */}
-                <View style={styles.statusCard}>
-                    <View style={styles.statusHeader}>
-                        {renderTimeline()}
+                    <TouchableOpacity style={styles.detailsLink}>
+                        <Text style={styles.detailsLinkText}>View all details</Text>
+                        <Ionicons name="chevron-down" size={16} color="#6B7280" />
+                    </TouchableOpacity>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>Return ID</Text>
+                        <Text style={styles.infoValueBlue}>{refundData.returnId}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>Reason</Text>
+                        <Text style={styles.infoValue}>{refundData.reason}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                        <Text style={styles.infoLabel}>Quantity</Text>
+                        <Text style={styles.infoValue}>{refundData.quantity}</Text>
                     </View>
 
                     <View style={styles.divider} />
 
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Paid Amount</Text>
-                        <Text style={styles.value}>Tsh {refundData.amountPaid.toLocaleString()}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={[styles.label, { color: '#EF4444' }]}>Charging fee (15%)</Text>
-                        <Text style={[styles.value, { color: '#EF4444' }]}>-Tsh {refundData.processingFee.toLocaleString()}</Text>
-                    </View>
-                    <View style={[styles.row, styles.totalRow]}>
-                        <Text style={styles.totalLabel}>Refund Amount</Text>
-                        <Text style={styles.totalValue}>Tsh{refundData.refundAmount.toLocaleString()}, 000</Text>
-                    </View>
+                    {renderTimeline()}
+                </View>
 
-                    {/* Estimated Completion */}
-                    <View style={styles.estimatedCard}>
-                        <Ionicons name="calendar-outline" size={20} color="#425BA4" />
-                        <View style={{ marginLeft: 12 }}>
-                            <Text style={styles.estimatedLabel}>Estimated Completion</Text>
-                            <Text style={styles.estimatedValue}>January 25, 2024 (72 hours business days)</Text>
-                        </View>
+                {/* Calculation Summary */}
+                <View style={styles.summaryCard}>
+                    <Text style={styles.summaryTitle}>Refund Summary</Text>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Amount Paid</Text>
+                        <Text style={styles.summaryValue}>Tsh {refundData.amountPaid.toLocaleString()}</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={[styles.summaryLabel, { color: '#EF4444' }]}>Charging Fee (15%)</Text>
+                        <Text style={[styles.summaryValue, { color: '#EF4444' }]}>-Tsh {refundData.processingFee.toLocaleString()}</Text>
+                    </View>
+                    <View style={[styles.summaryRow, { marginTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 12 }]}>
+                        <Text style={styles.totalLabel}>Total Refund</Text>
+                        <Text style={styles.totalValue}>Tsh {refundData.refundAmount.toLocaleString()}</Text>
                     </View>
                 </View>
 
-                {/* Request Details */}
-                <View style={styles.detailsCard}>
-                    <Text style={styles.sectionTitle}>Request Details</Text>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Request ID</Text>
-                        <Text style={styles.detailValue}>{refundData.requestId}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Submitted</Text>
-                        <Text style={styles.detailValue}>{refundData.submittedRes}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Receiving number</Text>
-                        <Text style={styles.detailValue}>{refundData.receivingNumber}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Reason</Text>
-                        <Text style={styles.detailValue}>{refundData.reason}</Text>
-                    </View>
-                </View>
-
-                {/* Sender Details */}
-                <View style={styles.detailsCard}>
-                    <Text style={styles.sectionTitle}>Sender Details</Text>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Sender name</Text>
-                        <Text style={styles.detailValue}>{refundData.senderName}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailLabel}>Account number</Text>
-                        <Text style={styles.detailValue}>{refundData.accountNumber}</Text>
-                    </View>
-                </View>
-
-                {/* Help */}
-                <View style={styles.helpCard}>
+                <View style={styles.helpBox}>
                     <Ionicons name="information-circle-outline" size={20} color="#425BA4" />
-                    <View style={{ marginLeft: 12, flex: 1 }}>
-                        <Text style={styles.helpTitle}>Need Help?</Text>
-                        <Text style={styles.helpText}>
-                            Refunds will only be processed through the mobile number registered to your Tunzaa account at the time of account creation. This ensures security.
-                        </Text>
-                    </View>
+                    <Text style={styles.helpText}>
+                        Refunds are processed within 3-5 business days once the item has been picked up and verified.
+                    </Text>
                 </View>
-
             </ScrollView>
         </SafeAreaView>
     );
@@ -158,7 +142,7 @@ export default function RefundStatusScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F9FAFB',
     },
     header: {
         flexDirection: 'row',
@@ -166,6 +150,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
     },
     backButton: {
         padding: 4,
@@ -179,207 +166,192 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 40,
     },
-    statusCard: {
+    card: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 16,
+        borderRadius: 20,
+        padding: 20,
         marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
+        shadowRadius: 10,
+        elevation: 2,
     },
-    statusHeader: {
+    headerRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    productName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#1F2937',
-    },
-    statusBadge: {
-        backgroundColor: '#EFF6FF',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    statusText: {
-        color: '#3B82F6',
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    timelineContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginBottom: 20,
-    },
-    timelineRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        width: '100%',
-        paddingHorizontal: 20,
-    },
-    timelineStep: {
-        alignItems: 'center',
-        width: 65,
-        zIndex: 2,
-    },
-    stepIcon: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: '#E5E7EB',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    stepActive: {
-        backgroundColor: '#22C55E', // Green
-    },
-    stepProcessing: {
-        backgroundColor: '#EFF6FF', // Light blue
-    },
-    stepIconCompleted: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: '#F3F4F6', // Light gray
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    stepLabel: {
-        fontSize: 11,
-        color: '#1F2937',
-        textAlign: 'center',
-        fontWeight: '500',
-    },
-    labelActive: {
-        color: '#1F2937',
-    },
-    labelProcessing: {
-        color: '#3B82F6',
-    },
-    line: {
-        position: 'absolute',
-        top: 14,
-        left: '25%', // span between 1 and 2
-        width: '25%',
-        height: 1,
-        borderStyle: 'dashed',
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        zIndex: 0,
-    },
-    lineActive: {
-        left: '20%',
-        width: '30%',
-        borderStyle: 'solid',
-        borderWidth: 0,
-        height: 2,
-        backgroundColor: '#E5E7EB',
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#F3F4F6',
         marginBottom: 16,
+    },
+    productImagePlaceholder: {
+        width: 64,
+        height: 64,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    productHeaderInfo: {
+        flex: 1,
     },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 8,
+        alignItems: 'center',
     },
-    label: {
-        fontSize: 12,
-        color: '#6B7280',
-    },
-    value: {
-        fontSize: 12,
-        fontWeight: '500',
-        color: '#1F2937',
-    },
-    totalRow: {
-        marginTop: 16,
-        paddingTop: 16,
-        borderTopWidth: 1,
-        borderTopColor: '#F3F4F6',
-    },
-    totalLabel: {
+    productName: {
         fontSize: 15,
         fontWeight: 'bold',
         color: '#1F2937',
     },
-    totalValue: {
-        fontSize: 16,
+    priceText: {
+        fontSize: 14,
         fontWeight: 'bold',
-        color: '#425BA4',
+        color: '#111827',
     },
-    estimatedCard: {
+    subText: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        marginTop: 2,
+    },
+    detailsLink: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#EFF6FF',
-        padding: 12,
-        borderRadius: 8,
-        marginTop: 16,
+        justifyContent: 'center',
+        paddingVertical: 8,
+        marginBottom: 8,
     },
-    estimatedLabel: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#425BA4',
-        marginBottom: 2,
+    detailsLinkText: {
+        fontSize: 13,
+        color: '#6B7280',
+        marginRight: 4,
     },
-    estimatedValue: {
-        fontSize: 10,
+    divider: {
+        height: 1,
+        backgroundColor: '#F3F4F6',
+        marginVertical: 16,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    infoLabel: {
+        fontSize: 14,
         color: '#6B7280',
     },
-    detailsCard: {
-        marginBottom: 24,
+    infoValue: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1F2937',
     },
-    sectionTitle: {
+    infoValueBlue: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#425BA4',
+    },
+    timelineContainer: {
+        marginTop: 8,
+    },
+    timelineItem: {
+        flexDirection: 'row',
+        marginBottom: 4,
+    },
+    timelineLeft: {
+        alignItems: 'center',
+        width: 32,
+    },
+    dot: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#F3F4F6',
+        zIndex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dotCompleted: {
+        backgroundColor: '#425BA4',
+    },
+    dotCurrent: {
+        backgroundColor: '#EEF2FF',
+        borderWidth: 2,
+        borderColor: '#425BA4',
+    },
+    connector: {
+        width: 2,
+        flex: 1,
+        backgroundColor: '#F3F4F6',
+        marginVertical: 2,
+    },
+    connectorCompleted: {
+        backgroundColor: '#425BA4',
+    },
+    timelineRight: {
+        flex: 1,
+        paddingBottom: 24,
+        marginLeft: 12,
+    },
+    timelineTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#9CA3AF',
+    },
+    timelineTitleCurrent: {
+        color: '#1F2937',
+    },
+    timelineDate: {
+        fontSize: 12,
+        color: '#9CA3AF',
+        marginTop: 4,
+    },
+    summaryCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 20,
+    },
+    summaryTitle: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#1F2937',
-        marginBottom: 12,
+        marginBottom: 16,
     },
-    detailRow: {
+    summaryRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 10,
     },
-    detailLabel: {
+    summaryLabel: {
         fontSize: 14,
         color: '#6B7280',
     },
-    detailValue: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#1F2937',
-        textAlign: 'right',
-        flex: 1,
-        marginLeft: 16,
-    },
-    helpCard: {
-        flexDirection: 'row',
-        backgroundColor: '#EFF6FF',
-        padding: 16,
-        borderRadius: 12,
-    },
-    helpTitle: {
+    summaryValue: {
         fontSize: 14,
         fontWeight: '600',
+        color: '#1F2937',
+    },
+    totalLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1F2937',
+    },
+    totalValue: {
+        fontSize: 18,
+        fontWeight: 'bold',
         color: '#425BA4',
-        marginBottom: 4,
+    },
+    helpBox: {
+        flexDirection: 'row',
+        backgroundColor: '#EEF2FF',
+        padding: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        gap: 12,
     },
     helpText: {
         fontSize: 12,
-        color: '#4B5563',
+        color: '#425BA4',
+        flex: 1,
         lineHeight: 18,
     },
 });

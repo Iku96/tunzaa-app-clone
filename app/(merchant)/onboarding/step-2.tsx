@@ -7,6 +7,7 @@ import { useLanguage } from '../../../src/contexts/LanguageContext';
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { TANZANIAN_BANKS, Bank } from '../../../src/constants/banks';
 
 const { height } = Dimensions.get('window');
 
@@ -21,6 +22,13 @@ export default function Step2Details() {
     const [loading, setLoading] = useState(false);
     const [coverImage, setCoverImage] = useState<string | null>(null);
     const [logoImage, setLogoImage] = useState<string | null>(null);
+
+    // Bank Details
+    const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
+    const [accountNumber, setAccountNumber] = useState('');
+    const [accountName, setAccountName] = useState(user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : '');
+    const [showBankPicker, setShowBankPicker] = useState(false);
+    const [bankSearch, setBankSearch] = useState('');
 
     const pickImage = async (type: 'cover' | 'logo') => {
         try {
@@ -62,6 +70,11 @@ export default function Step2Details() {
                 AsyncStorage.setItem('TEMP_ONBOARDING_DESCRIPTION', description.trim()),
                 coverImage ? AsyncStorage.setItem('TEMP_ONBOARDING_COVER', coverImage) : Promise.resolve(),
                 logoImage ? AsyncStorage.setItem('TEMP_ONBOARDING_LOGO', logoImage) : Promise.resolve(),
+                // Bank Details
+                selectedBank ? AsyncStorage.setItem('TEMP_ONBOARDING_BANK_NAME', selectedBank.name) : Promise.resolve(),
+                selectedBank ? AsyncStorage.setItem('TEMP_ONBOARDING_BANK_SWIFT', selectedBank.swift_code) : Promise.resolve(),
+                AsyncStorage.setItem('TEMP_ONBOARDING_BANK_ACC_NUMBER', accountNumber),
+                AsyncStorage.setItem('TEMP_ONBOARDING_BANK_ACC_NAME', accountName),
             ]);
             
             console.log('✅ [Step2] Shop details persisted');
@@ -149,10 +162,85 @@ export default function Step2Details() {
                                         onChangeText={setDescription}
                                         placeholderTextColor="#9CA3AF"
                                         multiline
+                                        numberOfLines={4}
                                         textAlignVertical="top"
                                     />
                                     <Text style={styles.charCount}>{t.onboardingStep2CharLimit}</Text>
                                 </View>
+
+                                {/* Bank Details Section */}
+                                <View style={{ marginTop: 20, marginBottom: 10 }}>
+                                    <View style={styles.divider} />
+                                    <Text style={[styles.title, { fontSize: 18, marginTop: 20, color: '#1F2937' }]}>Commercial Details</Text>
+                                    <Text style={styles.label}>Bank details for payments</Text>
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>Bank Name <Text style={{ color: 'red' }}>*</Text></Text>
+                                    <TouchableOpacity 
+                                        style={styles.input} 
+                                        onPress={() => setShowBankPicker(!showBankPicker)}
+                                    >
+                                        <Text style={{ color: selectedBank ? '#1F2937' : '#9CA3AF' }}>
+                                            {selectedBank ? selectedBank.name : 'Select your bank'}
+                                        </Text>
+                                        <Ionicons 
+                                            name={showBankPicker ? "chevron-up" : "chevron-down"} 
+                                            size={18} 
+                                            color="#9CA3AF" 
+                                            style={{ position: 'absolute', right: 16 }}
+                                        />
+                                    </TouchableOpacity>
+
+                                    {showBankPicker && (
+                                        <View style={styles.bankPickerList}>
+                                            <TextInput
+                                                style={styles.bankSearchInput}
+                                                placeholder="Search bank..."
+                                                value={bankSearch}
+                                                onChangeText={setBankSearch}
+                                            />
+                                            {TANZANIAN_BANKS
+                                                .filter(b => b.name.toLowerCase().includes(bankSearch.toLowerCase()))
+                                                .map((bank) => (
+                                                <TouchableOpacity 
+                                                    key={bank.id} 
+                                                    style={styles.bankItem}
+                                                    onPress={() => {
+                                                        setSelectedBank(bank);
+                                                        setShowBankPicker(false);
+                                                    }}
+                                                >
+                                                    <Text style={styles.bankItemText}>{bank.name}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    )}
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>Account Name <Text style={{ color: 'red' }}>*</Text></Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={accountName}
+                                        onChangeText={setAccountName}
+                                        placeholder="Full name as on bank account"
+                                        placeholderTextColor="#9CA3AF"
+                                    />
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>Account Number <Text style={{ color: 'red' }}>*</Text></Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={accountNumber}
+                                        onChangeText={setAccountNumber}
+                                        placeholder="e.g. 015243..."
+                                        placeholderTextColor="#9CA3AF"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+
                                 <Text style={styles.requiredText}>{t.onboardingStep2Required} <Text style={{ color: 'red' }}>*</Text></Text>
                             </View>
                         </View>
@@ -376,5 +464,41 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
-    }
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#E5E7EB',
+        width: '100%',
+    },
+    bankPickerList: {
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 12,
+        marginTop: 8,
+        maxHeight: 250,
+        overflow: 'hidden',
+        // Shadow for picker
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    bankSearchInput: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+        fontSize: 14,
+        color: '#1F2937',
+    },
+    bankItem: {
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    bankItemText: {
+        fontSize: 14,
+        color: '#374151',
+    },
 });

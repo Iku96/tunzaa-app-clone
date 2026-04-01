@@ -43,37 +43,95 @@ apiClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+// State to manage synchronized token refresh
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
 // Response interceptor - token refresh + error handling
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        // Extract URL
+        const requestUrl = originalRequest.url || '';
+        const isAuthRoute = requestUrl.includes('/auth/login') || 
+                            requestUrl.includes('/auth/register') || 
+                            requestUrl.includes('/auth/refresh') ||
+                            requestUrl.includes('/auth/otp/request') ||
+                            requestUrl.includes('/auth/otp/verify') ||
+                            requestUrl.includes('/auth/firebase/login');
 
-        // Auto-refresh on 401
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Auto-refresh on 401, but NOT if the 401 came from an authentication endpoint itself
+        if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
+            
+            // If we're already refreshing, wait for the existing promise
+            if (isRefreshing) {
+                console.log("⏳ [API Client] Waiting for ongoing token refresh...");
+                try {
+                    const newToken = await refreshPromise;
+                    if (newToken) {
+                        originalRequest._retry = true;
+                        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                        return apiClient(originalRequest);
+                    }
+                } catch (queueError) {
+                    return Promise.reject(queueError);
+                }
+            }
+
             originalRequest._retry = true;
+            isRefreshing = true;
 
-            try {
-                const refreshToken = await getRefreshToken();
+            // Create the refresh promise so other requests can join
+            refreshPromise = (async () => {
+                try {
+                    console.log("🔑 [API Client] Refreshing token...");
+                    const refreshToken = await getRefreshToken();
 
-                if (refreshToken) {
-                    const response = await apiClient.post(
-                        "/auth/refresh",
+                    if (!refreshToken) {
+                        throw new Error("No refresh token available");
+                    }
+
+                    const response = await axios.post(
+                        `${API_CONFIG.BASE_URL}/auth/refresh`,
                         { refresh_token: refreshToken },
-                        { _retry: true } as any
+                        { 
+                            headers: { 
+                                ...API_CONFIG.HEADERS,
+                                "X-Tenant-ID": API_CONFIG.TENANT_ID 
+                            } 
+                        }
                     );
 
-                    await setAccessToken(response.data.access_token);
-                    await setRefreshToken(response.data.refresh_token);
+                    const { access_token, refresh_token } = response.data;
+                    await setAccessToken(access_token);
+                    await setRefreshToken(refresh_token);
+                    
+                    console.log("✅ [API Client] Token refreshed successfully");
+                    return access_token;
+                } catch (refreshError: any) {
+                    console.error("❌ [API Client] Token refresh failed:", refreshError?.message || refreshError);
+                    console.warn("⚠️ [API Client] Clearing session due to refresh failure");
+                    
+                    await clearTokens();
+                    await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
+                    
+                    // Throw to reject all waiting requests
+                    throw refreshError;
+                } finally {
+                    isRefreshing = false;
+                    refreshPromise = null;
+                }
+            })();
 
-                    originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
+            try {
+                const newToken = await refreshPromise;
+                if (newToken) {
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     return apiClient(originalRequest);
                 }
-            } catch (refreshError: any) {
-                console.error("❌ [API Client] Token refresh failed:", refreshError?.message || refreshError);
-                console.warn("⚠️ [API Client] Clearing session due to refresh failure");
-                await clearTokens();
-                await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            } catch (retryError) {
+                // Fall through to standard error parsing
             }
         }
 

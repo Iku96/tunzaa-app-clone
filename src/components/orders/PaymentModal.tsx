@@ -84,35 +84,32 @@ export default function PaymentModal({ visible, onClose, amount, onPaymentSucces
                         </>
                     ) : (
                         <View style={styles.pinContainer}>
-                            <View style={styles.header}>
-                                <Text style={styles.title}>Confirm Payment</Text>
-                                <TouchableOpacity onPress={() => setStep('select')}>
-                                    <Ionicons name="arrow-back" size={24} color="#1F2937" />
-                                </TouchableOpacity>
-                            </View>
+                            <View style={styles.pinCard}>
+                                <Text style={styles.pinLabel}>
+                                    DO YOU WANT TO PAY TZS {amount.toLocaleString()} TO TUNZAA FINTECH?
+                                </Text>
+                                <Text style={styles.pinSubLabel}>
+                                    Enter {PAYMENT_METHODS.find(m => m.id === selectedMethod)?.name} Pin to confirm
+                                </Text>
 
-                            <Text style={styles.pinLabel}>
-                                DO YOU WANT TO PAY TSH {amount.toLocaleString()} TO TUNZAA FINTECH?
-                                Enter {PAYMENT_METHODS.find(m => m.id === selectedMethod)?.name} PIN to confirm
-                            </Text>
+                                <TextInput
+                                    style={styles.pinInput}
+                                    value={pin}
+                                    onChangeText={setPin}
+                                    autoCapitalize="none"
+                                    secureTextEntry
+                                    keyboardType="numeric"
+                                    autoFocus
+                                />
 
-                            <TextInput
-                                style={styles.pinInput}
-                                value={pin}
-                                onChangeText={setPin}
-                                placeholder="Enter PIN"
-                                autoCapitalize="none" secureTextEntry
-                                keyboardType="numeric"
-                                autoFocus
-                            />
-
-                            <View style={styles.pinActions}>
-                                <TouchableOpacity onPress={() => setStep('select')}>
-                                    <Text style={styles.cancelText}>Cancel</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={handlePay}>
-                                    <Text style={styles.sendText}>Send</Text>
-                                </TouchableOpacity>
+                                <View style={styles.pinActions}>
+                                    <TouchableOpacity onPress={() => setStep('select')}>
+                                        <Text style={styles.cancelText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={handlePay}>
+                                        <Text style={styles.sendText}>Send</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
                     )}
@@ -181,19 +178,38 @@ const styles = StyleSheet.create({
     },
     pinContainer: {
         flex: 1,
+        justifyContent: 'center',
+    },
+    pinCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 24,
+        alignItems: 'center',
     },
     pinLabel: {
         fontSize: 14,
-        color: '#4B5563',
-        marginBottom: 20,
+        color: '#1F2937',
+        fontWeight: '600',
+        textAlign: 'center',
+        marginBottom: 8,
         lineHeight: 20,
     },
+    pinSubLabel: {
+        fontSize: 14,
+        color: '#4B5563',
+        textAlign: 'center',
+        marginBottom: 24,
+    },
     pinInput: {
+        width: '100%',
         borderBottomWidth: 1,
         borderBottomColor: '#425BA4',
-        fontSize: 18,
-        paddingVertical: 8,
-        marginBottom: 40,
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        paddingVertical: 12,
+        marginBottom: 32,
+        color: '#1F2937',
     },
     pinActions: {
         flexDirection: 'row',

@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Modal, ActivityIndicator, Alert, Pressable } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetOrders, useRequestRefund } from '../../../src/services/orders';
+
+const REFUND_REASONS = [
+    'Defective product',
+    'Financial Issues',
+    'Changed my mind',
+    'Item not as described',
+    'Ordered by mistake',
+    'Other'
+];
 
 export default function RefundRequestScreen() {
     const { order_id } = useLocalSearchParams();
@@ -11,6 +20,7 @@ export default function RefundRequestScreen() {
     const [reason, setReason] = useState('');
     const [notes, setNotes] = useState('');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showReasonModal, setShowReasonModal] = useState(false);
 
     // Live Integration Data
     const { data: ordersData } = useGetOrders({ order_id: order_id as string }, !!order_id);
@@ -30,6 +40,10 @@ export default function RefundRequestScreen() {
     const refundAmount = product.paidAmount - chargingFee;
 
     const handleRequest = () => {
+        if (!reason) {
+            Alert.alert('Selection Required', 'Please select a reason for your refund request.');
+            return;
+        }
         setShowConfirmModal(true);
     };
 
@@ -41,11 +55,15 @@ export default function RefundRequestScreen() {
                     data: { reason: reason || 'Not Specified', notes }
                 });
             }
+            setShowConfirmModal(false);
+            router.push({
+                pathname: '/(buyer)/refund/status',
+                params: { order_id: order_id }
+            });
         } catch (error: any) {
             console.error("Refund Request API Failed:", error);
-            // Non-blocking fail structure 
-        } finally {
             setShowConfirmModal(false);
+            // Even if API fails in this phase, we navigate to status to show the flow
             router.push({
                 pathname: '/(buyer)/refund/status',
                 params: { order_id: order_id }
@@ -63,7 +81,7 @@ export default function RefundRequestScreen() {
                 <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.content}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Product Card */}
                 <View style={styles.productCard}>
                     <Image source={{ uri: product.image }} style={styles.productImage} />
@@ -85,14 +103,18 @@ export default function RefundRequestScreen() {
                     </View>
                     <View style={styles.totalRow}>
                         <Text style={styles.totalLabel}>Refund Amount</Text>
-                        <Text style={styles.totalValue}>Tsh{refundAmount.toLocaleString()}</Text>
+                        <Text style={styles.totalValue}>Tsh {refundAmount.toLocaleString()}</Text>
                     </View>
                 </View>
 
                 <Text style={styles.sectionTitle}>Refund Information</Text>
 
                 <Text style={styles.label}>Reason for refund</Text>
-                <TouchableOpacity style={styles.dropdown}>
+                <TouchableOpacity 
+                    style={styles.dropdown} 
+                    onPress={() => setShowReasonModal(true)}
+                    activeOpacity={0.7}
+                >
                     <Text style={reason ? styles.inputText : styles.placeholder}>
                         {reason || 'Select a reason'}
                     </Text>
@@ -120,17 +142,55 @@ export default function RefundRequestScreen() {
                     <Text style={styles.policyText}>• Refund requests are non-cancellable once submitted</Text>
                 </View>
 
-                <TouchableOpacity style={styles.submitButton} onPress={handleRequest}>
+                <TouchableOpacity 
+                    style={[styles.submitButton, !reason && styles.submitButtonDisabled]} 
+                    onPress={handleRequest}
+                >
                     <Text style={styles.submitButtonText}>Submit Request</Text>
                 </TouchableOpacity>
 
             </ScrollView>
+
+            {/* Reason Selection Modal (Bottom Sheet style) */}
+            <Modal
+                visible={showReasonModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowReasonModal(false)}
+            >
+                <Pressable style={styles.modalOverlay} onPress={() => setShowReasonModal(false)}>
+                    <View style={styles.bottomSheet}>
+                        <View style={styles.bottomSheetHandle} />
+                        <Text style={styles.bottomSheetTitle}>Select Reason</Text>
+                        {REFUND_REASONS.map((item, index) => (
+                            <TouchableOpacity 
+                                key={index} 
+                                style={[styles.reasonOption, reason === item && styles.reasonOptionActive]}
+                                onPress={() => {
+                                    setReason(item);
+                                    setShowReasonModal(false);
+                                }}
+                            >
+                                <Text style={[styles.reasonText, reason === item && styles.reasonTextActive]}>{item}</Text>
+                                {reason === item && <Ionicons name="checkmark-circle" size={20} color="#425BA4" />}
+                            </TouchableOpacity>
+                        ))}
+                        <TouchableOpacity 
+                            style={styles.closeSheetButton} 
+                            onPress={() => setShowReasonModal(false)}
+                        >
+                            <Text style={styles.closeSheetText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Pressable>
+            </Modal>
 
             {/* Confirmation Modal */}
             <Modal
                 visible={showConfirmModal}
                 transparent={true}
                 animationType="fade"
+                onRequestClose={() => setShowConfirmModal(false)}
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
@@ -166,17 +226,21 @@ export default function RefundRequestScreen() {
                                 <Text style={[styles.modalLabel, { color: '#EF4444' }]}>Charging Fee (15%)</Text>
                                 <Text style={[styles.modalValue, { color: '#EF4444' }]}>-Tsh {chargingFee.toLocaleString()}</Text>
                             </View>
-                            <View style={[styles.modalRow, { marginTop: 12 }]}>
+                            <View style={[styles.modalRow, { marginTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 12 }]}>
                                 <Text style={styles.modalTotalLabel}>Refund Amount</Text>
-                                <Text style={styles.modalTotalValue}>Tsh{refundAmount.toLocaleString()}</Text>
+                                <Text style={styles.modalTotalValue}>Tsh {refundAmount.toLocaleString()}</Text>
                             </View>
                         </View>
 
                         <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-                            <Text style={styles.confirmButtonText}>Confirm Refund Request</Text>
+                            {isPending ? (
+                                <ActivityIndicator color="#FFFFFF" size="small" />
+                            ) : (
+                                <Text style={styles.confirmButtonText}>Confirm Refund Request</Text>
+                            )}
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.cancelButton} onPress={() => setShowConfirmModal(false)}>
+                        <TouchableOpacity style={styles.cancelButton} onPress={() => setShowConfirmModal(false)} disabled={isPending}>
                             <Text style={styles.cancelButtonText}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
@@ -198,6 +262,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
     },
     backButton: {
         padding: 4,
@@ -208,55 +274,57 @@ const styles = StyleSheet.create({
         color: '#1F2937',
     },
     content: {
-        padding: 20,
+        padding: 24,
     },
     productCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 12,
+        padding: 16,
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
+        borderRadius: 16,
         borderWidth: 1,
         borderColor: '#F3F4F6',
         marginBottom: 20,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
+        shadowRadius: 10,
+        elevation: 2,
     },
     productImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 8,
-        marginRight: 12,
+        width: 56,
+        height: 56,
+        borderRadius: 12,
+        marginRight: 16,
+        backgroundColor: '#F3F4F6',
     },
     productName: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#1F2937',
+        marginBottom: 4,
     },
     productQty: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#6B7280',
     },
     calcContainer: {
-        marginBottom: 24,
-        padding: 16,
+        marginBottom: 32,
+        padding: 20,
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
+        borderRadius: 20,
         borderWidth: 1,
         borderColor: '#F3F4F6',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
+        shadowRadius: 12,
+        elevation: 3,
     },
     calcRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 14,
     },
     calcLabel: {
         fontSize: 14,
@@ -264,38 +332,38 @@ const styles = StyleSheet.create({
     },
     calcValue: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
         color: '#1F2937',
     },
     totalRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 8,
-        paddingTop: 16,
+        marginTop: 10,
+        paddingTop: 18,
         borderTopWidth: 1,
         borderTopColor: '#F3F4F6',
     },
     totalLabel: {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#1F2937',
     },
     totalValue: {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#425BA4',
     },
     sectionTitle: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#1F2937',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     label: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
         color: '#374151',
-        marginBottom: 8,
+        marginBottom: 10,
     },
     dropdown: {
         flexDirection: 'row',
@@ -303,49 +371,43 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 16,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
-        borderRadius: 12,
-        marginBottom: 16,
+        borderColor: '#E5E7EB',
+        borderRadius: 14,
+        marginBottom: 20,
         backgroundColor: '#FFFFFF',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.02,
-        shadowRadius: 2,
-        elevation: 1,
     },
     inputText: {
-        fontSize: 14,
+        fontSize: 15,
         color: '#1F2937',
+        fontWeight: '500',
     },
     placeholder: {
-        fontSize: 14,
+        fontSize: 15,
         color: '#9CA3AF',
     },
     textArea: {
         borderWidth: 1,
-        borderColor: '#F3F4F6',
-        borderRadius: 12,
+        borderColor: '#E5E7EB',
+        borderRadius: 14,
         padding: 16,
-        height: 100,
+        height: 120,
         marginBottom: 24,
         backgroundColor: '#FFFFFF',
-        fontSize: 14,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.02,
-        shadowRadius: 2,
-        elevation: 1,
+        fontSize: 15,
+        color: '#1F2937',
     },
     policyCard: {
-        backgroundColor: '#FEF3C7',
-        padding: 16,
-        borderRadius: 12,
-        marginBottom: 24,
+        backgroundColor: '#FFFBEB',
+        padding: 18,
+        borderRadius: 16,
+        marginBottom: 32,
+        borderWidth: 1,
+        borderColor: '#FEF3C7',
     },
     policyHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 10,
     },
     policyTitle: {
         fontSize: 14,
@@ -354,16 +416,27 @@ const styles = StyleSheet.create({
         marginLeft: 8,
     },
     policyText: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#92400E',
-        marginBottom: 4,
-        marginLeft: 4,
+        marginBottom: 6,
+        lineHeight: 18,
     },
     submitButton: {
         backgroundColor: '#425BA4',
         paddingVertical: 16,
-        borderRadius: 30,
+        borderRadius: 16,
         alignItems: 'center',
+        shadowColor: "#425BA4",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 5,
+        marginBottom: 20,
+    },
+    submitButtonDisabled: {
+        backgroundColor: '#9CA3AF',
+        shadowOpacity: 0,
+        elevation: 0,
     },
     submitButtonText: {
         color: '#FFFFFF',
@@ -373,72 +446,131 @@ const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
+    },
+    bottomSheet: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        padding: 24,
+        paddingBottom: 40,
+    },
+    bottomSheetHandle: {
+        width: 40,
+        height: 4,
+        backgroundColor: '#E5E7EB',
+        borderRadius: 2,
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    bottomSheetTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1F2937',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    reasonOption: {
+        flexDirection: 'row',
         alignItems: 'center',
-        padding: 20,
+        justifyContent: 'space-between',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    reasonOptionActive: {
+        backgroundColor: '#F9FAFB',
+    },
+    reasonText: {
+        fontSize: 15,
+        color: '#4B5563',
+    },
+    reasonTextActive: {
+        color: '#425BA4',
+        fontWeight: 'bold',
+    },
+    closeSheetButton: {
+        marginTop: 20,
+        paddingVertical: 16,
+        alignItems: 'center',
+        backgroundColor: '#F3F4F6',
+        borderRadius: 16,
+    },
+    closeSheetText: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#6B7280',
     },
     modalContent: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        borderRadius: 24,
         padding: 24,
-        width: '90%', // Tighter to match design
+        width: '90%',
+        alignSelf: 'center',
         alignItems: 'center',
         position: 'relative',
-        marginTop: 20, // Space for the top floating icon
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
     },
     warningIcon: {
         position: 'absolute',
-        top: -24,
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        top: -30,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         backgroundColor: '#FEE2E2',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 4,
-        borderColor: '#FFFFFF', // To create cutout effect
-        zIndex: 10,
+        borderWidth: 6,
+        borderColor: '#FFFFFF',
     },
     modalTitle: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: '#111827',
+        marginTop: 30,
         marginBottom: 16,
     },
     modalSummary: {
         width: '100%',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: '#F9FAFB',
         padding: 16,
-        borderRadius: 8,
-        marginBottom: 16,
+        borderRadius: 14,
+        marginBottom: 20,
     },
     modalNote: {
         fontSize: 12,
         color: '#6B7280',
         marginTop: 8,
+        textAlign: 'center',
     },
     noticeCard: {
         width: '100%',
-        backgroundColor: '#FEF3C7',
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 16,
+        backgroundColor: '#FFFBEB',
+        padding: 14,
+        borderRadius: 12,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#FEF3C7',
     },
     noticeHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: 6,
     },
     noticeTitle: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: 'bold',
         color: '#B45309',
-        marginLeft: 4,
+        marginLeft: 6,
     },
     noticeText: {
         fontSize: 12,
         color: '#92400E',
-        lineHeight: 16,
+        lineHeight: 18,
     },
     modalCalc: {
         width: '100%',
@@ -450,47 +582,47 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     modalLabel: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#6B7280',
     },
     modalValue: {
-        fontSize: 13,
-        fontWeight: '500',
+        fontSize: 14,
+        fontWeight: '600',
         color: '#1F2937',
     },
     modalTotalLabel: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#1F2937',
+        color: '#111827',
     },
     modalTotalValue: {
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: '900',
         color: '#425BA4',
     },
     confirmButton: {
         backgroundColor: '#425BA4',
         width: '100%',
-        paddingVertical: 14,
-        borderRadius: 30, // Much more rounded
+        paddingVertical: 16,
+        borderRadius: 16,
         alignItems: 'center',
         marginBottom: 12,
     },
     confirmButtonText: {
         color: '#FFFFFF',
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: 'bold',
     },
     cancelButton: {
         backgroundColor: '#F3F4F6',
         width: '100%',
-        paddingVertical: 14,
-        borderRadius: 30,
+        paddingVertical: 16,
+        borderRadius: 16,
         alignItems: 'center',
     },
     cancelButtonText: {
         color: '#6B7280',
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 15,
+        fontWeight: 'bold',
     },
 });

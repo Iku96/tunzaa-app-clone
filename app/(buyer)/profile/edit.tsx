@@ -245,11 +245,14 @@ export default function EditProfileScreen() {
         label: string,
         value: string,
         setValue: (text: string) => void,
-        options?: { keyboardType?: any; editable?: boolean; placeholder?: string }
+        options?: { keyboardType?: any; editable?: boolean; placeholder?: string; icon?: string }
     ) => (
         <View style={styles.inputContainer}>
             <Text style={styles.label}>{label}</Text>
             <View style={styles.inputWrapper}>
+                {options?.icon && (
+                    <Ionicons name={options.icon as any} size={20} color="#425BA4" style={styles.inputIcon} />
+                )}
                 <TextInput
                     style={styles.input}
                     value={value}
@@ -259,7 +262,6 @@ export default function EditProfileScreen() {
                     placeholderTextColor="#9CA3AF"
                     keyboardType={options?.keyboardType}
                 />
-                <Ionicons name="pencil" size={20} color="#6B7280" />
             </View>
         </View>
     );
@@ -295,45 +297,61 @@ export default function EditProfileScreen() {
                     </View>
                 </View>
 
-                {/* Banner */}
-                <ProfileSetupBanner progress={0.5} points={50} />
+                {/* Banner - Conditionally show "Complete" vs "Updated" */}
+                <View style={styles.bannerContainer}>
+                    <ProfileSetupBanner progress={0.5} points={50} />
+                </View>
 
                 {/* Form */}
                 <View style={styles.form}>
-                    {renderEditableRow('Name', name, setName)}
-                    {renderEditableRow('Username', username, setUsername)}
+                    {renderEditableRow('Name', name, setName, { icon: 'person-outline' })}
+                    {renderEditableRow('Username', username, setUsername, { icon: 'at-outline' })}
 
-                    {/* Date of Birth — tappable to open picker */}
+                    {/* Date of Birth */}
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>Date of birth</Text>
                         <TouchableOpacity
                             style={styles.inputWrapper}
                             onPress={() => setShowDatePicker(true)}
                         >
+                            <Ionicons name="calendar-outline" size={20} color="#425BA4" style={styles.inputIcon} />
                             <Text style={[styles.inputValue, !dob && styles.placeholder]}>
                                 {dob || 'DD/MM/YYYY'}
                             </Text>
-                            <Ionicons name="calendar-outline" size={20} color="#6B7280" />
                         </TouchableOpacity>
                     </View>
 
-                    {renderEditableRow('Email address', email, setEmail, { keyboardType: 'email-address' })}
-                    {renderEditableRow('Phone number', phone, setPhone, { keyboardType: 'phone-pad' })}
+                    {renderEditableRow('Email address', email, setEmail, { keyboardType: 'email-address', icon: 'mail-outline' })}
+                    {renderEditableRow('Phone number', phone, setPhone, { keyboardType: 'phone-pad', icon: 'call-outline' })}
 
-                    {/* Gender — tappable dropdown */}
+                    {/* Gender */}
                     <View style={styles.inputContainer}>
                         <Text style={styles.label}>Gender</Text>
                         <TouchableOpacity
                             style={styles.inputWrapper}
                             onPress={() => setShowGenderPicker(true)}
                         >
+                            <Ionicons name="person-circle-outline" size={20} color="#425BA4" style={styles.inputIcon} />
                             <Text style={[styles.inputValue, !gender && styles.placeholder]}>
                                 {gender || 'Choose gender'}
                             </Text>
-                            <Ionicons name="chevron-down" size={20} color="#6B7280" />
+                            <Ionicons name="chevron-down" size={18} color="#9CA3AF" />
                         </TouchableOpacity>
                     </View>
                 </View>
+
+                {/* Save Button at Bottom */}
+                <TouchableOpacity 
+                    style={[styles.saveButton, isPending && styles.saveButtonDisabled]} 
+                    onPress={handleSave}
+                    disabled={isPending}
+                >
+                    {isPending ? (
+                        <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                        <Text style={styles.saveButtonText}>Save Changes</Text>
+                    )}
+                </TouchableOpacity>
             </ScrollView>
 
             {/* ========== Gender Picker Modal ========== */}
@@ -359,7 +377,7 @@ export default function EditProfileScreen() {
                                     {option}
                                 </Text>
                                 {gender === option && (
-                                    <Ionicons name="checkmark-circle" size={22} color="#3E4C85" />
+                                    <Ionicons name="checkmark-circle" size={22} color="#425BA4" />
                                 )}
                             </TouchableOpacity>
                         ))}
@@ -454,17 +472,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 16,
+        paddingHorizontal: 20,
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
     },
     iconButton: {
-        padding: 8,
+        padding: 4,
     },
     headerTitle: {
-        fontSize: 17,
-        fontWeight: '600',
+        fontSize: 18,
+        fontWeight: 'bold',
         color: '#1F2937',
     },
     content: {
@@ -473,73 +489,97 @@ const styles = StyleSheet.create({
     },
     avatarSection: {
         alignItems: 'center',
-        paddingVertical: 24,
+        paddingVertical: 32,
     },
     avatarContainer: {
         position: 'relative',
     },
     avatar: {
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        backgroundColor: '#EFF6FF',
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: '#F3F4F6',
     },
     cameraButton: {
         position: 'absolute',
         bottom: 0,
         right: 0,
-        backgroundColor: '#3E4C85',
-        width: 30,
-        height: 30,
-        borderRadius: 15,
+        backgroundColor: '#425BA4',
+        width: 32,
+        height: 32,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 2,
+        borderWidth: 3,
         borderColor: '#FFFFFF',
     },
+    bannerContainer: {
+        marginBottom: 24,
+    },
     form: {
-        marginTop: 16,
+        gap: 20,
+        marginBottom: 40,
     },
     inputContainer: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-        paddingVertical: 14,
+        gap: 8,
     },
     label: {
-        fontSize: 12,
-        color: '#9CA3AF',
-        marginBottom: 6,
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#1F2937',
     },
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        backgroundColor: '#F9FAFB',
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+    },
+    inputIcon: {
+        marginRight: 12,
     },
     input: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 15,
         color: '#1F2937',
-        paddingVertical: 0,
     },
     inputValue: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 15,
         color: '#1F2937',
     },
     placeholder: {
         color: '#9CA3AF',
     },
+    saveButton: {
+        backgroundColor: '#425BA4',
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    saveButtonDisabled: {
+        opacity: 0.6,
+    },
+    saveButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
     // ---- Modals ----
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.35)',
+        backgroundColor: 'rgba(0,0,0,0.4)',
         justifyContent: 'flex-end',
     },
     modalContent: {
         backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        paddingHorizontal: 20,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 24,
         paddingBottom: Platform.OS === 'ios' ? 40 : 24,
         paddingTop: 12,
     },
@@ -547,92 +587,96 @@ const styles = StyleSheet.create({
         width: 40,
         height: 4,
         borderRadius: 2,
-        backgroundColor: '#D1D5DB',
+        backgroundColor: '#E5E7EB',
         alignSelf: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     modalTitle: {
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 20,
+        fontWeight: 'bold',
         color: '#1F2937',
-        marginBottom: 16,
+        marginBottom: 24,
+        textAlign: 'center',
     },
     optionRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 16,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-        marginBottom: 4,
+        paddingVertical: 18,
+        paddingHorizontal: 16,
+        borderRadius: 16,
+        marginBottom: 8,
     },
     optionRowSelected: {
         backgroundColor: '#EFF6FF',
     },
     optionText: {
         fontSize: 16,
-        color: '#374151',
+        color: '#4B5563',
+        fontWeight: '500',
     },
     optionTextSelected: {
-        color: '#3E4C85',
-        fontWeight: '600',
+        color: '#425BA4',
+        fontWeight: 'bold',
     },
     // ---- Date Picker ----
     datePickerContent: {
         backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        paddingHorizontal: 20,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 24,
         paddingBottom: Platform.OS === 'ios' ? 40 : 24,
         paddingTop: 12,
     },
     dateRow: {
         flexDirection: 'row',
-        height: 200,
+        height: 220,
         gap: 12,
-        marginBottom: 16,
+        marginBottom: 24,
     },
     dateColumn: {
         flex: 1,
     },
     dateColumnLabel: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#6B7280',
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#9CA3AF',
         textAlign: 'center',
         marginBottom: 8,
+        textTransform: 'uppercase',
     },
     dateScroll: {
         flex: 1,
         backgroundColor: '#F9FAFB',
-        borderRadius: 12,
+        borderRadius: 16,
     },
     dateItem: {
-        paddingVertical: 10,
+        paddingVertical: 12,
         alignItems: 'center',
     },
     dateItemSelected: {
-        backgroundColor: '#3E4C85',
-        borderRadius: 8,
+        backgroundColor: '#425BA4',
+        borderRadius: 12,
         marginHorizontal: 4,
     },
     dateItemText: {
-        fontSize: 15,
-        color: '#374151',
+        fontSize: 16,
+        color: '#1F2937',
+        fontWeight: '500',
     },
     dateItemTextSelected: {
         color: '#FFFFFF',
-        fontWeight: '600',
+        fontWeight: 'bold',
     },
     dateConfirmButton: {
-        backgroundColor: '#3E4C85',
-        paddingVertical: 16,
-        borderRadius: 30,
+        backgroundColor: '#425BA4',
+        paddingVertical: 18,
+        borderRadius: 18,
         alignItems: 'center',
     },
     dateConfirmText: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold',
     },
 });

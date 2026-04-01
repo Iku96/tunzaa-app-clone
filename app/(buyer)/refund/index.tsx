@@ -1,11 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RefundMenuScreen() {
     const router = useRouter();
+
+    const menuItems = [
+        { label: 'Refund', onPress: () => router.push('/(buyer)/refund/request') },
+        { label: 'Transfer Fund', onPress: () => router.push('/(buyer)/transfer') },
+    ];
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -14,23 +19,23 @@ export default function RefundMenuScreen() {
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Refund</Text>
-                <View style={{ width: 24 }} />
+                <View style={{ width: 40 }} />
             </View>
 
-            <View style={styles.content}>
-                <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => router.push('/(buyer)/refund/request')}
-                >
-                    <Text style={styles.menuItemText}>Refund</Text>
-                </TouchableOpacity>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                {menuItems.map((item, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={styles.menuItem}
+                        onPress={item.onPress}
+                    >
+                        <Text style={styles.menuItemText}>{item.label}</Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
 
-                <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={() => router.push('/(buyer)/transfer/')}
-                >
-                    <Text style={styles.menuItemText}>Transfer Fund</Text>
-                </TouchableOpacity>
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>Tunzaa Version 2.0</Text>
             </View>
         </SafeAreaView>
     );
@@ -47,6 +52,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
     },
     backButton: {
         padding: 4,
@@ -55,16 +62,28 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        flex: 1,
+        textAlign: 'center',
     },
     content: {
-        marginTop: 24,
+        paddingTop: 8,
     },
     menuItem: {
-        paddingVertical: 18,
+        paddingVertical: 20,
         paddingHorizontal: 24,
+        backgroundColor: '#FFFFFF',
     },
     menuItemText: {
         fontSize: 15,
         color: '#1F2937',
+        fontWeight: '400',
+    },
+    footer: {
+        padding: 24,
+        alignItems: 'center',
+    },
+    footerText: {
+        fontSize: 12,
+        color: '#9CA3AF',
     },
 });

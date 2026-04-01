@@ -67,9 +67,9 @@ export class NotificationService {
                 console.log('Push notification permission not granted');
                 return undefined;
             }
-            token = (await Notifications.getExpoPushTokenAsync({
-                projectId: process.env.EXPO_PUBLIC_PROJECT_ID || 'tunzaa-clone',
-            })).data;
+            const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+            const tokenOptions = projectId ? { projectId } : undefined;
+            token = (await Notifications.getExpoPushTokenAsync(tokenOptions)).data;
             console.log('Expo Push Token:', token);
         } else {
             console.log('Must use physical device for push notifications');

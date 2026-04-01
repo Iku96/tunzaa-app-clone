@@ -8,20 +8,21 @@ export default function TimeUsageScreen() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'Daily' | 'Weekly'>('Daily');
 
-    // Mock bar chart data
+    // Mock chart data
     const chartData = [
-        { day: 'M', height: 20 },
-        { day: 'T', height: 0 },
-        { day: 'W', height: 0 },
-        { day: 'T', height: 0 },
-        { day: 'F', height: 0 },
-        { day: 'S', height: 0 },
-        { day: 'S', height: 0 },
+        { day: 'S', value: 40 },
+        { day: 'M', value: 20 },
+        { day: 'T', value: 60 },
+        { day: 'W', value: 50 },
+        { day: 'T', value: 30 },
+        { day: 'F', value: 10 },
+        { day: 'S', value: 25 },
     ];
+
+    const maxVal = Math.max(...chartData.map(d => d.value)) || 1;
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
@@ -37,61 +38,44 @@ export default function TimeUsageScreen() {
                         style={[styles.tab, activeTab === 'Daily' && styles.activeTab]}
                         onPress={() => setActiveTab('Daily')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'Daily' && styles.activeTabText]}>
-                            Daily Spent
-                        </Text>
+                        <Text style={[styles.tabText, activeTab === 'Daily' && styles.activeTabText]}>Daily spent</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'Weekly' && styles.activeTab]}
                         onPress={() => setActiveTab('Weekly')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'Weekly' && styles.activeTabText]}>
-                            Weekly Spent
-                        </Text>
+                        <Text style={[styles.tabText, activeTab === 'Weekly' && styles.activeTabText]}>Weekly Spent</Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Today Summary */}
-                <View style={styles.summaryContainer}>
-                    <Text style={styles.todayText}>Today</Text>
-                    <View style={styles.clockIconContainer}>
-                        <Ionicons name="time-outline" size={32} color="#1A1A1A" />
+                {/* Circular timer UI */}
+                <View style={styles.timerContainer}>
+                    <Text style={styles.timerSubtitle}>Today</Text>
+                    <View style={styles.circularProgress}>
+                        <View style={styles.innerCircle}>
+                            <Ionicons name="time-outline" size={32} color="#1A1A1A" />
+                            <Text style={styles.timeValue}>32M</Text>
+                        </View>
                     </View>
-                    <Text style={styles.timeValue}>20m</Text>
-                    <Text style={styles.descriptionText}>
-                        Average time this you spent looking for the items you want.
+                    <Text style={styles.insightText}>
+                        You spent 5.3 hours on average for the past 7 days
                     </Text>
                 </View>
 
-                {/* Chart Area */}
+                {/* Bar Chart */}
                 <View style={styles.chartContainer}>
-                    {/* Y-axis guidelines */}
-                    <View style={styles.guidelines}>
-                        <View style={styles.guidelineRow}>
-                            <Text style={styles.yAxisLabel}></Text>
-                            <View style={styles.line} />
-                        </View>
-                        <View style={styles.guidelineRow}>
-                            <Text style={styles.yAxisLabel}></Text>
-                            <View style={styles.line} />
-                        </View>
-                    </View>
-
-                    {/* Bars */}
-                    <View style={styles.barsContainer}>
-                        {chartData.map((data, idx) => (
-                            <View key={idx} style={styles.barColumn}>
-                                <View style={styles.barTrack}>
-                                    {data.height > 0 && (
-                                        <View style={[styles.barFill, { height: `${data.height}%` }]} />
-                                    )}
-                                </View>
-                                <Text style={[styles.xAxisLabel, data.height > 0 && styles.activeXAxisLabel]}>
-                                    {data.day}
-                                </Text>
+                    {chartData.map((data, idx) => (
+                        <View key={idx} style={styles.barCol}>
+                            <View style={styles.barTrack}>
+                                <View style={[
+                                    styles.barFill, 
+                                    { height: `${(data.value / maxVal) * 100}%` },
+                                    data.day === 'W' && styles.activeBar
+                                ]} />
                             </View>
-                        ))}
-                    </View>
+                            <Text style={styles.dayLabel}>{data.day}</Text>
+                        </View>
+                    ))}
                 </View>
 
             </ScrollView>
@@ -110,17 +94,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 12,
-        backgroundColor: '#FFFFFF',
     },
     backButton: {
         padding: 4,
-        marginLeft: -4,
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
-        textAlign: 'center',
     },
     scrollContent: {
         paddingTop: 24,
@@ -128,14 +109,14 @@ const styles = StyleSheet.create({
     },
     tabContainer: {
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 8,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 12,
         padding: 4,
-        marginBottom: 32,
+        marginBottom: 48,
     },
     tab: {
         flex: 1,
-        paddingVertical: 12,
+        paddingVertical: 10,
         alignItems: 'center',
         borderRadius: 8,
     },
@@ -151,86 +132,72 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: '600',
     },
-    summaryContainer: {
+    timerContainer: {
         alignItems: 'center',
-        marginBottom: 40,
-        paddingHorizontal: 32,
+        marginBottom: 60,
     },
-    todayText: {
+    timerSubtitle: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#1A1A1A',
-        marginBottom: 16,
+        marginBottom: 24,
     },
-    clockIconContainer: {
-        marginBottom: 8,
+    circularProgress: {
+        width: 160,
+        height: 160,
+        borderRadius: 80,
+        borderWidth: 2,
+        borderColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    innerCircle: {
+        alignItems: 'center',
     },
     timeValue: {
-        fontSize: 24,
+        fontSize: 32,
         fontWeight: 'bold',
         color: '#1A1A1A',
-        marginBottom: 12,
+        marginTop: 8,
     },
-    descriptionText: {
-        fontSize: 13,
-        color: '#6B7280',
+    insightText: {
+        fontSize: 12,
+        color: '#9CA3AF',
         textAlign: 'center',
         lineHeight: 18,
+        paddingHorizontal: 40,
     },
     chartContainer: {
-        height: 200,
-        position: 'relative',
-        marginTop: 24,
-    },
-    guidelines: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 30, // Leave room for X-axis labels
+        flexDirection: 'row',
         justifyContent: 'space-between',
-    },
-    guidelineRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    yAxisLabel: {
-        width: 10,
-    },
-    line: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#F3F4F6', // very faint lines
-    },
-    barsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
         alignItems: 'flex-end',
-        height: 170, // Matches space above X-axis
+        height: 140,
+        paddingHorizontal: 10,
+        marginBottom: 40,
     },
-    barColumn: {
+    barCol: {
         alignItems: 'center',
-        justifyContent: 'flex-end',
-        height: '100%',
         width: 30,
     },
     barTrack: {
         width: 12,
-        height: 140, // Max bar height
+        height: 100,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 6,
         justifyContent: 'flex-end',
+        marginBottom: 12,
     },
     barFill: {
         width: '100%',
-        backgroundColor: '#425BA4',
-        borderRadius: 4,
+        backgroundColor: '#CBD5E1',
+        borderRadius: 6,
     },
-    xAxisLabel: {
-        marginTop: 12,
+    activeBar: {
+        backgroundColor: '#425BA4',
+    },
+    dayLabel: {
         fontSize: 12,
         color: '#9CA3AF',
-    },
-    activeXAxisLabel: {
-        color: '#425BA4',
-        fontWeight: '600',
     },
 });
