@@ -1,6 +1,6 @@
 import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, ScrollView, StatusBar, FlatList } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react-native';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
@@ -18,7 +18,7 @@ export default function MauzoIntro() {
     const flatListRef = useRef<FlatList>(null);
 
     // Define slides data inside the component to use translations
-    const SLIDES = [
+    const SLIDES = useMemo(() => [
         {
             id: '1',
             title: t.mauzoSlide1Title,
@@ -43,7 +43,7 @@ export default function MauzoIntro() {
             description: t.mauzoSlide4Desc,
             image: require('../assets/mauzo-intro-illustration screen 4.png'),
         },
-    ];
+    ], [t]);
 
     const handleBack = () => {
         if (currentIndex > 0) {
@@ -120,7 +120,7 @@ export default function MauzoIntro() {
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                     <ArrowLeft size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Mauzo by Tunzaa</Text>
+                <Text style={styles.headerTitle}>{t.mauzoHeader}</Text>
                 {/* Balance view for center alignment */}
                 <View style={{ width: 40 }} />
             </View>

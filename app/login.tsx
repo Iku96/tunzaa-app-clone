@@ -1,3 +1,19 @@
+/**
+ * ============================================================================
+ * MAIN LOGIN SCREEN (BUYER / DEFAULT GATEWAY)
+ * ============================================================================
+ * * Purpose: The primary authentication gateway for the app. 
+ * While delivery and affiliate roles have dedicated login screens, this screen 
+ * acts as a catch-all.
+ * * * Core Logic (For New Devs):
+ * 1. Authenticates the user via email/phone or Social Auth.
+ * 2. Checks the user's metadata (profiles array) to see what roles they hold.
+ * 3. Sets the 'LAST_PORTAL' in AsyncStorage to override the backend's default 
+ * role upon app reload (prevents multi-role users from getting trapped).
+ * 4. Routes them to the correct dashboard based on context/intent.
+ * ============================================================================
+ */
+
 import { useState } from 'react';
 import {
     View,
@@ -14,27 +30,36 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // ✅ Standardized Import
+
+// Global Contexts
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 import { useLanguage } from '../src/contexts/LanguageContext';
 
-/**
- * Sign In Screen (Welcome Back)
- * Matches screenshot pixel-perfectly with responsive maxWidth layout
- */
 export default function LoginScreen() {
     const { t } = useLanguage();
     const router = useRouter();
+
+    // Check if the user was directed here with a specific role intent (e.g., ?role=merchant)
     const { role: targetRole } = useLocalSearchParams<{ role?: string }>();
 
+    // ------------------------------------------------------------------------
+    // STATE MANAGEMENT
+    // ------------------------------------------------------------------------
     const [usernameOrEmail, setUsernameOrEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    // Destructure auth methods from global context
     const { login: tunzaaLogin, signInWithGoogle, signInWithApple } = useTunzaaAuth();
 
+    // ------------------------------------------------------------------------
+    // STANDARD LOGIN HANDLER
+    // ------------------------------------------------------------------------
     const handleLogin = async () => {
+        // Pre-flight validation
         if (!agreedToTerms) {
             Alert.alert('Terms Required', 'Please agree to Terms and Conditions');
             return;
@@ -46,47 +71,34 @@ export default function LoginScreen() {
 
         setLoading(true);
         try {
-            // Determine if input is a phone number or email
+            // Determine if input is a phone number or email to format it correctly for the backend
             const isPhone = !usernameOrEmail.includes('@');
             const identifier = isPhone && !usernameOrEmail.startsWith('+')
                 ? `+255${usernameOrEmail.replace(/^0/, '')}`
                 : usernameOrEmail;
 
-            const response = await tunzaaLogin(identifier, password, isPhone);
-            console.log('✅ Login success:', response.name);
+            // Compute portal target from URL param BEFORE calling login (single call)
+            // targetRole comes from useLocalSearchParams (e.g. ?role=merchant from mauzo-intro)
+            const portalTarget = targetRole === 'merchant' ? 'merchant'
+                               : targetRole === 'delivery' ? 'delivery'
+                               : undefined; // Let context auto-detect from server response
 
-            // Check if we have pending merchant onboarding data
-            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            // Single login call — sets LAST_PORTAL atomically, then AuthGuard navigates
+            const response = await tunzaaLogin(identifier, password, isPhone, portalTarget);
+            console.log('✅ Login success:', response?.name || response?.first_name);
+
+            // Edge case: Pending merchant onboarding
             const hasPending = await AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME');
-            
-            if (hasPending && (response.activeProfileRole || response.active_profile_role) !== 'vendor') {
-                console.log('🏗️ [Login] Found pending onboarding, directing to finish registration...');
-                router.replace('/(merchant)/onboarding/step-5' as any);
-                return;
+            if (hasPending) {
+                const serverRole = (response?.activeProfileRole || response?.active_profile_role || '').toLowerCase();
+                if (serverRole !== 'vendor') {
+                    console.log('🏗️ [Login] Found pending onboarding, directing to finish...');
+                    router.replace('/(merchant)/onboarding/step-5' as any);
+                    return;
+                }
             }
 
-            // Navigate based on user role and context intent
-            const serverRole = response.activeProfileRole || response.active_profile_role;
-            const hasVendorProfile = response.profiles?.some((p: any) => p.role === 'vendor' || p.role === 'merchant');
-            const hasDeliveryProfile = response.profiles?.some((p: any) => p.role === 'driver' || p.role === 'delivery');
-            
-            console.log(`🧭 [Login] Redirecting. Target: ${targetRole}, Server: ${serverRole}, HasVendor: ${hasVendorProfile}, HasDelivery: ${hasDeliveryProfile}`);
-
-            if (targetRole === 'delivery' && hasDeliveryProfile) {
-                router.replace('/(delivery)/home' as any);
-            } else if (targetRole === 'delivery') {
-                router.replace('/delivery-company-details' as any);
-            } else if (targetRole === 'merchant' && hasVendorProfile) {
-                router.replace('/(merchant)' as any);
-            } else if (targetRole === 'merchant') {
-                router.replace('/(merchant)/onboarding/step-1' as any);
-            } else if (serverRole === 'vendor') {
-                router.replace('/(merchant)' as any);
-            } else if ((serverRole as string) === 'driver' || serverRole === 'delivery') {
-                router.replace('/(delivery)/home' as any);
-            } else {
-                router.replace('/(buyer)' as any);
-            }
+            // AuthGuard handles all navigation from here based on LAST_PORTAL + user state
         } catch (e: any) {
             console.error('❌ Login error:', e);
             Alert.alert('Login Failed', e.message || 'Error signing in. Please check your credentials.');
@@ -95,13 +107,16 @@ export default function LoginScreen() {
         }
     };
 
+    // ------------------------------------------------------------------------
+    // SOCIAL LOGIN HANDLER
+    // ------------------------------------------------------------------------
     const handleSocialLogin = async (provider: string) => {
         setLoading(true);
         try {
             let response;
-            if (provider === 'google') {
+            if (provider === 'google' && typeof signInWithGoogle === 'function') {
                 response = await signInWithGoogle();
-            } else if (provider === 'apple') {
+            } else if (provider === 'apple' && typeof signInWithApple === 'function') {
                 response = await signInWithApple();
             } else {
                 Alert.alert('Not Available', `${provider} login is not yet supported.`);
@@ -110,17 +125,15 @@ export default function LoginScreen() {
             }
 
             if (response) {
-                console.log('✅ Social login success:', response.name);
-                const serverRole = response.activeProfileRole || response.active_profile_role;
-                const hasVendorProfile = response.profiles?.some((p: any) => p.role === 'vendor');
-                
-                if (targetRole === 'merchant' && hasVendorProfile) {
-                    router.replace('/(merchant)' as any);
-                } else if (serverRole === 'vendor') {
-                    router.replace('/(merchant)' as any);
-                } else {
-                    router.replace('/(buyer)' as any);
-                }
+                console.log('✅ Social login success:', response?.name || response?.first_name);
+
+                // Set LAST_PORTAL based on URL intent, then let AuthGuard navigate
+                const portalTarget = targetRole === 'merchant' ? 'merchant'
+                                   : targetRole === 'delivery' ? 'delivery'
+                                   : 'buyer';
+                await AsyncStorage.setItem('LAST_PORTAL', portalTarget);
+
+                // AuthGuard handles navigation from here
             }
         } catch (e: any) {
             console.error('❌ Social login error:', e);
@@ -130,6 +143,9 @@ export default function LoginScreen() {
         }
     };
 
+    // ------------------------------------------------------------------------
+    // RENDER
+    // ------------------------------------------------------------------------
     return (
         <SafeAreaView style={styles.safe}>
             <KeyboardAvoidingView
@@ -259,7 +275,7 @@ export default function LoginScreen() {
                         </View>
 
                         {/* Skip Button - Pinned to Bottom */}
-                        <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
+                        <TouchableOpacity style={styles.skipButton} onPress={() => router.replace('/(buyer)')}>
                             <Text style={styles.skipText}>{t.loginSkip}</Text>
                             <Text style={styles.skipArrow}>→</Text>
                         </TouchableOpacity>
@@ -270,17 +286,17 @@ export default function LoginScreen() {
     );
 }
 
+// ------------------------------------------------------------------------
+// STYLES
+// ------------------------------------------------------------------------
 const styles = StyleSheet.create({
-    // Root
     safe: {
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
-
     scrollContent: {
         flexGrow: 1,
     },
-
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
@@ -289,20 +305,15 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingBottom: 20,
     },
-
-    // Content wrapper - responsive with maxWidth
     contentWrapper: {
         width: '100%',
         maxWidth: 353,
         alignSelf: 'center',
     },
-
-    // Header
     header: {
         alignItems: 'center',
         marginBottom: 24,
     },
-
     title: {
         fontFamily: 'System',
         fontSize: 20,
@@ -311,7 +322,6 @@ const styles = StyleSheet.create({
         color: '#1D1E1F',
         textAlign: 'center',
     },
-
     subtitle: {
         fontFamily: 'System',
         fontSize: 14,
@@ -320,23 +330,17 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 6,
     },
-
-    // Logo
     logoContainer: {
         alignItems: 'center',
         marginBottom: 24,
     },
-
     logo: {
         width: 170,
         height: 60,
     },
-
-    // Form
     formContainer: {
         gap: 16,
     },
-
     input: {
         height: 54,
         backgroundColor: '#FFFFFF',
@@ -348,8 +352,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#1D1E1F',
     },
-
-    // Password Input with Eye
     passwordContainer: {
         height: 54,
         backgroundColor: '#FFFFFF',
@@ -361,38 +363,30 @@ const styles = StyleSheet.create({
         paddingLeft: 16,
         paddingRight: 12,
     },
-
     passwordInput: {
         flex: 1,
         fontFamily: 'System',
         fontSize: 16,
         color: '#1D1E1F',
     },
-
     eyeIcon: {
         padding: 4,
     },
-
-    // Forgot Password
     forgotPasswordContainer: {
         alignSelf: 'flex-end',
         marginTop: 8,
     },
-
     forgotPassword: {
         fontFamily: 'System',
         fontSize: 14,
         fontWeight: '600',
         color: '#3B5191',
     },
-
-    // Terms Checkbox
     termsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 16,
     },
-
     checkbox: {
         width: 22,
         height: 22,
@@ -404,25 +398,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-
     checkboxChecked: {
         backgroundColor: '#3B5191',
         borderColor: '#3B5191',
     },
-
     termsText: {
         fontFamily: 'System',
         fontSize: 13,
         color: '#666666',
         flex: 1,
     },
-
     termsLink: {
         color: '#3B5191',
         fontWeight: '600',
     },
-
-    // Login Button
     loginButton: {
         height: 54,
         backgroundColor: '#3B5191',
@@ -431,43 +420,35 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginTop: 20,
     },
-
     loginButtonText: {
         fontFamily: 'System',
         fontSize: 16,
         fontWeight: '700',
         color: '#FFFFFF',
     },
-
-    // Divider
     dividerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 24,
         marginBottom: 20,
     },
-
     dividerLine: {
         flex: 1,
         height: 1,
         backgroundColor: '#E5E7EB',
     },
-
     dividerText: {
         fontFamily: 'System',
         fontSize: 12,
         color: '#666666',
         marginHorizontal: 12,
     },
-
-    // Social Buttons
     socialContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 12,
         marginBottom: 20,
     },
-
     socialButton: {
         flex: 1,
         height: 52,
@@ -478,29 +459,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-
-    // Sign Up Link
     signUpContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 8,
     },
-
     signUpText: {
         fontFamily: 'System',
         fontSize: 14,
         color: '#1D1E1F',
     },
-
-    signUpLink: {
-        fontFamily: 'System',
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#3B5191',
-    },
-
-    // Skip Button - Bottom Pinned
     skipButton: {
         flexDirection: 'row',
         alignSelf: 'center',
@@ -508,7 +477,6 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         marginTop: 16,
     },
-
     skipText: {
         fontFamily: 'System',
         fontSize: 16,
@@ -516,7 +484,6 @@ const styles = StyleSheet.create({
         color: '#3B5191',
         marginRight: 8,
     },
-
     skipArrow: {
         fontSize: 16,
         color: '#3B5191',

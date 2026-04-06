@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     View,
     Text,
@@ -35,17 +36,9 @@ export default function DeliveryLoginScreen() {
 
         setLoading(true);
         try {
-            const response = await login(`+255${phone}`, password, true);
-
-            const hasDeliveryProfile = response.profiles?.some((p: any) => p.role === 'driver' || p.role === 'delivery');
-
-            // Success -> Navigate to company details or home if already registered
-            alert(t.deliverySuccessLogin);
-            if (hasDeliveryProfile) {
-                router.replace('/(delivery)/home' as any);
-            } else {
-                router.replace('/delivery-company-details' as any);
-            }
+            // Centralized Auth: Passing 'delivery' ensures LAST_PORTAL is set before state update.
+            // We also let the AuthGuard handle the final destination based on profiles.
+            await login(`+255${phone}`, password, true, 'delivery');
         } catch (e: any) {
             alert(e.message || t.deliveryErrorLogin);
         } finally {
@@ -96,7 +89,7 @@ export default function DeliveryLoginScreen() {
                                             value={password}
                                             onChangeText={setPassword}
                                             autoCapitalize="none" secureTextEntry={!showPassword}
-                                            placeholder="••••••"
+                                            placeholder={t.loginPasswordPlaceholder.includes('password') ? '••••••' : '••••••'}
                                             placeholderTextColor="#9CA3AF"
                                         />
                                         <TouchableOpacity

@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 
 export default function AffiliateRegisterScreen() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [acceptedTerms, setAcceptedTerms] = useState(false);
 
     const handleCreateAccount = () => {
         // Skipping OTP for now and going straight to shop details 
-        router.push('/(affiliate)/shop-details' as any);
+        router.replace('/(affiliate)/shop-details' as any);
     };
 
     const handleLoginRedirect = () => {
@@ -26,11 +28,9 @@ export default function AffiliateRegisterScreen() {
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                     <View style={styles.headerContainer}>
-                        {/* Time and battery icons are usually handled by the OS status bar globally, 
-                            so we just need spacing here. */}
                     </View>
 
-                    <Text style={styles.title}>Create an account</Text>
+                    <Text style={styles.title}>{t.affiliateRegisterTitle}</Text>
 
                     <View style={styles.logoContainer}>
                         <Image
@@ -43,7 +43,7 @@ export default function AffiliateRegisterScreen() {
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter +255xxx xxx xxx"
+                            placeholder={t.affiliatePhonePlaceholder}
                             placeholderTextColor="#9CA3AF"
                             keyboardType="phone-pad"
                             value={phoneNumber}
@@ -60,7 +60,7 @@ export default function AffiliateRegisterScreen() {
                         </TouchableOpacity>
 
                         <Text style={styles.termsText}>
-                            I have read agree to Tunzaa <Text style={styles.linkText}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                            {t.affiliateTermsAgreement}
                         </Text>
                     </View>
 
@@ -72,14 +72,14 @@ export default function AffiliateRegisterScreen() {
                         onPress={handleCreateAccount}
                         disabled={!phoneNumber || !acceptedTerms}
                     >
-                        <Text style={styles.createButtonText}>Create Account</Text>
+                        <Text style={styles.createButtonText}>{t.affiliateRegisterButton}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.footerContainer}>
                         <Text style={styles.footerText}>
-                            Already have an account?{' '}
+                            {t.affiliateAlreadyAccount}{' '}
                             <Text style={styles.footerLink} onPress={handleLoginRedirect}>
-                                Log in
+                                {t.affiliateLoginLink}
                             </Text>
                         </Text>
                     </View>

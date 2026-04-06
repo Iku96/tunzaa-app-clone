@@ -146,6 +146,16 @@ export function DeliveryProvider({ children }: { children: ReactNode }) {
         !!partnerId
     );
 
+    // Fetch accepted but not yet in_transit deliveries
+    const {
+        data: acceptedData,
+        isLoading: acceptedLoading,
+        refetch: refetchAccepted,
+    } = useDeliveries(
+        { partner_id: partnerId, status: 'accepted', limit: 5 },
+        !!partnerId
+    );
+
     // Fetch completed deliveries for history
     const {
         data: historyData,
@@ -158,39 +168,53 @@ export function DeliveryProvider({ children }: { children: ReactNode }) {
 
     // Map API data to UI shape
     const availableRequests = (pendingData?.items || []).map(mapDeliveryToRequest);
-    const activeItems = (activeData?.items || []).map(mapDeliveryToRequest);
+    const inTransitItems = (activeData?.items || []).map(mapDeliveryToRequest);
+    const acceptedItems = (acceptedData?.items || []).map(mapDeliveryToRequest);
     const historyItems = (historyData?.items || []).map(mapDeliveryToRequest);
 
-    // Track the currently active delivery (first in-transit item)
+    // Active deliveries are either in_transit or accepted
+    const activeItems = [...inTransitItems, ...acceptedItems];
+
+    // Track the currently active delivery
     const [localActiveDelivery, setLocalActiveDelivery] = useState<DeliveryRequest | null>(null);
 
     useEffect(() => {
-        if (activeItems.length > 0 && !localActiveDelivery) {
+        if (activeItems.length > 0) {
+            // Find the most recently updated active item or just the first one
             setLocalActiveDelivery(activeItems[0]);
+        } else {
+            setLocalActiveDelivery(null);
         }
-    }, [activeItems, localActiveDelivery]);
+    }, [activeItems.length]); // Only reset if the list length changes significantly
 
-    const loading = pendingLoading || activeLoading || historyLoading;
+    const loading = pendingLoading || activeLoading || acceptedLoading || historyLoading;
 
     // Accept a delivery → call API to update stage
     const acceptDelivery = useCallback(async (id: string) => {
-        if (!partnerId) return;
+        if (!partnerId) {
+            console.error('❌ [DeliveryContext] Cannot accept delivery: partnerId is missing');
+            return;
+        }
         try {
+            console.log(`📡 [DeliveryContext] Accepting delivery: ${id}`);
             await deliveryApi.addDeliveryStage(id, {
                 partner_id: partnerId,
                 stage: 'accepted',
             });
-            // Find and set as active locally
-            const accepted = availableRequests.find(r => r.id === id);
-            if (accepted) {
-                setLocalActiveDelivery({ ...accepted, status: 'active' });
-            }
-            refetchPending();
-            refetchActive();
+            
+            // Refetch all relevant data
+            await Promise.all([
+                refetchPending(),
+                refetchAccepted(),
+                refetchActive()
+            ]);
+            
+            console.log(`✅ [DeliveryContext] Delivery ${id} accepted successfully`);
         } catch (error) {
-            console.error('Failed to accept delivery:', error);
+            console.error('❌ [DeliveryContext] Failed to accept delivery:', error);
+            throw error;
         }
-    }, [partnerId, availableRequests, refetchPending, refetchActive]);
+    }, [partnerId, refetchPending, refetchAccepted, refetchActive]);
 
     // Reject: just remove from local view (no API call needed — just skip)
     const rejectDelivery = useCallback((id: string) => {
@@ -231,9 +255,10 @@ export function DeliveryProvider({ children }: { children: ReactNode }) {
 
     const refetch = useCallback(() => {
         refetchPending();
+        refetchAccepted();
         refetchActive();
         refetchHistory();
-    }, [refetchPending, refetchActive, refetchHistory]);
+    }, [refetchPending, refetchAccepted, refetchActive, refetchHistory]);
 
     const value: DeliveryContextType = {
         partner: partner || null,

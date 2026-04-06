@@ -43,7 +43,7 @@ export default function DeliveryActiveScreen() {
                 {/* Pickup Section */}
                 <View style={styles.sectionHeader}>
                     <View style={[styles.dot, { backgroundColor: '#01AC00' }]} />
-                    <Text style={styles.sectionTitle}>Pickup details (From)</Text>
+                    <Text style={styles.sectionTitle}>Maelezo ya kuchukua (Kutoka)</Text>
                 </View>
 
                 <View style={styles.leftBorderLine}>
@@ -82,7 +82,7 @@ export default function DeliveryActiveScreen() {
                 {/* Delivery Section */}
                 <View style={[styles.sectionHeader, { marginTop: 10 }]}>
                     <View style={[styles.dot, { backgroundColor: '#425BA4' }]} />
-                    <Text style={styles.sectionTitle}>Delivery details (To)</Text>
+                    <Text style={styles.sectionTitle}>Maelezo ya kupeleka (Kwenda)</Text>
                 </View>
 
                 <View style={[styles.sectionContent, { paddingLeft: 30 }]}>
@@ -97,7 +97,7 @@ export default function DeliveryActiveScreen() {
                     <View style={styles.detailRow}>
                         <User size={22} color="#4B5563" strokeWidth={1.5} style={styles.detailIcon} />
                         <View style={styles.detailTextContainer}>
-                            <Text style={styles.detailLabel}>Customer Name</Text>
+                            <Text style={styles.detailLabel}>Jina la mteja</Text>
                             <Text style={styles.detailValue}>{activeDelivery.customerName}</Text>
                         </View>
                     </View>
@@ -105,8 +105,8 @@ export default function DeliveryActiveScreen() {
                     <View style={styles.detailRow}>
                         <CircleDollarSign size={22} color="#4B5563" strokeWidth={1.5} style={styles.detailIcon} />
                         <View style={styles.detailTextContainer}>
-                            <Text style={styles.detailLabel}>Amount customer pays</Text>
-                            <Text style={styles.detailValue}>Tshs {activeDelivery.amount}</Text>
+                            <Text style={styles.detailLabel}>Kiasi mteja anacholipa</Text>
+                            <Text style={styles.detailValue}>Tshs {Number(activeDelivery.amount).toLocaleString()}</Text>
                         </View>
                     </View>
 

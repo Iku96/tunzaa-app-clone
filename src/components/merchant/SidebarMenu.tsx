@@ -18,8 +18,10 @@ import {
     User,
     ChevronDown
 } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useTunzaaAuth } from '../../contexts/TunzaaAuthContext';
+import { setLastPortal } from '../../utils/storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,7 +34,7 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
     const { user, logout } = useTunzaaAuth();
     const router = useRouter();
     const pathname = usePathname();
-    const slideAnim = useRef(new Animated.Value(-width)).current; // Start completely off-screen
+    const slideAnim = useRef(new Animated.Value(-width)).current; 
     const [isLoansExpanded, setIsLoansExpanded] = useState(false);
 
     useEffect(() => {
@@ -41,9 +43,8 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
         }
     }, [pathname]);
 
-
     // Find vendor profile and extract details
-    const vendorProfile = user?.profiles?.find(p => p.role === 'vendor') as any;
+    const vendorProfile = user?.profiles?.find((p: any) => p.role === 'vendor');
     
     // Check metadata for branding if not directly on profile
     const metadata = vendorProfile?.metadata || {};
@@ -81,6 +82,12 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
         }
     }, [isVisible, slideAnim]);
 
+    const switchPortal = async (portal: 'buyer' | 'delivery' | 'merchant') => {
+        onClose();
+        await setLastPortal(portal);
+        router.replace(`/${portal}` as any);
+    };
+
     const handleLogout = async () => {
         onClose();
         await logout();
@@ -89,15 +96,12 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
 
     const navigateTo = (route: string) => {
         onClose();
-        // If it's the current route, don't push
         if (pathname === route) return;
         router.push(route as any);
     };
 
-    // Helper to check if a route is active
     const isActive = (route: string) => pathname === route;
 
-    // Don't render until visible or animating out to avoid blocking touches underneath
     if (!isVisible && (slideAnim as any)._value === -width) return null;
 
     return (
@@ -108,20 +112,17 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
             onRequestClose={onClose}
         >
             <View style={styles.overlayContainer}>
-                {/* Darkened Background */}
                 <TouchableWithoutFeedback onPress={onClose}>
                     <View style={styles.backdrop} />
                 </TouchableWithoutFeedback>
 
-                {/* Sliding Menu Panel */}
                 <Animated.View
                     style={[
                         styles.menuPanel,
                         { transform: [{ translateX: slideAnim }] }
                     ]}
                 >
-                    {/* Header: User Info */}
-                    <View style={styles.header}>
+                    <TouchableOpacity style={styles.header} onPress={() => navigateTo('/(merchant)/business-profile')}>
                         <View style={styles.userInfoRow}>
                             <View style={styles.avatarContainer}>
                                 {logoUrl ? (
@@ -144,14 +145,10 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity style={styles.moreButton}>
-                            <MoreHorizontal size={24} color="#111827" />
-                        </TouchableOpacity>
-                    </View>
+                        <ChevronRight size={20} color="#9CA3AF" />
+                    </TouchableOpacity>
 
-                    {/* Navigation Items */}
                     <View style={styles.navContainer}>
-                        {/* Dashboard */}
                         <TouchableOpacity 
                             style={[styles.navItem, isActive('/(merchant)') && styles.activeNavItem]}
                             onPress={() => navigateTo('/(merchant)')}
@@ -168,7 +165,6 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             <Text style={[styles.navText, isActive('/(merchant)/inventory') && styles.activeNavText]}>Inventory</Text>
                         </TouchableOpacity>
 
-                        {/* Orders and sales */}
                         <TouchableOpacity 
                             style={[styles.navItem, isActive('/(merchant)/live-orders') && styles.activeNavItem]}
                             onPress={() => navigateTo('/(merchant)/live-orders')}
@@ -177,7 +173,6 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             <Text style={[styles.navText, isActive('/(merchant)/live-orders') && styles.activeNavText]}>Orders and sales</Text>
                         </TouchableOpacity>
 
-                        {/* Business Profile (linked to Business Profile social view) */}
                         <TouchableOpacity 
                             style={[styles.navItem, isActive('/(merchant)/business-profile') && styles.activeNavItem]}
                             onPress={() => navigateTo('/(merchant)/business-profile')}
@@ -186,59 +181,9 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             <Text style={[styles.navText, isActive('/(merchant)/business-profile') && styles.activeNavText]}>Business Profile</Text>
                         </TouchableOpacity>
 
-                        {/* Payment History */}
-                        <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(merchant)/payment-history') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(merchant)/payment-history')}
-                        >
-                            <Wallet size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(merchant)/payment-history') && styles.activeNavText]}>Payment History</Text>
-                        </TouchableOpacity>
 
-                        {/* Loans Group */}
-                        <TouchableOpacity 
-                            style={[styles.navItemRow, (isActive('/(merchant)/loan-services') || isActive('/(merchant)/loans/requests')) && styles.activeNavItem]}
-                            onPress={() => setIsLoansExpanded(!isLoansExpanded)}
-                        >
-                            <View style={styles.navItemLeft}>
-                                <Briefcase size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                                <Text style={[styles.navText, (isActive('/(merchant)/loan-services') || isActive('/(merchant)/loans/requests')) && styles.activeNavText]}>Loans</Text>
-                            </View>
-                            <ChevronDown 
-                                size={20} 
-                                color="#111827" 
-                                style={{ transform: [{ rotate: isLoansExpanded ? '180deg' : '0deg' }] }} 
-                            />
-                        </TouchableOpacity>
 
-                        {isLoansExpanded && (
-                            <View style={styles.submenuContainer}>
-                                <TouchableOpacity 
-                                    style={[styles.submenuItem, isActive('/(merchant)/loan-services') && styles.activeSubmenuItem]}
-                                    onPress={() => navigateTo('/(merchant)/loan-services')}
-                                >
-                                    <Text style={[styles.submenuText, isActive('/(merchant)/loan-services') && styles.activeSubmenuText]}>Apply for Loan</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity 
-                                    style={[styles.submenuItem, isActive('/(merchant)/loans/requests') && styles.activeSubmenuItem]}
-                                    onPress={() => navigateTo('/(merchant)/loans/requests')}
-                                >
-                                    <Text style={[styles.submenuText, isActive('/(merchant)/loans/requests') && styles.activeSubmenuText]}>View Requests</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-
-                        {/* Customer Insights */}
-                        <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(merchant)/customer-insights') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(merchant)/customer-insights')}
-                        >
-                            <Users size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(merchant)/customer-insights') && styles.activeNavText]}>Customer Insights</Text>
-                        </TouchableOpacity>
-
-                        {/* Logout */}
-                        <TouchableOpacity style={[styles.navItem, { marginTop: 40 }]} onPress={handleLogout}>
+                        <TouchableOpacity style={[styles.navItem, { marginTop: 20 }]} onPress={handleLogout}>
                             <LogOut size={22} color="#EF4444" style={styles.navIcon} />
                             <Text style={[styles.navText, { color: '#EF4444' }]}>Logout</Text>
                         </TouchableOpacity>
@@ -259,11 +204,11 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
     },
     menuPanel: {
-        width: width * 0.8, // 80% of screen width
+        width: width * 0.8,
         maxWidth: 320,
         height: '100%',
         backgroundColor: '#FFFFFF',
-        paddingTop: 60, // Status bar clear
+        paddingTop: 60,
         shadowColor: '#000',
         shadowOffset: { width: 4, height: 0 },
         shadowOpacity: 0.1,
@@ -287,7 +232,7 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#3A5BA9', // Theme Blue
+        backgroundColor: '#3A5BA9',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -301,6 +246,21 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         borderRadius: 22,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#F3F4F6',
+        marginVertical: 12,
+        marginHorizontal: 16,
+    },
+    sectionHeader: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#9CA3AF',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginLeft: 16,
+        marginBottom: 8,
     },
     userDetails: {
         justifyContent: 'center',
@@ -335,7 +295,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     activeNavItem: {
-        backgroundColor: '#EEF2FF', // Light blue/lavender for active
+        backgroundColor: '#EEF2FF',
     },
     navItemRow: {
         flexDirection: 'row',
@@ -371,7 +331,7 @@ const styles = StyleSheet.create({
         color: '#111827',
     },
     submenuContainer: {
-        paddingLeft: 44, // Align with text
+        paddingLeft: 44,
         marginBottom: 8,
     },
     submenuItem: {

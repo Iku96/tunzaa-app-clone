@@ -33,6 +33,7 @@ import { CheckCircle, X, ChevronDown, ChevronUp, Edit } from 'lucide-react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -77,6 +78,7 @@ export default function DeliveryDocumentsScreen() {
     // ------------------------------------------------------------------------
 
     const router = useRouter();  // Expo Router hook for navigation
+    const { submitDeliveryKyc } = useTunzaaAuth();
 
     // ------------------------------------------------------------------------
     // STATE MANAGEMENT
@@ -190,26 +192,52 @@ export default function DeliveryDocumentsScreen() {
      * 4. After 1 second, show success modal
      * 5. User clicks "Sawa" in modal → Navigate to delivery type screen
      */
-    const handleContinue = () => {
-        // ===== VALIDATION: Block if any files missing (FIX #1) =====
+    const handleContinue = async () => {
         if (!allFilesUploaded()) {
             Alert.alert(
-                'Hati Hazijapakiwa',  // Title: "Documents Not Uploaded"
-                'Tafadhali pakia hati zote zilizohitajika kabla ya kuendelea',  // Message
+                'Hati Hazijapakiwa',
+                'Tafadhali pakia hati zote zilizohitajika kabla ya kuendelea',
                 [{ text: 'Sawa', style: 'default' }]
             );
-            return;  // Stop execution - don't navigate
+            return;
         }
 
-        // ===== ALL FILES UPLOADED: Proceed =====
-
         setLoading(true);
+        try {
+            console.log('📤 [DeliveryDocs] Starting document upload sequence...');
+            
+            // 1. Upload all files to get public URLs
+            const { uploadApi } = require('../../src/services/upload');
+            
+            const [licenseUrl, tinUrl, brelaUrl] = await Promise.all([
+                uploadApi.uploadFile(licenseFile),
+                uploadApi.uploadFile(tinFile),
+                uploadApi.uploadFile(brelaFile)
+            ]);
 
-        // Process upload then proceed directly to type selection
-        setTimeout(() => {
+            console.log('✅ [DeliveryDocs] Files uploaded successfully:', { licenseUrl, tinUrl, brelaUrl });
+
+            // 2. Submit to KYC API via context
+            const documents = [
+                { id: 'license', url: licenseUrl, document_type_id: 'license' },
+                { id: 'tin', url: tinUrl, document_type_id: 'tin' },
+                { id: 'brela', url: brelaUrl, document_type_id: 'brela' }
+            ];
+
+            await submitDeliveryKyc(documents);
+            console.log('✅ [DeliveryDocs] KYC Submission complete.');
+
+            // 3. Move to success screen
+            router.push('/(delivery)/delivery-success');
+        } catch (error: any) {
+            console.error('❌ [DeliveryDocs] Submission failed:', error.message);
+            Alert.alert(
+                'Submission Failed',
+                error.message || 'There was an error uploading your documents. Please try again.'
+            );
+        } finally {
             setLoading(false);
-            router.push('/(delivery)/delivery-type' as any);
-        }, 1000);
+        }
     };
 
     // ------------------------------------------------------------------------

@@ -59,7 +59,7 @@ export default function RoleScreen() {
     };
 
     const handleSkip = () => {
-        router.push('/(buyer)');
+        router.replace('/(buyer)');
     };
 
     // Interpolate rotation for chevron: 0 -> '0deg', 1 -> '-90deg'

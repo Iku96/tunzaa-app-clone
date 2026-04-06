@@ -2,16 +2,16 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Touchabl
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import MapView, { Marker, Region, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MapPin } from 'lucide-react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
 
 const { width } = Dimensions.get('window');
 
-// ✅ STATIC DATA 
+// ✅ STATIC DATA
 const LOCATION_DATA: any = {
     'Dar es Salaam': {
         coords: { latitude: -6.7924, longitude: 39.2083 },
@@ -19,7 +19,7 @@ const LOCATION_DATA: any = {
             'Ilala': ['Kivukoni', 'Upanga Mashariki', 'Kisutu', 'Jangwani'],
             'Kinondoni': ['Magomeni', 'Kijitonyama', 'Hananasif', 'Mwananyamala'],
             'Ubungo': ['Ubungo', 'Kibamba', 'Mbezi', 'Manzese'],
-            'Temeke': ['Temeke', 'Kurasini', 'Chang’ombe', 'Mtoni'],
+            'Temeke': ['Temeke', 'Kurasini', "Chang'ombe", 'Mtoni'],
             'Kigamboni': ['Kigamboni', 'Tungi', 'Vijibweni', 'Mjimwema']
         }
     },
@@ -41,12 +41,14 @@ const LOCATION_DATA: any = {
     }
 };
 
+// Check if running in Expo Go
+const isExpoGo = Constants.appOwnership === 'expo';
+
 export default function DeliveryLocationMap() {
     const router = useRouter();
-    const mapRef = useRef<MapView>(null);
 
     // Map State
-    const [mapRegion, setMapRegion] = useState<Region>({
+    const [mapRegion, setMapRegion] = useState({
         latitude: -6.7924,
         longitude: 39.2083,
         latitudeDelta: 0.05,
@@ -63,8 +65,14 @@ export default function DeliveryLocationMap() {
     // Dropdown Control
     const [activeField, setActiveField] = useState<string | null>(null);
 
-    // 1️⃣ Get User Location on Mount
+    // Map refs — only used when not in Expo Go
+    const MapView = isExpoGo ? null : require('react-native-maps').default;
+    const Marker = isExpoGo ? null : require('react-native-maps').Marker;
+    const mapRef = useRef<any>(null);
+
+    // Get User Location on Mount
     useEffect(() => {
+        if (isExpoGo) return;
         (async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status === 'granted') {
@@ -81,35 +89,25 @@ export default function DeliveryLocationMap() {
         })();
     }, []);
 
-    // 2️⃣ Handle Map Drag/Tap
-    const onLocationChange = (coord: { latitude: number, longitude: number }) => {
+    const onLocationChange = (coord: { latitude: number; longitude: number }) => {
         setMapRegion(prev => ({ ...prev, ...coord }));
     };
 
     const handleSave = async () => {
-        // Validation check
         if (!region || !municipal || !ward) {
-            alert("Tafadhali chagua Mkoa, Wilaya na Kata.");
+            alert("Please select Region, District and Ward.");
             return;
         }
-
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
-            // ✅ PASS DATA TO SUMMARY
             router.push({
                 pathname: '/(delivery)/delivery-location-summary',
-                params: {
-                    region,
-                    municipal,
-                    ward,
-                    extraInfo
-                }
+                params: { region, municipal, ward, extraInfo }
             });
         }, 1000);
     };
 
-    // ✅ REUSABLE AUTOCOMPLETE
     const renderAutocomplete = (
         label: string,
         value: string,
@@ -118,7 +116,6 @@ export default function DeliveryLocationMap() {
         placeholder: string,
         zIndexVal: number
     ) => {
-        // Dynamic Data Source
         let dataList: string[] = [];
         if (fieldName === 'region') {
             dataList = Object.keys(LOCATION_DATA);
@@ -128,34 +125,23 @@ export default function DeliveryLocationMap() {
             dataList = LOCATION_DATA[region]?.districts[municipal] || [];
         }
 
-        // Filter Logic
         const filteredData = dataList.filter(item =>
             item.toLowerCase().includes(value.toLowerCase()) && item !== value
         );
-
         const isOpen = activeField === fieldName && filteredData.length > 0;
 
         const handleSelect = (item: string) => {
             setValue(item);
             setActiveField(null);
             Keyboard.dismiss();
-
-            // ✅ SMART MAP MOVE: If Region is selected, move map!
             if (fieldName === 'region' && LOCATION_DATA[item]) {
                 const newCoords = LOCATION_DATA[item].coords;
-                const newRegion = {
-                    ...newCoords,
-                    latitudeDelta: 0.05,
-                    longitudeDelta: 0.05,
-                };
+                const newRegion = { ...newCoords, latitudeDelta: 0.05, longitudeDelta: 0.05 };
                 setMapRegion(newRegion);
                 mapRef.current?.animateToRegion(newRegion, 1000);
-
-                // Reset children
                 setMunicipal('');
                 setWard('');
             }
-            // Reset ward if municipal changes
             if (fieldName === 'municipal') {
                 setWard('');
             }
@@ -178,7 +164,6 @@ export default function DeliveryLocationMap() {
                         placeholder={placeholder}
                         placeholderTextColor="#9CA3AF"
                     />
-
                     {isOpen && (
                         <View style={styles.suggestionsList}>
                             {filteredData.slice(0, 4).map((item) => (
@@ -195,6 +180,46 @@ export default function DeliveryLocationMap() {
                     )}
                 </View>
             </View>
+        );
+    };
+
+    const renderMap = () => {
+        if (isExpoGo) {
+            return (
+                <View style={styles.mapPlaceholder}>
+                    <MapPin size={32} color="#84CC16" />
+                    <Text style={styles.mapPlaceholderText}>
+                        Map preview not available in Expo Go.{'\n'}
+                        Your location will be set from the form below.
+                    </Text>
+                </View>
+            );
+        }
+
+        if (!MapView || !Marker) return null;
+
+        return (
+            <MapView
+                ref={mapRef}
+                style={styles.map}
+                region={mapRegion}
+                onPress={(e: any) => {
+                    if (e?.nativeEvent?.coordinate) {
+                        onLocationChange(e.nativeEvent.coordinate);
+                    }
+                }}
+            >
+                <Marker
+                    coordinate={mapRegion}
+                    draggable
+                    onDragEnd={(e: any) => {
+                        if (e?.nativeEvent?.coordinate) {
+                            onLocationChange(e.nativeEvent.coordinate);
+                        }
+                    }}
+                    pinColor="#84CC16"
+                />
+            </MapView>
         );
     };
 
@@ -215,44 +240,14 @@ export default function DeliveryLocationMap() {
                         <Text style={styles.subtitle}>
                             Buruta pini kwenye ramani kuchagua eneo sahihi la kampuni yako.
                         </Text>
-
-                        {/* MAP SECTION */}
                         <View style={styles.mapHeader}>
                             <MapPin size={20} color="#84CC16" style={{ marginRight: 8 }} />
                             <Text style={styles.mapHeaderText}>Weka eneo la kampuni</Text>
                         </View>
-
                         <View style={styles.mapContainer}>
-                            <MapView
-                                ref={mapRef}
-                                style={styles.map}
-                                region={mapRegion}
-                                onPress={(e) => {
-                                    if (e?.nativeEvent?.coordinate) {
-                                        onLocationChange(e.nativeEvent.coordinate);
-                                    }
-                                }}
-                            >
-                                <Marker
-                                    coordinate={mapRegion}
-                                    draggable
-                                    onDragEnd={(e) => {
-                                        if (e?.nativeEvent?.coordinate) {
-                                            onLocationChange(e.nativeEvent.coordinate);
-                                        }
-                                    }}
-                                    pinColor="#84CC16"
-                                >
-                                    <Callout>
-                                        <Text>Kampuni Yako</Text>
-                                    </Callout>
-                                </Marker>
-                            </MapView>
+                            {renderMap()}
                         </View>
-
-                        {/* FORM SECTION */}
                         <View style={styles.formContent}>
-
                             <View style={[styles.inputGroup, { zIndex: 1 }]}>
                                 <Text style={styles.label}>Maelezo ya ziada</Text>
                                 <TextInput
@@ -265,19 +260,14 @@ export default function DeliveryLocationMap() {
                                     onFocus={() => setActiveField(null)}
                                 />
                             </View>
-
                             {renderAutocomplete("Mkoa", region, setRegion, 'region', "Mfano: Dar es Salaam", 40)}
                             {renderAutocomplete("Wilaya", municipal, setMunicipal, 'municipal', "Mfano: Kinondoni", 30)}
                             {renderAutocomplete("Kata", ward, setWard, 'ward', "Mfano: Kijitonyama", 20)}
-
                         </View>
-
-                        {/* FOOTER */}
                         <View style={styles.footer}>
                             <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                                 <Text style={styles.buttonTextOutline}>Rudi</Text>
                             </TouchableOpacity>
-
                             <TouchableOpacity style={styles.nextButton} onPress={handleSave} disabled={loading}>
                                 <Text style={styles.buttonText}>{loading ? 'Inahifadhi...' : 'Hifadhi'}</Text>
                             </TouchableOpacity>
@@ -299,6 +289,8 @@ const styles = StyleSheet.create({
     mapHeaderText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
     mapContainer: { height: 200, width: '100%', borderRadius: 12, overflow: 'hidden', marginBottom: 24, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
     map: { width: '100%', height: '100%' },
+    mapPlaceholder: { flex: 1, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 12 },
+    mapPlaceholderText: { color: '#E0E7FF', fontSize: 13, textAlign: 'center', lineHeight: 20 },
     formContent: { marginBottom: 20 },
     inputGroup: { marginBottom: 20, position: 'relative' },
     autocompleteWrapper: { position: 'relative' },

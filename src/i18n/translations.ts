@@ -153,6 +153,8 @@ export interface TranslationKeys {
     forgotPasswordTitle: string;
     forgotPasswordSubtitle: string;
     // Mauzo Intro
+    commonLoading: string;
+    // --- Mauzo Intro ---
     mauzoHeader: string;
     mauzoSlide1Title: string;
     mauzoSlide1Desc: string;
@@ -165,7 +167,7 @@ export interface TranslationKeys {
     mauzoCreateAccount: string;
     mauzoAlreadyAccount: string;
     mauzoSignIn: string;
-    // Delivery Flow
+    // --- Delivery Flow ---
     deliveryLoginTitle: string;
     deliveryPhoneLabel: string;
     deliveryPasswordLabel: string;
@@ -186,7 +188,7 @@ export interface TranslationKeys {
     deliverySuccessVerify: string;
     deliveryErrorLogin: string;
     deliveryErrorOtp: string;
-    // Register Screen
+    // --- Register Screen ---
     registerTitleBuyer: string;
     registerTitleMerchant: string;
     registerSubtitlePreFilled: string;
@@ -198,8 +200,7 @@ export interface TranslationKeys {
     registerButton: string;
     registerAlreadyAccount: string;
     registerTermsLink: string;
-
-    // Role Screen (additional)
+    // --- Role Screen ---
     roleScreenOptionSell: string;
     roleScreenOptionDelivery: string;
     roleScreenOptionFinancial: string;
@@ -212,7 +213,31 @@ export interface TranslationKeys {
     commonSuccess: string;
     commonError: string;
     commonTryAgain: string;
-    commonLoading: string;
+    // --- Affiliate Flow ---
+    affiliateRegisterTitle: string;
+    affiliateLoginTitle: string;
+    affiliatePhonePlaceholder: string;
+    affiliateTermsAgreement: string;
+    affiliateRegisterButton: string;
+    affiliateNoAccount: string;
+    affiliateLoginLink: string;
+    affiliateAlreadyAccount: string;
+    // --- Auth Alerts ---
+    authTermsRequired: string;
+    authTermsRequiredMsg: string;
+    authMissingFields: string;
+    authMissingFieldsMsg: string;
+    authLoginFailed: string;
+    authLoginFailedMsg: string;
+    authRegistrationError: string;
+    authRegistrationErrorMsg: string;
+    authEmailRequired: string;
+    authEmailRequiredMsg: string;
+    authSocialLoginError: string;
+    // --- Delivery Register ---
+    deliveryRegisterFullNameLabel: string;
+    deliveryRegisterFullNamePlaceholder: string;
+    deliveryRegisterNameError: string;
 }
 
 /** English (default). */
@@ -343,64 +368,90 @@ const en: TranslationKeys = {
     otpVerifyFailed: "Verification Failed",
     forgotPasswordTitle: "Forgot Password",
     forgotPasswordSubtitle: "Password recovery feature coming soon.",
+    commonLoading: "Loading...",
+    affiliateRegisterTitle: "Create an account",
+    affiliateLoginTitle: "Welcome back",
+    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
+    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
+    affiliateRegisterButton: "Create Account",
+    affiliateNoAccount: "Don't have an account?",
+    affiliateLoginLink: "Log in",
+    affiliateAlreadyAccount: "Already have an account?",
+    // Mauzo Intro
     mauzoHeader: "Mauzo by Tunzaa",
     mauzoSlide1Title: "Product Management",
-    mauzoSlide1Desc: "We simplify the product management process with our simple tools where you can easily add, edit, and delete products.",
+    mauzoSlide1Desc: "We simplify the product management process with our simple tools where you can easily add, edit and delete products.",
     mauzoSlide2Title: "Order Management",
-    mauzoSlide2Desc: "Manage your stock, sales, and customer information in one place, so you can easily access this data anywhere and anytime.",
+    mauzoSlide2Desc: "Manage your stock, sales and customer information in one place, so you can easily access this data anywhere and at any time.",
     mauzoSlide3Title: "Wallet Management",
-    mauzoSlide3Desc: "Use our financial management tool to ensure oversight and handle the financial institution's cash flow.",
+    mauzoSlide3Desc: "Use our financial management tool to provide oversight and manage the cash flow of the financial institution.",
     mauzoSlide4Title: "Delivery Management",
-    mauzoSlide4Desc: "Driven by digital tools to ensure products are moved safely and efficiently until they reach the end customer.",
+    mauzoSlide4Desc: "Powered by digital tools to ensure products are moved safely and efficiently to the end customer.",
     mauzoCreateAccount: "Create an account",
-    mauzoAlreadyAccount: "Already have an account?",
+    mauzoAlreadyAccount: "Already have an account? ",
     mauzoSignIn: "Sign In",
-    deliveryLoginTitle: "Sign In",
+    // Delivery Flow
+    deliveryLoginTitle: "Delivery Partner Login",
     deliveryPhoneLabel: "Phone Number",
     deliveryPasswordLabel: "Password",
-    deliverySaveInfo: "Save info",
-    deliveryForgotPassword: "Forgot password?",
+    deliverySaveInfo: "Save My Info",
+    deliveryForgotPassword: "Forgot Password?",
     deliveryCreateAccount: "Create Account",
-    deliverySigningIn: "Signing in...",
+    deliverySigningIn: "Signing In...",
     deliveryContinue: "Continue",
     deliveryBack: "Back",
-    deliveryOtpTitle: "Verify Code",
-    deliveryOtpSubtitle: "Enter verification code sent to number",
+    deliveryOtpTitle: "Verify Number",
+    deliveryOtpSubtitle: "An OTP has been sent to your phone",
     deliveryWrongNumber: "Wrong number?",
-    deliveryNoOtp: "Didn't receive verification code?",
+    deliveryNoOtp: "Didn't get OTP?",
     deliveryRequestAgain: "Request again",
     deliveryVerifying: "Verifying...",
     deliveryVerify: "Verify",
-    deliverySuccessLogin: "Successfully signed in!",
-    deliverySuccessVerify: "Verification complete! Please log in.",
-    deliveryErrorLogin: "Phone number or password is incorrect",
-    deliveryErrorOtp: "Incorrect code",
+    deliverySuccessLogin: "Login Success",
+    deliverySuccessVerify: "Verification Success",
+    deliveryErrorLogin: "Check your credentials",
+    deliveryErrorOtp: "Invalid OTP code",
     // Register Screen
-    registerTitleBuyer: "Create an account",
-    registerTitleMerchant: "Create business account",
-    registerSubtitlePreFilled: "Confirm your details and create a password",
-    registerSubtitleEmpty: "Please fill in your details to get started",
-    registerFirstNamePlaceholder: "Enter your first name",
-    registerLastNamePlaceholder: "Enter your second name",
-    registerPhoneEmailPlaceholder: "Enter phone number or email",
-    registerPasswordPlaceholder: "Create a password",
+    registerTitleBuyer: "Join as a Buyer",
+    registerTitleMerchant: "Join as a Merchant",
+    registerSubtitlePreFilled: "Review your pre-filled details",
+    registerSubtitleEmpty: "Please fill in your details to join",
+    registerFirstNamePlaceholder: "First Name",
+    registerLastNamePlaceholder: "Last Name",
+    registerPhoneEmailPlaceholder: "Phone or Email",
+    registerPasswordPlaceholder: "Password",
     registerButton: "Create Account",
-    registerAlreadyAccount: "Already have an account? Log in",
+    registerAlreadyAccount: "Already have an account? Sign In",
     registerTermsLink: "Terms and Conditions",
-
-    // Role Screen (additional)
+    // Role Screen
     roleScreenOptionSell: "Sell products / Services",
-    roleScreenOptionDelivery: "Provide delivery Services",
+    roleScreenOptionDelivery: "Provide delivery services",
     roleScreenOptionFinancial: "Offer loans and financial services",
-    roleScreenOptionAffiliate: "Join as Affiliate Marketer",
-    roleScreenAlreadyAccount: "Already have an account? Sign In",
-    commonNext: "Continue",
+    roleScreenOptionAffiliate: "Join as an affiliate marketer",
+    roleScreenAlreadyAccount: "Already have an account?",
+    // Common
+    commonNext: "Next",
     commonBack: "Back",
     commonSaving: "Saving...",
-    commonSuccess: "Success!",
+    commonSuccess: "Success",
     commonError: "Error",
     commonTryAgain: "Please try again",
-    commonLoading: "Loading...",
+    // Auth Alerts
+    authTermsRequired: "Terms Required",
+    authTermsRequiredMsg: "Please agree to Terms and Conditions",
+    authMissingFields: "Missing Fields",
+    authMissingFieldsMsg: "Please fill in all fields",
+    authLoginFailed: "Login Failed",
+    authLoginFailedMsg: "Error signing in. Please check your credentials.",
+    authRegistrationError: "Registration Error",
+    authRegistrationErrorMsg: "Error creating account. Please try again.",
+    authEmailRequired: "Phone Number Required",
+    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
+    authSocialLoginError: "Login Error",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
+    deliveryRegisterNameError: "Please enter at least two names.",
 };
 
 /** Swahili. */
@@ -531,64 +582,90 @@ const sw: TranslationKeys = {
     otpVerifyFailed: "Uthibitishaji Umeshindikana",
     forgotPasswordTitle: "Umesahau Nywila",
     forgotPasswordSubtitle: "Huduma ya kurejesha nywila inakuja hivi karibuni.",
+    commonLoading: "Inapakia...",
+    affiliateRegisterTitle: "Fungua akaunti",
+    affiliateLoginTitle: "Karibu tena",
+    affiliatePhonePlaceholder: "Weka +255xxx xxx xxx",
+    affiliateTermsAgreement: "Nimesoma na kukubaliana na Masharti na Vigezo vya matumizi, sera ya faragha, na sera ya kurejesha ya Tunzaa",
+    affiliateRegisterButton: "Fungua Akaunti",
+    affiliateNoAccount: "Huna akaunti?",
+    affiliateLoginLink: "Ingia",
+    affiliateAlreadyAccount: "Tayari una akaunti?",
+    // Mauzo Intro
     mauzoHeader: "Mauzo by Tunzaa",
-    mauzoSlide1Title: "Usimamizi Wa Bidhaa",
-    mauzoSlide1Desc: "Tunasahilisha mchakato wa usimamizi wa bidhaa kwa kutumia zana rahisi zetu ambazo unaweza kuongeza, kuhariri, na kufuta bidhaa kwa urahisi.",
-    mauzoSlide2Title: "Usimamizi Wa Maagizo",
-    mauzoSlide2Desc: "Usimamie hisa zako, mauzo, na habari za wateja katika mahali pamoja, ili uweze kufikia data hii kwa urahisi popote na wakati wowote.",
-    mauzoSlide3Title: "Usimamizi Wa Mfuko",
-    mauzoSlide3Desc: "Tumia zana yetu ya usimamizi wa fedha kuhakikisha uangalizi na kushughulikia mtiririko wa fedha wa taasisi ya kifedha.",
-    mauzoSlide4Title: "Usimamizi Wa Utoaji",
-    mauzoSlide4Desc: "Inaendeshwa na zana za kidijitali ili kuhakikisha kuwa bidhaa zinasogezwa kwa usalama na kwa ufanisi hadi zimfikie mteja wa mwisho.",
+    mauzoSlide1Title: "Usimamizi wa Bidhaa",
+    mauzoSlide1Desc: "Tunarahisisha mchakato wa usimamizi wa bidhaa kwa zana zetu rahisi ambapo unaweza kuongeza, kuhariri na kufuta bidhaa kwa urahisi.",
+    mauzoSlide2Title: "Usimamizi wa Maagizo",
+    mauzoSlide2Desc: "Simamia stoku yako, mauzo na taarifa za wateja mahali pamoja, ili uweze kupata taarifa hizi mahali popote na wakati wowote.",
+    mauzoSlide3Title: "Usimamizi wa Pochi",
+    mauzoSlide3Desc: "Tumia zana yetu ya usimamizi wa fedha kutoa usimamizi na kudhibiti mtiririko wa pesa wa taasisi ya kifedha.",
+    mauzoSlide4Title: "Usimamizi wa Usafirishaji",
+    mauzoSlide4Desc: "Inaendeshwa na zana za kidijitali ili kuhakikisha bidhaa zinasafirishwa salama na kwa ufanisi hadi kwa mteja wa mwisho.",
     mauzoCreateAccount: "Fungua akaunti",
-    mauzoAlreadyAccount: "Tayari una akaunti?",
+    mauzoAlreadyAccount: "Je, tayari una akaunti?",
     mauzoSignIn: "Ingia",
-    deliveryLoginTitle: "Ingia",
-    deliveryPhoneLabel: "Namba ya simu",
-    deliveryPasswordLabel: "Neno siri",
-    deliverySaveInfo: "Hifadhi taarifa",
-    deliveryForgotPassword: "Umesahau neno siri?",
-    deliveryCreateAccount: "Fungua Akaunti",
+    // Delivery Flow
+    deliveryLoginTitle: "Ingia kama Mshirika wa Usafirishaji",
+    deliveryPhoneLabel: "Namba ya Simu",
+    deliveryPasswordLabel: "Nywila",
+    deliverySaveInfo: "Hifadhi Taarifa zangu",
+    deliveryForgotPassword: "Umesahau Nywila?",
+    deliveryCreateAccount: "Kuwa Mshirika",
     deliverySigningIn: "Inaingia...",
     deliveryContinue: "Endelea",
     deliveryBack: "Rudi",
-    deliveryOtpTitle: "Thibitisha Msimbo",
-    deliveryOtpSubtitle: "Weka nambari ya kuthibitisha iliyotumwa kwenye nambari",
-    deliveryWrongNumber: "Umekosea namba?",
-    deliveryNoOtp: "Hujapokea nambari za uthibitisho?",
+    deliveryOtpTitle: "Thibitisha Namba",
+    deliveryOtpSubtitle: "OTP imetumwa kwenye simu yako",
+    deliveryWrongNumber: "Namba ni makosa?",
+    deliveryNoOtp: "Hukuipata OTP?",
     deliveryRequestAgain: "Omba tena",
     deliveryVerifying: "Inathibitisha...",
     deliveryVerify: "Thibitisha",
-    deliverySuccessLogin: "Umeingia kikamilifu!",
-    deliverySuccessVerify: "Uthibitisho umekamilika! Tafadhali ingia.",
-    deliveryErrorLogin: "Namba ya simu au neno siri si sahihi",
-    deliveryErrorOtp: "Msimbo si sahihi",
+    deliverySuccessLogin: "Umeingia kwa Mafanikio",
+    deliverySuccessVerify: "Uthibitishaji Umekamilika",
+    deliveryErrorLogin: "Kagua maelezo yako",
+    deliveryErrorOtp: "Nambari ya OTP ni batili",
     // Register Screen
-    registerTitleBuyer: "Fungua akaunti",
-    registerTitleMerchant: "Fungua akaunti ya biashara",
-    registerSubtitlePreFilled: "Thibitisha maelezo yako na uunda nenosiri",
-    registerSubtitleEmpty: "Tafadhali jaza maelezo yako ili uanze",
-    registerFirstNamePlaceholder: "Ingiza jina lako la kwanza",
-    registerLastNamePlaceholder: "Ingiza jina lako la pili",
-    registerPhoneEmailPlaceholder: "Ingiza namba ya simu au barua pepe",
-    registerPasswordPlaceholder: "Unda nenosiri",
+    registerTitleBuyer: "Jiunge kama Mnunuzi",
+    registerTitleMerchant: "Jiunge kama Muuzaji",
+    registerSubtitlePreFilled: "Kagua taarifa zako zilizojazwa",
+    registerSubtitleEmpty: "Tafadhali jaza taarifa zako ili kujiunga",
+    registerFirstNamePlaceholder: "Jina la Kwanza",
+    registerLastNamePlaceholder: "Jina la Pili",
+    registerPhoneEmailPlaceholder: "Simu au Barua pepe",
+    registerPasswordPlaceholder: "Nywila",
     registerButton: "Fungua Akaunti",
     registerAlreadyAccount: "Tayari una akaunti? Ingia",
     registerTermsLink: "Masharti na Vigezo",
-
-    // Role Screen (additional)
+    // Role Screen
     roleScreenOptionSell: "Uza bidhaa / Huduma",
     roleScreenOptionDelivery: "Toa huduma za usafirishaji",
     roleScreenOptionFinancial: "Toa mikopo na huduma za kifedha",
-    roleScreenOptionAffiliate: "Jiunge kama Muuzaji wa Ushirika",
-    roleScreenAlreadyAccount: "Tayari una akaunti? Ingia",
+    roleScreenOptionAffiliate: "Jiunge kama mshirika wa masoko",
+    roleScreenAlreadyAccount: "Tayari una akaunti?",
+    // Common
     commonNext: "Endelea",
     commonBack: "Rudi",
     commonSaving: "Inahifadhi...",
-    commonSuccess: "Mafanikio!",
+    commonSuccess: "Mafanikio",
     commonError: "Hitilafu",
     commonTryAgain: "Tafadhali jaribu tena",
-    commonLoading: "Inapakia...",
+    // Auth Alerts
+    authTermsRequired: "Masharti yanahitajika",
+    authTermsRequiredMsg: "Tafadhali kubaliana na Masharti na Vigezo",
+    authMissingFields: "Sehemu zinazokosekana",
+    authMissingFieldsMsg: "Tafadhali jaza sehemu zote",
+    authLoginFailed: "Uingiaji Umeshindikana",
+    authLoginFailedMsg: "Hitilafu wakati wa kuingia. Tafadhali kagua maelezo yako.",
+    authRegistrationError: "Hitilafu ya Usajili",
+    authRegistrationErrorMsg: "Hitilafu wakati wa kufungua akaunti. Tafadhali jaribu tena.",
+    authEmailRequired: "Namba ya Simu Inahitajika",
+    authEmailRequiredMsg: "Tafadhali tumia namba ya simu kujisajili. Usajili wa barua pepe unahitaji namba ya simu kwa ajili ya kuthibitisha OTP.",
+    authSocialLoginError: "Hitilafu ya Uingiaji",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Jina Kamili",
+    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
+    deliveryRegisterNameError: "Tafadhali ingiza angalau majina mawili.",
 };
 
 /** French. */
@@ -596,6 +673,14 @@ const fr: TranslationKeys = {
     languageScreenTitle: 'Choisissez votre langue',
     languageScreenChoosePreferred: 'Choisir la langue préférée',
     languageScreenSkip: 'Passer',
+    affiliateRegisterTitle: "Create an account",
+    affiliateLoginTitle: "Welcome back",
+    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
+    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
+    affiliateRegisterButton: "Create Account",
+    affiliateNoAccount: "Don't have an account?",
+    affiliateLoginLink: "Log in",
+    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: 'Choisissez ce qui vous décrit le mieux',
     roleScreenDescription:
@@ -777,6 +862,22 @@ const fr: TranslationKeys = {
     commonError: "Erreur",
     commonTryAgain: "Veuillez réessayer",
     commonLoading: "Chargement...",
+    // Auth Alerts
+    authTermsRequired: "Terms Required",
+    authTermsRequiredMsg: "Please agree to Terms and Conditions",
+    authMissingFields: "Missing Fields",
+    authMissingFieldsMsg: "Please fill in all fields",
+    authLoginFailed: "Login Failed",
+    authLoginFailedMsg: "Error signing in. Please check your credentials.",
+    authRegistrationError: "Registration Error",
+    authRegistrationErrorMsg: "Error creating account. Please try again.",
+    authEmailRequired: "Phone Number Required",
+    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
+    authSocialLoginError: "Login Error",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
+    deliveryRegisterNameError: "Please enter at least two names.",
 };
 
 /** Arabic. */
@@ -784,6 +885,14 @@ const ar: TranslationKeys = {
     languageScreenTitle: 'اختر لغتك',
     languageScreenChoosePreferred: 'اختر اللغة المفضلة',
     languageScreenSkip: 'تخطي',
+    affiliateRegisterTitle: "Create an account",
+    affiliateLoginTitle: "Welcome back",
+    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
+    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
+    affiliateRegisterButton: "Create Account",
+    affiliateNoAccount: "Don't have an account?",
+    affiliateLoginLink: "Log in",
+    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: 'اختر ما يصفك بشكل أفضل',
     roleScreenDescription:
@@ -965,6 +1074,22 @@ const ar: TranslationKeys = {
     commonError: "خطأ",
     commonTryAgain: "يرجى المحاولة مرة أخرى",
     commonLoading: "جاري التحميل...",
+    // Auth Alerts
+    authTermsRequired: "Terms Required",
+    authTermsRequiredMsg: "Please agree to Terms and Conditions",
+    authMissingFields: "Missing Fields",
+    authMissingFieldsMsg: "Please fill in all fields",
+    authLoginFailed: "Login Failed",
+    authLoginFailedMsg: "Error signing in. Please check your credentials.",
+    authRegistrationError: "Registration Error",
+    authRegistrationErrorMsg: "Error creating account. Please try again.",
+    authEmailRequired: "Phone Number Required",
+    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
+    authSocialLoginError: "Login Error",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
+    deliveryRegisterNameError: "Please enter at least two names.",
 };
 
 /** Spanish. */
@@ -972,6 +1097,14 @@ const es: TranslationKeys = {
     languageScreenTitle: 'Elige tu idioma',
     languageScreenChoosePreferred: 'Elegir idioma preferido',
     languageScreenSkip: 'Saltar',
+    affiliateRegisterTitle: "Create an account",
+    affiliateLoginTitle: "Welcome back",
+    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
+    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
+    affiliateRegisterButton: "Create Account",
+    affiliateNoAccount: "Don't have an account?",
+    affiliateLoginLink: "Log in",
+    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: 'Elige lo que mejor te describe',
     roleScreenDescription:
@@ -1146,6 +1279,30 @@ const es: TranslationKeys = {
     roleScreenOptionFinancial: "Ofrecer préstamos y servicios financieros",
     roleScreenOptionAffiliate: "Unirse como comercializador afiliado",
     roleScreenAlreadyAccount: "¿Ya tiene una cuenta? Iniciar sesión",
+    // Common
+    commonNext: "Next",
+    commonBack: "Back",
+    commonSaving: "Saving...",
+    commonSuccess: "Success",
+    commonError: "Error",
+    commonTryAgain: "Please try again",
+    commonLoading: "Loading...",
+    // Auth Alerts
+    authTermsRequired: "Terms Required",
+    authTermsRequiredMsg: "Please agree to Terms and Conditions",
+    authMissingFields: "Missing Fields",
+    authMissingFieldsMsg: "Please fill in all fields",
+    authLoginFailed: "Login Failed",
+    authLoginFailedMsg: "Error signing in. Please check your credentials.",
+    authRegistrationError: "Registration Error",
+    authRegistrationErrorMsg: "Error creating account. Please try again.",
+    authEmailRequired: "Phone Number Required",
+    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
+    authSocialLoginError: "Login Error",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
+    deliveryRegisterNameError: "Please enter at least two names.",
 };
 
 /** Portuguese. */
@@ -1153,6 +1310,14 @@ const pt: TranslationKeys = {
     languageScreenTitle: 'Escolha o seu idioma',
     languageScreenChoosePreferred: 'Escolher idioma preferido',
     languageScreenSkip: 'Pular',
+    affiliateRegisterTitle: "Create an account",
+    affiliateLoginTitle: "Welcome back",
+    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
+    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
+    affiliateRegisterButton: "Create Account",
+    affiliateNoAccount: "Don't have an account?",
+    affiliateLoginLink: "Log in",
+    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: 'Escolha o que melhor descreve você',
     roleScreenDescription:
@@ -1327,6 +1492,30 @@ const pt: TranslationKeys = {
     roleScreenOptionFinancial: "Oferecer empréstimos e serviços financeiros",
     roleScreenOptionAffiliate: "Junte-se como profissional de marketing afiliado",
     roleScreenAlreadyAccount: "Já tem uma conta? Entrar",
+    // Common
+    commonNext: "Next",
+    commonBack: "Back",
+    commonSaving: "Saving...",
+    commonSuccess: "Success",
+    commonError: "Error",
+    commonTryAgain: "Please try again",
+    commonLoading: "Loading...",
+    // Auth Alerts
+    authTermsRequired: "Terms Required",
+    authTermsRequiredMsg: "Please agree to Terms and Conditions",
+    authMissingFields: "Missing Fields",
+    authMissingFieldsMsg: "Please fill in all fields",
+    authLoginFailed: "Login Failed",
+    authLoginFailedMsg: "Error signing in. Please check your credentials.",
+    authRegistrationError: "Registration Error",
+    authRegistrationErrorMsg: "Error creating account. Please try again.",
+    authEmailRequired: "Phone Number Required",
+    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
+    authSocialLoginError: "Login Error",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
+    deliveryRegisterNameError: "Please enter at least two names.",
 };
 
 /** Chinese (Simplified). */
@@ -1334,6 +1523,14 @@ const zh: TranslationKeys = {
     languageScreenTitle: '选择您的语言',
     languageScreenChoosePreferred: '选择首选语言',
     languageScreenSkip: '跳过',
+    affiliateRegisterTitle: "Create an account",
+    affiliateLoginTitle: "Welcome back",
+    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
+    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
+    affiliateRegisterButton: "Create Account",
+    affiliateNoAccount: "Don't have an account?",
+    affiliateLoginLink: "Log in",
+    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: '选择最适合您的描述',
     roleScreenDescription:
@@ -1508,6 +1705,30 @@ const zh: TranslationKeys = {
     roleScreenOptionFinancial: "提供贷款和金融服务",
     roleScreenOptionAffiliate: "加入作为联盟营销人员",
     roleScreenAlreadyAccount: "已有账号？登录",
+    // Common
+    commonNext: "Next",
+    commonBack: "Back",
+    commonSaving: "Saving...",
+    commonSuccess: "Success",
+    commonError: "Error",
+    commonTryAgain: "Please try again",
+    commonLoading: "Loading...",
+    // Auth Alerts
+    authTermsRequired: "Terms Required",
+    authTermsRequiredMsg: "Please agree to Terms and Conditions",
+    authMissingFields: "Missing Fields",
+    authMissingFieldsMsg: "Please fill in all fields",
+    authLoginFailed: "Login Failed",
+    authLoginFailedMsg: "Error signing in. Please check your credentials.",
+    authRegistrationError: "Registration Error",
+    authRegistrationErrorMsg: "Error creating account. Please try again.",
+    authEmailRequired: "Phone Number Number Required",
+    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
+    authSocialLoginError: "Login Error",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
+    deliveryRegisterNameError: "Please enter at least two names.",
 };
 
 /** German. */
@@ -1515,6 +1736,14 @@ const de: TranslationKeys = {
     languageScreenTitle: 'Wählen Sie Ihre Sprache',
     languageScreenChoosePreferred: 'Bevorzugte Sprache wählen',
     languageScreenSkip: 'Überspringen',
+    affiliateRegisterTitle: "Create an account",
+    affiliateLoginTitle: "Welcome back",
+    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
+    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
+    affiliateRegisterButton: "Create Account",
+    affiliateNoAccount: "Don't have an account?",
+    affiliateLoginLink: "Log in",
+    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: 'Wählen Sie, was Sie am besten beschreibt',
     roleScreenDescription:
@@ -1689,6 +1918,30 @@ const de: TranslationKeys = {
     roleScreenOptionFinancial: "Kredite und Finanzdienstleistungen anbieten",
     roleScreenOptionAffiliate: "Als Affiliate-Marketer beitreten",
     roleScreenAlreadyAccount: "Haben Sie bereits ein Konto? Anmelden",
+    // Common
+    commonNext: "Next",
+    commonBack: "Back",
+    commonSaving: "Saving...",
+    commonSuccess: "Success",
+    commonError: "Error",
+    commonTryAgain: "Please try again",
+    commonLoading: "Loading...",
+    // Auth Alerts
+    authTermsRequired: "Terms Required",
+    authTermsRequiredMsg: "Please agree to Terms and Conditions",
+    authMissingFields: "Missing Fields",
+    authMissingFieldsMsg: "Please fill in all fields",
+    authLoginFailed: "Login Failed",
+    authLoginFailedMsg: "Error signing in. Please check your credentials.",
+    authRegistrationError: "Registration Error",
+    authRegistrationErrorMsg: "Error creating account. Please try again.",
+    authEmailRequired: "Phone Number Required",
+    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
+    authSocialLoginError: "Login Error",
+    // Delivery Register
+    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNamePlaceholder: "Example: Jeremiah Charles",
+    deliveryRegisterNameError: "Please enter at least two names.",
 };
 
 /**

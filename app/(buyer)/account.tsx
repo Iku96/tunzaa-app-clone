@@ -14,6 +14,7 @@ import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setLastPortal } from '../../src/utils/storage';
 import { useMarketplace } from '../../src/hooks/useMarketplace';
 import { authApi } from '../../src/services/auth';
 import ProductCard from '../../src/components/product/ProductCardVertical';
@@ -77,6 +78,13 @@ export default function AccountScreen() {
     const avatarUrl = profileData.profile_picture ||
         `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=425ba4`;
 
+    const hasVendorProfile = user?.profiles?.some((p: any) => p.role === 'vendor');
+    const hasDeliveryProfile = user?.profiles?.some((p: any) => p.role === 'delivery');
+
+    const switchPortal = async (portal: 'buyer' | 'delivery' | 'merchant') => {
+        await setLastPortal(portal);
+        router.replace(`/${portal}` as any);
+    };
 
     const renderProductItem = ({ item }: { item: any }) => (
         <View style={{ width: 160, marginRight: 12 }}>
@@ -219,6 +227,35 @@ export default function AccountScreen() {
                             <Text style={styles.quickActionLabel}>{action.label}</Text>
                         </TouchableOpacity>
                     ))}
+                </View>
+
+                {/* ── Switch Account ── */}
+                <View style={styles.managementSection}>
+                    <Text style={styles.sectionHeading}>Management</Text>
+                    <View style={styles.managementGrid}>
+                        {hasVendorProfile && (
+                            <TouchableOpacity 
+                                style={styles.managementItem}
+                                onPress={() => switchPortal('merchant')}
+                            >
+                                <View style={[styles.managementIconBg, { backgroundColor: '#EEF2FF' }]}>
+                                    <Ionicons name="business" size={24} color="#425BA4" />
+                                </View>
+                                <Text style={styles.managementLabel}>Merchant</Text>
+                            </TouchableOpacity>
+                        )}
+                        {hasDeliveryProfile && (
+                            <TouchableOpacity 
+                                style={styles.managementItem}
+                                onPress={() => switchPortal('delivery')}
+                            >
+                                <View style={[styles.managementIconBg, { backgroundColor: '#F0FDF4' }]}>
+                                    <Ionicons name="bicycle" size={24} color="#16A34A" />
+                                </View>
+                                <Text style={styles.managementLabel}>Delivery</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
                 </View>
 
                 {/* ── Divider ── */}
@@ -458,5 +495,49 @@ const styles = StyleSheet.create({
         height: '100%',
         borderRadius: 3,
         backgroundColor: '#425BA4',
+    },
+
+    // ── Management Section ──
+    managementSection: {
+        paddingHorizontal: 20,
+        marginBottom: 20,
+    },
+    sectionHeading: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#374151',
+        marginBottom: 12,
+    },
+    managementGrid: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    managementItem: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+        // Shadow for premium feel
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    managementIconBg: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    managementLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#4B5563',
     },
 });

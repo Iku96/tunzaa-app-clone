@@ -8,6 +8,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { NotificationService, addNotificationResponseListener } from '../src/services/notifications';
+import { AuthGuard } from '../src/components/auth/AuthGuard';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -73,15 +74,17 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
             <LanguageProvider>
                 <TunzaaAuthProvider>
-                    <StatusBar style="light" backgroundColor="#2D3E66" />
-                    <Stack
-                        screenOptions={{
-                            headerShown: false as const,
-                            gestureEnabled: true,
-                            animation: 'default',
-                            animationTypeForReplace: 'push',
-                        }}
-                    />
+                    <AuthGuard>
+                        <StatusBar style="light" backgroundColor="#2D3E66" />
+                        <Stack
+                            screenOptions={{
+                                headerShown: false,
+                                gestureEnabled: true,
+                                animation: 'default',
+                                animationTypeForReplace: 'push',
+                            }}
+                        />
+                    </AuthGuard>
                 </TunzaaAuthProvider>
             </LanguageProvider>
         </QueryClientProvider>

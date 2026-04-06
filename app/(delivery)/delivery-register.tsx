@@ -54,7 +54,7 @@ export default function DeliveryRegisterScreen() {
 
         if (hasInvalidChars) {
             setErrors(prev => ({ ...prev, fullName: true }));
-            setNameErrorMsg('Jina haliwezi kuwa na namba au alama');
+            setNameErrorMsg(t.commonError);
         } else {
             setErrors(prev => ({ ...prev, fullName: false }));
             setNameErrorMsg('');
@@ -78,7 +78,7 @@ export default function DeliveryRegisterScreen() {
         // Final check for Full Name (Must be 2 words)
         if (fullName.trim().split(' ').length < 2) {
             setErrors(prev => ({ ...prev, fullName: true }));
-            setNameErrorMsg('Tafadhali andika jina kamili (majina mawili)');
+            setNameErrorMsg(t.registerSubtitleEmpty);
             return;
         }
 
@@ -106,7 +106,7 @@ export default function DeliveryRegisterScreen() {
             });
 
         } catch (e: any) {
-            Alert.alert(t.commonError, e.message || 'Hitilafu imetokea wakati wa kusajili');
+            Alert.alert(t.commonError, e.message || t.commonTryAgain);
         } finally {
             setLoading(false);
         }
@@ -135,12 +135,12 @@ export default function DeliveryRegisterScreen() {
 
                                 {/* Full Name Input */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>{t.registerFirstNamePlaceholder.split(' ').slice(-2).join(' ')}</Text>
+                                    <Text style={styles.label}>{t.deliveryRegisterFullNameLabel}</Text>
                                     <TextInput
                                         style={[styles.input, errors.fullName && styles.inputError]}
                                         value={fullName}
                                         onChangeText={handleNameChange}
-                                        placeholder="Jeremiah Charles"
+                                        placeholder={t.deliveryRegisterFullNamePlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                     />
                                     {/* Show specific name error */}
@@ -148,7 +148,7 @@ export default function DeliveryRegisterScreen() {
                                         <View style={styles.errorRow}>
                                             <Ionicons name="close-circle" size={16} color="#EF4444" />
                                             <Text style={styles.errorText}>
-                                                {nameErrorMsg || 'Tafadhali andika jina kamili (majina mawili)'}
+                                                {nameErrorMsg || t.registerSubtitleEmpty}
                                             </Text>
                                         </View>
                                     )}
@@ -171,7 +171,7 @@ export default function DeliveryRegisterScreen() {
                                     {errors.phone && (
                                         <View style={styles.errorRow}>
                                             <Ionicons name="close-circle" size={16} color="#EF4444" />
-                                            <Text style={styles.errorText}>Tafadhali weka namba sahihi (tarakimu 9)</Text>
+                                            <Text style={styles.errorText}>{t.otpWrongFormat}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -202,7 +202,7 @@ export default function DeliveryRegisterScreen() {
                                     {errors.password && (
                                         <View style={styles.errorRow}>
                                             <Ionicons name="close-circle" size={16} color="#EF4444" />
-                                            <Text style={styles.errorText}>Neno siri liwe na angalau herufi 6</Text>
+                                            <Text style={styles.errorText}>{t.otpVerifyFailed}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -211,7 +211,7 @@ export default function DeliveryRegisterScreen() {
                                 <View style={styles.infoRow}>
                                     <Ionicons name="information-circle-outline" size={20} color="#425BA4" />
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
-                                        <Text style={styles.infoText}>{t.otpInstruction.includes('phone') ? 'Confirm with 6 digits' : 'Zingatia kuweka tarakimu 6 au zaidi'}</Text>
+                                        <Text style={styles.infoText}>{t.otpInstruction}</Text>
                                         <TouchableOpacity onPress={() => router.push('/delivery-login' as any)}>
                                             <Text style={styles.loginLink}>{t.mauzoAlreadyAccount}</Text>
                                         </TouchableOpacity>
@@ -220,33 +220,30 @@ export default function DeliveryRegisterScreen() {
 
                                 {/* Terms Text */}
                                 <Text style={styles.termsText}>
-                                    Kwa Kujiandikisha Unakubali <Text style={styles.linkText}>Sheria Na Masharti</Text>
-                                    {'\n'}Na <Text style={styles.linkText}>Faragha Sera</Text> Ya Tunzaa Plus. Tazama Notisi
-                                    {'\n'}Yetu Ya <Text style={styles.linkText}>Faragha Ya Wauzaji</Text>.
+                                    {t.affiliateTermsAgreement}
                                 </Text>
 
                             </View>
+                        </View>
 
-                            {/* Footer Buttons */}
-                            <View style={styles.footer}>
-                                <TouchableOpacity
-                                    style={[styles.primaryButton, !isValid() && styles.disabledButton]}
-                                    onPress={handleRegister}
-                                    disabled={!isValid()}
-                                >
-                                    <Text style={styles.primaryButtonText}>
-                                        {loading ? t.commonSaving : t.commonNext}
-                                    </Text>
-                                </TouchableOpacity>
+                        {/* Footer Buttons */}
+                        <View style={styles.footer}>
+                            <TouchableOpacity
+                                style={[styles.primaryButton, !isValid() && styles.disabledButton]}
+                                onPress={handleRegister}
+                                disabled={!isValid()}
+                            >
+                                <Text style={styles.primaryButtonText}>
+                                    {loading ? t.commonSaving : t.commonNext}
+                                </Text>
+                            </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    style={styles.secondaryButton}
-                                    onPress={() => router.back()}
-                                >
-                                    <Text style={styles.secondaryButtonText}>{t.commonBack}</Text>
-                                </TouchableOpacity>
-                            </View>
-
+                            <TouchableOpacity
+                                style={styles.secondaryButton}
+                                onPress={() => router.back()}
+                            >
+                                <Text style={styles.secondaryButtonText}>{t.commonBack}</Text>
+                            </TouchableOpacity>
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>

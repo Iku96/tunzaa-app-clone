@@ -86,9 +86,9 @@ apiClient.interceptors.response.use(
     }
 );
 
-// Document upload client
+// Document upload client - FIXED: Added fallback to BASE_URL to prevent "Network Error"
 export const documentClient = axios.create({
-    baseURL: API_CONFIG.DOCUMENT_UPLOAD_URL,
+    baseURL: API_CONFIG.DOCUMENT_UPLOAD_URL || API_CONFIG.BASE_URL,
     timeout: API_CONFIG.TIMEOUT,
     headers: {
         "Content-Type": "multipart/form-data",
@@ -119,6 +119,7 @@ documentClient.interceptors.response.use(
             url: error.config?.url,
             status: error.response?.status,
             errorMessage: error.message,
+            responseData: error.response?.data
         });
 
         const parsedError = parseApiError(error);

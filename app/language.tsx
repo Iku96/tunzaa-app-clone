@@ -11,7 +11,7 @@ export default function LanguageScreen() {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const handleLanguageSelect = async (code: string) => {
-        await setLocale(code);
+        await setLocale(code as any);
         setTimeout(() => router.push('/role'), 200);
     };
 

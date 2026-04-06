@@ -107,39 +107,65 @@ export interface DeliveryPartnerPerformanceResponse {
 
 export const reportsApi = {
   // Get Vendor GMV
-  getVendorGMV: async (vendorId: string): Promise<VendorGMVResponse> => {
+  getVendorGMV: async (
+    vendorId: string,
+    params?: { start_date?: string; end_date?: string }
+  ): Promise<VendorGMVResponse> => {
+    const searchParams = new URLSearchParams();
+    searchParams.append("vendor_id", vendorId);
+    if (params?.start_date) searchParams.append("start_date", params.start_date);
+    if (params?.end_date) searchParams.append("end_date", params.end_date);
+
     const response = await apiClient.get<VendorGMVResponse>(
-      `/reports/gmv/vendor?vendor_id=${vendorId}`
+      `/reports/gmv/vendor?${searchParams.toString()}`
     );
     return response.data;
   },
 
   // Get Order Status Distribution
   getOrderStatusDistribution: async (
-    vendorId: string
+    vendorId: string,
+    params?: { start_date?: string; end_date?: string }
   ): Promise<OrderStatusDistributionResponse> => {
+    const searchParams = new URLSearchParams();
+    searchParams.append("vendor_id", vendorId);
+    if (params?.start_date) searchParams.append("start_date", params.start_date);
+    if (params?.end_date) searchParams.append("end_date", params.end_date);
+
     const response = await apiClient.get<OrderStatusDistributionResponse>(
-      `/reports/order-status-distribution?vendor_id=${vendorId}`
+      `/reports/order-status-distribution?${searchParams.toString()}`
     );
     return response.data;
   },
 
   // Get Top Performing Products
   getTopPerformingProducts: async (
-    vendorId: string
+    vendorId: string,
+    params?: { start_date?: string; end_date?: string }
   ): Promise<TopPerformingProductsResponse> => {
+    const searchParams = new URLSearchParams();
+    searchParams.append("vendor_id", vendorId);
+    if (params?.start_date) searchParams.append("start_date", params.start_date);
+    if (params?.end_date) searchParams.append("end_date", params.end_date);
+
     const response = await apiClient.get<TopPerformingProductsResponse>(
-      `/reports/top-performing-products?vendor_id=${vendorId}`
+      `/reports/top-performing-products?${searchParams.toString()}`
     );
     return response.data;
   },
 
   // Get Daily GMV Performance
   getDailyGMVPerformance: async (
-    vendorId: string
+    vendorId: string,
+    params?: { start_date?: string; end_date?: string }
   ): Promise<DailyGMVPerformanceResponse> => {
+    const searchParams = new URLSearchParams();
+    searchParams.append("vendor_id", vendorId);
+    if (params?.start_date) searchParams.append("start_date", params.start_date);
+    if (params?.end_date) searchParams.append("end_date", params.end_date);
+
     const response = await apiClient.get<DailyGMVPerformanceResponse>(
-      `/reports/daily-gmv-performance?vendor_id=${vendorId}`
+      `/reports/daily-gmv-performance?${searchParams.toString()}`
     );
     return response.data;
   },
@@ -186,32 +212,38 @@ export const reportsApi = {
 };
 
 // React Query Hooks
-export const useGetVendorGMV = (vendorId: string, enabled: boolean = true) => {
+export const useGetVendorGMV = (
+  vendorId: string,
+  params?: { start_date?: string; end_date?: string },
+  enabled: boolean = true
+) => {
   return useQuery({
-    queryKey: ["vendorGMV", vendorId],
-    queryFn: () => reportsApi.getVendorGMV(vendorId),
+    queryKey: ["vendorGMV", vendorId, params],
+    queryFn: () => reportsApi.getVendorGMV(vendorId, params),
     enabled: enabled && !!vendorId,
   });
 };
 
 export const useGetOrderStatusDistribution = (
   vendorId: string,
+  params?: { start_date?: string; end_date?: string },
   enabled: boolean = true
 ) => {
   return useQuery({
-    queryKey: ["orderStatusDistribution", vendorId],
-    queryFn: () => reportsApi.getOrderStatusDistribution(vendorId),
+    queryKey: ["orderStatusDistribution", vendorId, params],
+    queryFn: () => reportsApi.getOrderStatusDistribution(vendorId, params),
     enabled: enabled && !!vendorId,
   });
 };
 
 export const useGetTopPerformingProducts = (
   vendorId: string,
+  params?: { start_date?: string; end_date?: string },
   enabled: boolean = true
 ) => {
   return useQuery({
-    queryKey: ["topPerformingProducts", vendorId],
-    queryFn: () => reportsApi.getTopPerformingProducts(vendorId),
+    queryKey: ["topPerformingProducts", vendorId, params],
+    queryFn: () => reportsApi.getTopPerformingProducts(vendorId, params),
     enabled: enabled && !!vendorId,
   });
 };

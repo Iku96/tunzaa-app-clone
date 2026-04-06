@@ -74,11 +74,10 @@ export default function DeliveryOTPScreen() {
                     last_name: lastName,
                     phone_number: `+255${phone}`,
                     password: password,
-                });
+                }, 'delivery');
             }
 
-            alert(t.deliverySuccessVerify);
-            router.replace('/delivery-login' as any);
+            // AuthGuard will handle navigation.
         } catch (e: any) {
             alert(e.message || t.deliveryErrorOtp);
         } finally {

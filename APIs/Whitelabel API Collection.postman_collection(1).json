@@ -1,0 +1,5108 @@
+{
+  "info": {
+    "_postman_id": "6a64cb5f-46d4-4da0-973a-2093d799d01d",
+    "name": "Whitelabel API Collection",
+    "description": "Complete API collection for all Whitelabel services",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53294865"
+  },
+  "item": [
+    {
+      "name": "Auth Service",
+      "item": [
+        {
+          "name": "Authentication",
+          "item": [
+            {
+              "name": "Get Auth Providers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/auth/providers",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "auth",
+                    "providers"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.access_token) {",
+                      "    pm.collectionVariables.set('JWT_TOKEN', jsonData.access_token);",
+                      "    pm.collectionVariables.set('REFRESH_TOKEN', jsonData.refresh_token);",
+                      "    pm.collectionVariables.set('USER_ID', jsonData.user_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifier\": \"denis@tunzaa.co.tz\",\n  \"password\": \"Test@1234\",\n  \"is_phone\": false\n}\n\n// {\n//   \"identifier\": \"john.manager@example.com\",\n//   \"password\": \"1234\",\n//   \"is_phone\": false\n// }"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/auth/login",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.access_token) {",
+                      "    pm.collectionVariables.set('JWT_TOKEN', jsonData.access_token);",
+                      "    pm.collectionVariables.set('USER_ID', jsonData.user_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone_number\": \"+255123456789\",\n  \"password\": \"Password123\",\n  \"activeProfileRole\": \"buyer\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/auth/register",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refresh_token\": \"{{REFRESH_TOKEN}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/auth/refresh",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "auth",
+                    "refresh"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/auth/logout",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Request Password Reset",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/auth/password-reset/request",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "auth",
+                    "password-reset",
+                    "request"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Verify OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone_number\": \"+255123456789\",\n  \"otp_code\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/auth/verify-otp",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "auth",
+                    "verify-otp"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "Get Current User",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/users/me",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update User Profile",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Updated\",\n  \"phone_number\": \"+255123456780\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/users/me",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Roles",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/users/me/roles",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "users",
+                    "me",
+                    "roles"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Switch Active Role",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"vendor\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/users/me/switch-role",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "users",
+                    "me",
+                    "switch-role"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tenant Service",
+      "item": [
+        {
+          "name": "Tenants",
+          "item": [
+            {
+              "name": "Create Tenant",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.tenant_id) {",
+                      "    pm.collectionVariables.set('TENANT_ID', jsonData.tenant_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acme Corporation\",\n  \"slug\": \"acme-corp\",\n  \"country_code\": \"TZ\",\n  \"currency\": \"TZS\",\n  \"timezone\": \"Africa/Dar_es_Salaam\",\n  \"contact_email\": \"admin@acme.com\",\n  \"contact_phone\": \"+255123456789\",\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/tenants/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "tenants",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Tenants",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/tenants/?skip=0&limit=20&is_active=true",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "tenants",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "is_active",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Tenant",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/tenants/{{TENANT_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "tenants",
+                    "{{TENANT_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Tenant",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acme Corporation Updated\",\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/tenants/{{TENANT_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "tenants",
+                    "{{TENANT_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Configuration",
+          "item": [
+            {
+              "name": "Get Tenant Configuration",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/configuration/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "configuration",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Tenant Configuration",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"theme\": {\n    \"primary_color\": \"#FF5722\",\n    \"logo_url\": \"https://example.com/logo.png\"\n  },\n  \"features\": {\n    \"pos_enabled\": true,\n    \"delivery_enabled\": true,\n    \"rewards_enabled\": true\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/configuration/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "configuration",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Marketplace Service",
+      "item": [
+        {
+          "name": "Categories",
+          "item": [
+            {
+              "name": "Create Category",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.category_id) {",
+                      "    pm.collectionVariables.set('CATEGORY_ID', jsonData.category_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Meals\",\n  \"slug\": \"meals\",\n  \"description\": \"Electronic devices and accessories\",\n  \"image_url\": \"https://example.com/electronics.png\",\n  \"parent_id\": null,\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/categories/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "categories",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Categories",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/categories/?skip=0&limit=50&is_active=true",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "categories",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "is_active",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Category",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/categories/{{CATEGORY_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "categories",
+                    "{{CATEGORY_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Category",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Electronics Updated\",\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/categories/{{CATEGORY_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "categories",
+                    "{{CATEGORY_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Category",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/categories/{{CATEGORY_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "categories",
+                    "{{CATEGORY_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Products",
+          "item": [
+            {
+              "name": "Create Product",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.product_id) {",
+                      "    pm.collectionVariables.set('PRODUCT_ID', jsonData.product_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n//   \"vendor_id\": \"{{VENDOR_ID}}\",\n//   \"store_id\": \"{{STORE_ID}}\",\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"category_ids\": [\"{{CATEGORY_ID}}\"],\n  \"name\": \"Wireless Bluetooth Headphones\",\n  \"slug\": \"wireless-bluetooth-headphones\",\n  \"description\": \"High-quality wireless headphones with noise cancellation\",\n  \"base_price\": 150000,\n  \"sale_price\": 180000,\n  \"cost_price\": 100000,\n  \"inventory_quantity\": 50,\n  \"sku\": \"WBH-001\",\n  \"is_active\": true,\n  \"is_featured\": true,\n  \"images\": [{ \"url\": \"https://example.com/headphones-1.jpg\", \"alt\": \"Front view\" }],\n  \"has_variants\": false,\n  \"is_compound\": true,\n  \"ingredients\": [\n    {\n      \"ingredient_type\": \"STOCK_ITEM\", //STOCK_ITEM|PRODUCT|PRODUCT_VARIANT,\n      \"ingredient_id\": \"9ed105d6-b962-46fb-800e-8b3bbbd57f28\",\n      \"quantity_required\": 0.5,\n      \"is_consumed\": true\n    }\n  ],\n  \"required_hardware\": [\n    {\n      \"hardware_id\": \"e010e669-516a-4218-9a2e-86ff19c17f46\",\n      \"quantity_required\": 1\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    ""
+                  ]
+                },
+                "description": "Create a new product.\n\n**Ownership (at least one required):**\n- vendor_id: Optional - Vendor ID for marketplace products\n- store_id: Optional - Store ID for store products\n- venue_id: Optional - Venue ID for POS/venue products\n\n**Compound Products:**\n- is_compound: Set to true for products made from ingredients\n- ingredients: Array of ingredient objects with:\n  - ingredient_type: \"STOCK_ITEM\", \"PRODUCT\", \"PRODUCT_VARIANT\", or \"HARDWARE\"\n  - ingredient_id: ID of the stock item, product, variant, or hardware\n  - quantity_required: Amount needed per product unit\n  - is_consumed: Whether consumed when product is sold (default: true)\n\n**Backward Compatible:** vendor_id and store_id are now optional to support venue-only products."
+              },
+              "response": [
+                {
+                  "name": "Create Product",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Authorization",
+                        "value": "Bearer {{JWT_TOKEN}}"
+                      },
+                      {
+                        "key": "X-Tenant-ID",
+                        "value": "{{TENANT_ID}}"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n//   \"vendor_id\": \"{{VENDOR_ID}}\",\n//   \"store_id\": \"{{STORE_ID}}\",\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"category_ids\": [\"{{CATEGORY_ID}}\"],\n  \"name\": \"Wireless Bluetooth Headphones\",\n  \"slug\": \"wireless-bluetooth-headphones\",\n  \"description\": \"High-quality wireless headphones with noise cancellation\",\n  \"base_price\": 150000,\n  \"sale_price\": 180000,\n  \"cost_price\": 100000,\n  \"inventory_quantity\": 50,\n  \"sku\": \"WBH-001\",\n  \"is_active\": true,\n  \"is_featured\": true,\n  \"images\": [{ \"url\": \"https://example.com/headphones-1.jpg\", \"alt\": \"Front view\" }],\n  \"has_variants\": false,\n  \"is_compound\": true,\n  \"ingredients\": [\n    {\n      \"ingredient_type\": \"STOCK_ITEM\", //STOCK_ITEM|PRODUCT|PRODUCT_VARIANT,\n      \"ingredient_id\": \"9ed105d6-b962-46fb-800e-8b3bbbd57f28\",\n      \"quantity_required\": 0.5,\n      \"is_consumed\": true\n    }\n  ],\n  \"required_hardware\": [\n    {\n      \"hardware_id\": \"e010e669-516a-4218-9a2e-86ff19c17f46\",\n      \"quantity_required\": 1\n    }\n  ]\n}"
+                    },
+                    "url": {
+                      "raw": "{{BASE_URL}}/{{API_VERSION}}/products/",
+                      "host": [
+                        "{{BASE_URL}}"
+                      ],
+                      "path": [
+                        "{{API_VERSION}}",
+                        "products",
+                        ""
+                      ]
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": null,
+                  "header": [
+                    {
+                      "key": "Server",
+                      "value": "nginx/1.24.0 (Ubuntu)"
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Wed, 18 Mar 2026 04:44:57 GMT"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "1355"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "RateLimit-Reset",
+                      "value": "1"
+                    },
+                    {
+                      "key": "RateLimit-Remaining",
+                      "value": "49"
+                    },
+                    {
+                      "key": "RateLimit-Limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "X-RateLimit-Remaining-Second",
+                      "value": "49"
+                    },
+                    {
+                      "key": "X-RateLimit-Limit-Second",
+                      "value": "50"
+                    },
+                    {
+                      "key": "X-RateLimit-Remaining-Hour",
+                      "value": "9965"
+                    },
+                    {
+                      "key": "X-RateLimit-Limit-Hour",
+                      "value": "10000"
+                    },
+                    {
+                      "key": "x-process-time",
+                      "value": "171.31471633911133"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "*"
+                    },
+                    {
+                      "key": "X-Correlation-ID",
+                      "value": "36694320-ec38-4391-9a2b-9a70f5f2ecd1"
+                    },
+                    {
+                      "key": "X-Kong-Upstream-Latency",
+                      "value": "178"
+                    },
+                    {
+                      "key": "X-Kong-Proxy-Latency",
+                      "value": "2"
+                    },
+                    {
+                      "key": "Via",
+                      "value": "kong/3.0.2"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"product_id\": \"21afe4e7-d513-4a11-94f0-c281eafd97b6\",\n    \"tenant_id\": \"test-tenant\",\n    \"vendor_id\": null,\n    \"store_id\": null,\n    \"venue_id\": \"dbf7c69d-73a6-4809-a0f7-53ef62f9be0e\",\n    \"name\": \"Wireless Bluetooth Headphones\",\n    \"slug\": \"wireless-bluetooth-headphones\",\n    \"description\": \"High-quality wireless headphones with noise cancellation\",\n    \"short_description\": null,\n    \"sku\": \"WBH-001\",\n    \"barcode\": null,\n    \"category_ids\": [],\n    \"categories\": [],\n    \"tags\": [],\n    \"base_price\": 150000,\n    \"sale_price\": 180000,\n    \"cost_price\": 100000,\n    \"inventory_quantity\": 50,\n    \"inventory_tracking\": true,\n    \"low_stock_threshold\": null,\n    \"images\": [\n        {\n            \"image_id\": \"1fe08e8e-5524-4866-a038-634def361fe7\",\n            \"url\": \"https://example.com/headphones-1.jpg\",\n            \"alt_text\": null,\n            \"is_primary\": false,\n            \"display_order\": 0\n        }\n    ],\n    \"has_variants\": false,\n    \"variants\": null,\n    \"variant_attributes\": null,\n    \"weight\": null,\n    \"dimensions\": null,\n    \"requires_shipping\": true,\n    \"promotion\": null,\n    \"is_active\": true,\n    \"is_featured\": true,\n    \"is_compound\": true,\n    \"ingredients\": [\n        {\n            \"ingredient_type\": \"STOCK_ITEM\",\n            \"ingredient_id\": \"9ed105d6-b962-46fb-800e-8b3bbbd57f28\",\n            \"quantity_required\": 0.5,\n            \"is_consumed\": true\n        }\n    ],\n    \"required_hardware\": [\n        {\n            \"hardware_id\": \"e010e669-516a-4218-9a2e-86ff19c17f46\",\n            \"quantity_required\": 1\n        }\n    ],\n    \"verification_status\": \"pending\",\n    \"rejection_reason\": null,\n    \"approved_by\": null,\n    \"approved_at\": null,\n    \"created_at\": \"2026-03-18T04:44:56.953085Z\",\n    \"updated_at\": \"2026-03-18T04:44:56.953085Z\",\n    \"published_at\": null\n}"
+                }
+              ]
+            },
+            {
+              "name": "List Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/?skip=0&limit=20&is_active=true",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "is_active",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Search Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/?query=headphones&skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "query",
+                      "value": "headphones"
+                    },
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Product",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/{{PRODUCT_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    "{{PRODUCT_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Product",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Product Name\",\n  \"base_price\": 140000,\n  \"inventory_quantity\": 45,\n  \"is_compound\": true,\n  \"ingredients\": [\n    {\n      \"ingredient_type\": \"STOCK_ITEM\",\n      \"ingredient_id\": \"{{STOCK_ITEM_ID}}\",\n      \"quantity_required\": 0.5,\n      \"is_consumed\": true\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/{{PRODUCT_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    "{{PRODUCT_ID}}"
+                  ]
+                },
+                "description": "Update a product.\n\n**Compound Products:**\n- is_compound: Set to true for products made from ingredients\n- ingredients: Array of ingredient objects (replaces existing ingredients):\n  - ingredient_type: \"STOCK_ITEM\", \"PRODUCT\", \"PRODUCT_VARIANT\", or \"HARDWARE\"\n  - ingredient_id: ID of the stock item, product, variant, or hardware\n  - quantity_required: Amount needed per product unit\n  - is_consumed: Whether consumed when product is sold (default: true)"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Product",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/{{PRODUCT_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    "{{PRODUCT_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Low Stock Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/low-stock?skip=0&limit=50",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    "low-stock"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "50"
+                    }
+                  ]
+                },
+                "description": "Get products that are below their low stock threshold.\n\n**Query Parameters:**\n- skip: Pagination offset (default: 0)\n- limit: Max results (default: 50)\n\nReturns products where inventory_quantity < low_stock_threshold.\nUse this for inventory alerts and reordering."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Product Inventory",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"inventory_quantity\": 100,\n  \"variant_id\": null,\n  \"base_price\": null,\n  \"sale_price\": null\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/products/{{PRODUCT_ID}}/inventory",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "products",
+                    "{{PRODUCT_ID}}",
+                    "inventory"
+                  ]
+                },
+                "description": "Update product inventory/stock levels.\n\n**Request Body:**\n- inventory_quantity: New stock level\n- variant_id: Optional - Update specific variant\n- base_price: Optional - Update base price\n- sale_price: Optional - Update sale price\n\nTriggers low_stock alerts if quantity falls below threshold."
+              },
+              "response": []
+            }
+          ],
+          "description": "Product management including inventory/stock. Use PUT /products/{id}/inventory to update stock levels. GET /products/low-stock returns products below threshold."
+        },
+        {
+          "name": "Inventory",
+          "item": [
+            {
+              "name": "Get Low Stock Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/inventory/low-stock?skip=0&limit=50",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "inventory",
+                    "low-stock"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0",
+                      "description": "Pagination offset"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "50",
+                      "description": "Max results"
+                    }
+                  ]
+                },
+                "description": "Get products that are below their low stock threshold.\n\n**Query Parameters:**\n- skip: Pagination offset (default: 0)\n- limit: Max results (default: 50)\n- threshold: Override default threshold\n\nReturns products where inventory_quantity < low_stock_threshold.\nUse this for inventory alerts and reordering."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Stock Level",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"inventory_quantity\": 100,\n  \"variant_id\": null,\n  \"reason\": \"Restock from supplier\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/inventory/products/{{PRODUCT_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "inventory",
+                    "products",
+                    "{{PRODUCT_ID}}"
+                  ]
+                },
+                "description": "Update product inventory/stock levels.\n\n**Request Body:**\n- inventory_quantity: New stock level (required)\n- variant_id: Optional - Update specific variant\n- reason: Optional - Reason for adjustment\n\nTriggers low_stock alerts if quantity falls below threshold."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Stock History",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/inventory/products/{{PRODUCT_ID}}/history?start_date=2024-01-01&end_date=2024-12-31",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "inventory",
+                    "products",
+                    "{{PRODUCT_ID}}",
+                    "history"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2024-01-01"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2024-12-31"
+                    }
+                  ]
+                },
+                "description": "Get stock adjustment history for a product.\n\n**Query Parameters:**\n- start_date: Start of date range\n- end_date: End of date range\n\nReturns list of stock adjustments with reasons and timestamps."
+              },
+              "response": []
+            },
+            {
+              "name": "Bulk Stock Update",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"updates\": [\n    {\"product_id\": \"prod-001\", \"inventory_quantity\": 50},\n    {\"product_id\": \"prod-002\", \"inventory_quantity\": 30},\n    {\"product_id\": \"prod-003\", \"inventory_quantity\": 100}\n  ],\n  \"reason\": \"End of day inventory count\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/inventory/bulk-update",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "inventory",
+                    "bulk-update"
+                  ]
+                },
+                "description": "Update stock levels for multiple products at once.\n\n**Request Body:**\nArray of objects with:\n- product_id: Product to update\n- inventory_quantity: New stock level\n- variant_id: Optional variant\n\nUseful for inventory counts and bulk restocking."
+              },
+              "response": []
+            }
+          ],
+          "description": "Stock and inventory management APIs.\n\n**Features:**\n- Track stock levels across products and variants\n- Low stock alerts and thresholds\n- Stock adjustments and audits\n- Inventory reports"
+        },
+        {
+          "name": "Stock Items",
+          "item": [
+            {
+              "name": "Create Stock Item",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Potatoes\",\n  \"code\": \"POT-001\",\n  \"unit\": \"KG\",\n  \"quantity_on_hand\": 50,\n  \"low_stock_threshold\": 10,\n  \"reorder_point\": 15,\n  \"unit_cost\": 200,\n  \"category\": \"Vegetables\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items"
+                  ]
+                },
+                "description": "Create a new stock item (ingredient). Venue assignment is optional.\n\n**Example:** Potatoes, Onions, Cooking Oil\n\n**Units:** KG, G, L, ML, UNIT, PIECE"
+              },
+              "response": []
+            },
+            {
+              "name": "List Stock Items",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items?unassigned_only=true",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items"
+                  ],
+                  "query": [
+                    {
+                      "key": "unassigned_only",
+                      "value": "true",
+                      "description": "Show only unassigned items"
+                    }
+                  ]
+                },
+                "description": "List stock items.\n\n**Query Parameters:**\n- venue_id: Optional - Filter by venue\n- station_id: Optional - Filter by station\n- category: Optional - Filter by category\n- low_stock_only: Optional - Only show items below threshold\n- unassigned_only: Optional - Only show items not assigned to any venue"
+              },
+              "response": []
+            },
+            {
+              "name": "Assign Stock Item to Venue",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"station_id\": null\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items/{{STOCK_ITEM_ID}}/assign",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items",
+                    "{{STOCK_ITEM_ID}}",
+                    "assign"
+                  ]
+                },
+                "description": "Assign a stock item to a venue or station. Stock items can be created without venue and assigned later."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Stock Item",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items/{{STOCK_ITEM_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items",
+                    "{{STOCK_ITEM_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Stock Level",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"new_quantity\": 45,\n  \"reason\": \"Weekly inventory count adjustment\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items/{{STOCK_ITEM_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items",
+                    "{{STOCK_ITEM_ID}}"
+                  ]
+                },
+                "description": "Update stock level (restock or adjustment). Creates a transaction record for audit trail."
+              },
+              "response": []
+            },
+            {
+              "name": "Restock Stock Item",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quantity\": 25,\n  \"unit_cost\": 180,\n  \"notes\": \"Weekly delivery from supplier\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items/{{STOCK_ITEM_ID}}/restock",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items",
+                    "{{STOCK_ITEM_ID}}",
+                    "restock"
+                  ]
+                },
+                "description": "Add quantity to a stock item. Records a RESTOCK transaction."
+              },
+              "response": []
+            },
+            {
+              "name": "Create Product Dependency",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_id\": \"{{PRODUCT_ID}}\",\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"dependency_type\": \"STOCK_ITEM\",\n  \"depends_on_id\": \"{{STOCK_ITEM_ID}}\",\n  \"quantity_required\": 0.3,\n  \"is_consumed\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items/dependencies",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items",
+                    "dependencies"
+                  ]
+                },
+                "description": "Create a dependency for a compound product.\n\n**Example:** French Fries depends on:\n- Stock Item: Potatoes (0.3 KG) - consumed\n- Hardware: Deep Fryer (1 unit) - not consumed, just used"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Product Dependencies",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items/dependencies/product/{{PRODUCT_ID}}?venue_id={{VENUE_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items",
+                    "dependencies",
+                    "product",
+                    "{{PRODUCT_ID}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}"
+                    }
+                  ]
+                },
+                "description": "Get all dependencies for a compound product."
+              },
+              "response": []
+            },
+            {
+              "name": "Check Product Availability",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/stock-items/availability/{{PRODUCT_ID}}?venue_id={{VENUE_ID}}&quantity=1",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "stock-items",
+                    "availability",
+                    "{{PRODUCT_ID}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}"
+                    },
+                    {
+                      "key": "quantity",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "Check if a compound product can be made with current stock."
+              },
+              "response": []
+            }
+          ],
+          "description": "Stock items are raw ingredients (potatoes, onions, etc.) used to create compound products.\n\n**Compound Products:**\n- Products that depend on stock items, hardware, or other products\n- When marked READY, dependencies are automatically consumed\n\n**Features:**\n- Create stock items without venue assignment (assign later)\n- Track ingredient inventory per venue\n- Set low stock thresholds\n- Create product dependencies for compound products\n- Automatic consumption when items are prepared"
+        },
+        {
+          "name": "Carts",
+          "item": [
+            {
+              "name": "Create Cart",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.cart_id) {",
+                      "    pm.collectionVariables.set('CART_ID', jsonData.cart_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": \"{{USER_ID}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/carts/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "carts",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Cart",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/carts/{{CART_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "carts",
+                    "{{CART_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Add Item to Cart",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_id\": \"{{PRODUCT_ID}}\",\n  \"quantity\": 2,\n  \"variant_id\": null\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/carts/{{CART_ID}}/items",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "carts",
+                    "{{CART_ID}}",
+                    "items"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Cart Item",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"quantity\": 3\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/carts/{{CART_ID}}/items/0",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "carts",
+                    "{{CART_ID}}",
+                    "items",
+                    "0"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Remove Item from Cart",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/carts/{{CART_ID}}/items/0",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "carts",
+                    "{{CART_ID}}",
+                    "items",
+                    "0"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Orders",
+          "item": [
+            {
+              "name": "Create Order",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.order_id) {",
+                      "    pm.collectionVariables.set('ORDER_ID', jsonData.order_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": \"{{USER_ID}}\",\n  \"cart_id\": \"{{CART_ID}}\",\n  \"shipping_address\": {\n    \"street\": \"123 Main Street\",\n    \"city\": \"Dar es Salaam\",\n    \"country\": \"Tanzania\",\n    \"postal_code\": \"12345\",\n    \"phone\": \"+255123456789\"\n  },\n  \"payment_details\": {\n    \"method\": \"mobile_money\",\n    \"provider\": \"mpesa\",\n    \"phone_number\": \"+255123456789\"\n  },\n  \"notes\": \"Please deliver in the morning\",\n  \"delivery_type_id\": null\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/orders/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "orders",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Orders",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/orders/?skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "orders",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Order",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/orders/{{ORDER_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "orders",
+                    "{{ORDER_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Order Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"processing\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/orders/{{ORDER_ID}}/status",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "orders",
+                    "{{ORDER_ID}}",
+                    "status"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cancel Order",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/orders/{{ORDER_ID}}/cancel",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "orders",
+                    "{{ORDER_ID}}",
+                    "cancel"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payment Service",
+      "item": [
+        {
+          "name": "Payments",
+          "item": [
+            {
+              "name": "Initialize Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"order_id\": \"{{ORDER_ID}}\",\n  \"amount\": 150000,\n  \"currency\": \"TZS\",\n  \"payment_method\": \"mobile_money\",\n  \"provider\": \"mpesa\",\n  \"phone_number\": \"+255123456789\",\n  \"callback_url\": \"https://example.com/callback\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/payments/initialize",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "payments",
+                    "initialize"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Payment",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/payments/verify/{{PAYMENT_REFERENCE}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "payments",
+                    "verify",
+                    "{{PAYMENT_REFERENCE}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Payments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/payments/?skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "payments",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delivery Service",
+      "item": [
+        {
+          "name": "Deliveries",
+          "item": [
+            {
+              "name": "Create Delivery",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.delivery_id) {",
+                      "    pm.collectionVariables.set('DELIVERY_ID', jsonData.delivery_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"order_id\": \"{{ORDER_ID}}\",\n  \"pickup_address\": {\n    \"street\": \"456 Vendor Street\",\n    \"city\": \"Dar es Salaam\",\n    \"country\": \"Tanzania\",\n    \"lat\": -6.8165,\n    \"lng\": 39.2893\n  },\n  \"delivery_address\": {\n    \"street\": \"123 Customer Street\",\n    \"city\": \"Dar es Salaam\",\n    \"country\": \"Tanzania\",\n    \"lat\": -6.8235,\n    \"lng\": 39.2693\n  },\n  \"recipient_name\": \"John Doe\",\n  \"recipient_phone\": \"+255123456789\",\n  \"notes\": \"Ring doorbell on arrival\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/deliveries/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "deliveries",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Deliveries",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/deliveries/?skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "deliveries",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Delivery",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/deliveries/{{DELIVERY_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "deliveries",
+                    "{{DELIVERY_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Delivery Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in_transit\",\n  \"notes\": \"Picked up from vendor\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/deliveries/{{DELIVERY_ID}}/status",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "deliveries",
+                    "{{DELIVERY_ID}}",
+                    "status"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Partners",
+          "item": [
+            {
+              "name": "Create Delivery Partner",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.partner_id) {",
+                      "    pm.collectionVariables.set('PARTNER_ID', jsonData.partner_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"FastDeliver Co\",\n  \"contact_email\": \"info@fastdeliver.com\",\n  \"contact_phone\": \"+255987654321\",\n  \"coverage_areas\": [\"Dar es Salaam\", \"Arusha\", \"Mwanza\"],\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/partners/",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "partners",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Delivery Partners",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/partners/?is_active=true",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "partners",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "is_active",
+                      "value": "true"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notification Service",
+      "item": [
+        {
+          "name": "Notifications",
+          "item": [
+            {
+              "name": "List Notifications",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/notifications/?skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "notifications",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Mark Notification as Read",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/notifications/{{NOTIFICATION_ID}}/read",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "notifications",
+                    "{{NOTIFICATION_ID}}",
+                    "read"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register Device Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"token\": \"firebase-device-token\",\n  \"platform\": \"android\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/notifications/device-token",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "notifications",
+                    "device-token"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rewards Service",
+      "item": [
+        {
+          "name": "Rewards",
+          "item": [
+            {
+              "name": "Get User Points",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/rewards/points",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "rewards",
+                    "points"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Earn Points",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": \"{{USER_ID}}\",\n  \"points\": 100,\n  \"reason\": \"Purchase bonus\",\n  \"order_id\": \"{{ORDER_ID}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/rewards/earn",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "rewards",
+                    "earn"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Redeem Points",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"points\": 50,\n  \"reward_type\": \"discount_voucher\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/rewards/redeem",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "rewards",
+                    "redeem"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Referral Code",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/referrals/my-code",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "referrals",
+                    "my-code"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Report Service",
+      "item": [
+        {
+          "name": "Reports",
+          "item": [
+            {
+              "name": "GMV (Platform-wide Sales)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/gmv",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "gmv"
+                  ]
+                },
+                "description": "Get total Gross Merchandise Value across the platform.\n\nReturns total sales value for all transactions."
+              },
+              "response": []
+            },
+            {
+              "name": "GMV by Tenant",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/gmv/tenant",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "gmv",
+                    "tenant"
+                  ]
+                },
+                "description": "Get Gross Merchandise Value filtered by tenant.\n\nReturns sales totals for the specified tenant."
+              },
+              "response": []
+            },
+            {
+              "name": "GMV by Vendor",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/gmv/vendor?vendor_id={{VENDOR_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "gmv",
+                    "vendor"
+                  ],
+                  "query": [
+                    {
+                      "key": "vendor_id",
+                      "value": "{{VENDOR_ID}}",
+                      "description": "Optional: Filter by specific vendor"
+                    }
+                  ]
+                },
+                "description": "Get Gross Merchandise Value filtered by vendor.\n\n**Query Parameters:**\n- vendor_id: Required - Filter sales by vendor"
+              },
+              "response": []
+            },
+            {
+              "name": "Active Users",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/active-users",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "active-users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Order Status Distribution",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/order-status-distribution?vendor_id={{VENDOR_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "order-status-distribution"
+                  ],
+                  "query": [
+                    {
+                      "key": "vendor_id",
+                      "value": "{{VENDOR_ID}}",
+                      "description": "Optional: Filter by vendor"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Top Performing Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/top-performing-products?vendor_id={{VENDOR_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "top-performing-products"
+                  ],
+                  "query": [
+                    {
+                      "key": "vendor_id",
+                      "value": "{{VENDOR_ID}}",
+                      "description": "Optional: Filter by vendor"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Daily GMV Performance",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/daily-gmv-performance?vendor_id={{VENDOR_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "daily-gmv-performance"
+                  ],
+                  "query": [
+                    {
+                      "key": "vendor_id",
+                      "value": "{{VENDOR_ID}}",
+                      "description": "Optional: Filter by vendor"
+                    }
+                  ]
+                },
+                "description": "Get daily Gross Merchandise Value performance trends.\n\n**Query Parameters:**\n- vendor_id: Optional - Filter by vendor\n\nReturns daily sales breakdown for trend analysis."
+              },
+              "response": []
+            },
+            {
+              "name": "Vendor Performance",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/vendor-performance?vendor_id={{VENDOR_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "vendor-performance"
+                  ],
+                  "query": [
+                    {
+                      "key": "vendor_id",
+                      "value": "{{VENDOR_ID}}",
+                      "description": "Optional: Filter by vendor"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Average Order Value",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/average-order-value",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "average-order-value"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Top Selling Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-tenant-id",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/reports/top-selling-products?vendor_id={{VENDOR_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "reports",
+                    "top-selling-products"
+                  ],
+                  "query": [
+                    {
+                      "key": "vendor_id",
+                      "value": "{{VENDOR_ID}}",
+                      "description": "Optional: Filter by vendor"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "description": "Reporting Service endpoints. Uses x-tenant-id header (lowercase). All endpoints query the marketplace database for analytics."
+        }
+      ]
+    },
+    {
+      "name": "Recommendation Service",
+      "item": [
+        {
+          "name": "Recommendations",
+          "item": [
+            {
+              "name": "Get Personalized Recommendations",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/recommendations/user/{{USER_ID}}/personalized?count=10&scenario=homepage",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "recommendations",
+                    "user",
+                    "{{USER_ID}}",
+                    "personalized"
+                  ],
+                  "query": [
+                    {
+                      "key": "count",
+                      "value": "10"
+                    },
+                    {
+                      "key": "scenario",
+                      "value": "homepage"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Similar Products",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/recommendations/products/{{PRODUCT_ID}}/similar?count=5",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "recommendations",
+                    "products",
+                    "{{PRODUCT_ID}}",
+                    "similar"
+                  ],
+                  "query": [
+                    {
+                      "key": "count",
+                      "value": "5"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Track Interaction",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_id\": \"{{USER_ID}}\",\n  \"item_id\": \"{{PRODUCT_ID}}\",\n  \"interaction_type\": \"view\",\n  \"scenario\": \"product-detail\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/events/track",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "events",
+                    "track"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support Service",
+      "item": [
+        {
+          "name": "Conversations",
+          "item": [
+            {
+              "name": "Create Conversation",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.conversation_id) {",
+                      "    pm.collectionVariables.set('CONVERSATION_ID', jsonData.conversation_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"subject\": \"Order not received\",\n  \"initial_message\": \"I placed an order 3 days ago but haven't received it yet. Order ID: {{ORDER_ID}}\",\n  \"category\": \"order\",\n  \"priority\": \"high\",\n  \"vendor_id\": \"{{VENDOR_ID}}\",\n  \"order_id\": \"{{ORDER_ID}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/support/conversations",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "support",
+                    "conversations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Conversations",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/support/conversations?skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "support",
+                    "conversations"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Conversation",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/support/conversations/{{CONVERSATION_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "support",
+                    "conversations",
+                    "{{CONVERSATION_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Send Message",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"Thank you for your response. I'll check with my neighbors.\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/support/conversations/{{CONVERSATION_ID}}/messages",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "support",
+                    "conversations",
+                    "{{CONVERSATION_ID}}",
+                    "messages"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Resolve Conversation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"resolution_note\": \"Issue resolved - package was with neighbor\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/support/conversations/{{CONVERSATION_ID}}/resolve",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "support",
+                    "conversations",
+                    "{{CONVERSATION_ID}}",
+                    "resolve"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "POS Service",
+      "item": [
+        {
+          "name": "Venues",
+          "item": [
+            {
+              "name": "Create Venue",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.venue_id) {",
+                      "    pm.collectionVariables.set('VENUE_ID', jsonData.venue_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Wavuvi Masaki\",\n    \"slug\": \"wavuvi-masaki\",\n    \"location\": {\n        \"state_province\": \"1234\",\n        \"address_line1\": \"123 Main Street\",\n        \"city\": \"Dar es Salaam\",\n        \"country\": \"Tanzania\",\n        \"latitude\": -6.8165,\n        \"longitude\": 39.2893\n    },\n    \"operating_hours\": {\n        \"monday\": {\n            \"open\": \"10:00\",\n            \"close\": \"23:00\"\n        },\n        \"friday\": {\n            \"open\": \"10:00\",\n            \"close\": \"24:00\"\n        }\n    },\n    \"contact_phone\": \"+255123456789\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Venues",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues?skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Venue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Venue",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Bubbly Lounge Updated\",\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Venue",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Floor Plans",
+          "item": [
+            {
+              "name": "Create Floor Plan",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.floor_plan_id) {",
+                      "    pm.collectionVariables.set('FLOOR_PLAN_ID', jsonData.floor_plan_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ground Floor\",\n  \"items\": [\n    {\n      \"item_type\": \"TABLE\",\n      \"label\": \"Table 1\",\n      \"cells\": [\"A1\", \"A2\", \"B1\", \"B2\"],\n      \"parent_item_id\": null,\n      \"metadata\": {\"shape\": \"square\", \"capacity\": 4, \"vip\": false},\n      \"status\": \"AVAILABLE\"\n    },\n    {\n      \"item_type\": \"SEAT\",\n      \"label\": \"Seat 1\",\n      \"cells\": [\"A1\"],\n      \"parent_item_id\": \"table-001\",\n      \"metadata\": {},\n      \"status\": \"AVAILABLE\"\n    },\n    {\n      \"item_type\": \"SEAT\",\n      \"label\": \"Seat 2\",\n      \"cells\": [\"A2\"],\n      \"parent_item_id\": \"table-001\",\n      \"metadata\": {},\n      \"status\": \"OCCUPIED\"\n    },\n    {\n      \"item_type\": \"TABLE\",\n      \"label\": \"Table 2 (L-shaped)\",\n      \"cells\": [\"D1\", \"D2\", \"D3\", \"E1\"],\n      \"parent_item_id\": null,\n      \"metadata\": {\"shape\": \"l-shaped\", \"capacity\": 6},\n      \"status\": \"AVAILABLE\"\n    },\n    {\n      \"item_type\": \"BAR\",\n      \"label\": \"Main Bar\",\n      \"cells\": [\"G1\", \"G2\", \"G3\", \"G4\", \"G5\"],\n      \"parent_item_id\": null,\n      \"metadata\": {},\n      \"status\": \"AVAILABLE\"\n    },\n    {\n      \"item_type\": \"COUNTER\",\n      \"label\": \"Order Counter\",\n      \"cells\": [\"A10\", \"B10\", \"C10\"],\n      \"parent_item_id\": null,\n      \"metadata\": {},\n      \"status\": \"AVAILABLE\"\n    }\n  ],\n  \"background_image\": \"https://example.com/floor-plan.png\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}/floor-plans",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}",
+                    "floor-plans"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Floor Plans",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}/floor-plans",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}",
+                    "floor-plans"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Floor Plan",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}/floor-plans/{{FLOOR_PLAN_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}",
+                    "floor-plans",
+                    "{{FLOOR_PLAN_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Floor Plan",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Ground Floor Updated\",\n  \"items\": [\n    {\n      \"item_id\": \"table-001\",\n      \"item_type\": \"TABLE\",\n      \"label\": \"Table 1\",\n      \"cells\": [\"A1\", \"A2\", \"A3\", \"B1\", \"B2\", \"B3\"],\n      \"metadata\": {\"shape\": \"rectangular\", \"capacity\": 6},\n      \"status\": \"OCCUPIED\"\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}/floor-plans/{{FLOOR_PLAN_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}",
+                    "floor-plans",
+                    "{{FLOOR_PLAN_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Floor Plan",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/venues/{{VENUE_ID}}/floor-plans/{{FLOOR_PLAN_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "venues",
+                    "{{VENUE_ID}}",
+                    "floor-plans",
+                    "{{FLOOR_PLAN_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Staff",
+          "item": [
+            {
+              "name": "Create Staff",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.staff_id) {",
+                      "    pm.collectionVariables.set('STAFF_ID', jsonData.staff_id);",
+                      "}",
+                      "if (jsonData.user_id) {",
+                      "    pm.collectionVariables.set('STAFF_USER_ID', jsonData.user_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john.staff@example.com\",\n  \"phone_number\": \"+255712345678\",\n  \"password\": \"1234\",\n  \"venue_ids\": [\"{{VENUE_ID}}\"],\n  \"station_ids\": [],\n  \"is_manager\": false\n}\n// DESCRIPTION: Create a new staff member (with user account or for existing user)\n// WITH password: Creates new user account and staff record\n// WITH user_id: Creates staff record for existing user\n// - first_name, last_name: Staff name (required for new user)\n// - email OR phone_number: Contact (required for new user)\n// - password: Optional - auto-generated if not provided for new user\n// - user_id: Use for existing auth-service user\n// - venue_ids: Venues this staff can work at\n// - station_ids: Stations this staff is assigned to\n// - is_manager: Boolean - true for manager role"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/staff",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "staff"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Staff Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.access_token) {",
+                      "    pm.collectionVariables.set('JWT_TOKEN', jsonData.access_token);",
+                      "    pm.collectionVariables.set('REFRESH_TOKEN', jsonData.refresh_token);",
+                      "    pm.collectionVariables.set('USER_ID', jsonData.user_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "// {\n//   \"venue_id\": \"{{VENUE_ID}}\",\n//   \"identifier\": \"john.manager@example.com\",\n//   \"password\": \"1234\",\n//   \"is_phone\": false\n// }\n\n{\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"identifier\": \"john.staff@example.com\",\n  \"password\": \"1234\",\n  \"is_phone\": false\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/staff/login",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "staff",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Staff",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/staff?venue_id={{VENUE_ID}}&is_manager=false&skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "staff"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}",
+                      "description": "Filter by venue ID"
+                    },
+                    {
+                      "key": "is_manager",
+                      "value": "false",
+                      "description": "Filter by manager status (optional). VALUES: true, false"
+                    },
+                    {
+                      "key": "skip",
+                      "value": "0",
+                      "description": "Pagination offset"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Max results (1-100)"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Staff",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/staff/{{STAFF_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "staff",
+                    "{{STAFF_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Staff",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_manager\": true,\n  \"assigned_venue_ids\": [\"{{VENUE_ID}}\"],\n  \"assigned_station_ids\": [\"{{STATION_ID}}\"]\n}\n// DESCRIPTION: Update staff details\n// - is_manager: Boolean - promote/demote staff\n// - assigned_venue_ids: Update venue assignments\n// - assigned_station_ids: Update station assignments\n// NOTE: Changing is_manager will update the role in auth-service"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/staff/{{STAFF_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "staff",
+                    "{{STAFF_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "description": "Staff management for POS service. Staff can be managers (is_manager=true) or regular staff. Roles are created on-demand in auth-service. Use PUT /staff/{id} to assign/remove venues/stations (include in venue_ids/station_ids arrays) or deactivate (set is_active=false)."
+        },
+        {
+          "name": "Stations",
+          "item": [
+            {
+              "name": "Create Station",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.station_id) {",
+                      "    pm.collectionVariables.set('STATION_ID', jsonData.station_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Main Kitchen\",\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"product_category_ids\": [{{PRODUCT_CATEGORY_ID}}],\n  \"product_ids\": [\"{{PRODUCT_ID}}\"],\n  \"has_own_inventory\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/stations",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "stations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Stations",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/stations?venue_id={{VENUE_ID}}&skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "stations"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}"
+                    },
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Station",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/stations/{{STATION_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "stations",
+                    "{{STATION_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Station",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Main Kitchen Updated\",\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/stations/{{STATION_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "stations",
+                    "{{STATION_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Station",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/stations/{{STATION_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "stations",
+                    "{{STATION_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Service Carts",
+          "item": [
+            {
+              "name": "Create Service Cart",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"staff_id\": \"{{STAFF_ID}}\",\n  \"cart_name\": \"Table 5\",\n  \"floor_plan_item_ids\": [\"table-5\"],\n  \"notes\": \"Guest celebrating birthday\",\n  \"items\": [\n    {\n      \"product_id\": \"prod-001\",\n      \"quantity\": 2,\n      \"notes\": \"Extra cold\",\n      \"metadata\": {\"temperature\": \"cold\"}\n    },\n    {\n      \"product_id\": \"prod-002\",\n      \"quantity\": 1,\n      \"notes\": \"No onions\"\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts"
+                  ]
+                },
+                "description": "Create a new service cart for in-venue ordering.\n\n**Required:**\n- venue_id: Where the cart is being created\n- staff_id: Staff member creating the cart\n\n**Optional:**\n- cart_name: Display name (e.g., \"Table 5\")\n- floor_plan_item_ids: Table/seat identifiers\n- notes: General cart notes\n- items: Initial items (can add later via POST /items)\n\n**Cart starts in OPEN status** - Add items, then set status=SUBMITTED to send to stations."
+              },
+              "response": []
+            },
+            {
+              "name": "List Service Carts",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts?venue_id={{VENUE_ID}}&skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}"
+                    },
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                },
+                "description": "List all service carts for a venue.\n\n**Query Parameters:**\n- venue_id (required): Filter by venue\n- skip: Pagination offset (default: 0)\n- limit: Max results (default: 20)\n\nReturns carts sorted by created_at descending."
+              },
+              "response": []
+            },
+            {
+              "name": "Get Service Cart",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts/{{CART_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts",
+                    "{{CART_ID}}"
+                  ]
+                },
+                "description": "Get a single service cart by ID.\n\nReturns cart with all items, their statuses, and assigned stations."
+              },
+              "response": []
+            },
+            {
+              "name": "Update Service Cart",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cart_name\": \"Updated Name\",\n  \"notes\": \"Updated notes\",\n  \"status\": \"SUBMITTED\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts/{{CART_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts",
+                    "{{CART_ID}}"
+                  ]
+                },
+                "description": "Update cart details or submit for processing.\n\n**Updatable Fields:**\n- cart_name: Display name\n- notes: General notes\n- status: Set to SUBMITTED to send orders to stations\n\n**Status Transitions:**\n- OPEN → SUBMITTED (sends items to stations)\n- SUBMITTED → CANCELLED (if not yet processed)\n\nNote: Items are managed via separate /items endpoints."
+              },
+              "response": []
+            },
+            {
+              "name": "Add Item to Cart",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.item_id) {",
+                      "    pm.collectionVariables.set('ITEM_ID', jsonData.item_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"product_id\": \"{{PRODUCT_ID}}\",\n  \"quantity\": 2,\n  \"notes\": \"Extra cold, no ice\",\n  \"metadata\": {\n    \"temperature\": \"cold\",\n    \"spice_level\": 3,\n    \"modifiers\": [\"extra_cheese\"]\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts/{{CART_ID}}/items",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts",
+                    "{{CART_ID}}",
+                    "items"
+                  ]
+                },
+                "description": "Add an item to an OPEN cart.\n\n**SIMPLIFIED PAYLOAD** - Only provide:\n- product_id (required)\n- quantity (required)\n- notes (optional) - Special instructions\n- metadata (optional) - Custom data like modifiers\n- station_override (optional) - Override auto-routing\n\nThe system will:\n1. Fetch product details (name, price) from catalog\n2. Validate product availability\n3. Check stock levels\n4. Auto-route to least loaded station\n5. Assign hardware if product requires it"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Item Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"READY\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts/{{CART_ID}}/items/{{ITEM_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts",
+                    "{{CART_ID}}",
+                    "items",
+                    "{{ITEM_ID}}"
+                  ]
+                },
+                "description": "Update a cart item's status.\n\n**Item Status Flow:**\nPENDING → IN_PROGRESS → READY → SERVED\n\nUse this when:\n- Station accepts order: IN_PROGRESS\n- Item prepared: READY (triggers stock consumption & hardware assignment)\n- Item served to customer: SERVED"
+              },
+              "response": []
+            },
+            {
+              "name": "Remove Item from Cart",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts/{{CART_ID}}/items/{{ITEM_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts",
+                    "{{CART_ID}}",
+                    "items",
+                    "{{ITEM_ID}}"
+                  ]
+                },
+                "description": "Remove an item from an OPEN cart."
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Service Cart",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/service-carts/{{CART_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "service-carts",
+                    "{{CART_ID}}"
+                  ]
+                },
+                "description": "Delete a service cart. Only OPEN or CANCELLED carts can be deleted."
+              },
+              "response": []
+            }
+          ],
+          "description": "Service cart management for venue orders. Carts track items, route to stations, and integrate with marketplace for checkout."
+        },
+        {
+          "name": "Reports",
+          "item": [
+            {
+              "name": "Sales by Venue",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/reports/sales-by-venue?start_date=2024-01-01&end_date=2024-12-31",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "reports",
+                    "sales-by-venue"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2024-01-01",
+                      "description": "Start date (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2024-12-31",
+                      "description": "End date (YYYY-MM-DD)"
+                    }
+                  ]
+                },
+                "description": "Get sales report grouped by venue.\n\n**Query Parameters:**\n- start_date: Start of date range (YYYY-MM-DD)\n- end_date: End of date range (YYYY-MM-DD)\n\nReturns total sales, items sold, and order count per venue."
+              },
+              "response": []
+            },
+            {
+              "name": "Sales by Station",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/reports/sales-by-station?venue_id={{VENUE_ID}}&start_date=2024-01-01&end_date=2024-12-31",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "reports",
+                    "sales-by-station"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}",
+                      "description": "Filter by venue"
+                    },
+                    {
+                      "key": "start_date",
+                      "value": "2024-01-01"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2024-12-31"
+                    }
+                  ]
+                },
+                "description": "Get sales report grouped by station.\n\n**Query Parameters:**\n- venue_id: Filter by venue\n- start_date: Start of date range\n- end_date: End of date range\n\nReturns items processed, revenue, and average processing time per station."
+              },
+              "response": []
+            },
+            {
+              "name": "Top Selling Items",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/reports/top-selling-items?venue_id={{VENUE_ID}}&limit=10",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "reports",
+                    "top-selling-items"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}",
+                      "description": "Optional: Filter by venue"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "Number of items to return"
+                    }
+                  ]
+                },
+                "description": "Get top selling items across all venues.\n\n**Query Parameters:**\n- venue_id: Optional - Filter by venue\n- limit: Number of items to return (default: 10)\n\nReturns ranked list of products by quantity sold."
+              },
+              "response": []
+            },
+            {
+              "name": "Staff Performance",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/reports/staff-performance?venue_id={{VENUE_ID}}&start_date=2024-01-01&end_date=2024-12-31",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "reports",
+                    "staff-performance"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}",
+                      "description": "Optional: Filter by venue"
+                    },
+                    {
+                      "key": "start_date",
+                      "value": "2024-01-01"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2024-12-31"
+                    }
+                  ]
+                },
+                "description": "Get staff performance metrics.\n\n**Query Parameters:**\n- venue_id: Optional - Filter by venue\n- start_date: Start of date range\n- end_date: End of date range\n\nReturns orders processed, items served, average time per order per staff member."
+              },
+              "response": []
+            }
+          ],
+          "description": "POS-specific reports and analytics.\n\n**Available Reports:**\n- Sales by Venue - Revenue per venue\n- Sales by Station - Revenue per station\n- Top Selling Items - Best selling products\n- Staff Performance - Orders processed per staff"
+        },
+        {
+          "name": "Hardware",
+          "item": [
+            {
+              "name": "Create Hardware",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var jsonData = pm.response.json();",
+                      "if (jsonData.hardware_id) {",
+                      "    pm.collectionVariables.set('HARDWARE_ID', jsonData.hardware_id);",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"vendor_id\": \"{{VENDOR_ID}}\",\n  \"venue_id\": \"{{VENUE_ID}}\",\n  \"name\": \"Shisha Pipe #1\",\n  \"hardware_type\": \"\",\n  \"code\": \"SP-001\",\n  \"is_disposable\": false,\n  \"quantity\": 1,\n  \"purchase_date\": \"2024-01-15\",\n  \"purchase_cost\": 500000,\n  \"condition\": \"new\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/hardware",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "hardware"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Hardware",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/hardware?venue_id={{VENUE_ID}}&skip=0&limit=20",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "hardware"
+                  ],
+                  "query": [
+                    {
+                      "key": "venue_id",
+                      "value": "{{VENUE_ID}}"
+                    },
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Hardware",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/hardware/{{HARDWARE_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "hardware",
+                    "{{HARDWARE_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Hardware",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Shisha Pipe #1 Updated\",\n  \"condition\": \"good\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/hardware/{{HARDWARE_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "hardware",
+                    "{{HARDWARE_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Hardware",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/pos/hardware/{{HARDWARE_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "pos",
+                    "hardware",
+                    "{{HARDWARE_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Winga Service",
+      "item": [
+        {
+          "name": "Affiliates",
+          "item": [
+            {
+              "name": "Create Affiliate Request",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"affiliate\",\n  \"business_name\": \"My Business\",\n  \"business_type\": \"retail\",\n  \"description\": \"Online retail store\",\n  \"website\": \"https://mybusiness.com\",\n  \"social_media\": {\n    \"instagram\": \"@mybusiness\",\n    \"twitter\": \"@mybusiness\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/winga/requests",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "winga",
+                    "requests"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Affiliate Requests",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/winga/requests?status=pending",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "winga",
+                    "requests"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "pending"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Referral Link",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/winga/referrals/link/{{VENDOR_ID}}",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "winga",
+                    "referrals",
+                    "link",
+                    "{{VENDOR_ID}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Affiliate Stats",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  },
+                  {
+                    "key": "X-Tenant-ID",
+                    "value": "{{TENANT_ID}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/{{API_VERSION}}/winga/affiliates/me/stats",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "{{API_VERSION}}",
+                    "winga",
+                    "affiliates",
+                    "me",
+                    "stats"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "API_VERSION",
+      "value": "v1",
+      "type": "string"
+    },
+    {
+      "key": "TENANT_ID",
+      "value": "test-tenant",
+      "type": "string"
+    },
+    {
+      "key": "JWT_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "REFRESH_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "USER_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "VENDOR_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "STORE_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "PRODUCT_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "CATEGORY_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "CART_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ITEM_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "STAFF_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "STATION_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ORDER_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "VENUE_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "HARDWARE_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "FLOOR_PLAN_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "DELIVERY_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "PARTNER_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "CONVERSATION_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "REALLOCATION_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "PAYMENT_REFERENCE",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "NOTIFICATION_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "STAFF_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "STATION_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "STOCK_ITEM_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "STAFF_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ORDER_ITEM_ID",
+      "value": "",
+      "type": "string",
+      "description": "Station order item ID from service cart submission"
+    },
+    {
+      "key": "STAFF_USER_ID",
+      "value": ""
+    },
+    {
+      "key": "STAFF_JWT_TOKEN",
+      "value": ""
+    }
+  ]
+}

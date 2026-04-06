@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, ActivityIndicator, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { ArrowLeft, LayoutGrid, PlusSquare, MoreHorizontal, Calendar, Maximize2 } from 'lucide-react-native';
 
 // Import our cohesive components
@@ -26,6 +26,17 @@ export default function MerchantDashboardScreen() {
     const [apiTestResult, setApiTestResult] = useState<string | null>(null);
     const [apiTestLoading, setApiTestLoading] = useState(false);
 
+    useFocusEffect(
+        React.useCallback(() => {
+            const onBackPress = () => {
+                BackHandler.exitApp();
+                return true;
+            };
+            const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            return () => subscription.remove();
+        }, [])
+    );
+
     // Calendar Selection State
     const [startDate, setStartDate] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
     const [endDate, setEndDate] = useState(() => new Date());
@@ -35,16 +46,19 @@ export default function MerchantDashboardScreen() {
     const { user, isAuthenticated, isLoading: authLoading } = useTunzaaAuth();
     const vendorProfile = user?.profiles?.find((p) => p.role === 'vendor');
 
-    // Redirect if authenticated but no vendor profile
-    React.useEffect(() => {
-        if (!authLoading && isAuthenticated && !vendorProfile) {
-            console.log('⚠️ No vendor profile found, redirecting to onboarding...');
-            router.replace('/(merchant)/onboarding/step-2');
-        }
-    }, [isAuthenticated, vendorProfile, authLoading]);
+    // Date parameters formatted for API consumption
+    const dateParams = {
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0]
+    };
+
+    const pulseParams = {
+        fromDate: startDate.toISOString().split('T')[0],
+        toDate: endDate.toISOString().split('T')[0]
+    };
 
     // Server Data Integration
-    const { orders, loading: pulseLoading, error: pulseError, refetch: refetchPulse } = useMerchantPulse();
+    const { orders, loading: pulseLoading, error: pulseError, refetch: refetchPulse } = useMerchantPulse(pulseParams);
 
     // Report Data Integration
     const vendorId = vendorProfile?.profile_id || '';
@@ -52,19 +66,19 @@ export default function MerchantDashboardScreen() {
         data: gmvData, 
         isLoading: gmvLoading, 
         refetch: refetchGMV 
-    } = useGetVendorGMV(vendorId, !!vendorId);
+    } = useGetVendorGMV(vendorId, dateParams, !!vendorId);
     
     const { 
         data: topProductsData, 
         isLoading: productsLoading, 
         refetch: refetchProducts 
-    } = useGetTopPerformingProducts(vendorId, !!vendorId);
+    } = useGetTopPerformingProducts(vendorId, dateParams, !!vendorId);
 
     const {
         data: statusData,
         isLoading: statusLoading,
         refetch: refetchStatus
-    } = useGetOrderStatusDistribution(vendorId, !!vendorId);
+    } = useGetOrderStatusDistribution(vendorId, dateParams, !!vendorId);
 
     // Derived Metrics from Server Data
     const vendorGmv = gmvData?.data?.[0];
@@ -98,14 +112,12 @@ export default function MerchantDashboardScreen() {
         setIsSidebarOpen(false);
     };
 
-
     return (
         <SafeAreaView style={styles.safe} edges={['top']}>
             {/* Overlay Sidebar Menu */}
             <SidebarMenu isVisible={isSidebarOpen} onClose={closeSidebar} />
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
 
                 {/* Header */}
                 <View style={styles.header}>
@@ -130,7 +142,6 @@ export default function MerchantDashboardScreen() {
                     </View>
                 </View>
 
-                {/* Date Selection Row */}
                 <View style={styles.dateSectionContainer}>
                     <View style={styles.dateRow}>
                         <TouchableOpacity style={styles.datePill} onPress={() => setCalendarMode('start')}>

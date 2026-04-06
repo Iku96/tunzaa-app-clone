@@ -21,12 +21,6 @@ export const uploadApi = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        transformRequest: [
-          (data, headers) => {
-            delete headers["Authorization"];
-            return data;
-          },
-        ],
       }
     );
     return response.data;

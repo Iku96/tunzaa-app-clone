@@ -2,19 +2,21 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-    ArrowLeft, 
-    Activity, 
-    Bell, 
-    AlarmClock, 
-    Truck, 
-    FileText, 
-    User, 
-    UserPlus, 
-    Globe, 
+import {
+    ArrowLeft,
+    Activity,
+    Bell,
+    AlarmClock,
+    Truck,
+    FileText,
+    User,
+    UserPlus,
+    Globe,
     LogOut,
     ChevronRight,
-    Check
+    Check,
+    ShieldCheck,
+    UserCircle2
 } from 'lucide-react-native';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { useLanguage } from '../../src/contexts/LanguageContext';
@@ -50,8 +52,8 @@ export default function MerchantSettingsScreen() {
     };
 
     const SettingItem = ({ icon: Icon, label, onPress, isLast = false, value }: any) => (
-        <TouchableOpacity 
-            style={[styles.itemContainer, isLast && styles.lastItem]} 
+        <TouchableOpacity
+            style={[styles.itemContainer, isLast && styles.lastItem]}
             onPress={onPress}
             activeOpacity={0.7}
         >
@@ -81,48 +83,58 @@ export default function MerchantSettingsScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                <SettingItem 
-                    icon={Activity} 
-                    label={t.settingsActivities} 
-                    onPress={() => router.push('/(merchant)/settings/activity')} 
+                <SettingItem
+                    icon={Activity}
+                    label={t.settingsActivities}
+                    onPress={() => router.push('/(merchant)/settings/activity')}
                 />
-                <SettingItem 
-                    icon={Bell} 
-                    label={t.settingsNotifications} 
-                    onPress={() => router.push('/(merchant)/settings/notifications')} 
+                <SettingItem
+                    icon={Bell}
+                    label={t.settingsNotifications}
+                    onPress={() => router.push('/(merchant)/settings/notifications')}
                 />
-                <SettingItem 
-                    icon={AlarmClock} 
-                    label={t.settingsReminders} 
-                    onPress={() => router.push('/(merchant)/settings/reminders')} 
+                <SettingItem
+                    icon={AlarmClock}
+                    label={t.settingsReminders}
+                    onPress={() => router.push('/(merchant)/settings/reminders')}
                 />
-                <SettingItem 
-                    icon={Truck} 
-                    label={t.settingsDelivery} 
-                    onPress={() => router.push('/(merchant)/settings/delivery')} 
+                <SettingItem
+                    icon={Truck}
+                    label={t.settingsDelivery}
+                    onPress={() => router.push('/(merchant)/settings/delivery')}
                 />
-                <SettingItem 
-                    icon={FileText} 
-                    label={t.settingsPolicies} 
-                    onPress={() => router.push('/(merchant)/settings/policies')} 
+                <SettingItem
+                    icon={ShieldCheck}
+                    label="Business Verification"
+                    onPress={() => router.push('/(merchant)/settings/business-verification')}
                 />
-                <SettingItem 
-                    icon={User} 
-                    label={t.settingsAccount} 
-                    onPress={() => router.push('/(merchant)/settings/account')} 
+                <SettingItem
+                    icon={UserCircle2}
+                    label="Business Profile"
+                    onPress={() => router.push('/(merchant)/business-profile')}
                 />
-                <SettingItem 
-                    icon={UserPlus} 
-                    label={t.settingsInvite} 
-                    onPress={() => router.push('/(merchant)/settings/invite-friends' as any)} 
+                <SettingItem
+                    icon={FileText}
+                    label={t.settingsPolicies}
+                    onPress={() => router.push('/(merchant)/settings/policies')}
                 />
-                <SettingItem 
-                    icon={Globe} 
-                    label={t.settingsLanguage} 
+                <SettingItem
+                    icon={User}
+                    label={t.settingsAccount}
+                    onPress={() => router.push('/(merchant)/settings/account')}
+                />
+                <SettingItem
+                    icon={UserPlus}
+                    label={t.settingsInvite}
+                    onPress={() => router.push('/(merchant)/settings/invite-friends' as any)}
+                />
+                <SettingItem
+                    icon={Globe}
+                    label={t.settingsLanguage}
                     value={currentLanguageName}
-                    onPress={() => setIsLanguageModalVisible(true)} 
+                    onPress={() => setIsLanguageModalVisible(true)}
                 />
-                
+
                 <TouchableOpacity style={styles.logoutBtn} onPress={handleSignOut}>
                     <LogOut size={22} color="#EF4444" strokeWidth={1.5} />
                     <Text style={styles.logoutText}>{t.settingsLogout}</Text>
@@ -148,12 +160,12 @@ export default function MerchantSettingsScreen() {
                                 <Text style={styles.closeBtn}>{t.roleScreenBack}</Text>
                             </TouchableOpacity>
                         </View>
-                        
+
                         <ScrollView style={styles.languageList}>
                             {SUPPORTED_LANGUAGES.map((lang) => {
                                 const isSelected = locale === lang.code;
                                 return (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         key={lang.code}
                                         style={[styles.languagePill, isSelected && styles.languagePillSelected]}
                                         onPress={() => handleLanguageSelect(lang.code)}

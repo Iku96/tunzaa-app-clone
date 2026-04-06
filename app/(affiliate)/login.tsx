@@ -3,9 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, P
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Eye, EyeOff } from 'lucide-react-native';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 
 export default function AffiliateLoginScreen() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -13,7 +15,7 @@ export default function AffiliateLoginScreen() {
 
     const handleLogin = () => {
         // Mock authentication, route directly to profile
-        router.push('/(affiliate)/profile' as any);
+        router.replace('/(affiliate)/profile' as any);
     };
 
     return (
@@ -25,11 +27,10 @@ export default function AffiliateLoginScreen() {
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                     <View style={styles.headerContainer}>
-                        {/* Spacing for status bar */}
                     </View>
 
-                    <Text style={styles.title}>Welcome Back</Text>
-                    <Text style={styles.subtitle}>Enter your details to sign in</Text>
+                    <Text style={styles.title}>{t.affiliateLoginTitle}</Text>
+                    <Text style={styles.subtitle}>{t.loginSubtitle}</Text>
 
                     <View style={styles.logoContainer}>
                         <Image
@@ -43,7 +44,7 @@ export default function AffiliateLoginScreen() {
                         <View style={styles.inputContainer}>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Enter +255xxx xxx xxx"
+                                placeholder={t.affiliatePhonePlaceholder}
                                 placeholderTextColor="#9CA3AF"
                                 keyboardType="phone-pad"
                                 value={phoneNumber}
@@ -54,7 +55,7 @@ export default function AffiliateLoginScreen() {
                         <View style={styles.passwordContainer}>
                             <TextInput
                                 style={styles.passwordInput}
-                                placeholder="Enter password"
+                                placeholder={t.loginPasswordPlaceholder}
                                 placeholderTextColor="#9CA3AF"
                                 autoCapitalize="none" secureTextEntry={!showPassword}
                                 value={password}
@@ -72,8 +73,8 @@ export default function AffiliateLoginScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity style={styles.forgotPasswordContainer}>
-                            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                        <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => router.push('/forgot-password')}>
+                            <Text style={styles.forgotPasswordText}>{t.loginForgotPassword}</Text>
                         </TouchableOpacity>
 
                         <View style={styles.termsContainer}>
@@ -85,7 +86,7 @@ export default function AffiliateLoginScreen() {
                             </TouchableOpacity>
 
                             <Text style={styles.termsText}>
-                                I have read agree to Tunzaa <Text style={styles.linkText}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                                {t.affiliateTermsAgreement}
                             </Text>
                         </View>
                     </View>
@@ -98,7 +99,7 @@ export default function AffiliateLoginScreen() {
                         onPress={handleLogin}
                         disabled={!phoneNumber || !password || !acceptedTerms}
                     >
-                        <Text style={styles.loginButtonText}>Log In</Text>
+                        <Text style={styles.loginButtonText}>{t.loginButton}</Text>
                     </TouchableOpacity>
 
                 </ScrollView>

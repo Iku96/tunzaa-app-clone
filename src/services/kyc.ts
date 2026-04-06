@@ -30,7 +30,7 @@ export const kycApi = {
   ): Promise<KycSubmissionResponse> => {
     const response = await apiClient.post<KycSubmissionResponse>(
       `/marketplace/vendors/${vendorId}/kyc`,
-      documents
+      { documents } // Wrap in object
     );
     return response.data;
   },

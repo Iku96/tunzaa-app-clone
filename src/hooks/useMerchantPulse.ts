@@ -18,7 +18,7 @@ export interface PulseOrder {
     last_payment_date: string;
 }
 
-export function useMerchantPulse() {
+export function useMerchantPulse(params?: { fromDate?: string; toDate?: string }) {
     const { user } = useTunzaaAuth();
     const [orders, setOrders] = useState<PulseOrder[]>([]);
     const [loading, setLoading] = useState(true);
@@ -44,7 +44,9 @@ export function useMerchantPulse() {
             // Fetch orders from the API
             const response = await orderApi.getVendorOrders({
                 vendor_id: vendorId,
-                limit: 20
+                limit: 20,
+                from_date: params?.fromDate,
+                to_date: params?.toDate
             });
 
             // Map to PulseOrder shape expected by the UI

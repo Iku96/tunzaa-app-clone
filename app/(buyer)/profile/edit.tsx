@@ -23,7 +23,7 @@ const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
 
 export default function EditProfileScreen() {
     const router = useRouter();
-    const { user, refreshProfile } = useTunzaaAuth();
+    const { user, refreshProfile, saveAuthResponse } = useTunzaaAuth();
     const { mutateAsync: updateUser, isPending } = useUpdateUser();
 
     const initialName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : '');
@@ -196,7 +196,7 @@ export default function EditProfileScreen() {
 
             await updateUser({
                 userId: targetUserId,
-                data: { first_name, last_name }
+                data: { first_name, last_name, name: name.trim() }
             });
 
             // 2. Save metadata extras to AsyncStorage (always works)
@@ -210,24 +210,42 @@ export default function EditProfileScreen() {
             // 3. Also try saving to API metadata (will work once backend is updated)
             const profiles = user?.profiles || [];
             let targetProfile = profiles.find((p: any) => p.role === 'buyer') || profiles[0];
+            const updatedMeta = {
+                ...(targetProfile?.metadata || {}),
+                username: username || undefined,
+                gender: gender || undefined,
+                date_of_birth: dob || undefined,
+            };
+
             if (targetProfile?.profile_id) {
-                const existingMeta = (targetProfile as any).metadata || {};
-                const updatedMeta = {
-                    ...existingMeta,
-                    username: username || undefined,
-                    gender: gender || undefined,
-                    date_of_birth: dob || undefined,
-                };
                 await authApi.updateUserProfile(
                     targetUserId,
                     targetProfile.profile_id,
-                    { metadata: updatedMeta }
+                    { 
+                        display_name: name.trim(),
+                        metadata: updatedMeta 
+                    }
                 ).catch((err: any) => {
                     console.warn('[EditProfile] API metadata save failed (not critical):', err.message);
                 });
             }
 
-            // 4. Refresh active session
+            // 4. Force UI Atomic update
+            if (user) {
+                const finalUser = JSON.parse(JSON.stringify(user));
+                finalUser.first_name = first_name;
+                finalUser.last_name = last_name;
+                finalUser.name = name.trim();
+                
+                const pIndex = finalUser.profiles.findIndex((p: any) => p.profile_id === targetProfile?.profile_id);
+                if (pIndex > -1) {
+                    finalUser.profiles[pIndex].display_name = name.trim();
+                    finalUser.profiles[pIndex].metadata = updatedMeta;
+                }
+                if (saveAuthResponse) await saveAuthResponse(finalUser);
+            }
+
+            // 5. Optionally refresh from backend if successful
             if (refreshProfile) {
                 await refreshProfile();
             }

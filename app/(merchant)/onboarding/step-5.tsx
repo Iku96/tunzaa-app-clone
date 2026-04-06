@@ -1,10 +1,11 @@
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, Modal, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useLanguage } from '../../../src/contexts/LanguageContext';
+import { uploadApi } from '../../../src/services/upload';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,7 +13,7 @@ type DocType = 'license' | 'tin' | 'brela' | null;
 
 export default function Step5Documents() {
     const router = useRouter();
-    const { isAuthenticated, createVendor, refreshProfile, user } = useTunzaaAuth();
+    const { isAuthenticated, createVendor, submitVendorKyc, refreshProfile, user } = useTunzaaAuth();
     const { t } = useLanguage();
     
     const [loading, setLoading] = useState(false);
@@ -110,6 +111,19 @@ export default function Step5Documents() {
                 },
                 verification_documents: [],
                 commission_rate: '0',
+                metadata: {
+                    business_name: finalShopName,
+                    description: savedDesc || 'No description provided',
+                    contact_phone: savedPhone || user?.phone_number || '',
+                    contact_email: user?.email || `${user?.phone_number}@tunzaa.co.tz`,
+                    logo_url: savedLogo || '',
+                    banner_url: savedCover || '',
+                    region: location?.region || '',
+                    municipal: location?.municipal || '',
+                    ward: location?.ward || '',
+                    extraInfo: location?.extraInfo || '',
+                    location: location // Store the whole object for convenience
+                },
                 store: {
                     store_name: finalShopName,
                     store_slug: storeSlug,
@@ -128,8 +142,63 @@ export default function Step5Documents() {
                 },
             };
 
+            // 1. Upload Logo if it's a local URI
+            if (savedLogo && savedLogo.startsWith('file://')) {
+                console.log('📤 [Step5] Uploading store logo...');
+                try {
+                    const uploadRes = await uploadApi.uploadFile(savedLogo, `logo_${vendorUserId}.jpg`);
+                    vendorData.store.branding.logo_url = uploadRes.url;
+                } catch (e) {
+                    console.error('❌ [Step5] Logo upload failed:', e);
+                }
+            }
+
+            // 2. Upload Cover if it's a local URI
+            if (savedCover && savedCover.startsWith('file://')) {
+                console.log('📤 [Step5] Uploading store banner...');
+                try {
+                    const uploadRes = await uploadApi.uploadFile(savedCover, `banner_${vendorUserId}.jpg`);
+                    vendorData.store.banners = [uploadRes.url];
+                } catch (e) {
+                    console.error('❌ [Step5] Banner upload failed:', e);
+                }
+            }
+
+            // 3. Create Vendor
             await createVendor(vendorData);
-            console.log('✅ [Step5] Vendor profile finalized successfully!');
+            console.log('✅ [Step5] Vendor profile created successfully!');
+
+            // 4. Upload Documents if any were picked
+            const documentsToUpload = [
+                { id: 'license' as const, file: licenseFile, label: 'Business License' },
+                { id: 'tin' as const, file: tinFile, label: 'TIN Certificate' },
+                { id: 'brela' as const, file: brelaFile, label: 'BRELA Document' },
+            ].filter(d => d.file !== null);
+
+            if (documentsToUpload.length > 0) {
+                console.log(`📤 [Step5] Uploading ${documentsToUpload.length} documents...`);
+                const uploadedDocs = [];
+                
+                for (const doc of documentsToUpload) {
+                    try {
+                        const uploadRes = await uploadApi.uploadFile(doc.file.uri, `${doc.id}_${vendorUserId}`);
+                        uploadedDocs.push({
+                            document_type_id: doc.id, // Simplified ID ('tin', 'license', 'brela')
+                            document_url: uploadRes.url,
+                            verification_status: 'pending'
+                        });
+                    } catch (e: any) {
+                        console.error(`❌ [Step5] Failed to upload ${doc.label}:`, e);
+                    }
+                }
+
+                if (uploadedDocs.length > 0) {
+                    console.log('📄 [Step5] Submitting KYC documents...');
+                    await submitVendorKyc(uploadedDocs).catch(e => {
+                        console.error('❌ [Step5] KYC Submission failed:', e);
+                    });
+                }
+            }
 
             // Clear temporary storage
             await Promise.all([

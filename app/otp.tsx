@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
@@ -106,9 +107,13 @@ export default function OTPScreen() {
                     try {
                         let authResponse: any = null;
 
+                        // 2. Map role to portal
+                        const portal = role === 'merchant' ? 'merchant' : (role === 'delivery' ? 'delivery' : 'buyer');
+
                         // Smart Flow: If OTP verification already returned a token, use it and skip register
                         if (verifyResp.access_token) {
                             console.log('🛰️ [OTP] User already exists/authenticated via OTP, skipping registration call.');
+                            await AsyncStorage.setItem('LAST_PORTAL', portal);
                             authResponse = await saveAuthResponse(verifyResp);
                         } else {
                             // Register new user
@@ -119,18 +124,13 @@ export default function OTPScreen() {
                                 phone_number: phone_number,
                                 email: email || '',
                             };
-                            authResponse = await register(registrationData);
+                            authResponse = await register(registrationData, portal);
                             console.log('✅ [OTP] Registration successful:', authResponse.user_id);
                         }
                         
-                        if (role === 'merchant') {
-                            console.log('✅ [OTP] Account created/verified, moving to business onboarding');
-                            router.replace('/(merchant)/onboarding/step-2' as any);
-                        } else if (role === 'buyer') {
-                            router.replace('/(buyer)' as any);
-                        } else {
-                            router.replace('/(buyer)' as any);
-                        }
+                        // AuthGuard will now handle the navigation because LAST_PORTAL was set
+                        // before the auth state update in context. 
+                        // No explicit router.replace needed here.
                     } catch (regErr: any) {
                         console.error('❌ [OTP] Registration/Vendor creation failed:', regErr);
                         // Extract a more helpful message from the API error if possible
@@ -138,10 +138,10 @@ export default function OTPScreen() {
                         Alert.alert('Registration Failed', errorMessage);
                     }
                 } else if (flow === 'reset-password') {
-                    router.push({ pathname: '/reset-password', params: { phone_number, reset_token: code } } as any);
+                    router.replace({ pathname: '/reset-password', params: { phone_number, reset_token: code } } as any);
                 } else {
                     // Default fallback logic
-                    router.push({ pathname: '/create-password', params: { phone_number } } as any);
+                    router.replace({ pathname: '/create-password', params: { phone_number } } as any);
                 }
                 } else {
                     Alert.alert(t.otpVerifyFailed, t.otpInvalidCode + '. ' + t.otpInstruction);
@@ -229,7 +229,7 @@ export default function OTPScreen() {
                 </View>
 
                 {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.replace('/(buyer)')}>
                     <Text style={styles.skipText}>{t.loginSkip}</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>

@@ -1,0 +1,1307 @@
+{
+  "info": {
+    "_postman_id": "3c15fb7a-aba9-401f-b11a-a6d0a2a321a8",
+    "name": "TunzaaPay API - Merchant Onboarding & Sandbox",
+    "description": "Complete API collection for TunzaaPay merchant onboarding, authentication, sandbox transactions, and analytics.\n\n**Base URL:** `http://localhost:8000` or your production URL\n\n**Authentication:** Most endpoints require JWT Bearer token in Authorization header.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53294865"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "1.1 Register (Traditional)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testmerchant\",\n    \"password\": \"SecurePass123!\",\n    \"password_confirm\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new user with username/password. Sandbox credentials are created automatically.\n\n**Response includes:**\n- User ID\n- Access token\n- Refresh token\n- Sandbox API credentials"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"username\": \"testmerchant\",\n    \"password\": \"SecurePass123!\",\n    \"password_confirm\": \"SecurePass123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/accounts/auth/register",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "accounts",
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Register a new user with username/password. Sandbox credentials are created automatically.\n\n**Response includes:**\n- User ID\n- Access token\n- Refresh token\n- Sandbox API credentials"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 201,\n    \"success\": true,\n    \"message\": \"User registered successfully. Sandbox credentials created.\",\n    \"data\": {\n        \"user_id\": 1234567890,\n        \"username\": \"testmerchant\",\n        \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"token_type\": \"Bearer\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "1.2 Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testmerchant\",\n    \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login with username and password to get JWT tokens."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"username\": \"testmerchant\",\n    \"password\": \"SecurePass123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/accounts/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "accounts",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Login with username and password to get JWT tokens."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Login successful\",\n    \"data\": {\n        \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"token_type\": \"Bearer\",\n        \"expires_in\": 420.0\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "1.3 Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Refresh access token using refresh token."
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout and blacklist the refresh token."
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 Google OAuth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"authorization_code\": \"4/0AeanS0Z...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/auth/google",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "auth",
+                "google"
+              ]
+            },
+            "description": "Authenticate with Google OAuth.\n\n**Flow:**\n1. Frontend redirects user to Google consent screen\n2. Google returns authorization code\n3. Send code to this endpoint\n4. Backend exchanges code for user info\n5. Returns JWT tokens\n\n**Required Settings:**\n- GOOGLE_CLIENT_ID\n- GOOGLE_CLIENT_SECRET\n- GOOGLE_REDIRECT_URI"
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 Apple Sign In",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"authorization_code\": \"c...\",\n    \"id_token\": \"eyJraWQiOiJ...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/auth/apple",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "auth",
+                "apple"
+              ]
+            },
+            "description": "Authenticate with Apple Sign In.\n\n**Flow:**\n1. Frontend uses Apple Sign In JS framework\n2. Apple returns authorization code and ID token\n3. Send both to this endpoint\n4. Backend validates and creates/links user\n5. Returns JWT tokens"
+          },
+          "response": []
+        },
+        {
+          "name": "1.7 Get Token (API Key Auth)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"api_key\": \"SB_ABCDEF123456...\",\n    \"secret_key\": \"xyz123...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/request/token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "request",
+                "token"
+              ]
+            },
+            "description": "Get JWT token using API key and secret key (for API clients).\n\n**Note:** Sandbox keys start with `SB_`, Live keys start with `LV_`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Merchant Application",
+      "item": [
+        {
+          "name": "2.1 Submit Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"business_name\": \"Tunzaa Electronics Ltd\",\n    \"business_type\": \"Retail\",\n    \"registration_number\": \"BRE123456\",\n    \"contact_email\": \"info@tunzaaelectronics.co.tz\",\n    \"contact_phone\": \"+255712345678\",\n    \"address\": \"Plot 123, Ohio Street, Dar es Salaam, Tanzania\",\n    \"documents\": [\n        {\n            \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n            \"name\": \"business_license.pdf\",\n            \"type\": \"business_license\"\n        },\n        {\n            \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n            \"name\": \"tax_certificate.pdf\",\n            \"type\": \"tax_certificate\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/merchant/application",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "merchant",
+                "application"
+              ]
+            },
+            "description": "Submit a merchant application for approval.\n\n**Status Flow:**\n1. `pending` - Awaiting admin review\n2. `approved` - Merchant created, live credentials issued\n3. `rejected` - Can reapply with corrections\n\n**Documents:** Array of uploaded file IDs from the file upload endpoint."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"business_name\": \"Tunzaa Electronics Ltd\",\n    \"business_type\": \"Retail\",\n    \"registration_number\": \"BRE123456\",\n    \"contact_email\": \"info@tunzaaelectronics.co.tz\",\n    \"contact_phone\": \"+255712345678\",\n    \"address\": \"Plot 123, Ohio Street, Dar es Salaam, Tanzania\",\n    \"documents\": [\n        {\n            \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n            \"name\": \"business_license.pdf\",\n            \"type\": \"business_license\"\n        },\n        {\n            \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n            \"name\": \"tax_certificate.pdf\",\n            \"type\": \"tax_certificate\"\n        }\n    ]\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/accounts/merchant/application",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "accounts",
+                    "merchant",
+                    "application"
+                  ]
+                },
+                "description": "Submit a merchant application for approval.\n\n**Status Flow:**\n1. `pending` - Awaiting admin review\n2. `approved` - Merchant created, live credentials issued\n3. `rejected` - Can reapply with corrections\n\n**Documents:** Array of uploaded file IDs from the file upload endpoint."
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 201,\n    \"success\": true,\n    \"message\": \"Application submitted successfully.\",\n    \"data\": {\n        \"id\": 1,\n        \"business_name\": \"Tunzaa Electronics Ltd\",\n        \"business_type\": \"Retail\",\n        \"registration_number\": \"BRE123456\",\n        \"contact_email\": \"info@tunzaaelectronics.co.tz\",\n        \"contact_phone\": \"+255712345678\",\n        \"address\": \"Plot 123, Ohio Street, Dar es Salaam, Tanzania\",\n        \"documents\": [...],\n        \"status\": \"pending\",\n        \"submitted_at\": \"2026-03-18T14:00:00Z\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "2.2 Get Application Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/merchant/application/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "merchant",
+                "application",
+                "status"
+              ]
+            },
+            "description": "Get the current user's application status."
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 Update Application",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"business_name\": \"Tunzaa Electronics Ltd\",\n    \"contact_email\": \"newemail@tunzaaelectronics.co.tz\",\n    \"documents\": [\n        {\n            \"id\": \"550e8400-e29b-41d4-a716-446655440002\",\n            \"name\": \"updated_license.pdf\",\n            \"type\": \"business_license\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/merchant/application/update",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "merchant",
+                "application",
+                "update"
+              ]
+            },
+            "description": "Update a pending application. Only works when status is 'pending'."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Merchant Profile",
+      "item": [
+        {
+          "name": "3.1 Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/merchant/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "merchant",
+                "profile"
+              ]
+            },
+            "description": "Get merchant profile details. Only available after application is approved."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/accounts/merchant/profile",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "accounts",
+                    "merchant",
+                    "profile"
+                  ]
+                },
+                "description": "Get merchant profile details. Only available after application is approved."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"data\": {\n        \"merchant_id\": \"123456\",\n        \"merchant_name\": \"Tunzaa Electronics Ltd\",\n        \"is_active\": true,\n        \"balance\": \"15000.00\",\n        \"sandbox_callback_url\": \"https://test.example.com/callback\",\n        \"live_callback_url\": \"https://example.com/callback\",\n        \"created_at\": \"2026-03-18T14:00:00Z\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "3.2 Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"merchant_name\": \"Tunzaa Electronics Ltd\",\n    \"sandbox_callback_url\": \"https://test.example.com/callback\",\n    \"live_callback_url\": \"https://example.com/callback\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/merchant/profile/update",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "merchant",
+                "profile",
+                "update"
+              ]
+            },
+            "description": "Update merchant profile including callback URLs."
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Get API Credentials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/merchant/credentials",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "merchant",
+                "credentials"
+              ]
+            },
+            "description": "Get all API credentials (sandbox and live) for the current user."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/accounts/merchant/credentials",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "accounts",
+                    "merchant",
+                    "credentials"
+                  ]
+                },
+                "description": "Get all API credentials (sandbox and live) for the current user."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"data\": [\n        {\n            \"id\": 1,\n            \"api_key\": \"SB_ABCDEF123456789...\",\n            \"secret_key\": \"xyz123abc...\",\n            \"environment\": \"sandbox\",\n            \"is_active\": true,\n            \"created_at\": \"2026-03-18T14:00:00Z\"\n        },\n        {\n            \"id\": 2,\n            \"api_key\": \"LV_ABCDEF123456789...\",\n            \"secret_key\": \"abc456def...\",\n            \"environment\": \"live\",\n            \"is_active\": true,\n            \"created_at\": \"2026-03-18T15:00:00Z\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "3.4 Regenerate Sandbox Credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/merchant/credentials/regenerate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "merchant",
+                "credentials",
+                "regenerate"
+              ]
+            },
+            "description": "Regenerate sandbox API credentials. Old sandbox keys will stop working."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Admin - Application Management",
+      "item": [
+        {
+          "name": "4.1 List Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/applications?status=pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "applications"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status: pending, approved, rejected"
+                }
+              ]
+            },
+            "description": "List all merchant applications. Admin only.\n\n**Query Parameters:**\n- `status` - Filter by status (pending, approved, rejected)"
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 Get Application Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/applications/{{application_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "applications",
+                "{{application_id}}"
+              ]
+            },
+            "description": "Get detailed information about a specific application. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 Approve Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/applications/{{application_id}}/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "applications",
+                "{{application_id}}",
+                "approve"
+              ]
+            },
+            "description": "Approve a pending application. Admin only.\n\n**Actions on approval:**\n1. Creates Merchant record\n2. Creates live API credentials\n3. Sends notification email\n4. Updates application status to 'approved'"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/accounts/applications/{{application_id}}/approve",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "accounts",
+                    "applications",
+                    "{{application_id}}",
+                    "approve"
+                  ]
+                },
+                "description": "Approve a pending application. Admin only.\n\n**Actions on approval:**\n1. Creates Merchant record\n2. Creates live API credentials\n3. Sends notification email\n4. Updates application status to 'approved'"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Application approved successfully.\",\n    \"data\": {\n        \"merchant_id\": \"123456\",\n        \"merchant_name\": \"Tunzaa Electronics Ltd\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "4.4 Reject Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"rejection_reason\": \"Business license document is expired. Please upload a valid certificate.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/applications/{{application_id}}/reject",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "applications",
+                "{{application_id}}",
+                "reject"
+              ]
+            },
+            "description": "Reject an application with a reason. Admin only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. File Uploads",
+      "item": [
+        {
+          "name": "5.1 Upload File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "description": "File to upload (PDF, DOC, DOCX, JPG, PNG - max 10MB)",
+                  "src": "/path/to/document.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/uploads",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "uploads"
+              ]
+            },
+            "description": "Upload a file for use in merchant applications.\n\n**Allowed file types:** PDF, DOC, DOCX, JPG, PNG\n**Max file size:** 10MB"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "description": "File to upload (PDF, DOC, DOCX, JPG, PNG - max 10MB)",
+                      "src": "/path/to/document.pdf"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/accounts/uploads",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "accounts",
+                    "uploads"
+                  ]
+                },
+                "description": "Upload a file for use in merchant applications.\n\n**Allowed file types:** PDF, DOC, DOCX, JPG, PNG\n**Max file size:** 10MB"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 201,\n    \"success\": true,\n    \"message\": \"File uploaded successfully.\",\n    \"data\": {\n        \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n        \"original_name\": \"business_license.pdf\",\n        \"content_type\": \"application/pdf\",\n        \"size\": 245678,\n        \"created_at\": \"2026-03-18T14:00:00Z\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "5.2 Get File Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/accounts/uploads/550e8400-e29b-41d4-a716-446655440000",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "uploads",
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            },
+            "description": "Get information about an uploaded file."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Payments",
+      "item": [
+        {
+          "name": "6.1 Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Environment",
+                "value": "sandbox",
+                "description": "Required: 'sandbox' or 'live'"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 5000.00,\n    \"customer_msisdn\": \"255754540681\",\n    \"reference\": \"ORDER-12345\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/initiate-payment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "initiate-payment"
+              ]
+            },
+            "description": "Initiate a payment request.\n\n**X-Environment Header:**\n- `sandbox` - Test transaction (uses sandbox credentials)\n- `live` - Real transaction (uses live credentials)\n\n**Providers:**\n- `VODACOM` - M-Pesa\n- `AIRTEL` - Airtel Money\n- `TIGO` - Tigo Pesa\n- `AZAMPESA` - Azam Pesa"
+          },
+          "response": []
+        },
+        {
+          "name": "6.2 Check Transaction Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/check-status/{{transaction_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "check-status",
+                "{{transaction_id}}"
+              ]
+            },
+            "description": "Check the status of a transaction."
+          },
+          "response": []
+        },
+        {
+          "name": "6.3 Trigger Sandbox Callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"scenario\": \"timeout\" // success/failed/timeout/insufficient_funds/invalid_msisdn/network_error\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/transactions/{{transaction_id}}/callback/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "transactions",
+                "{{transaction_id}}",
+                "callback",
+                ""
+              ]
+            },
+            "description": "Manually trigger a sandbox callback for testing.\n\n**Scenarios:**\n- `success` - Transaction completed\n- `failed` - Transaction failed\n- `timeout` - Transaction timeout\n- `insufficient_funds` - Insufficient balance\n- `invalid_msisdn` - Invalid phone number\n- `network_error` - Network error\n\n**Note:** Only works for sandbox transactions (is_sandbox=True)."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"scenario\": \"timeout\" // success/failed/timeout/insufficient_funds/invalid_msisdn/network_error\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/payments/transactions/{{transaction_id}}/callback/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "transactions",
+                    "{{transaction_id}}",
+                    "callback",
+                    ""
+                  ]
+                },
+                "description": "Manually trigger a sandbox callback for testing.\n\n**Scenarios:**\n- `success` - Transaction completed\n- `failed` - Transaction failed\n- `timeout` - Transaction timeout\n- `insufficient_funds` - Insufficient balance\n- `invalid_msisdn` - Invalid phone number\n- `network_error` - Network error\n\n**Note:** Only works for sandbox transactions (is_sandbox=True)."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Sandbox callback triggered successfully\",\n    \"data\": {\n        \"success\": true,\n        \"transaction_id\": \"TXN123456\",\n        \"status\": \"COMPLETED\",\n        \"callback_sent\": true,\n        \"scenario\": \"success\"\n    }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Analytics",
+      "item": [
+        {
+          "name": "7.1 Transaction Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/summary?days=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30",
+                  "description": "Number of days to include"
+                }
+              ]
+            },
+            "description": "Get transaction summary.\n\n**Merchants:** See their own data\n**Admins:** See platform-wide data"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/analytics/summary?days=30",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "summary"
+                  ],
+                  "query": [
+                    {
+                      "key": "days",
+                      "value": "30",
+                      "description": "Number of days to include"
+                    }
+                  ]
+                },
+                "description": "Get transaction summary.\n\n**Merchants:** See their own data\n**Admins:** See platform-wide data"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"data\": {\n        \"total_transactions\": 150,\n        \"total_amount\": \"1250000.00\",\n        \"successful\": 145,\n        \"failed\": 5,\n        \"pending\": 0,\n        \"average_amount\": \"8333.33\",\n        \"period_days\": 30\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "7.2 Daily Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/daily?days=7",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "daily"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "7",
+                  "description": "Number of days to include"
+                }
+              ]
+            },
+            "description": "Get daily transaction breakdown."
+          },
+          "response": []
+        },
+        {
+          "name": "7.3 Provider Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/providers?days=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "providers"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Get breakdown by payment provider (M-Pesa, Airtel, Tigo, AzamPesa)."
+          },
+          "response": []
+        },
+        {
+          "name": "7.4 Transaction Trends",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/trends",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "trends"
+              ]
+            },
+            "description": "Get transaction trends for 7, 30, and 90 day periods."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{access_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/analytics/trends",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "analytics",
+                    "trends"
+                  ]
+                },
+                "description": "Get transaction trends for 7, 30, and 90 day periods."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"data\": {\n        \"7_days\": {\n            \"total_transactions\": 35,\n            \"total_amount\": \"280000.00\",\n            \"average_amount\": \"8000.00\"\n        },\n        \"30_days\": {\n            \"total_transactions\": 150,\n            \"total_amount\": \"1250000.00\",\n            \"average_amount\": \"8333.33\"\n        },\n        \"90_days\": {\n            \"total_transactions\": 450,\n            \"total_amount\": \"3750000.00\",\n            \"average_amount\": \"8333.33\"\n        }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "7.5 Top Merchants (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/analytics/top-merchants?days=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "top-merchants"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30"
+                }
+              ]
+            },
+            "description": "Get top 10 merchants by transaction volume. Admin only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Legacy Endpoints",
+      "item": [
+        {
+          "name": "8.1 Merchant Onboarding (Legacy)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "your_api_key"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"merchant_name\": \"Test Merchant\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/accounts/onboard/merchant",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "accounts",
+                "onboard",
+                "merchant"
+              ]
+            },
+            "description": "Legacy merchant onboarding endpoint. Creates user, sandbox credentials, and merchant in one step.\n\n**Note:** This is the original endpoint kept for backward compatibility."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "merchant_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "application_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transaction_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

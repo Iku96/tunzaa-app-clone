@@ -2,34 +2,29 @@
  * ============================================================================
  * DELIVERY TYPE SELECTION SCREEN
  * ============================================================================
- * 
- * Purpose: Allow delivery partner to choose their service type
- * 
- * Flow: Register → OTP → Documents → Type (THIS SCREEN) → Complete
- * 
- * Options:
+ * * Purpose: Allow delivery partner to choose their service type
+ * * Flow: Register → OTP → Documents → Type (THIS SCREEN) → Complete
+ * * Options:
  * 1. Usafirishaji wa haraka (Fast/Express delivery) - Bicycle icon
  * 2. Usafirishaji wa kawaida (Standard delivery) - Car icon
  * 3. Usafirishaji wa wingi (Bulk delivery) - Cube/box icon
- * 
- * Business Rules:
+ * * Business Rules:
  * - User must select ONE delivery type
  * - Cannot proceed without selection
  * - Selection determines delivery partner's service offering
- * 
- * Navigation:
+ * * Navigation:
  * - Back: Returns to documents screen
  * - Continue: Proceeds to delivery home/dashboard (registration complete)
- * 
- * ============================================================================
+ * * ============================================================================
  */
 
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DeliveryStepper from '../../src/components/delivery/DeliveryStepper';
 import { Ionicons } from '@expo/vector-icons';
+import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext'; // ✅ IMPORTED AUTH CONTEXT
 
 const { width } = Dimensions.get('window');
 
@@ -40,8 +35,7 @@ const { width } = Dimensions.get('window');
 /**
  * STEPS: Defines the 5-step registration process
  * Step 4 (Type) is the current active step on this screen
- * 
- * Progress: ✅ ✅ ✅ 🔵 ⚪
+ * * Progress: ✅ ✅ ✅ 🔵 ⚪
  */
 const STEPS = [
     { name: 'Register', completed: true },      // ✅ Step 1: Account created
@@ -57,13 +51,11 @@ const STEPS = [
 
 /**
  * DELIVERY_TYPES: Array of available delivery service types
- * 
- * Each type has:
+ * * Each type has:
  * - id: Unique identifier for state tracking
  * - label: Display text in Swahili
  * - icon: Ionicons name for visual representation
- * 
- * These map to different service tiers:
+ * * These map to different service tiers:
  * - haraka: Fast/same-day delivery (bicycle)
  * - kawaida: Standard delivery (car)
  * - wingi: Bulk/large orders (cube/box)
@@ -72,17 +64,17 @@ const DELIVERY_TYPES = [
     {
         id: 'haraka',
         label: 'Usafirishaji wa haraka',
-        icon: 'speedometer-outline' as const, // Represents fast delivery
+        icon: 'speedometer-outline' as const,
     },
     {
         id: 'kawaida',
         label: 'Usafirishaji wa kawaida',
-        icon: 'bus-outline' as const,         // Represents standard truck delivery
+        icon: 'bus-outline' as const,
     },
     {
         id: 'wingi',
         label: 'Usafirishaji wa wingi',
-        icon: 'cube-outline' as const,        // Represents bulk/multiple packages
+        icon: 'cube-outline' as const,
     },
 ];
 
@@ -103,20 +95,21 @@ export default function DeliveryTypeScreen() {
      */
     const router = useRouter();
 
+    // ✅ PULL IN API CALL AND USER FROM CONTEXT
+    const { createDeliveryPartner, user } = useTunzaaAuth();
+
     // ------------------------------------------------------------------------
     // STATE MANAGEMENT
     // ------------------------------------------------------------------------
 
     /**
      * selected: Tracks which delivery type is currently selected
-     * 
-     * Possible values:
+     * * Possible values:
      * - null: No selection yet (initial state)
      * - 'haraka': Fast delivery selected
      * - 'kawaida': Standard delivery selected
      * - 'wingi': Bulk delivery selected
-     * 
-     * Used to:
+     * * Used to:
      * - Apply selected styling to chosen option
      * - Enable/disable Continue button
      * - Determine which service type to save
@@ -129,29 +122,56 @@ export default function DeliveryTypeScreen() {
      */
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+    // ✅ ADDED LOADING STATE FOR API CALL
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     // ------------------------------------------------------------------------
     // NAVIGATION HANDLERS
     // ------------------------------------------------------------------------
 
     /**
      * handleContinue: Validates selection and proceeds to delivery home
-     * 
-     * Validation:
+     * * Validation:
      * - Checks if a delivery type is selected
      * - If not, function returns early (does nothing)
      * - If yes, navigates to delivery home screen
-     * 
-     * Navigation:
+     * * Navigation:
      * - Uses router.replace() not router.push()
      * - This prevents user from going "back" to registration
      * - Registration is complete, so back navigation should go to home
      */
-    const handleContinue = () => {
+    const handleContinue = async () => {
         // Guard clause: Exit if no selection
         if (selected.length === 0) return;
 
-        // Show the success modal instead of navigating directly
-        setShowSuccessModal(true);
+        setIsSubmitting(true);
+        try {
+            // Determine the name to send
+            const partnerName = user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Delivery Partner';
+
+            const payload = {
+                name: partnerName,
+                type: 'individual',       // ✅ Required by backend
+                commission_percent: 0,    // ✅ Required by backend
+                vehicle_type: selected[0],
+                delivery_types: selected
+            };
+
+            console.log("📤 Sending payload to createDeliveryPartner:", payload);
+
+            // ✅ ACTUALLY TELL THE BACKEND TO CREATE THE PROFILE
+            await createDeliveryPartner(payload as any);
+
+            // Show the success modal instead of navigating directly
+            setShowSuccessModal(true);
+        } catch (error: any) {
+            console.error("❌ Failed to create delivery profile.");
+            const rawError = error.originalError?.response?.data || error.apiError;
+            console.log("🚨 RAW BACKEND ERROR:", JSON.stringify(rawError, null, 2));
+            alert("Kuna tatizo. Tafadhali jaribu tena.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     /**
@@ -225,18 +245,18 @@ export default function DeliveryTypeScreen() {
                                     key={type.id}
                                     style={[
                                         styles.optionCard,
-                                        // Note: No visual border change in this design
-                                        // Selected state only changes text/icon color
+                                        /* Note: No visual border change in this design */
+                                        /* Selected state only changes text/icon color */
                                         isSelected && styles.optionCardSelected
                                     ]}
                                     onPress={() => toggleSelection(type.id)}
-                                    activeOpacity={0.7}  // Slight opacity change on press
+                                    activeOpacity={0.7}
+                                    disabled={isSubmitting}
                                 >
                                     {/* Icon (bicycle/car/cube) */}
                                     <Ionicons
                                         name={type.icon}
                                         size={24}
-                                        // Color: White if selected, Blue if not
                                         color={isSelected ? '#FFFFFF' : '#425BA4'}
                                         style={styles.optionIcon}
                                     />
@@ -245,7 +265,7 @@ export default function DeliveryTypeScreen() {
                                     <Text
                                         style={[
                                             styles.optionLabel,
-                                            // Apply white styling when selected
+                                            /* Apply white styling when selected */
                                             isSelected && styles.optionLabelSelected
                                         ]}
                                     >
@@ -278,6 +298,7 @@ export default function DeliveryTypeScreen() {
                         <TouchableOpacity
                             style={styles.backButton}
                             onPress={() => router.back()}
+                            disabled={isSubmitting}
                         >
                             <Text style={styles.backButtonText}>Rudi</Text>
                         </TouchableOpacity>
@@ -286,13 +307,17 @@ export default function DeliveryTypeScreen() {
                         <TouchableOpacity
                             style={[
                                 styles.nextButton,
-                                // Apply disabled styling if no selection
-                                selected.length === 0 && styles.nextButtonDisabled
+                                /* Apply disabled styling if no selection */
+                                (selected.length === 0 || isSubmitting) && styles.nextButtonDisabled
                             ]}
                             onPress={handleContinue}
-                            disabled={selected.length === 0}  // Prevent clicks when no selection
+                            disabled={selected.length === 0 || isSubmitting}
                         >
-                            <Text style={styles.nextButtonText}>Endelea</Text>
+                            {isSubmitting ? (
+                                <ActivityIndicator color="#FFFFFF" />
+                            ) : (
+                                <Text style={styles.nextButtonText}>Endelea</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -418,8 +443,7 @@ const styles = StyleSheet.create({
     /**
      * optionCard: Individual delivery type selection card
      * White card with icon and label
-     * 
-     * Layout: [Icon] [Text]
+     * * Layout: [Icon] [Text]
      * Interaction: Entire card is tappable
      */
     optionCard: {
@@ -429,8 +453,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         paddingHorizontal: 20,
         paddingVertical: 20,
-        // Note: No visible border in this design
-        // Selection indicated by text/icon color only
     },
 
     /**
@@ -601,35 +623,28 @@ const styles = StyleSheet.create({
  * ============================================================================
  * USAGE NOTES
  * ============================================================================
- * 
- * Navigation Flow:
+ * * Navigation Flow:
  * - Previous: /delivery-documents (company registration docs)
  * - Next: /(delivery)/home (delivery partner dashboard)
- * 
- * State Management:
+ * * State Management:
  * - Only tracks currently selected delivery type
  * - No persistent storage needed (selection saved on continue)
  * - Reset on screen unmount
- * 
- * Validation:
+ * * Validation:
  * - Must select one delivery type to proceed
  * - Continue button disabled until selection made
  * - No other validation required
- * 
- * Design Notes:
+ * * Design Notes:
  * - Selected state: Only changes text/icon color (no border/background change)
  * - Equal width buttons in footer (flex: 1)
  * - Progress stepper shows 4/5 steps complete
- * 
- * Accessibility:
+ * * Accessibility:
  * - activeOpacity provides visual feedback on tap
  * - disabled prop prevents interaction when validation fails
  * - High contrast colors for readability
- * 
- * Deployment:
+ * * Deployment:
  * - No external dependencies beyond Expo basics
  * - Works on iOS and Android
  * - Responsive to different screen sizes via flex layout
- * 
- * ============================================================================
+ * * ============================================================================
  */

@@ -169,11 +169,11 @@ export default function RegisterScreen() {
     };
 
     const handleLogin = () => {
-        router.push({ pathname: '/login', params: { role: userRole } });
+        router.replace({ pathname: '/login', params: { role: userRole } });
     };
 
     const handleSkip = () => {
-        router.push('/(buyer)');
+        router.replace('/(buyer)');
     };
 
     return (

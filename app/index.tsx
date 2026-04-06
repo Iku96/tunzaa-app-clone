@@ -1,33 +1,113 @@
+/**
+ * ============================================================================
+ * ROOT ENTRY & SPLASH SCREEN
+ * ============================================================================
+ * * Purpose: Acts as the primary entry point for the Tunzaa App. 
+ * It displays the splash screen logo and handles the initial routing logic
+ * to determine which dashboard the user should land on.
+ * * Architecture Note (For New Devs):
+ * Tunzaa is a multi-role application (Buyer, Vendor, Delivery, Winga).
+ * To prevent the backend from forcefully defaulting a multi-role user to 
+ * the 'buyer' dashboard on every app reload, we use a two-tier routing check:
+ * * 1. Local Storage ('LAST_PORTAL'): Checks if the user explicitly logged into
+ * a specific portal recently.
+ * 2. Backend Role ('activeProfileRole'): Fallback if no local preference exists.
+ * * ============================================================================
+ */
+
 import { useEffect } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 
-/**
- * Welcome Screen (Splash)
- * 
- * Specs from Figma:
- * - Background: #2D3E66 (brand-primary)
- * - Logo: 185x185px, centered
- * - Auto-navigates based on auth session after splash delay
- */
 export default function WelcomeScreen() {
     const router = useRouter();
+
+    // Pull authentication state and user metadata from global context
     const { isAuthenticated, isLoading, user } = useTunzaaAuth();
 
     useEffect(() => {
-        if (isLoading) return; // Wait for session restoration
+        // Guard: Wait for the AuthContext to finish restoring the session from SecureStore
+        if (isLoading) return;
 
-        const timer = setTimeout(() => {
-            // Always show the language selection screen first on app load,
-            // regardless of auth state. The language screen leads to the role screen.
-            console.log('🚀 [Splash] Navigating to language selection');
+        /**
+         * checkRouting: Determines the correct post-splash destination.
+         */
+        const checkRouting = async () => {
+            // If user has a valid session token and user data
+            if (isAuthenticated && user) {
+                const role = user.activeProfileRole;
+
+                // Fetch the local override flag to prevent being trapped in the Buyer portal
+                const lastPortal = await AsyncStorage.getItem('LAST_PORTAL');
+                
+                // Check available profiles
+                const hasMerchantProfile = user.profiles?.some((p: any) => ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase() || ''));
+                const hasDeliveryProfile = user.profiles?.some((p: any) => ['delivery', 'driver', 'delivery_partner'].includes(p.role?.toLowerCase() || ''));
+
+                console.log(`🚀 [Splash] Auth found. Server Role: ${role}, Last Local Portal: ${lastPortal}`);
+
+                // ------------------------------------------------------------
+                // TIER 1: Local Override (Highest Priority)
+                // ------------------------------------------------------------
+                if (lastPortal === 'merchant' && hasMerchantProfile) {
+                    router.replace('/(merchant)/dashboard');
+                    return;
+                }
+                if (lastPortal === 'delivery' && hasDeliveryProfile) {
+                    router.replace('/(delivery)/home');
+                    return;
+                }
+                if (lastPortal === 'buyer') {
+                    router.replace('/(buyer)');
+                    return;
+                }
+
+                // ------------------------------------------------------------
+                // TIER 2: Server Role Fallback
+                // ------------------------------------------------------------
+                const isDeliveryRole = ['delivery', 'driver', 'delivery_partner'].includes(role?.toLowerCase() || '');
+                const isMerchantRole = ['vendor', 'merchant', 'business'].includes(role?.toLowerCase() || '');
+
+                if (isDeliveryRole) {
+                    router.replace('/(delivery)/home');
+                    return;
+                }
+                if (isMerchantRole) {
+                    router.replace('/(merchant)/dashboard');
+                    return;
+                }
+                if (role?.toLowerCase() === 'winga') {
+                    router.replace('/(affiliate)/profile');
+                    return;
+                }
+
+                // ------------------------------------------------------------
+                // TIER 3: Default
+                // ------------------------------------------------------------
+                // If no specific roles match, default to the standard buyer experience
+                router.replace('/(buyer)');
+                return;
+            }
+
+            // If no session exists, send new/logged-out users to the onboarding start
+            console.log('🚀 [Splash] No session, navigating to language selection');
             router.replace('/language');
+        };
+
+        // Artificial 1.5-second delay to ensure the splash screen branding is visible
+        const timer = setTimeout(() => {
+            checkRouting();
         }, 1500);
 
+        // Cleanup the timer if the component unmounts prematurely
         return () => clearTimeout(timer);
     }, [isLoading, isAuthenticated, user]);
 
+    // ------------------------------------------------------------------------
+    // RENDER: Splash Screen UI
+    // ------------------------------------------------------------------------
     return (
         <View style={styles.container}>
             <Image
@@ -45,10 +125,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#2D3E66',
+        backgroundColor: '#2D3E66'
     },
     logo: {
         width: 185,
-        height: 185,
+        height: 185
     },
 });

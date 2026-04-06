@@ -16,6 +16,8 @@ export default function AffiliateProfileScreen() {
     const [activeTab, setActiveTab] = useState<'grid' | 'video'>('grid');
     const [isMenuVisible, setIsMenuVisible] = useState(false);
 
+
+
     // Fetch affiliate-specific data
     const userId = user?.user_id || user?.id || '';
     const { data: affiliate, isLoading } = useAffiliate(userId, !!userId);

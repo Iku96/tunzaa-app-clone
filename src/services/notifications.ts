@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 /**
  * Lazy-loaded native modules — expo-device and expo-notifications crash in
@@ -17,21 +18,22 @@ try {
 
 try {
     Notifications = require('expo-notifications');
-
-    // Set global notification handler when the module IS available
-    if (Notifications) {
-        Notifications.setNotificationHandler({
-            handleNotification: async () => ({
-                shouldShowAlert: true,
-                shouldPlaySound: true,
-                shouldSetBadge: false,
-                shouldShowBanner: true,
-                shouldShowList: true,
-            }),
-        });
-    }
-} catch {
+} catch (e) {
+    Notifications = null;
     console.warn('expo-notifications not available (expected in Expo Go)');
+}
+
+// Set global notification handler when the module IS available
+if (Notifications) {
+    Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+            shouldShowBanner: true,
+            shouldShowList: true,
+        }),
+    });
 }
 
 export class NotificationService {
@@ -67,8 +69,17 @@ export class NotificationService {
                 console.log('Push notification permission not granted');
                 return undefined;
             }
+            // Expo Go SDK 53+ does not support push token registration for remote notifications.
+            // We check for this to avoid the "projectId" validation error and native crashes.
+            const isExpoGo = Constants.appOwnership === 'expo' || Constants.expoConfig?.extra?.eas?.projectId === undefined;
+            
+            if (isExpoGo) {
+                console.log('Push registration skipped: Remote notifications are not supported in Expo Go SDK 53+');
+                return undefined;
+            }
+
             token = (await Notifications.getExpoPushTokenAsync({
-                projectId: process.env.EXPO_PUBLIC_PROJECT_ID || 'tunzaa-clone',
+                projectId: Constants.expoConfig?.extra?.eas?.projectId || "62be12ef-e5e1-406b-97b3-be5a80dca679",
             })).data;
             console.log('Expo Push Token:', token);
         } else {

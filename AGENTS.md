@@ -19,6 +19,9 @@ Keep entries **concise and scannable**. Use bullet points and short paragraphs.
 
 Instructions from the project owner. Treat these as requirements for all work on this repo.
 
+- **Identity & Multi-Role Sync**  
+  Users may use the single phone number for multiple profile roles (Buyer, Merchant, Delivery). When implementing identity logic (display names, profiles), always check the API endpoints (`src/services/` folder) to verify response structures. Ensure root user data (like `display_name`) is dynamically derived from the *active* profile to avoid cross-role identity confusion (e.g., showing a delivery "partner name" in the buyer dashboard).
+
 - **UI and backend together**  
   Whenever you implement or change UI (screens, forms, buttons, flows), implement the backend (API, persistence, state) at the same time so the feature works end-to-end. Don’t leave “TODO: connect to API” as the only follow-up. See [Principles](#principles) and `.cursor/rules/ui-and-backend.mdc`.
 
@@ -83,6 +86,24 @@ Learn from these so they are not repeated.
 - **Context**: Merchant details (business name, logo, banner) are stored in both the `marketplace/vendors` API and the `users/{id}/profile/{id}` metadata.
 - **Issue**: Updating only one API causes the UI (sidebar, header) to show outdated information.
 - **Practice**: Always use the synchronized `updateVendor` method in `TunzaaAuthContext`. It performs a "double-write" to both APIs and updates the local state optimistically. For new vendors, `createVendor` also triggers this synchronization after success.
+
+### Authentication Routing (Double-Login & App Restarts)
+
+- **Context**: The app was experiencing unpredictable behavior where users logging in as Merchants were redirected to the Buyer portal, and unauthenticated users visiting the Delivery portal caused infinite loops (restarts).
+- **Issue 1 (Double Login)**: `login.tsx` was calling the API twice in rapid succession, creating a race condition where the first response navigating to the Buyer portal beat the secondary intent for the Merchant portal.
+- **Issue 2 (AuthGuard Cascading)**: The `AuthGuard` in `src/components/auth/AuthGuard.tsx` was firing on every state change without debouncing, leading to cascading `router.replace` loops.
+- **Issue 3 (Nested Auth Screens)**: Delivery auth screens (`delivery-login`, `delivery-register`) lived inside the protected `(delivery)` folder, causing the `AuthGuard` to eject unauthenticated users back to the language screen immediately.
+- **Fix**: 
+  1. Removed the secondary `tunzaaLogin()` call in `login.tsx`. The `portalState` target is now computed *before* the single API call.
+  2. Implemented `isNavigatingRef` and `lastNavigationRef` in `AuthGuard.tsx` to debounce and safely manage imperative routing. 
+  3. Placed logic to explicitly recognize `delivery-login`, `delivery-register`, and `delivery-otp` within `AuthGuard` to allow access without authentication.
+  4. Removed manual `setTimeout` routing logic from Social Login handlers to avoid racing against the `AuthGuard`.
+
+### Marketplace API Case-Sensitivity (KYC)
+
+- **Context**: KYC document submission for vendors and delivery partners.
+- **Issue**: The API expects `document_type_id` (e.g. 'TIN', 'LICENSE') to be in **lowercase**. Sending uppercase strings returns a generic "Please check your input" error.
+- **Fix**: Normalized all `document_type_id` strings to lowercase in `TunzaaAuthContext.tsx` before API submission.
 
 ---
 

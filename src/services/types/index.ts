@@ -340,7 +340,7 @@ export interface UpdateInstallmentPlanBody {
 // ---- KYC / Verification Types ----
 
 export interface KYCDocument {
-    document_type: string;
+    document_type_id: string; // Document type ID from configuration
     document_url: string;
     verification_status?: "pending" | "approved" | "rejected";
 }
