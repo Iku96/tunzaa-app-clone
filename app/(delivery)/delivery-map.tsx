@@ -39,62 +39,35 @@ export default function DeliveryMapScreen() {
                 </View>
             </SafeAreaView>
 
-            {/* Map View */}
-            <MapView
-                ref={mapRef}
-                style={styles.map}
-                initialRegion={{
-                    latitude: -6.8080,
-                    longitude: 39.2850,
-                    latitudeDelta: 0.04,
-                    longitudeDelta: 0.04,
-                }}
-                showsUserLocation={false}
-            >
-                {/* Route Line */}
-                <Polyline
-                    coordinates={MOCK_POLYLINE}
-                    strokeColor="#425BA4"
-                    strokeWidth={3}
-                    lineDashPattern={[10, 10]} // Dashed line to match design
-                />
-
-                {/* Start Marker (scooter/current location) */}
-                <Marker coordinate={ROUTE_START}>
-                    <View style={styles.startMarkerContainer}>
-                        {/* Arrive by Tooltip */}
-                        <View style={styles.tooltipContainer}>
-                            <View style={styles.tooltip}>
-                                <Text style={styles.tooltipText}>Arrive by 13:50</Text>
-                            </View>
-                            {/* Connecting Line from tooltip to marker */}
-                            <View style={styles.tooltipConnector} />
-                        </View>
-                        {/* The Actual Marker Icon */}
-                        <View style={styles.scooterMarkerCircle}>
-                            <View style={styles.scooterMarkerInner}>
-                                <Ionicons name="bicycle" size={20} color="#FFFFFF" />
-                            </View>
-                        </View>
+            {/* Map View - Blocked by Backend */}
+            <View style={[styles.map, { backgroundColor: '#E5E7EB', padding: 20, paddingTop: 100, alignItems: 'center' }]}>
+                <View style={{
+                     backgroundColor: '#FEE2E2',
+                     padding: 24,
+                     borderRadius: 16,
+                     alignItems: 'center',
+                     width: '100%',
+                     borderWidth: 1,
+                     borderColor: '#FCA5A5'
+                }}>
+                    <Ionicons name="map-outline" size={48} color="#EF4444" style={{ marginBottom: 12 }} />
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#B91C1C', marginBottom: 8 }}>
+                        Live Map Routing Blocked
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#991B1B', textAlign: 'center', marginBottom: 16 }}>
+                        The backend lacks the active polling API required to stream real-time GPS coordinates for delivery partners. Hardcoded map lines have been removed per execution rules.
+                    </Text>
+                    
+                    <View style={{ backgroundColor: '#FEF2F2', padding: 12, borderRadius: 8, width: '100%' }}>
+                        <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#7F1D1D', marginBottom: 4 }}>Required Endpoint:</Text>
+                        <Text style={{ fontFamily: 'Courier', fontSize: 11, color: '#7F1D1D' }}>GET /delivery/tasks/{'{taskId}'}/route</Text>
+                        <Text style={{ fontFamily: 'Courier', fontSize: 11, color: '#7F1D1D', marginTop: 4 }}>Response: Array of Coordinate vectors</Text>
                     </View>
-                </Marker>
-
-                {/* End Marker (20 min) */}
-                <Marker coordinate={ROUTE_END}>
-                    <View style={styles.endMarkerContainer}>
-                        <View style={styles.endTooltip}>
-                            <Text style={styles.endTooltipText}>20</Text>
-                            <Text style={styles.endTooltipSubText}>min</Text>
-                        </View>
-                        <View style={styles.endDotContainer}>
-                            <View style={styles.endDotInner} />
-                        </View>
-                    </View>
-                </Marker>
-            </MapView>
+                </View>
+            </View>
 
             {/* Bottom Sheet Card */}
-            <View style={styles.bottomSheet}>
+            <View style={[styles.bottomSheet, { height: '35%' }]}>
                 {/* Drag Handle */}
                 <View style={styles.dragHandleContainer}>
                     <View style={styles.dragHandle} />
@@ -103,26 +76,21 @@ export default function DeliveryMapScreen() {
                 {/* Pickup Header */}
                 <View style={styles.pickupHeader}>
                     <MapPin size={24} color="#000000" strokeWidth={2} />
-                    <Text style={styles.pickupLocationText}>Kariakoo</Text>
+                    <Text style={styles.pickupLocationText}>Pending Route info</Text>
                     <Text style={styles.pickupPointsText}>Pickup points</Text>
                 </View>
 
-                {/* Single Pickup Item Preview */}
-                <View style={styles.pickupItemCard}>
+                <View style={[styles.pickupItemCard, { opacity: 0.5 }]}>
                     <View style={styles.pickupItemIcon}>
-                        <Ionicons name="checkmark-circle" size={24} color="#01AC00" />
+                        <Ionicons name="checkmark-circle" size={24} color="#9CA3AF" />
                         <View style={styles.itemVerticalLine} />
                     </View>
 
                     <View style={styles.pickupItemContent}>
                         <View style={styles.textDetails}>
-                            <Text style={styles.shopName}>Juma Electronics</Text>
-                            <Text style={styles.productName}>Samsung A30</Text>
+                            <Text style={styles.shopName}>Live shop data required</Text>
+                            <Text style={styles.productName}>Awaiting Task Binding</Text>
                         </View>
-
-                        <TouchableOpacity style={styles.callButton}>
-                            <Phone size={20} color="#000000" strokeWidth={2} />
-                        </TouchableOpacity>
                     </View>
                 </View>
             </View>

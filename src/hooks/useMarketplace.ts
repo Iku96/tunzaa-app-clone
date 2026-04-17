@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { productsApi, Product } from '../services/products';
 import { categoriesApi, Category } from '../services/categories';
-import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES as STATIC_CATEGORIES } from '../data/products';
 
 /**
  * Maps an API Product to the shape used by the buyer home UI.
@@ -121,11 +120,8 @@ export function useMarketplace(): UseMarketplaceResult {
                 console.log(`✅ [useMarketplace] Loaded ${productsRes.items.length} products from API`);
                 setProducts(productsRes.items.map(mapApiProductToUI));
             } else {
-                console.log('ℹ️ [useMarketplace] No products from API, using static fallback');
-                setProducts(STATIC_PRODUCTS.map(p => ({
-                    ...p,
-                    image: typeof p.image === 'string' ? p.image : '',
-                })));
+                console.log('ℹ️ [useMarketplace] No products from API');
+                setProducts([]);
             }
 
             // Categories
@@ -134,21 +130,17 @@ export function useMarketplace(): UseMarketplaceResult {
                 const mapped = categoriesRes.items
                     .filter(c => c.is_active)
                     .map(mapApiCategoryToUI);
-                setCategories(mapped.length > 0 ? mapped : STATIC_CATEGORIES);
+                setCategories(mapped.length > 0 ? mapped : []);
             } else {
-                console.log('ℹ️ [useMarketplace] No categories from API, using static fallback');
-                setCategories(STATIC_CATEGORIES.map(c => ({ ...c, slug: '', image_url: '' })));
+                console.log('ℹ️ [useMarketplace] No categories from API');
+                setCategories([]);
             }
 
         } catch (e: any) {
             console.error('❌ [useMarketplace] Failed to fetch marketplace data:', e.message);
             setError(e.message || 'Failed to load marketplace data');
-            // Fall back to static data
-            setProducts(STATIC_PRODUCTS.map(p => ({
-                ...p,
-                image: typeof p.image === 'string' ? p.image : '',
-            })));
-            setCategories(STATIC_CATEGORIES.map(c => ({ ...c, slug: '', image_url: '' })));
+            setProducts([]);
+            setCategories([]);
         } finally {
             setLoading(false);
         }

@@ -1,117 +1,87 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav from '../../../src/components/navigation/BottomNav';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useCartCombined } from '../../../src/stores/cart';
+import { CartItem } from '../../../src/services/cart';
 
 const { width } = Dimensions.get('window');
 
-// Mock Cart Items
-const INITIAL_CART = [
-    {
-        id: '1',
-        name: 'Dinning chair',
-        image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&auto=format&fit=crop&q=60',
-        rating: 4.8,
-        reviews: 50,
-        price: 450000,
-        deliveryFee: 2500,
-        warranty: '1 year warranty',
-        quantity: 1
-    },
-    {
-        id: '2',
-        name: 'Long Sofa',
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=60',
-        rating: 4.8,
-        reviews: 50,
-        price: 650000,
-        deliveryFee: 2500,
-        warranty: '1 year warranty',
-        quantity: 1
-    },
-    {
-        id: '3',
-        name: 'Nike Air Jordan',
-        image: 'https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=500&auto=format&fit=crop&q=60',
-        rating: 4.8,
-        reviews: 50,
-        price: 650000,
-        deliveryFee: 2500,
-        warranty: '1 year warranty',
-        quantity: 1
-    }
-];
-
 export default function CartScreen() {
     const router = useRouter();
-    const [cartItems, setCartItems] = useState(INITIAL_CART);
+    const { user } = useTunzaaAuth();
+    const userId = user?.user_id || user?.id || '';
+    const { cart, isLoading, updateCartItemQuantity, removeCartItemMutation } = useCartCombined(userId);
 
-    const updateQuantity = (id: string, increment: boolean) => {
-        setCartItems(prev => prev.map(item => {
-            if (item.id === id) {
-                const newQty = increment ? item.quantity + 1 : Math.max(0, item.quantity - 1);
-                return { ...item, quantity: newQty };
-            }
-            return item;
-        }).filter(item => item.quantity > 0)); // Remove if qty becomes 0
+    const updateQuantity = async (item: CartItem, increment: boolean) => {
+        if (!cart) return;
+        const newQty = increment ? item.quantity + 1 : Math.max(0, item.quantity - 1);
+        if (newQty === 0) {
+            await removeCartItemMutation.mutateAsync({
+                cartId: cart.cart_id,
+                item: {
+                    item_id: item.item_id,
+                    product_id: item.product_id,
+                    variant_id: item.variant_id || null,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price || 0,
+                    added_at: item.added_at,
+                    metadata: item.metadata
+                }
+            });
+        } else {
+            await updateCartItemQuantity(item.product_id, item.metadata?.sku, newQty);
+        }
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const cartItems = cart?.items || [];
+    const subtotal = cartItems.reduce((sum, item) => sum + ((item.unit_price || item.sale_price || 0) * item.quantity), 0);
     const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-    const renderCartItem = (item) => (
-        <View key={item.id} style={styles.cartItem}>
-            {/* Checkbox Placeholder (Use Ionicons for visual only) */}
-            <TouchableOpacity style={styles.checkbox}>
-                <Ionicons name="ellipse-outline" size={24} color="#D1D5DB" />
-            </TouchableOpacity>
+    const renderCartItem = (item: CartItem) => {
+        const price = item.unit_price || item.sale_price || 0;
+        const name = item.product_name || 'Product';
+        const image = item.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
 
-            <Image source={{ uri: item.image }} style={styles.itemImage} />
-
-            <View style={styles.itemDetails}>
-                <View style={styles.rowBetween}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-
-                    {/* Quantity Controls */}
-                    <View style={styles.quantityControl}>
-                        <TouchableOpacity onPress={() => updateQuantity(item.id, false)} style={styles.qtyButton}>
-                            <Ionicons name="remove" size={16} color="#6B7280" />
-                        </TouchableOpacity>
-                        <Text style={styles.qtyText}>{item.quantity}</Text>
-                        <TouchableOpacity onPress={() => updateQuantity(item.id, true)} style={[styles.qtyButton, styles.qtyButtonAdd]}>
-                            <Ionicons name="add" size={16} color="#FFFFFF" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={styles.ratingRow}>
-                    <Ionicons name="star" size={12} color="#FBBF24" />
-                    <Text style={styles.ratingText}>{item.rating} ({item.reviews})</Text>
-                </View>
-
-                <Text style={styles.priceText}>Tsh {item.price.toLocaleString()}</Text>
-
-                <View style={styles.deliveryRow}>
-                    <Ionicons name="location-outline" size={12} color="#6B7280" />
-                    <Text style={styles.deliveryText}>Estimated delivery fees: Tsh. {item.deliveryFee.toLocaleString()}</Text>
-                </View>
-                <TouchableOpacity>
-                    <Text style={styles.changeLocation}>Change delivery location</Text>
+        return (
+            <View key={item.item_id || item.product_id} style={styles.cartItem}>
+                <TouchableOpacity style={styles.checkbox}>
+                    <Ionicons name="ellipse-outline" size={24} color="#D1D5DB" />
                 </TouchableOpacity>
 
-                <View style={styles.warrantyRow}>
-                    <Ionicons name="shield-checkmark-outline" size={12} color="#6B7280" />
-                    <Text style={styles.warrantyText}>{item.warranty}</Text>
+                <Image source={{ uri: image }} style={styles.itemImage} />
+
+                <View style={styles.itemDetails}>
+                    <View style={styles.rowBetween}>
+                        <Text style={styles.itemName} numberOfLines={2}>{name}</Text>
+
+                        <View style={styles.quantityControl}>
+                            <TouchableOpacity onPress={() => updateQuantity(item, false)} style={styles.qtyButton}>
+                                <Ionicons name="remove" size={16} color="#6B7280" />
+                            </TouchableOpacity>
+                            <Text style={styles.qtyText}>{item.quantity}</Text>
+                            <TouchableOpacity onPress={() => updateQuantity(item, true)} style={[styles.qtyButton, styles.qtyButtonAdd]}>
+                                <Ionicons name="add" size={16} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <Text style={styles.priceText}>Tsh {price.toLocaleString()}</Text>
+
+                    <View style={styles.deliveryRow}>
+                        <Ionicons name="location-outline" size={12} color="#6B7280" />
+                        <Text style={styles.deliveryText}>Estimated delivery available</Text>
+                    </View>
                 </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <SafeAreaView edges={['top']} style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
@@ -121,28 +91,42 @@ export default function CartScreen() {
             </SafeAreaView>
 
             <View style={styles.contentContainer}>
-                {/* Select All Row */}
-                <View style={styles.selectAllRow}>
-                    <Text style={styles.selectAllText}>Select all items</Text>
-                </View>
-
-                <ScrollView contentContainerStyle={styles.cartList}>
-                    {cartItems.map(renderCartItem)}
-                </ScrollView>
-
-                {/* Bottom Total Bar */}
-                <View style={styles.bottomBar}>
-                    <View>
-                        <Text style={styles.itemCountText}>{itemCount} Item</Text>
-                        <Text style={styles.subtotalText}>Subtotal: Tsh. {subtotal.toLocaleString()}</Text>
+                {isLoading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <ActivityIndicator size="large" color="#425BA4" />
                     </View>
-                    <TouchableOpacity
-                        style={styles.checkoutButton}
-                        onPress={() => router.push('/(buyer)/checkout/delivery/method')}
-                    >
-                        <Text style={styles.checkoutButtonText}>Proceed to checkout</Text>
-                    </TouchableOpacity>
-                </View>
+                ) : cartItems.length === 0 ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <Ionicons name="cart-outline" size={64} color="#9CA3AF" />
+                        <Text style={{ marginTop: 16, fontSize: 16, color: '#6B7280' }}>Your cart is empty.</Text>
+                        <TouchableOpacity style={{ marginTop: 24, padding: 12, backgroundColor: '#425BA4', borderRadius: 24 }} onPress={() => router.push('/(buyer)')}>
+                            <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Continue Shopping</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <>
+                        <View style={styles.selectAllRow}>
+                            <Text style={styles.selectAllText}>Select all items</Text>
+                        </View>
+
+                        <ScrollView contentContainerStyle={styles.cartList}>
+                            {cartItems.map(renderCartItem)}
+                        </ScrollView>
+
+                        <View style={styles.bottomBar}>
+                            <View>
+                                <Text style={styles.itemCountText}>{itemCount} Item{itemCount !== 1 ? 's' : ''}</Text>
+                                <Text style={styles.subtotalText}>Subtotal: Tsh. {subtotal.toLocaleString()}</Text>
+                            </View>
+                            <TouchableOpacity
+                                style={styles.checkoutButton}
+                                onPress={() => router.push('/(buyer)/checkout/delivery/method')}
+                            >
+                                <Text style={styles.checkoutButtonText}>Proceed to checkout</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
             </View>
 
             <BottomNav />
@@ -190,7 +174,7 @@ const styles = StyleSheet.create({
     },
     cartList: {
         padding: 20,
-        paddingBottom: 100, // Space for bottom bar
+        paddingBottom: 100,
     },
     cartItem: {
         flexDirection: 'row',
@@ -221,7 +205,7 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     itemName: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#425BA4',
         flex: 1,
@@ -233,6 +217,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F3F4F6',
         borderRadius: 8,
         padding: 2,
+        marginLeft: 8,
     },
     qtyButton: {
         width: 24,
@@ -250,22 +235,12 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#1F2937',
     },
-    ratingRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 4,
-        gap: 4,
-    },
-    ratingText: {
-        fontSize: 12,
-        color: '#F59E0B',
-        fontWeight: '500',
-    },
     priceText: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#1F2937',
         marginBottom: 8,
+        marginTop: 4,
     },
     deliveryRow: {
         flexDirection: 'row',
@@ -277,24 +252,9 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: '#6B7280',
     },
-    changeLocation: {
-        fontSize: 10,
-        color: '#425BA4',
-        marginBottom: 8,
-        marginLeft: 16,
-    },
-    warrantyRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    warrantyText: {
-        fontSize: 10,
-        color: '#6B7280',
-    },
     bottomBar: {
         position: 'absolute',
-        bottom: 0, // Above bottom nav
+        bottom: 0,
         left: 0,
         right: 0,
         backgroundColor: '#FFFFFF',
@@ -303,7 +263,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingVertical: 16,
-        paddingBottom: 80, // Adjust for BottomNav
+        paddingBottom: 80,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         shadowColor: "#000",

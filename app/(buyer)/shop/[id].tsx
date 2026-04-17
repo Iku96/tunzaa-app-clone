@@ -12,12 +12,7 @@ import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
 
 const { width } = Dimensions.get('window');
 
-// Mock Data for Shop matching the screenshot
-// Fallback stories if none provided by API
-const FALLBACK_STORIES = [
-    { id: 1, title: 'Summer vibes', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=600&fit=crop', type: 'video' },
-    { id: 2, title: 'New Arrival', image: 'https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=400&h=600&fit=crop', type: 'image' },
-];
+
 
 export default function ShopProfileScreen() {
     const router = useRouter();
@@ -215,7 +210,7 @@ export default function ShopProfileScreen() {
                                     </TouchableOpacity>
                                 </View>
                                 <FlatList
-                                    data={shop?.banners?.length ? shop.banners.map(b => ({ ...b, image: b.image_url, type: 'image' })) : FALLBACK_STORIES}
+                                    data={shop?.banners?.length ? shop.banners.map(b => ({ ...b, image: b.image_url, type: 'image' })) : []}
                                     renderItem={renderStoryCard}
                                     keyExtractor={item => item.id.toString()}
                                     horizontal

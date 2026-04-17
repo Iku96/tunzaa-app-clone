@@ -1,12 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useGetOrder } from '../../../src/services/orders';
 
 const { width } = Dimensions.get('window');
 
 export default function ReceiptScreen() {
     const router = useRouter();
+    const { orderId } = useLocalSearchParams();
+
+    const { data: order, isLoading } = useGetOrder(orderId as string, !!orderId);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -19,87 +23,90 @@ export default function ReceiptScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-
-                {/* Physical-style Receipt Card */}
-                <View style={styles.receiptCard}>
-
-                    {/* Top Branding Section */}
-                    <View style={styles.brandSection}>
-                        <Text style={styles.tunzaaLogoText}>TUNZAA</Text>
-                        <View style={styles.paymentTypeRow}>
-                            <View style={styles.dot} />
-                            <Text style={styles.paymentTypeText}>Product Payments</Text>
-                        </View>
-                        <Text style={styles.orderNumberText}>Payment made for Order number #9087053</Text>
+                {isLoading ? (
+                    <ActivityIndicator size="large" color="#425BA4" style={{ marginTop: 40 }} />
+                ) : !order ? (
+                    <View style={{ padding: 40, alignItems: 'center' }}>
+                        <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
+                        <Text style={{ marginTop: 16, color: '#6B7280' }}>Receipt not found</Text>
                     </View>
+                ) : (
+                    <View style={styles.receiptCard}>
+                        {/* Top Branding Section */}
+                        <View style={styles.brandSection}>
+                            <Text style={styles.tunzaaLogoText}>TUNZAA</Text>
+                            <View style={styles.paymentTypeRow}>
+                                <View style={styles.dot} />
+                                <Text style={styles.paymentTypeText}>Product Payments</Text>
+                            </View>
+                            <Text style={styles.orderNumberText}>Payment made for Order #{order.order_number || order.order_id?.substring(0, 8)}</Text>
+                        </View>
 
-                    <View style={styles.dashedDivider} />
+                        <View style={styles.dashedDivider} />
 
-                    <Text style={styles.dateText}>Nov 13, 2024 | 02:40 PM</Text>
+                        <Text style={styles.dateText}>{new Date(order.created_at).toLocaleString()}</Text>
 
-                    {/* Main Receipt Info Rows */}
-                    <View style={styles.infoSection}>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Service</Text>
-                            <Text style={styles.infoValue}>Vodacom Shop</Text>
+                        {/* Main Receipt Info Rows */}
+                        <View style={styles.infoSection}>
+                            <View style={styles.infoRow}>
+                                <Text style={styles.infoLabel}>Service</Text>
+                                <Text style={styles.infoValue}>Tunzaa Marketplace</Text>
+                            </View>
+                            <View style={styles.infoRow}>
+                                <Text style={styles.infoLabel}>Method</Text>
+                                <Text style={styles.infoValue}>{order.payment_details?.method || 'N/A'}</Text>
+                            </View>
+                            <View style={styles.infoRow}>
+                                <Text style={styles.infoLabel}>Product Name</Text>
+                                <Text style={styles.infoValue} numberOfLines={1}>{order.items?.[0]?.name || 'Multiple Items'}</Text>
+                            </View>
+                            <View style={styles.infoRow}>
+                                <Text style={styles.infoLabel}>Amount</Text>
+                                <Text style={styles.infoValue}>{order.currency} {order.totals?.total?.toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.infoRow}>
+                                <Text style={styles.infoLabel}>Status</Text>
+                                <Text style={[styles.statusValue, order.status === 'pending' || order.payment_status === 'pending' ? { color: '#F59E0B' } : {}]}>
+                                    {order.payment_status?.toUpperCase() || 'COMPLETED'}
+                                </Text>
+                            </View>
                         </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Method</Text>
-                            <Text style={styles.infoValue}>M-Pesa</Text>
+
+                        <View style={styles.dashedDivider} />
+
+                        {/* Breakdown Section */}
+                        <View style={styles.breakdownSection}>
+                            <View style={styles.breakdownRow}>
+                                <Text style={styles.breakdownLabel}>Subtotal</Text>
+                                <Text style={styles.breakdownValue}>{order.currency} {order.totals?.subtotal?.toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.breakdownRow}>
+                                <Text style={styles.breakdownLabel}>Discount</Text>
+                                <Text style={styles.breakdownValue}>{order.currency} {order.totals?.discount?.toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.breakdownRow}>
+                                <Text style={styles.breakdownLabel}>Tax</Text>
+                                <Text style={styles.breakdownValue}>{order.currency} {order.totals?.tax?.toLocaleString()}</Text>
+                            </View>
+
+                            <View style={[styles.breakdownRow, { marginTop: 12 }]}>
+                                <Text style={styles.totalLabel}>Total costs</Text>
+                                <Text style={styles.totalValue}>{order.currency} {order.totals?.total?.toLocaleString()}</Text>
+                            </View>
                         </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Product Name</Text>
-                            <Text style={styles.infoValue}>Samsung Galaxy</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Amount</Text>
-                            <Text style={styles.infoValue}>1,500,000</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Status</Text>
-                            <Text style={styles.statusValue}>Completed</Text>
-                        </View>
+
+                        {/* Cutouts on the sides */}
+                        <View style={styles.leftCutout} />
+                        <View style={styles.rightCutout} />
+
+                        {/* Fixed Button */}
+                        <TouchableOpacity style={styles.downloadBtn} onPress={() => router.push('/(buyer)/orders' as any)}>
+                            <Ionicons name="checkmark-done" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                            <Text style={styles.downloadBtnText}>Done</Text>
+                        </TouchableOpacity>
+
                     </View>
-
-                    <View style={styles.dashedDivider} />
-
-                    {/* Breakdown Section */}
-                    <View style={styles.breakdownSection}>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Subtotal</Text>
-                            <Text style={styles.breakdownValue}>Tsh 35,000</Text>
-                        </View>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Discount</Text>
-                            <Text style={styles.breakdownValue}>Tsh 0</Text>
-                        </View>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Delivery Fees</Text>
-                            <Text style={styles.breakdownValue}>Tsh 10,000</Text>
-                        </View>
-                        <View style={styles.breakdownRow}>
-                            <Text style={styles.breakdownLabel}>Tax (18%)</Text>
-                            <Text style={styles.breakdownValue}>Tsh 6,300</Text>
-                        </View>
-
-                        <View style={[styles.breakdownRow, { marginTop: 12 }]}>
-                            <Text style={styles.totalLabel}>Total costs</Text>
-                            <Text style={styles.totalValue}>Tsh. 51,300</Text>
-                        </View>
-                    </View>
-
-                    {/* Cutouts on the sides for receipt styling effect */}
-                    <View style={styles.leftCutout} />
-                    <View style={styles.rightCutout} />
-
-                    {/* Fixed Button At Bottom of Card */}
-                    <TouchableOpacity style={styles.downloadBtn} onPress={() => router.push('/(buyer)/orders' as any)}>
-                        <Ionicons name="download-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-                        <Text style={styles.downloadBtnText}>Download Receipt</Text>
-                    </TouchableOpacity>
-
-                </View>
-
+                )}
             </ScrollView>
         </SafeAreaView>
     );

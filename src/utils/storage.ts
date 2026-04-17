@@ -71,8 +71,6 @@ export const clearTokens = async (): Promise<void> => {
                 SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN).catch(() => { }),
                 SecureStore.deleteItemAsync("user_id").catch(() => { }),
                 SecureStore.deleteItemAsync("temp_phone_number").catch(() => { }),
-                // ✅ This prevents the "Flash" when switching portals
-                AsyncStorage.removeItem('LAST_PORTAL').catch(() => { }),
                 AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA).catch(() => { })
             ]);
         } else {

@@ -1,46 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
 import BottomNav from '../../../src/components/navigation/BottomNav';
-
-const MOCK_PENDING = [
-    {
-        id: '1',
-        name: 'Samsung Galaxy S22 - 6.6" - 12GB RAM - 64GB Sp...',
-        date: '5/10/2021',
-        nextInstallment: 250500,
-        total: 1500000,
-        progress: 20, // percentage
-        image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=200',
-        paymentDue: 350000,
-    },
-    {
-        id: '2',
-        name: 'LG Double Door Refrigerator - 340L - Silver...',
-        date: '5/10/2021',
-        nextInstallment: 300500,
-        total: 1200000,
-        progress: 40,
-        image: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&q=80&w=200',
-        paymentDue: 300000,
-    }
-];
-
-const MOCK_COMPLETED = [
-    {
-        id: '3',
-        name: 'Gas One Portable Gas Stove',
-        date: '1/10/2021',
-        total: 35000,
-        image: 'https://images.unsplash.com/photo-1590769352720-3b98ea8897bb?auto=format&fit=crop&q=80&w=200',
-    }
-];
+import { orderApi } from '../../../src/services/orders';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 export default function OrdersScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
+    const userId = user?.user_id || user?.id || '';
     const [activeTab, setActiveTab] = useState('Pending');
+
+    const { data: ordersData, isLoading } = useQuery({
+        queryKey: ['userOrders', userId],
+        queryFn: () => orderApi.getUserOrders({ user_id: userId, limit: 50 }),
+        enabled: !!userId
+    });
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat('en-US').format(price);
@@ -63,69 +41,94 @@ export default function OrdersScreen() {
         </View>
     );
 
-    const renderPendingCard = (item: typeof MOCK_PENDING[0]) => (
-        <TouchableOpacity
-            key={item.id}
-            style={styles.card}
-            onPress={() => router.push(`/(buyer)/order/${item.id}`)}
-        >
-            <View style={styles.cardHeader}>
-                <Image source={{ uri: item.image }} style={styles.productImage} />
-                <View style={styles.productDetails}>
-                    <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-                    <Text style={styles.productDate}>{item.date}</Text>
-                </View>
-            </View>
+    const renderPendingCard = (item: any) => {
+        // Derive variables from the API Order object
+        const itemName = item.items?.[0]?.name || 'Unknown Product';
+        const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
+        const date = new Date(item.created_at).toLocaleDateString();
+        const total = item.totals?.total || 0;
+        
+        // Mock progressive properties for installment, adjust when API returns them
+        const nextInstallment = total / 2;
+        const progress = 50; 
+        const paymentDue = nextInstallment;
 
-            <View style={styles.installmentRow}>
-                <Text style={styles.installmentLabel}>Next installment :</Text>
-                <Text style={styles.installmentValue}>Tsh {formatPrice(item.nextInstallment)}</Text>
-            </View>
-
-            <View style={styles.progressContainer}>
-                <View style={styles.progressBarBg}>
-                    <View style={[styles.progressBarFill, { width: `${item.progress}%` }]} />
-                </View>
-                <Text style={styles.progressText}>{item.progress}%</Text>
-            </View>
-
+        return (
             <TouchableOpacity
-                style={styles.payButton}
-                onPress={() => router.push(`/(buyer)/order/${item.id}`)}
+                key={item.order_id}
+                style={styles.card}
+                onPress={() => router.push(`/(buyer)/order/${item.order_id}`)}
             >
-                <Text style={styles.payButtonText}>pay Tsh {formatPrice(item.paymentDue)}</Text>
+                <View style={styles.cardHeader}>
+                    <Image source={{ uri: itemImage }} style={styles.productImage} />
+                    <View style={styles.productDetails}>
+                        <Text style={styles.productName} numberOfLines={2}>{itemName}</Text>
+                        <Text style={styles.productDate}>{date}</Text>
+                        <Text style={styles.statusText}>{item.status}</Text>
+                    </View>
+                </View>
+
+                <View style={styles.installmentRow}>
+                    <Text style={styles.installmentLabel}>Next installment :</Text>
+                    <Text style={styles.installmentValue}>Tsh {formatPrice(nextInstallment)}</Text>
+                </View>
+
+                <View style={styles.progressContainer}>
+                    <View style={styles.progressBarBg}>
+                        <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+                    </View>
+                    <Text style={styles.progressText}>{progress}%</Text>
+                </View>
+
+                <TouchableOpacity
+                    style={styles.payButton}
+                    onPress={() => router.push(`/(buyer)/order/${item.order_id}`)}
+                >
+                    <Text style={styles.payButtonText}>pay Tsh {formatPrice(paymentDue)}</Text>
+                </TouchableOpacity>
             </TouchableOpacity>
-        </TouchableOpacity>
-    );
+        );
+    };
 
-    const renderCompletedCard = (item: typeof MOCK_COMPLETED[0]) => (
-        <TouchableOpacity
-            key={item.id}
-            style={styles.card}
-            onPress={() => router.push(`/(buyer)/order/${item.id}`)}
-        >
-            <View style={styles.cardHeader}>
-                <Image source={{ uri: item.image }} style={styles.productImage} />
-                <View style={styles.productDetails}>
-                    <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-                    <Text style={styles.productDate}>{item.date}</Text>
+    const renderCompletedCard = (item: any) => {
+        const itemName = item.items?.[0]?.name || 'Unknown Product';
+        const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
+        const date = new Date(item.created_at).toLocaleDateString();
+        const total = item.totals?.total || 0;
+
+        return (
+            <TouchableOpacity
+                key={item.order_id}
+                style={styles.card}
+                onPress={() => router.push(`/(buyer)/order/${item.order_id}`)}
+            >
+                <View style={styles.cardHeader}>
+                    <Image source={{ uri: itemImage }} style={styles.productImage} />
+                    <View style={styles.productDetails}>
+                        <Text style={styles.productName} numberOfLines={2}>{itemName}</Text>
+                        <Text style={styles.productDate}>{date}</Text>
+                        <Text style={styles.statusText}>{item.status}</Text>
+                    </View>
                 </View>
-            </View>
 
-            <View style={[styles.installmentRow, { borderBottomWidth: 0 }]}>
-                <Text style={styles.installmentLabel}>Total paid :</Text>
-                <Text style={[styles.installmentValue, { color: '#22C55E' }]}>Tsh {formatPrice(item.total)}</Text>
-            </View>
-
-            <View style={styles.completedBadgeRow}>
-                <View style={styles.completedBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
-                    <Text style={styles.completedBadgeText}>Completed</Text>
+                <View style={[styles.installmentRow, { borderBottomWidth: 0 }]}>
+                    <Text style={styles.installmentLabel}>Total paid :</Text>
+                    <Text style={[styles.installmentValue, { color: '#22C55E' }]}>Tsh {formatPrice(total)}</Text>
                 </View>
-            </View>
-        </TouchableOpacity>
-    );
 
+                <View style={styles.completedBadgeRow}>
+                    <View style={styles.completedBadge}>
+                        <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
+                        <Text style={styles.completedBadgeText}>Completed</Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    const orders = ordersData?.items || [];
+    const pendingOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'completed');
+    const completedOrders = orders.filter(o => o.status === 'delivered' || o.status === 'completed');
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -140,8 +143,33 @@ export default function OrdersScreen() {
             {renderTabs()}
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {activeTab === 'Pending' && MOCK_PENDING.map(renderPendingCard)}
-                {activeTab === 'Completed' && MOCK_COMPLETED.map(renderCompletedCard)}
+                {isLoading ? (
+                    <View style={{ padding: 40, alignItems: 'center' }}>
+                        <ActivityIndicator size="large" color="#425BA4" />
+                        <Text style={{ marginTop: 12, color: '#6B7280' }}>Loading orders...</Text>
+                    </View>
+                ) : (
+                    <>
+                        {activeTab === 'Pending' && (
+                            pendingOrders.length === 0 ? (
+                                <View style={styles.emptyState}>
+                                    <Text style={styles.emptyText}>No pending orders</Text>
+                                </View>
+                            ) : (
+                                pendingOrders.map(renderPendingCard)
+                            )
+                        )}
+                        {activeTab === 'Completed' && (
+                            completedOrders.length === 0 ? (
+                                <View style={styles.emptyState}>
+                                    <Text style={styles.emptyText}>No completed orders</Text>
+                                </View>
+                            ) : (
+                                completedOrders.map(renderCompletedCard)
+                            )
+                        )}
+                    </>
+                )}
                 {activeTab === 'Gift cards' && (
                     <View style={styles.emptyState}>
                         <Text style={styles.emptyText}>No gift cards available</Text>
@@ -165,7 +193,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 12,
         paddingBottom: 16,
-        backgroundColor: '#425BA4', // Theme blue for header
+        backgroundColor: '#425BA4',
     },
     backButton: {
         padding: 4,
@@ -241,6 +269,12 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#9CA3AF',
         alignSelf: 'flex-end',
+    },
+    statusText: {
+        fontSize: 12,
+        color: '#6B7280',
+        textTransform: 'capitalize',
+        marginTop: 4,
     },
     installmentRow: {
         flexDirection: 'row',

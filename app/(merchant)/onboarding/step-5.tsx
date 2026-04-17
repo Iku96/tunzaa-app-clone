@@ -146,7 +146,7 @@ export default function Step5Documents() {
             if (savedLogo && savedLogo.startsWith('file://')) {
                 console.log('📤 [Step5] Uploading store logo...');
                 try {
-                    const uploadRes = await uploadApi.uploadFile(savedLogo, `logo_${vendorUserId}.jpg`);
+                    const uploadRes = await uploadApi.uploadFile(savedLogo, `logo_${vendorUserId}.jpg`, 'image/jpeg');
                     vendorData.store.branding.logo_url = uploadRes.url;
                 } catch (e) {
                     console.error('❌ [Step5] Logo upload failed:', e);
@@ -157,7 +157,7 @@ export default function Step5Documents() {
             if (savedCover && savedCover.startsWith('file://')) {
                 console.log('📤 [Step5] Uploading store banner...');
                 try {
-                    const uploadRes = await uploadApi.uploadFile(savedCover, `banner_${vendorUserId}.jpg`);
+                    const uploadRes = await uploadApi.uploadFile(savedCover, `banner_${vendorUserId}.jpg`, 'image/jpeg');
                     vendorData.store.banners = [uploadRes.url];
                 } catch (e) {
                     console.error('❌ [Step5] Banner upload failed:', e);
@@ -181,7 +181,8 @@ export default function Step5Documents() {
                 
                 for (const doc of documentsToUpload) {
                     try {
-                        const uploadRes = await uploadApi.uploadFile(doc.file.uri, `${doc.id}_${vendorUserId}`);
+                        const fileExt = doc.file.name ? doc.file.name.split('.').pop() : 'pdf';
+                        const uploadRes = await uploadApi.uploadFile(doc.file.uri, `${doc.id}_${vendorUserId}.${fileExt}`, doc.file.mimeType);
                         uploadedDocs.push({
                             document_type_id: doc.id, // Simplified ID ('tin', 'license', 'brela')
                             document_url: uploadRes.url,

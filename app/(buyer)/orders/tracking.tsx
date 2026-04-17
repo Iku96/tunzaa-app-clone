@@ -1,38 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGetOrder } from '../../../src/services/orders';
 
 const { width, height } = Dimensions.get('window');
 
-// Mock Map Image
-const MAP_IMAGE = 'https://media.wired.com/photos/59269cd37034dc5f91bec0f1/master/pass/GoogleMapTA.jpg';
-
 export default function TrackingScreen() {
     const router = useRouter();
-    const [statusStep, setStatusStep] = useState(1); // 0: Pending, 1: In Transit, 2: Delivered
+    const { orderId } = useLocalSearchParams();
 
-    // Simulate progress for demo
+    // Use useGetOrder with refetchInterval to poll for updates
+    const { data: orderResponse, isLoading } = useGetOrder(orderId as string, !!orderId);
+
+    // Map order status to steps
+    // Status can be: 'pending', 'processing', 'shipped', 'delivered', etc.
+    let statusStep = 0;
+    const status = orderResponse?.status?.toLowerCase();
+    
+    if (status === 'shipped' || status === 'in_transit' || status === 'processing') {
+        statusStep = 1;
+    } else if (status === 'delivered' || status === 'completed') {
+        statusStep = 2;
+    }
+
+    // When delivered, route to rate screen
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (statusStep < 2) {
-                setStatusStep(prev => prev + 1);
-            } else {
-                // Navigate to Rate screen when delivered
-                setTimeout(() => {
-                    router.push('/(buyer)/orders/rate');
-                }, 3000);
-            }
-        }, 5000);
-
-        return () => clearTimeout(timer);
-    }, [statusStep]);
+        if (statusStep === 2) {
+            const timer = setTimeout(() => {
+                router.push({ pathname: '/(buyer)/orders/rate', params: { orderId } });
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [statusStep, orderId, router]);
 
     return (
         <View style={styles.container}>
-            {/* Map Placeholder */}
-            <Image source={{ uri: MAP_IMAGE }} style={styles.mapImage} resizeMode="cover" />
+            {/* Map Placeholder - Blocked by Backend */}
+            <View style={styles.mapBlockedContainer}>
+                <Ionicons name="map-outline" size={48} color="#9CA3AF" />
+                <Text style={styles.mapBlockedTitle}>Map Tracking Blocked</Text>
+                <Text style={styles.mapBlockedText}>
+                    Missing backend endpoint for live delivery coordinate polling. (Task marked as blocked).
+                </Text>
+            </View>
 
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.header}>
@@ -41,63 +53,63 @@ export default function TrackingScreen() {
                     </TouchableOpacity>
 
                     <View style={styles.etaBubble}>
-                        <Text style={styles.etaTitle}>Arrive by 13:50</Text>
-                        <Text style={styles.etaSubtitle}>20 - 30 min</Text>
+                        <Text style={styles.etaTitle}>Live Status Polling</Text>
+                        <Text style={styles.etaSubtitle}>Connected to API</Text>
                     </View>
                 </View>
             </SafeAreaView>
 
             {/* Bottom Sheet Card */}
             <View style={styles.bottomSheet}>
-                <Text style={styles.statusTitle}>
-                    {statusStep === 0 ? 'Order Placed' : statusStep === 1 ? 'Your order is being prepared' : 'Order Delivered'}
-                </Text>
-                <Text style={styles.statusSubtitle}>
-                    {statusStep === 0 ? 'Checking availability' : statusStep === 1 ? 'Arrives between 11:35 PM - 12:05 AM' : 'Enjoy your product!'}
-                </Text>
+                {isLoading ? (
+                    <ActivityIndicator size="large" color="#425BA4" />
+                ) : (
+                    <>
+                        <Text style={styles.statusTitle}>
+                            {statusStep === 0 ? 'Order Placed' : statusStep === 1 ? 'Your order is being prepared' : 'Order Delivered'}
+                        </Text>
+                        <Text style={styles.statusSubtitle}>
+                            {statusStep === 0 ? 'Checking availability' : statusStep === 1 ? 'Driver is assigned' : 'Enjoy your product!'}
+                        </Text>
 
-                {/* Status Steps */}
-                <View style={styles.stepsContainer}>
-                    <View style={styles.stepItem}>
-                        <View style={[styles.stepIcon, statusStep >= 0 && styles.activeStepIcon]}>
-                            <Ionicons name="receipt-outline" size={16} color={statusStep >= 0 ? '#FFFFFF' : '#9CA3AF'} />
+                        {/* Status Steps */}
+                        <View style={styles.stepsContainer}>
+                            <View style={styles.stepItem}>
+                                <View style={[styles.stepIcon, statusStep >= 0 && styles.activeStepIcon]}>
+                                    <Ionicons name="receipt-outline" size={16} color={statusStep >= 0 ? '#FFFFFF' : '#9CA3AF'} />
+                                </View>
+                                <Text style={[styles.stepLabel, statusStep >= 0 && styles.activeStepLabel]}>Placed</Text>
+                            </View>
+                            <View style={[styles.stepLine, statusStep >= 1 && styles.activeStepLine]} />
+                            <View style={styles.stepItem}>
+                                <View style={[styles.stepIcon, statusStep >= 1 && styles.activeStepIcon]}>
+                                    <Ionicons name="bicycle-outline" size={16} color={statusStep >= 1 ? '#FFFFFF' : '#9CA3AF'} />
+                                </View>
+                                <Text style={[styles.stepLabel, statusStep >= 1 && styles.activeStepLabel]}>InTransit</Text>
+                            </View>
+                            <View style={[styles.stepLine, statusStep >= 2 && styles.activeStepLine]} />
+                            <View style={styles.stepItem}>
+                                <View style={[styles.stepIcon, statusStep >= 2 && styles.activeStepIcon]}>
+                                    <Ionicons name="home-outline" size={16} color={statusStep >= 2 ? '#FFFFFF' : '#9CA3AF'} />
+                                </View>
+                                <Text style={[styles.stepLabel, statusStep >= 2 && styles.activeStepLabel]}>Delivered</Text>
+                            </View>
                         </View>
-                        <Text style={[styles.stepLabel, statusStep >= 0 && styles.activeStepLabel]}>Placed</Text>
-                    </View>
-                    <View style={[styles.stepLine, statusStep >= 1 && styles.activeStepLine]} />
-                    <View style={styles.stepItem}>
-                        <View style={[styles.stepIcon, statusStep >= 1 && styles.activeStepIcon]}>
-                            <Ionicons name="bicycle-outline" size={16} color={statusStep >= 1 ? '#FFFFFF' : '#9CA3AF'} />
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.driverInfo}>
+                            {/* Generic driver icon since we don't have driver data attached to order endpoint yet */}
+                            <View style={[styles.driverImage, { backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }]}>
+                                <Ionicons name="person" size={24} color="#9CA3AF" />
+                            </View>
+                            <View style={styles.driverDetails}>
+                                <Text style={styles.driverName}>Pending Assignment</Text>
+                                <Text style={styles.driverRole}>Live driver data missing in API</Text>
+                            </View>
                         </View>
-                        <Text style={[styles.stepLabel, statusStep >= 1 && styles.activeStepLabel]}>InTransit</Text>
-                    </View>
-                    <View style={[styles.stepLine, statusStep >= 2 && styles.activeStepLine]} />
-                    <View style={styles.stepItem}>
-                        <View style={[styles.stepIcon, statusStep >= 2 && styles.activeStepIcon]}>
-                            <Ionicons name="home-outline" size={16} color={statusStep >= 2 ? '#FFFFFF' : '#9CA3AF'} />
-                        </View>
-                        <Text style={[styles.stepLabel, statusStep >= 2 && styles.activeStepLabel]}>Delivered</Text>
-                    </View>
-                </View>
-
-                <View style={styles.divider} />
-
-                <View style={styles.driverInfo}>
-                    <Image
-                        source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Vodacom_Logo_2020.jpg' }} // Mock Logo
-                        style={styles.driverImage}
-                    />
-                    <View style={styles.driverDetails}>
-                        <Text style={styles.driverName}>Vodacom Shop</Text>
-                        <Text style={styles.driverRole}>Supplier since 2024</Text>
-                    </View>
-                </View>
-
-                <TouchableOpacity style={styles.contactButton}>
-                    <Ionicons name="call-outline" size={20} color="#FFFFFF" />
-                    <Text style={styles.contactButtonText}>Contact Shop</Text>
-                </TouchableOpacity>
-
+                    </>
+                )}
             </View>
         </View>
     );
@@ -108,11 +120,27 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F3F4F6',
     },
-    mapImage: {
-        width: width,
-        height: height * 0.6,
-        position: 'absolute',
-        top: 0,
+    mapBlockedContainer: {
+         width: width,
+         height: height * 0.6,
+         position: 'absolute',
+         top: 0,
+         backgroundColor: '#E5E7EB',
+         justifyContent: 'center',
+         alignItems: 'center',
+         padding: 20,
+    },
+    mapBlockedTitle: {
+         fontSize: 16,
+         fontWeight: 'bold',
+         color: '#4B5563',
+         marginTop: 10,
+    },
+    mapBlockedText: {
+         fontSize: 12,
+         color: '#6B7280',
+         textAlign: 'center',
+         marginTop: 5,
     },
     safeArea: {
         flex: 1,
@@ -246,19 +274,4 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#6B7280',
     },
-    contactButton: {
-        backgroundColor: '#425BA4',
-        paddingVertical: 16,
-        borderRadius: 30,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 8,
-    },
-    contactButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-
 });

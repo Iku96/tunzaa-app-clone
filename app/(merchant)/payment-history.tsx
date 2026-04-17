@@ -31,24 +31,7 @@ export default function PaymentHistoryScreen() {
 
     const isLoading = dailyLoading || weeklyLoading || monthlyLoading;
 
-    const mockInstallments = [
-        {
-            id: '1',
-            name: 'Samsung 55" QLED TV',
-            amountPaid: 450000,
-            remaining: 250000,
-            percentage: 25,
-            nextPaymentDate: 'Dec 4'
-        },
-        {
-            id: '2',
-            name: 'iPhone 14 Pro Max',
-            amountPaid: 1250000,
-            remaining: 500000,
-            percentage: 70,
-            nextPaymentDate: 'Dec 12'
-        }
-    ];
+
 
     const renderGrowth = (percent: number | null) => {
         if (percent === null) return null;
@@ -131,38 +114,29 @@ export default function PaymentHistoryScreen() {
                    </View>
                 </View>
 
-                {/* Products List */}
-                <View style={styles.productsList}>
-                    {mockInstallments.map((item) => (
-                        <View key={item.id} style={styles.productCard}>
-                            <View style={styles.productHeader}>
-                                <Text style={styles.productName}>{item.name}</Text>
-                                <View style={styles.tagPill}>
-                                    <Text style={styles.tagText}>Installments</Text>
-                                </View>
-                            </View>
-                            
-                            <View style={styles.amountsRow}>
-                                <View>
-                                    <Text style={styles.amountLabel}>Amount Paid</Text>
-                                    <Text style={styles.amountValueText}>Tsh {item.amountPaid.toLocaleString()}</Text>
-                                </View>
-                                <View style={{ alignItems: 'flex-end' }}>
-                                    <Text style={styles.amountLabel}>Remaining</Text>
-                                    <Text style={styles.amountValueText}>Tsh {item.remaining.toLocaleString()}</Text>
-                                </View>
-                            </View>
-
-                            <View style={styles.progressTrack}>
-                                <View style={[styles.progressFill, { width: `${item.percentage}%` }]} />
-                            </View>
-
-                            <View style={styles.progressFooter}>
-                                <Text style={styles.progressPercent}>{item.percentage}%</Text>
-                                <Text style={styles.nextPaymentDate}>Next: {item.nextPaymentDate}</Text>
-                            </View>
+                {/* Products List - Blocked by Backend */}
+                <View style={[styles.productsList, { marginTop: 20 }]}>
+                    <View style={{
+                         backgroundColor: '#FEE2E2',
+                         padding: 20,
+                         borderRadius: 12,
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                         borderWidth: 1,
+                         borderColor: '#FCA5A5'
+                    }}>
+                        <Ionicons name="warning-outline" size={32} color="#EF4444" style={{ marginBottom: 8 }} />
+                        <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#B91C1C', marginBottom: 4 }}>
+                            Installments List Blocked
+                        </Text>
+                        <Text style={{ fontSize: 13, color: '#991B1B', textAlign: 'center', marginBottom: 12 }}>
+                            The backend endpoint for vendor installment records is missing.
+                        </Text>
+                        <View style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 6, width: '100%' }}>
+                            <Text style={{ fontFamily: 'Courier', fontSize: 12, color: '#7F1D1D' }}>GET /vendors/{vendorId}/installments</Text>
+                            <Text style={{ fontFamily: 'Courier', fontSize: 12, color: '#7F1D1D' }}>Response: Array of Installment objects</Text>
                         </View>
-                    ))}
+                    </View>
                 </View>
             </ScrollView>
         </SafeAreaView>

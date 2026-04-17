@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { PRODUCTS, CATEGORIES } from '../../../src/data/products';
+
 import { productsApi, Product as ApiProduct } from '../../../src/services/products';
 import { categoriesApi, Category as ApiCategory } from '../../../src/services/categories';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
@@ -27,7 +27,7 @@ export default function CategoryScreen() {
     }, [searchText]);
 
     const isAllCategories = id === 'all';
-    const categoryName = isAllCategories ? 'All Categories' : (CATEGORIES.find(c => c.id === id)?.name || 'Category');
+    const categoryName = isAllCategories ? 'All Categories' : 'Category';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -78,8 +78,7 @@ export default function CategoryScreen() {
         fetchData();
     }, [id, debouncedSearch]);
 
-    // Derived filtered categories for "All Categories" view
-    const displayedCategories = apiCategories.length > 0 ? apiCategories : CATEGORIES as any[];
+    const displayedCategories = apiCategories;
     const filteredCategories = displayedCategories.filter((c: any) => 
         (c.name || '').toLowerCase().includes(debouncedSearch.toLowerCase())
     );

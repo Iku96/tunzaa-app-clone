@@ -1,14 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useCreateRating } from '../../../src/services/ratings';
+import { useGetOrder } from '../../../src/services/orders';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 export default function RateDeliveryScreen() {
     const router = useRouter();
-    // 0 = Form, 1 = Success
-    const [rateState, setRateState] = useState(0);
+    const { orderId } = useLocalSearchParams();
+    const { user } = useTunzaaAuth();
+    
+    const { data: order, isLoading: isOrderLoading } = useGetOrder(orderId as string, !!orderId);
+    const { mutateAsync: createRating, isPending: isSubmitting } = useCreateRating();
+
+    const [rateState, setRateState] = useState(0); // 0 = Form, 1 = Success
     const [shopRating, setShopRating] = useState(0);
     const [driverRating, setDriverRating] = useState(0);
+
+    const vendorId = order?.items?.[0]?.vendor_id;
 
     const StarRow = ({ rating, setRating }: { rating: number, setRating: (val: number) => void }) => (
         <View style={styles.starRow}>
@@ -24,12 +34,31 @@ export default function RateDeliveryScreen() {
         </View>
     );
 
-    const handleSubmit = () => {
-        setRateState(1);
+    const handleSubmit = async () => {
+        try {
+            if (vendorId && user?.id) {
+                // Submit Shop Rating
+                await createRating({
+                    entity_id: vendorId,
+                    entity_type: 'vendor',
+                    user_id: user.id,
+                    score: shopRating,
+                    content: 'Rated via order completion flow',
+                });
+            }
+            
+            // Driver rating submission could be added here if delivery ID is tracked natively
+            
+            setRateState(1);
+        } catch (error) {
+            console.error('Failed to submit rating:', error);
+            // Optionally alert the user here
+            setRateState(1); // Proceed to success anyway to not block user flow
+        }
     };
 
     const handleDone = () => {
-        router.push('/(buyer)/orders/receipt');
+        router.push({ pathname: '/(buyer)/orders/receipt', params: { orderId } });
     };
 
     if (rateState === 1) {
@@ -49,7 +78,7 @@ export default function RateDeliveryScreen() {
 
                     <Text style={styles.successTitle}>Thanks for rating!</Text>
                     <Text style={styles.successText}>
-                        We're grateful for your trust in our service! Your satisfaction is our priority, and we're glad to have served you.
+                        We're grateful for your trust in our service! Your satisfaction is our priority.
                     </Text>
 
                     <TouchableOpacity style={styles.submitBtn} onPress={handleDone}>
@@ -70,25 +99,35 @@ export default function RateDeliveryScreen() {
                 <View style={{ width: 40 }} />
             </View>
 
-            <View style={styles.formContent}>
-                <Text style={styles.ratingQuestion}>
-                    How would you rate your experience with Vodacom Shop?
-                </Text>
-                <StarRow rating={shopRating} setRating={setShopRating} />
+            {isOrderLoading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#425BA4" />
+                </View>
+            ) : (
+                <View style={styles.formContent}>
+                    <Text style={styles.ratingQuestion}>
+                        How would you rate your experience with {order?.items?.[0]?.vendor_id ? 'the vendor' : 'the shop'}?
+                    </Text>
+                    <StarRow rating={shopRating} setRating={setShopRating} />
 
-                <Text style={[styles.ratingQuestion, { marginTop: 40 }]}>
-                    How would you rate your delivery with Everest?
-                </Text>
-                <StarRow rating={driverRating} setRating={setDriverRating} />
-            </View>
+                    <Text style={[styles.ratingQuestion, { marginTop: 40 }]}>
+                        How would you rate your delivery experience?
+                    </Text>
+                    <StarRow rating={driverRating} setRating={setDriverRating} />
+                </View>
+            )}
 
             <View style={styles.footer}>
                 <TouchableOpacity
-                    style={[styles.submitBtn, (shopRating === 0 || driverRating === 0) && styles.submitBtnDisabled]}
-                    disabled={shopRating === 0 || driverRating === 0}
+                    style={[styles.submitBtn, (shopRating === 0 || driverRating === 0 || isSubmitting) && styles.submitBtnDisabled]}
+                    disabled={shopRating === 0 || driverRating === 0 || isSubmitting}
                     onPress={handleSubmit}
                 >
-                    <Text style={styles.submitBtnText}>Leave Feedback</Text>
+                    {isSubmitting ? (
+                        <ActivityIndicator color="#FFFFFF" />
+                    ) : (
+                        <Text style={styles.submitBtnText}>Leave Feedback</Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
@@ -154,7 +193,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-
     // Success View
     successContent: {
         flex: 1,

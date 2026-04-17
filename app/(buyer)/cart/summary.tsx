@@ -39,8 +39,11 @@ export default function OrderSummaryScreen() {
                 params: { productId: product.id }
             });
         } else {
-            // Future: Implement Full Payment
-            alert('Full Payment flow coming soon!');
+            // Full Payment
+            router.push({
+                pathname: '/(buyer)/checkout/payment-method',
+                params: { productId: product.id }
+            });
         }
     };
 

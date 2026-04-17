@@ -1,73 +1,47 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCartCombined } from '../../../src/stores/cart';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 const { width } = Dimensions.get('window');
 
-// Mock Cart Data for Summary
-const SUMMARY_ITEMS = [
-    {
-        id: '1',
-        name: 'Smart Watch Series 5',
-        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60',
-        price: 45000,
-        quantity: 1,
-        tag: '#Best Seller'
-    },
-    {
-        id: '2',
-        name: 'Long Sofa',
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=60',
-        price: 655000,
-        quantity: 1,
-        tag: '#Best Seller'
-    },
-    {
-        id: '3',
-        name: 'Dinning chair',
-        image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&auto=format&fit=crop&q=60',
-        price: 450000,
-        quantity: 1,
-        tag: ''
-    }
-];
-
 export default function OrderSummaryScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
+    const userId = user?.user_id || user?.id || '';
+    const { cart, isLoading } = useCartCombined(userId);
 
-    const subtotal = 35000; // Mock values based on screenshot
+    const cartItems = cart?.items || [];
+    const subtotal = cartItems.reduce((sum, item) => sum + ((item.unit_price || item.sale_price || 0) * item.quantity), 0);
     const discount = 0;
     const deliveryFees = 10000;
-    const tax = 6300;
-    const totalCosts = 51300;
+    const tax = subtotal * 0.18; // 18% VAT estimation
+    const totalCosts = subtotal + deliveryFees + tax - discount;
 
-    const renderSummaryItem = (item: typeof SUMMARY_ITEMS[0]) => (
-        <View key={item.id} style={styles.itemRow}>
-            <Image source={{ uri: item.image }} style={styles.itemImage} />
-            <View style={styles.itemDetails}>
-                <View style={styles.nameRow}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-                    {item.tag ? <Text style={styles.tag}>{item.tag}</Text> : null}
-                </View>
-                <Text style={styles.itemPrice}>Tsh. {item.price.toLocaleString()}</Text>
+    const renderSummaryItem = (item: any) => {
+        const price = item.unit_price || item.sale_price || 0;
+        const name = item.product_name || 'Product';
+        const image = item.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
 
-                <View style={styles.qtyRow}>
-                    <TouchableOpacity style={styles.qtyButton}>
-                        <Ionicons name="remove" size={16} color="#6B7280" />
-                    </TouchableOpacity>
-                    <Text style={styles.qtyText}>{item.quantity}</Text>
-                    <TouchableOpacity style={[styles.qtyButton, styles.qtyButtonAdd]}>
-                        <Ionicons name="add" size={16} color="#FFFFFF" />
-                    </TouchableOpacity>
+        return (
+            <View key={item.item_id || item.product_id} style={styles.itemRow}>
+                <Image source={{ uri: image }} style={styles.itemImage} />
+                <View style={styles.itemDetails}>
+                    <View style={styles.nameRow}>
+                        <Text style={styles.itemName} numberOfLines={1}>{name}</Text>
+                    </View>
+                    <Text style={styles.itemPrice}>Tsh. {price.toLocaleString()}</Text>
+
+                    <View style={styles.qtyRow}>
+                        <Text style={styles.qtyText}>Qty: {item.quantity}</Text>
+                    </View>
                 </View>
             </View>
-            <TouchableOpacity style={styles.deleteButton}>
-                <Ionicons name="trash-outline" size={18} color="#EF4444" />
-            </TouchableOpacity>
-        </View>
-    );
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -80,53 +54,58 @@ export default function OrderSummaryScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                {/* Single Card Header item per screenshot */}
-                {SUMMARY_ITEMS.length > 0 && renderSummaryItem(SUMMARY_ITEMS[0])}
+                {isLoading ? (
+                    <View style={{ padding: 40, alignItems: 'center' }}>
+                        <ActivityIndicator size="large" color="#425BA4" />
+                        <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading summary...</Text>
+                    </View>
+                ) : (
+                    <>
+                        {/* Summary Items List */}
+                        {cartItems.map(renderSummaryItem)}
 
-                <Text style={styles.orderTitle}>Order({SUMMARY_ITEMS.length} item)</Text>
+                        <Text style={styles.orderTitle}>Order({cartItems.length} item{cartItems.length !== 1 ? 's' : ''})</Text>
 
-                <View style={styles.orderListContainer}>
-                    {SUMMARY_ITEMS.map((item) => (
-                        <View key={item.id} style={styles.orderListItem}>
-                            <Text style={styles.orderListLabel}>Product</Text>
-                            <Text style={styles.orderListValue}>{item.name.toLowerCase()}</Text>
+                        <View style={styles.orderListContainer}>
+                            {cartItems.map((item) => (
+                                <View key={`list-${item.item_id || item.product_id}`} style={styles.orderListItem}>
+                                    <Text style={styles.orderListLabel}>Product</Text>
+                                    <Text style={styles.orderListValue} numberOfLines={1}>{(item.product_name || '').toLowerCase()}</Text>
+                                </View>
+                            ))}
+
+                            <View style={styles.orderListItem}>
+                                <Text style={styles.orderListLabel}>Price</Text>
+                                <Text style={styles.orderListValue}>Tsh. {subtotal.toLocaleString()}</Text>
+                            </View>
+
                         </View>
-                    ))}
 
-                    <View style={styles.orderListItem}>
-                        <Text style={styles.orderListLabel}>Price</Text>
-                        <Text style={styles.orderListValue}>Tsh. {subtotal.toLocaleString()}</Text>
-                    </View>
+                        <View style={styles.divider} />
 
-                    <View style={styles.orderListItem}>
-                        <Text style={styles.orderListLabel}>Quantity</Text>
-                        <Text style={styles.orderListValue}>Items {SUMMARY_ITEMS[0].quantity}</Text>
-                    </View>
-                </View>
+                        <View style={styles.costRow}>
+                            <Text style={styles.costLabel}>Subtotal</Text>
+                            <Text style={styles.costValue}>Tsh. {subtotal.toLocaleString()}</Text>
+                        </View>
+                        <View style={styles.costRow}>
+                            <Text style={styles.costLabel}>Discount</Text>
+                            <Text style={styles.costValue}>Tsh. {discount}</Text>
+                        </View>
+                        <View style={styles.costRow}>
+                            <Text style={styles.costLabel}>Delivery Fees</Text>
+                            <Text style={styles.costValue}>Tsh. {deliveryFees.toLocaleString()}</Text>
+                        </View>
+                        <View style={styles.costRow}>
+                            <Text style={styles.costLabel}>Tax (18%)</Text>
+                            <Text style={styles.costValue}>Tsh. {tax.toLocaleString()}</Text>
+                        </View>
 
-                <View style={styles.divider} />
-
-                <View style={styles.costRow}>
-                    <Text style={styles.costLabel}>Subtotal</Text>
-                    <Text style={styles.costValue}>Tsh. {subtotal.toLocaleString()}</Text>
-                </View>
-                <View style={styles.costRow}>
-                    <Text style={styles.costLabel}>Discount</Text>
-                    <Text style={styles.costValue}>Tsh. {discount}</Text>
-                </View>
-                <View style={styles.costRow}>
-                    <Text style={styles.costLabel}>Delivery Fees</Text>
-                    <Text style={styles.costValue}>Tsh. {deliveryFees.toLocaleString()}</Text>
-                </View>
-                <View style={styles.costRow}>
-                    <Text style={styles.costLabel}>Tax (18%)</Text>
-                    <Text style={styles.costValue}>Tsh. {tax.toLocaleString()}</Text>
-                </View>
-
-                <View style={[styles.costRow, styles.totalRow]}>
-                    <Text style={styles.totalLabel}>Total costs</Text>
-                    <Text style={styles.totalValue}>Tsh. {totalCosts.toLocaleString()}</Text>
-                </View>
+                        <View style={[styles.costRow, styles.totalRow]}>
+                            <Text style={styles.totalLabel}>Total costs</Text>
+                            <Text style={styles.totalValue}>Tsh. {totalCosts.toLocaleString()}</Text>
+                        </View>
+                    </>
+                )}
             </ScrollView>
 
             <View style={styles.bottomActions}>

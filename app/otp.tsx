@@ -111,7 +111,11 @@ export default function OTPScreen() {
                         const portal = role === 'merchant' ? 'merchant' : (role === 'delivery' ? 'delivery' : 'buyer');
 
                         // Smart Flow: If OTP verification already returned a token, use it and skip register
-                        if (verifyResp.access_token) {
+                        // IMPORTANT: The Tunzaa backend currently returns literal "access_token" as a dummy variable during OTP verify 
+                        // if the user doesn't physically exist yet. We must validate it's an actual JWT before skipping registration.
+                        const isValidToken = typeof verifyResp.access_token === 'string' && verifyResp.access_token.includes('.');
+
+                        if (verifyResp.access_token && isValidToken) {
                             console.log('🛰️ [OTP] User already exists/authenticated via OTP, skipping registration call.');
                             await AsyncStorage.setItem('LAST_PORTAL', portal);
                             authResponse = await saveAuthResponse(verifyResp);

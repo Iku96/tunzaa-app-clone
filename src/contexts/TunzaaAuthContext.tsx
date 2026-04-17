@@ -87,26 +87,34 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         verifyOTP: (phone: string, otp: string) => authApi.verifyOTP({ phone_number: phone, otp }),
         register: async (data: RegisterBody, targetPortal?: string) => {
             const response = await authApi.register(data);
-            if (targetPortal) {
-                await AsyncStorage.setItem('LAST_PORTAL', targetPortal);
-            } else {
-                const role = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
-                if (IS_MERCHANT(role)) await AsyncStorage.setItem('LAST_PORTAL', 'merchant');
-                else if (IS_DELIVERY(role)) await AsyncStorage.setItem('LAST_PORTAL', 'delivery');
-                else await AsyncStorage.setItem('LAST_PORTAL', 'buyer');
-            }
+            
+            const serverRole = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
+            const hasVendor = response.profiles?.some((p: any) => IS_MERCHANT(p.role));
+            const hasDelivery = response.profiles?.some((p: any) => IS_DELIVERY(p.role));
+
+            let finalPortal = 'buyer';
+            if (targetPortal === 'merchant' && (hasVendor || serverRole === 'vendor')) finalPortal = 'merchant';
+            else if (targetPortal === 'delivery' && (hasDelivery || serverRole === 'delivery')) finalPortal = 'delivery';
+            else if (IS_MERCHANT(serverRole)) finalPortal = 'merchant';
+            else if (IS_DELIVERY(serverRole)) finalPortal = 'delivery';
+
+            await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
             return await storeUserData(response);
         },
         login: async (id: string, pass: string, isPhone: boolean = true, targetPortal?: string) => {
             const response = await authApi.login({ identifier: id, password: pass, is_phone: isPhone });
-            if (targetPortal) {
-                await AsyncStorage.setItem('LAST_PORTAL', targetPortal);
-            } else {
-                const role = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
-                if (IS_MERCHANT(role)) await AsyncStorage.setItem('LAST_PORTAL', 'merchant');
-                else if (IS_DELIVERY(role)) await AsyncStorage.setItem('LAST_PORTAL', 'delivery');
-                else await AsyncStorage.setItem('LAST_PORTAL', 'buyer');
-            }
+            
+            const serverRole = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
+            const hasVendor = response.profiles?.some((p: any) => IS_MERCHANT(p.role));
+            const hasDelivery = response.profiles?.some((p: any) => IS_DELIVERY(p.role));
+
+            let finalPortal = 'buyer';
+            if (targetPortal === 'merchant' && (hasVendor || serverRole === 'vendor')) finalPortal = 'merchant';
+            else if (targetPortal === 'delivery' && (hasDelivery || serverRole === 'delivery')) finalPortal = 'delivery';
+            else if (IS_MERCHANT(serverRole) || hasVendor) finalPortal = 'merchant';
+            else if (IS_DELIVERY(serverRole) || hasDelivery) finalPortal = 'delivery';
+            
+            await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
             return await storeUserData(response);
         },
         logout: async () => { 

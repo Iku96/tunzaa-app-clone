@@ -91,8 +91,23 @@ export default function WelcomeScreen() {
                 return;
             }
 
-            // If no session exists, send new/logged-out users to the onboarding start
-            console.log('🚀 [Splash] No session, navigating to language selection');
+            // If no session exists, see if they already picked a portal previously
+            const lastPortal = await AsyncStorage.getItem('LAST_PORTAL');
+            if (lastPortal === 'buyer') {
+                console.log('🚀 [Splash] No session, but found LAST_PORTAL=buyer, navigating to buyer portal');
+                router.replace('/(buyer)');
+                return;
+            } else if (lastPortal === 'merchant') {
+                console.log('🚀 [Splash] No session, but found LAST_PORTAL=merchant, returning to login context');
+                router.replace('/(merchant)/merchant-login' as any);
+                return;
+            } else if (lastPortal === 'delivery') {
+                console.log('🚀 [Splash] No session, but found LAST_PORTAL=delivery, returning to login context');
+                router.replace('/(delivery)/delivery-login' as any);
+                return;
+            }
+
+            console.log('🚀 [Splash] No session and no portal preference, navigating to language selection');
             router.replace('/language');
         };
 

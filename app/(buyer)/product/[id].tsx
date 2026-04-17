@@ -3,7 +3,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
-import { PRODUCTS } from '../../../src/data/products';
 import { productsApi, Product as ApiProduct } from '../../../src/services/products';
 import VendorBadge from '../../../src/components/common/VendorBadge';
 import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
@@ -50,18 +49,8 @@ export default function ProductDetailScreen() {
                 });
                 console.log('✅ [ProductDetail] Loaded product from API:', apiProduct.name);
             } catch (e: any) {
-                console.warn('⚠️ [ProductDetail] API failed, using static fallback:', e.message);
-                const staticProduct = PRODUCTS.find(p => p.id === id) || PRODUCTS[0];
-                const staticImage = typeof staticProduct.image === 'string' ? staticProduct.image : '';
-                setProduct({
-                    id: staticProduct.id,
-                    name: staticProduct.name,
-                    price: staticProduct.price,
-                    image: staticImage,
-                    images: [staticImage],
-                    rating: staticProduct.rating,
-                    vendor: { ...staticProduct.vendor, id: '1' },
-                });
+                console.warn('⚠️ [ProductDetail] API failed:', e.message);
+                setProduct(null); // Explicitly clear any stale product
             } finally {
                 setLoading(false);
             }
@@ -85,12 +74,28 @@ export default function ProductDetailScreen() {
         }
     };
 
-    if (loading || !product) {
+    if (loading) {
         return (
             <SafeAreaView style={styles.safeArea}>
                 <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
                     <ActivityIndicator size="large" color="#425BA4" />
                     <Text style={{ marginTop: 12, color: '#6B7280' }}>Loading product...</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    if (!product) {
+        return (
+            <SafeAreaView style={styles.safeArea}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.back()}>
+                        <Ionicons name="arrow-back" size={24} color="#1F2937" />
+                    </TouchableOpacity>
+                </View>
+                <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                    <Ionicons name="alert-circle-outline" size={64} color="#9CA3AF" />
+                    <Text style={{ marginTop: 12, color: '#6B7280', fontSize: 16 }}>Product not found</Text>
                 </View>
             </SafeAreaView>
         );

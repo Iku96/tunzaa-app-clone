@@ -140,11 +140,15 @@ export function parseApiError(error: any): ErrorResponse {
     };
 
     const fallback = fallbackErrors[status] || fallbackErrors[500];
+    
+    // Prefer server-provided message if available
+    const serverMessage = errorData?.message || errorData?.detail || errorData?.error_description || errorData?.error || null;
+    const finalMessage = serverMessage && typeof serverMessage === 'string' ? serverMessage : fallback.message;
 
     return {
         status,
         code,
-        message: fallback.message,
+        message: finalMessage,
         action: fallback.action,
         originalError: error,
     };

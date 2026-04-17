@@ -3,6 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCreateOrder } from '../../../src/services/orders';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useCartCombined } from '../../../src/stores/cart';
+import { ActivityIndicator } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -51,6 +55,12 @@ export default function PaymentMethodScreen() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
 
+    const { user } = useTunzaaAuth();
+    const userId = user?.user_id || user?.id || '';
+    const { cart } = useCartCombined(userId);
+    const createOrderMutation = useCreateOrder();
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleSelect = (method: typeof PAYMENT_METHODS[0]) => {
         if (selectedId === method.id) {
             setSelectedId(null); // Toggle collapse
@@ -59,12 +69,55 @@ export default function PaymentMethodScreen() {
         }
     };
 
-    const handleMakePayment = () => {
+    const handleMakePayment = async () => {
         if (!phoneNumber) {
             alert("Please enter a phone number");
             return;
         }
-        router.push('/(buyer)/order/123'); // Route to new tracking dashboard
+
+        if (!cart?.cart_id) {
+            alert("Cart is empty or not loaded");
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            const subtotal = cart.items.reduce((sum, item) => sum + ((item.unit_price || item.sale_price || 0) * item.quantity), 0);
+            const total = subtotal + 10000 + (subtotal * 0.18); // Delivery + tax
+
+            const result = await createOrderMutation.mutateAsync({
+                cart_id: cart.cart_id,
+                shipping_address: {
+                    first_name: user?.name || 'Buyer',
+                    last_name: 'Name',
+                    address_line1: '123 Delivery Street',
+                    city: 'Dar es Salaam',
+                    state_province: 'Dar',
+                    country: 'TZ',
+                    phone: phoneNumber,
+                    email: user?.email || '',
+                    is_default: true,
+                },
+                delivery_details: {
+                    partner_id: 'mock-partner', // Static mockup until courier tracking is implemented
+                    cost: 10000, 
+                },
+                payment_details: {
+                    method: selectedId || 'mobile_money',
+                    amount: total,
+                    currency: 'TZS',
+                    payment_gateway: 'selcom',
+                },
+                user_id: userId,
+                delivery_type_id: 'standard',
+           });
+           alert("Order placed successfully!");
+           router.push('/(buyer)/orders/'); // Route to tracking dashboard
+        } catch (e: any) {
+            alert("Checkout failed: " + e.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -123,8 +176,12 @@ export default function PaymentMethodScreen() {
                                             />
                                         </View>
 
-                                        <TouchableOpacity style={styles.makePaymentButton} onPress={handleMakePayment}>
-                                            <Text style={styles.makePaymentButtonText}>Make a Payment</Text>
+                                        <TouchableOpacity style={[styles.makePaymentButton, isLoading && { opacity: 0.7 }]} onPress={handleMakePayment} disabled={isLoading}>
+                                            {isLoading ? (
+                                                <ActivityIndicator color="#FFFFFF" />
+                                            ) : (
+                                                <Text style={styles.makePaymentButtonText}>Make a Payment</Text>
+                                            )}
                                         </TouchableOpacity>
                                     </View>
                                 )}
