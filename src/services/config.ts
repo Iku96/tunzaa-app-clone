@@ -27,4 +27,5 @@ export const STORAGE_KEYS = {
     TENANT_CONFIG: "tenant_config",
     APP_LOGO_URL: "app_logo_url",
     THEME_CONFIG: "app_theme_config",
+    LAST_PORTAL: "LAST_PORTAL",
 };

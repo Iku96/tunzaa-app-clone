@@ -22,6 +22,7 @@ const TOP_LEVEL_AUTH_SCREENS = [
     'register',
     'otp',
     'forgot-password',
+    'reset-password',
     'interests',
     'complete-profile',
     'login-apple',

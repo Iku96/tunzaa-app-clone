@@ -105,6 +105,24 @@ Learn from these so they are not repeated.
 - **Issue**: The API expects `document_type_id` (e.g. 'TIN', 'LICENSE') to be in **lowercase**. Sending uppercase strings returns a generic "Please check your input" error.
 - **Fix**: Normalized all `document_type_id` strings to lowercase in `TunzaaAuthContext.tsx` before API submission.
 
+### STORAGE_KEYS.LAST_PORTAL Missing Key
+
+- **Context**: Portal routing between Buyer/Merchant/Delivery uses `LAST_PORTAL` in AsyncStorage.
+- **Issue**: `STORAGE_KEYS` in `src/services/config.ts` did not define `LAST_PORTAL`. The `setLastPortal`/`getLastPortal` helpers in `storage.ts` referenced `STORAGE_KEYS.LAST_PORTAL` (undefined), silently failing. Meanwhile `TunzaaAuthContext.tsx` used the raw string `'LAST_PORTAL'` directly, causing inconsistency.
+- **Fix**: Added `LAST_PORTAL: "LAST_PORTAL"` to `STORAGE_KEYS` in `config.ts`.
+
+### Login API 401 Triggering Token Refresh Loop
+
+- **Context**: `client.ts` response interceptor auto-refreshes tokens on any 401 response.
+- **Issue**: When `POST /auth/login` itself returns a 401 (wrong credentials), the interceptor tries to refresh a token (which doesn't exist for a login call), fails, then calls `clearTokens()`, and finally shows the generic "Please log in to continue" instead of the actual "Invalid credentials" error.
+- **Fix**: Added an `isAuthEndpoint` check in `client.ts` that skips the token-refresh interceptor for `/auth/login`, `/auth/register`, `/auth/otp/`, `/auth/password/reset`, and `/auth/firebase/login`. Auth-endpoint 401s now pass through directly with the real error message.
+
+### OTP Registration "User Already Exists" Dead End
+
+- **Context**: Phone-based registration goes OTP → verify → register.
+- **Issue**: The backend OTP verify returns a dummy `access_token: "access_token"` (literal string, not a JWT) when the user doesn't have a session. Our JWT check correctly rejects it and calls `POST /auth/register`, but if the phone number is already registered, it fails with "User with this email already exists" — dead end.
+- **Fix**: Added a fallback in `otp.tsx`: when registration fails with "already exists", automatically attempt `POST /auth/login` with the provided credentials. If login also fails, show an actionable alert with a "Go to Login" button.
+
 ---
 
 ## Tech and product context

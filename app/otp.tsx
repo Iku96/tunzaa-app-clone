@@ -73,8 +73,15 @@ export default function OTPScreen() {
         if (timer === 0 && phone_number) {
             setIsResending(true);
             try {
-                const response = await requestOTP(phone_number);
-                setTimer(response.ttl || 30);
+                if (flow === 'reset-password') {
+                    // Use the password reset request endpoint for resend
+                    const { authApi } = await import('../src/services/auth');
+                    const response = await authApi.requestPasswordReset({ phone_number });
+                    setTimer(response.ttl_seconds || 30);
+                } else {
+                    const response = await requestOTP(phone_number);
+                    setTimer(response.ttl || 30);
+                }
                 setOtpDigits(['', '', '', '', '', '']);
                 console.log('✅ OTP resent successfully');
             } catch (error: any) {
@@ -92,9 +99,15 @@ export default function OTPScreen() {
             Alert.alert(t.otpInvalidCode, t.otpEnterAllDigits);
             return;
         }
+
+        // For password reset flow, skip OTP verify — the reset/confirm endpoint verifies the code itself
+        if (flow === 'reset-password') {
+            router.replace({ pathname: '/reset-password', params: { phone_number, email, reset_token: code } } as any);
+            return;
+        }
+
         setIsVerifying(true);
         try {
-            // Removed destructuring of useTunzaaAuth here as it's already done at the top of the component
             const response = await verifyOTP(phone_number, code);
             console.log('✅ OTP verified:', response);
 
@@ -136,13 +149,34 @@ export default function OTPScreen() {
                         // before the auth state update in context. 
                         // No explicit router.replace needed here.
                     } catch (regErr: any) {
-                        console.error('❌ [OTP] Registration/Vendor creation failed:', regErr);
-                        // Extract a more helpful message from the API error if possible
-                        const errorMessage = regErr.apiError?.message || regErr.message || 'Error occurred. Please try again.';
-                        Alert.alert('Registration Failed', errorMessage);
+                        const errorMessage = regErr.apiError?.message || regErr.message || '';
+                        const isAlreadyExists = errorMessage.toLowerCase().includes('already exists') 
+                            || errorMessage.toLowerCase().includes('already registered');
+
+                        if (isAlreadyExists && password) {
+                            // User already exists — fall back to login with the credentials they provided
+                            console.log('🔄 [OTP] User already exists, falling back to login...');
+                            try {
+                                const isPhone = !phone_number.includes('@');
+                                const identifier = phone_number;
+                                const { authApi } = await import('../src/services/auth');
+                                const loginResponse = await authApi.login({ identifier, password, is_phone: isPhone });
+                                
+                                await AsyncStorage.setItem('LAST_PORTAL', portal);
+                                authResponse = await saveAuthResponse(loginResponse);
+                                console.log('✅ [OTP] Login fallback successful:', authResponse?.user_id);
+                            } catch (loginErr: any) {
+                                console.error('❌ [OTP] Login fallback also failed:', loginErr);
+                                Alert.alert('Account Issue', 
+                                    'This phone number is already registered. Please go to the login screen and sign in with your password.',
+                                    [{ text: 'Go to Login', onPress: () => router.replace('/login') }]
+                                );
+                            }
+                        } else {
+                            console.error('❌ [OTP] Registration failed:', regErr);
+                            Alert.alert('Registration Failed', errorMessage || 'Error occurred. Please try again.');
+                        }
                     }
-                } else if (flow === 'reset-password') {
-                    router.replace({ pathname: '/reset-password', params: { phone_number, reset_token: code } } as any);
                 } else {
                     // Default fallback logic
                     router.replace({ pathname: '/create-password', params: { phone_number } } as any);

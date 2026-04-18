@@ -34,9 +34,13 @@ const globalErrors = (errorsData as any).global_errors as ApiError[];
 function extractEndpoint(url: string, method: string): string {
     try {
         const urlObj = new URL(url);
-        return `${method.toUpperCase()} ${urlObj.pathname}`;
+        // Strip /v1 from the path if it exists to match errors.json patterns
+        const path = urlObj.pathname.replace(/^\/v1/, '');
+        return `${method.toUpperCase()} ${path}`;
     } catch {
-        return `${method.toUpperCase()} ${url}`;
+        // Strip /v1 from raw relative URLs
+        const path = url.replace(/^\/v1/, '');
+        return `${method.toUpperCase()} ${path}`;
     }
 }
 

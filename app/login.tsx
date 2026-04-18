@@ -101,7 +101,21 @@ export default function LoginScreen() {
             // AuthGuard handles all navigation from here based on LAST_PORTAL + user state
         } catch (e: any) {
             console.error('❌ Login error:', e);
-            Alert.alert('Login Failed', e.message || 'Error signing in. Please check your credentials.');
+            const apiStatus = e.apiError?.status;
+            const rawMsg = e.apiError?.message || e.message || '';
+
+            // Map API errors to user-friendly messages
+            let userMessage = 'Error signing in. Please check your credentials.';
+            if (apiStatus === 401 || rawMsg.includes('log in to continue') || rawMsg.includes('Invalid credentials')) {
+                userMessage = 'Invalid phone number/email or password. Please try again.';
+            } else if (apiStatus === 404 || rawMsg.includes('not found') || rawMsg.includes('does not exist')) {
+                userMessage = 'No account found with these credentials. Would you like to register?';
+            } else if (apiStatus === 429) {
+                userMessage = 'Too many login attempts. Please wait a moment and try again.';
+            } else if (rawMsg) {
+                userMessage = rawMsg;
+            }
+            Alert.alert('Login Failed', userMessage);
         } finally {
             setLoading(false);
         }

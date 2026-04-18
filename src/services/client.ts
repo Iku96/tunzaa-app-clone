@@ -48,9 +48,17 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const requestUrl = originalRequest?.url || '';
 
-        // Auto-refresh on 401
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Auth endpoints that should NOT trigger token refresh on 401
+        const isAuthEndpoint = [
+            '/auth/login', '/auth/register', '/auth/otp/',
+            '/auth/password/reset', '/auth/password-reset',
+            '/auth/firebase/login', '/auth/verify-otp',
+        ].some(path => requestUrl.includes(path));
+
+        // Auto-refresh on 401 (ONLY for protected endpoints, not auth endpoints)
+        if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
             originalRequest._retry = true;
 
             try {

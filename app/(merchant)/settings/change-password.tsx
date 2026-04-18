@@ -4,10 +4,11 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { authApi } from '../../../src/services/auth';
 
 export default function ChangePasswordScreen() {
     const router = useRouter();
-    const { changePassword } = useTunzaaAuth();
+    const { user } = useTunzaaAuth();
 
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -37,7 +38,11 @@ export default function ChangePasswordScreen() {
 
         setLoading(true);
         try {
-            await changePassword({
+            if (!user?.user_id) {
+                Alert.alert('Error', 'User session not found. Please log in again.');
+                return;
+            }
+            await authApi.updatePassword(user.user_id, {
                 current_password: currentPassword.trim(),
                 new_password: newPassword.trim(),
             });
