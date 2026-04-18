@@ -172,6 +172,16 @@ export const supportApi = {
     );
     return response.data;
   },
+
+  // Get Messages for a Conversation
+  getMessages: async (conversationId: string): Promise<Message[]> => {
+    const response = await apiClient.get<Message[] | { items: Message[] }>(
+      `/support/conversations/${conversationId}/messages`
+    );
+    // Handle both array and paginated response formats
+    const data = response.data;
+    return Array.isArray(data) ? data : (data as any).items || [];
+  },
 };
 
 // React Query Hooks
@@ -230,5 +240,18 @@ export const useSendMessage = () => {
 export const useCloseConversation = () => {
   return useMutation({
     mutationFn: supportApi.closeConversation,
+  });
+};
+
+export const useGetMessages = (
+  conversationId: string,
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: ["chat-messages", conversationId],
+    queryFn: () => supportApi.getMessages(conversationId),
+    enabled: enabled && !!conversationId,
+    refetchInterval: 5000, // Poll every 5 seconds for near-real-time
+    refetchIntervalInBackground: false,
   });
 };

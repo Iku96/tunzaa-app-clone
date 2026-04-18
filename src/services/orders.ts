@@ -194,6 +194,23 @@ export const orderApi = {
         const response = await apiClient.post(`/orders/${orderNumber}/pay`, data);
         return response.data;
     },
+
+    /** Request a refund for an order */
+    requestRefund: async (
+        orderId: string,
+        data: {
+            issued_by: string;
+            refund_data: {
+                items: Array<{ item_id: string; quantity: number }>;
+                reason: string;
+            };
+        }
+    ): Promise<any> => {
+        console.log('📤 [Orders] Requesting refund for order:', orderId);
+        const response = await apiClient.post(`/orders/${orderId}/refunds`, data);
+        console.log('✅ [Orders] Refund response:', JSON.stringify(response.data, null, 2));
+        return response.data;
+    },
 };
 
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -247,5 +264,23 @@ export const useGetOrders = (
         queryKey: ["orders", params],
         queryFn: () => orderApi.getOrders(params),
         enabled,
+    });
+};
+
+export const useRequestRefund = () => {
+    return useMutation({
+        mutationFn: ({
+            orderId,
+            data,
+        }: {
+            orderId: string;
+            data: {
+                issued_by: string;
+                refund_data: {
+                    items: Array<{ item_id: string; quantity: number }>;
+                    reason: string;
+                };
+            };
+        }) => orderApi.requestRefund(orderId, data),
     });
 };
