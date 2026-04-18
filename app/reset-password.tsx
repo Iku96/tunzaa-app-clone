@@ -105,7 +105,7 @@ export default function ResetPasswordScreen() {
                 throw new Error('Unable to reset password. The verification code may have expired. Please try again.');
             }
         } catch (e: any) {
-            console.error('❌ [ResetPassword] Error:', e);
+            console.warn('❌ [ResetPassword] Error:', e.message || e);
             const message = e.apiError?.message || e.message || 'Failed to reset password.';
             Alert.alert('Reset Failed', message);
         } finally {

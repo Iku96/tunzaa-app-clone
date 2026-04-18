@@ -211,8 +211,7 @@ export default function Step5Documents() {
                 AsyncStorage.removeItem('TEMP_ONBOARDING_LOCATION'),
             ]);
 
-            // Refresh user profile to get the new vendor role
-            await refreshProfile();
+            // Note: refreshProfile() is now handled universally by TunzaaAuthContext mutations
             setShowSuccessModal(true);
         } catch (error: any) {
             console.error('❌ [Step5] Failed to finalize vendor:', error);

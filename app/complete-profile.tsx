@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { saveOnboardingStep, getOnboardingCache } from '../src/utils/onboardingStore';
+import { useEffect } from 'react';
 
 /**
  * Complete Profile Screen
@@ -14,9 +16,22 @@ export default function CompleteProfileScreen() {
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [location, setLocation] = useState('');
 
-    const handleContinue = () => {
-        console.log('Profile:', { gender, dateOfBirth, location });
-        router.push('/(buyer)');
+    useEffect(() => {
+        // Hydrate from cache if user pressed back
+        getOnboardingCache().then(cache => {
+            if (cache?.profile) {
+                if (cache.profile.gender) setGender(cache.profile.gender);
+                if (cache.profile.dateOfBirth) setDateOfBirth(cache.profile.dateOfBirth);
+                if (cache.profile.location) setLocation(cache.profile.location);
+            }
+        });
+    }, []);
+
+    const handleContinue = async () => {
+        // Phase 2: Batch Onboarding Write Optimization
+        // We do *NOT* commit to the backend here. We cache it locally.
+        await saveOnboardingStep('profile', { gender, dateOfBirth, location });
+        router.push('/interests');
     };
 
     return (

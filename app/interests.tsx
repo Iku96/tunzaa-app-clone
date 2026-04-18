@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { saveOnboardingStep, getOnboardingCache } from '../src/utils/onboardingStore';
 
 /**
  * Interests Selection Screen
@@ -17,6 +18,12 @@ export default function InterestsScreen() {
 
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
+    useEffect(() => {
+        getOnboardingCache().then(cache => {
+            if (cache?.interests) setSelectedInterests(cache.interests);
+        });
+    }, []);
+
     const toggleInterest = (interest: string) => {
         if (selectedInterests.includes(interest)) {
             setSelectedInterests(selectedInterests.filter(i => i !== interest));
@@ -25,9 +32,9 @@ export default function InterestsScreen() {
         }
     };
 
-    const handleContinue = () => {
-        console.log('Selected interests:', selectedInterests);
-        router.push('/complete-profile');
+    const handleContinue = async () => {
+        await saveOnboardingStep('interests', selectedInterests);
+        router.push('/creators');
     };
 
     return (

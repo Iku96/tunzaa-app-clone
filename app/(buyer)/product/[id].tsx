@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
 import { productsApi, Product as ApiProduct } from '../../../src/services/products';
-import VendorBadge from '../../../src/components/common/VendorBadge';
+import { useCartCombined, useAddToCart } from '../../../src/stores/cart';
 import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
@@ -13,15 +13,26 @@ const { width, height } = Dimensions.get('window');
 export default function ProductDetailScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
-    const { isAuthenticated } = useTunzaaAuth();
+    const { isAuthenticated, user } = useTunzaaAuth();
     const [loading, setLoading] = useState(true);
+    
+    // Product interaction state
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [quantity, setQuantity] = useState(1);
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-    // Product data - try API first, fall back to static
+    const sizes = ['35.5', '36', '37.5', '38', '39', '42'];
+    const colors = ['#A8A29E', '#1F2937', '#1E3A8A']; // Gray, Black, Navy
+
+    // Product data 
     const [product, setProduct] = useState<{
         id: string; name: string; price: number; image: string; images: string[];
         rating: number; vendor: { id: string; name: string; location: string };
     } | null>(null);
-    const [activeIndex, setActiveIndex] = useState(0);
+
+    const { data: serverCart } = useCartCombined(user?.id || user?.user_id || 'guest');
+    const { mutateAsync: addToCart, isPending: isAddingToCart } = useAddToCart();
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -207,32 +218,105 @@ export default function ProductDetailScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Specifications Section */}
+                        {/* Specifications Section (Product details) */}
                         <View style={styles.specsContainer}>
-                            <Text style={styles.specsTitle}>Specification</Text>
+                            <Text style={styles.specsTitle}>Product details</Text>
                             <View style={styles.specRow}>
-                                <Text style={styles.specLabel}>Screen Size</Text>
-                                <Text style={styles.specValue}>39.5 Inches</Text>
+                                <Text style={styles.specLabel}>Origin</Text>
+                                <Text style={styles.specValue}>Imported</Text>
                             </View>
                             <View style={styles.specRow}>
-                                <Text style={styles.specLabel}>Brand</Text>
-                                <Text style={styles.specValue}>Hisense</Text>
+                                <Text style={styles.specLabel}>Sole material</Text>
+                                <Text style={styles.specValue}>Rubber</Text>
                             </View>
                             <View style={styles.specRow}>
-                                <Text style={styles.specLabel}>Display Technology</Text>
-                                <Text style={styles.specValue}>FHD 1080p, LED, LCD</Text>
+                                <Text style={styles.specLabel}>Outer material</Text>
+                                <Text style={styles.specValue}>Leather, synthetic leather and textile upper for a supportive feel.</Text>
                             </View>
                             <View style={styles.specRow}>
-                                <Text style={styles.specLabel}>Resolution</Text>
-                                <Text style={styles.specValue}>1080p</Text>
-                            </View>
-                            <View style={styles.specRow}>
-                                <Text style={styles.specLabel}>Refresh Rate</Text>
-                                <Text style={styles.specValue}>60 Hz</Text>
+                                <Text style={styles.specLabel}>Closure type</Text>
+                                <Text style={styles.specValue}>Lace-Up</Text>
                             </View>
                         </View>
 
-                        <View style={{ height: 120 }} />
+                        {/* Sizes */}
+                        <View style={styles.pillsContainer}>
+                            {sizes.map(size => (
+                                <TouchableOpacity 
+                                    key={size}
+                                    style={[styles.pill, selectedSize === size && styles.pillSelected]}
+                                    onPress={() => setSelectedSize(size)}
+                                >
+                                    <Text style={[styles.pillText, selectedSize === size && styles.pillTextSelected]}>UK: {size}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        {/* Color Picker */}
+                        <View style={styles.pickerBox}>
+                            <Text style={styles.pickerLabel}>Color</Text>
+                            <View style={styles.colorDots}>
+                                {colors.map(c => (
+                                    <TouchableOpacity 
+                                        key={c}
+                                        style={[
+                                            styles.colorDot, 
+                                            { backgroundColor: c }, 
+                                            selectedColor === c && styles.colorDotSelected
+                                        ]}
+                                        onPress={() => setSelectedColor(c)}
+                                    />
+                                ))}
+                            </View>
+                        </View>
+
+                        {/* Quantity Picker */}
+                        <View style={styles.pickerBox}>
+                            <Text style={styles.pickerLabel}>Quantity</Text>
+                            <View style={styles.quantityControls}>
+                                <TouchableOpacity style={styles.qtyBtn} onPress={() => setQuantity(Math.max(1, quantity - 1))}>
+                                    <Ionicons name="remove" size={20} color="#4B5563" />
+                                </TouchableOpacity>
+                                <Text style={styles.qtyText}>{quantity}</Text>
+                                <TouchableOpacity style={styles.qtyBtn} onPress={() => setQuantity(quantity + 1)}>
+                                    <Ionicons name="add" size={20} color="#425BA4" />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* Accordions */}
+                        <View style={styles.accordionsWrapper}>
+                            <TouchableOpacity style={styles.accordionRow}>
+                                <View style={styles.accordionTitles}>
+                                    <Text style={styles.accordionTitle}>Recommendation</Text>
+                                    <Text style={styles.accordionSubtitle}>Other Buyer Bought</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color="#1F2937" />
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity style={styles.accordionRow}>
+                                <View style={styles.accordionTitles}>
+                                    <Text style={styles.accordionTitle}>Similar product from other supplier</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color="#1F2937" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.accordionRow}>
+                                <View style={styles.accordionTitles}>
+                                    <Text style={styles.accordionTitle}>Ratings and Reviews</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color="#1F2937" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.accordionRow}>
+                                <View style={styles.accordionTitles}>
+                                    <Text style={styles.accordionTitle}>Return & Refund Policy</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color="#1F2937" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={{ height: 160 }} />
                     </View>
                 </ScrollView>
 
@@ -240,7 +324,7 @@ export default function ProductDetailScreen() {
                 <View style={styles.actionBar}>
                     <TouchableOpacity
                         style={styles.buyButton}
-                        onPress={() => {
+                        onPress={async () => {
                             if (!isAuthenticated) {
                                 import('react-native').then(rn => {
                                     rn.Alert.alert(
@@ -255,11 +339,37 @@ export default function ProductDetailScreen() {
                                 });
                                 return;
                             }
-                            router.push({ pathname: '/(buyer)/cart/summary', params: { productId: product.id } });
+                            
+                            // Check if cart is loading or add was triggered
+                            if (isAddingToCart) return;
+
+                            if (!serverCart?.cart_id) {
+                                router.push({ pathname: '/(buyer)/cart/summary', params: { productId: product.id } });
+                                return;
+                            }
+
+                            try {
+                                await addToCart({
+                                    cartId: serverCart.cart_id,
+                                    item: {
+                                        product_id: product.id,
+                                        quantity: quantity,
+                                        currency: 'TZS',
+                                        sku: selectedSize ? `UK-${selectedSize}` : undefined
+                                    }
+                                });
+                                // Navigate to checkout right away for "Buy Now" flow
+                                router.push('/(buyer)/cart');
+                            } catch (error) {
+                                console.error('Failed to add to cart:', error);
+                            }
                         }}
                         activeOpacity={0.9}
+                        disabled={isAddingToCart}
                     >
-                        <Text style={styles.buyButtonText}>Add To Cart</Text>
+                        <Text style={styles.buyButtonText}>
+                            {isAddingToCart ? 'Adding...' : 'Buy Now'}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -486,7 +596,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         borderRadius: 30, // Rounded pill
         alignItems: 'center',
-        // Shadow
+        justifyContent: 'center',
         shadowColor: "#425BA4",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
@@ -521,5 +631,99 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 12,
         color: '#6B7280',
+    },
+    pillsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 16,
+    },
+    pill: {
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        backgroundColor: '#F3F4F6',
+        borderRadius: 4,
+    },
+    pillSelected: {
+        backgroundColor: '#425BA4',
+    },
+    pillText: {
+        fontSize: 12,
+        color: '#6B7280',
+    },
+    pillTextSelected: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+    },
+    pickerBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderWidth: 1,
+        borderColor: '#F3F4F6',
+        borderRadius: 12,
+        marginTop: 16,
+    },
+    pickerLabel: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#1F2937',
+    },
+    colorDots: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    colorDot: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+    },
+    colorDotSelected: {
+        borderWidth: 2,
+        borderColor: '#10B981', // green ring to show selected
+    },
+    quantityControls: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    qtyBtn: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#F8FAFC',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    qtyText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#425BA4',
+    },
+    accordionsWrapper: {
+        marginTop: 24,
+    },
+    accordionRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#F3F4F6',
+    },
+    accordionTitles: {
+        flex: 1,
+    },
+    accordionTitle: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#1F2937',
+    },
+    accordionSubtitle: {
+        fontSize: 12,
+        color: '#425BA4',
+        marginTop: 4,
     },
 });

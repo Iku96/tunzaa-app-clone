@@ -17,17 +17,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const userRef = useRef<TunzaaUser | null>(null);
 
     useEffect(() => { userRef.current = user; }, [user]);
-    useEffect(() => { restoreSession(); }, []);
 
-    const restoreSession = async () => {
-        try {
-            const token = await getAccessToken();
-            const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
-            if (token && userData) setUser(JSON.parse(userData));
-            else await clearTokens();
-        } catch (error) { console.error('Session Restoration Failed:', error); }
-        finally { setIsLoading(false); }
-    };
 
     const storeUserData = useCallback(async (incomingData: any) => {
         let raw = incomingData.user || incomingData;
@@ -81,6 +71,38 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return updatedUser;
     }, []);
 
+    // Stale-Aware Cache Restoration (Background Hydration)
+    useEffect(() => {
+        const restoreSession = async () => {
+            try {
+                const token = await getAccessToken();
+                const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
+                
+                if (token && userData) {
+                    const parsedUser = JSON.parse(userData);
+                    // 1. Instant Cache Load (Optimistic UI)
+                    setUser(parsedUser); 
+                    
+                    // 2. Background Hydration (Reconciliation)
+                    const idToFetch = parsedUser.id || parsedUser.user_id;
+                    if (idToFetch) {
+                        authApi.getUserDetails(idToFetch).then(freshData => {
+                            if (freshData) storeUserData(freshData);
+                        }).catch(err => console.log('⚠️ [Cache] Background hydration failed or offline:', err.message));
+                    }
+                } else {
+                    await clearTokens();
+                }
+            } catch (error) { 
+                console.error('Session Restoration Failed:', error); 
+            } finally { 
+                setIsLoading(false); 
+            }
+        };
+
+        restoreSession();
+    }, [storeUserData]);
+
     const value = {
         user, isAuthenticated: !!user, isLoading,
         requestOTP: (phone: string) => authApi.requestOTP({ phone_number: phone }),
@@ -123,19 +145,44 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             await socialAuth.signOutGoogle(); 
             setUser(null); 
         },
-        updateUser: async (data: any) => await storeUserData({ ...userRef.current, ...data }),
+        updateUser: async (data: any) => {
+            const previousState = userRef.current;
+            try {
+                // 1. Optimistic Local Update
+                setUser({ ...previousState, ...data } as TunzaaUser);
+                
+                // 2. Persist to API
+                if (previousState?.user_id) {
+                    await authApi.updateUser(previousState.user_id, data);
+                }
+            } catch (e: any) {
+                console.error("⚠️ [AuthContext] updateUser API failed, rolling back UI", e.message);
+                // 3. Rollback UI on failure
+                setUser(previousState);
+                if (previousState) await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(previousState));
+                throw e;
+            } finally {
+                // 4. Reconciliation: Always fetch truth from server
+                if (previousState?.user_id) {
+                    const freshData = await authApi.getUserDetails(previousState.user_id);
+                    if (freshData) await storeUserData(freshData);
+                }
+            }
+        },
         refreshProfile: async () => { if (userRef.current) await storeUserData(await authApi.getUserDetails(userRef.current.user_id)); },
 
         updateVendor: async (vendorId: string, profileId: string, vendorData: any) => {
+            
+            const previousState = userRef.current;
             try {
-                await authApi.updateUserProfile(userRef.current?.user_id || '', profileId, {
+                // 1. Dual Write to Auth Profile & Marketplace
+                const promise1 = authApi.updateUserProfile(previousState?.user_id || '', profileId, {
                     display_name: vendorData.display_name || vendorData.business_name,
                     metadata: { ...vendorData.metadata, vendor_id: vendorId }
-                });
-            } catch (e: any) { console.warn("⚠️ [AuthContext] Auth Profile update failed:", e.message); }
+                }).catch(e => { throw new Error(`Auth Profile failed: ${e.message}`); });
 
-            if (vendorId) {
-                try {
+                let promise2 = Promise.resolve();
+                if (vendorId) {
                     const marketplaceData = {
                         business_name: vendorData.display_name || vendorData.business_name,
                         display_name: vendorData.display_name || vendorData.business_name,
@@ -154,31 +201,56 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                             banners: vendorData.metadata?.banner_url ? [vendorData.metadata?.banner_url] : []
                         }
                     };
-                    await authApi.updateVendor(vendorId, marketplaceData);
-                } catch (e: any) { console.warn("⚠️ [AuthContext] Marketplace update failed:", e.message); }
-            }
-
-            if (userRef.current) {
-                const finalUser = JSON.parse(JSON.stringify(userRef.current));
-                const pIndex = finalUser.profiles.findIndex((p: any) => p.profile_id === profileId || p.profileId === profileId);
-                if (pIndex > -1) {
-                    const newLogo = vendorData.metadata?.logo_url || vendorData.metadata?.image_url;
-                    const newBanner = vendorData.metadata?.banner_url;
-                    finalUser.profiles[pIndex].metadata = { ...finalUser.profiles[pIndex].metadata, ...(vendorData.metadata || {}), vendor_id: vendorId, logo_url: newLogo || finalUser.profiles[pIndex].metadata?.logo_url, image_url: newLogo || finalUser.profiles[pIndex].metadata?.image_url, logoUrl: newLogo || finalUser.profiles[pIndex].metadata?.logoUrl, profile_picture: newLogo || finalUser.profiles[pIndex].metadata?.profile_picture };
-                    finalUser.profiles[pIndex].branding = { ...finalUser.profiles[pIndex].branding, logo_url: newLogo || finalUser.profiles[pIndex].branding?.logo_url, logoUrl: newLogo || finalUser.profiles[pIndex].branding?.logoUrl, banner_url: newBanner || finalUser.profiles[pIndex].branding?.banner_url, bannerUrl: newBanner || finalUser.profiles[pIndex].branding?.bannerUrl, image_url: newLogo || finalUser.profiles[pIndex].branding?.image_url, colors: vendorData.metadata?.colors || finalUser.profiles[pIndex].branding?.colors };
-                    finalUser.profiles[pIndex].display_name = vendorData.display_name || vendorData.business_name || finalUser.profiles[pIndex].display_name;
+                    promise2 = authApi.updateVendor(vendorId, marketplaceData).catch(e => { throw new Error(`Marketplace update failed: ${e.message}`); });
                 }
-                await storeUserData(finalUser);
+
+                // 2. Optimistic Update Local UI while APIs are flying
+                if (previousState) {
+                    const finalUser = JSON.parse(JSON.stringify(previousState));
+                    const pIndex = finalUser.profiles.findIndex((p: any) => p.profile_id === profileId || p.profileId === profileId);
+                    if (pIndex > -1) {
+                        const newLogo = vendorData.metadata?.logo_url || vendorData.metadata?.image_url;
+                        const newBanner = vendorData.metadata?.banner_url;
+                        finalUser.profiles[pIndex].metadata = { ...finalUser.profiles[pIndex].metadata, ...(vendorData.metadata || {}), vendor_id: vendorId, logo_url: newLogo || finalUser.profiles[pIndex].metadata?.logo_url, image_url: newLogo || finalUser.profiles[pIndex].metadata?.image_url, logoUrl: newLogo || finalUser.profiles[pIndex].metadata?.logoUrl, profile_picture: newLogo || finalUser.profiles[pIndex].metadata?.profile_picture };
+                        finalUser.profiles[pIndex].branding = { ...finalUser.profiles[pIndex].branding, logo_url: newLogo || finalUser.profiles[pIndex].branding?.logo_url, logoUrl: newLogo || finalUser.profiles[pIndex].branding?.logoUrl, banner_url: newBanner || finalUser.profiles[pIndex].branding?.banner_url, bannerUrl: newBanner || finalUser.profiles[pIndex].branding?.bannerUrl, image_url: newLogo || finalUser.profiles[pIndex].branding?.image_url, colors: vendorData.metadata?.colors || finalUser.profiles[pIndex].branding?.colors };
+                        finalUser.profiles[pIndex].display_name = vendorData.display_name || vendorData.business_name || finalUser.profiles[pIndex].display_name;
+                    }
+                    setUser(finalUser);
+                }
+
+                // Wait for all writes to finish
+                await Promise.all([promise1, promise2]);
+            } catch (e: any) { 
+                console.error("⚠️ [AuthContext] updateVendor failed, rolling back UI", e);
+                // 3. Rollback UI on failure
+                setUser(previousState);
+                if (previousState) await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(previousState));
+                throw e;
+            } finally {
+                // 4. Reconciliation Layer
+                if (previousState?.user_id) {
+                    authApi.getUserDetails(previousState.user_id).then(freshData => {
+                        if (freshData) storeUserData(freshData);
+                    }).catch(err => console.log('⚠️ [Reconciliation] updateVendor refresh failed:', err.message));
+                }
             }
             return true;
         },
         saveAuthResponse: storeUserData,
         
         createVendor: async (vendorData: any) => {
-            const userId = userRef.current?.user_id || userRef.current?.id || '';
-            const response = await authApi.createVendor(userId, vendorData);
-            if (userRef.current) await storeUserData(await authApi.getUserDetails(userRef.current.user_id));
-            return response;
+            const previousState = userRef.current;
+            try {
+                const userId = previousState?.user_id || previousState?.id || '';
+                const response = await authApi.createVendor(userId, vendorData);
+                return response;
+            } finally {
+                if (previousState?.user_id) {
+                    authApi.getUserDetails(previousState.user_id).then(freshData => {
+                        if (freshData) storeUserData(freshData);
+                    }).catch(err => console.log('⚠️ [Reconciliation] createVendor refresh failed:', err.message));
+                }
+            }
         },
 
         submitVendorKyc: async (documents: any[]) => {
@@ -202,11 +274,17 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             try {
                 const { kycApi } = require('../services/kyc');
                 const response = await kycApi.submitVendorKyc(vendorId, normalizedDocs);
-                if (userRef.current) await storeUserData(await authApi.getUserDetails(userRef.current.user_id));
                 return response;
             } catch (e: any) {
                 const apiError = e.response?.data?.message || e.message || 'Unknown error';
                 throw new Error(`KYC Error: ${apiError}`);
+            } finally {
+                const userId = userRef.current?.user_id || userRef.current?.id;
+                if (userId) {
+                    authApi.getUserDetails(userId).then(freshData => {
+                        if (freshData) storeUserData(freshData);
+                    }).catch(err => console.log('⚠️ [Reconciliation] submitVendorKyc refresh failed:', err.message));
+                }
             }
         },
 
@@ -233,11 +311,17 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 const { kycApi } = require('../services/kyc');
                 // Correcting method name to match kycApi.submitDeliveryKyc
                 const response = await kycApi.submitDeliveryKyc(partnerId, normalizedDocs);
-                if (userRef.current) await storeUserData(await authApi.getUserDetails(userRef.current.user_id));
                 return response;
             } catch (e: any) {
                 const apiError = e.response?.data?.message || e.message || 'Unknown error';
                 throw new Error(`KYC Error: ${apiError}`);
+            } finally {
+                const userId = userRef.current?.user_id || userRef.current?.id;
+                if (userId) {
+                    authApi.getUserDetails(userId).then(freshData => {
+                        if (freshData) storeUserData(freshData);
+                    }).catch(err => console.log('⚠️ [Reconciliation] submitDeliveryKyc refresh failed:', err.message));
+                }
             }
         },
     };

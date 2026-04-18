@@ -100,7 +100,7 @@ export default function LoginScreen() {
 
             // AuthGuard handles all navigation from here based on LAST_PORTAL + user state
         } catch (e: any) {
-            console.error('❌ Login error:', e);
+            console.warn('❌ Login error:', e.message || e);
             const apiStatus = e.apiError?.status;
             const rawMsg = e.apiError?.message || e.message || '';
 
