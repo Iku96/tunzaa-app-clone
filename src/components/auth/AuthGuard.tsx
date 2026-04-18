@@ -23,8 +23,6 @@ const TOP_LEVEL_AUTH_SCREENS = [
     'otp',
     'forgot-password',
     'reset-password',
-    'interests',
-    'complete-profile',
     'login-apple',
     'login-facebook',
     'login-x',
@@ -37,8 +35,8 @@ const NESTED_AUTH_SCREENS: Record<string, string[]> = {
     '(merchant)': ['onboarding'],
 };
 
-// Protected portal groups
-const PROTECTED_PORTALS = ['(buyer)', '(merchant)', '(delivery)', '(affiliate)'];
+// Protected portal groups - Note: (buyer) is intentionally omitted to allow guest browsing
+const PROTECTED_PORTALS = ['(merchant)', '(delivery)', '(affiliate)'];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, user, isLoading } = useTunzaaAuth();
@@ -133,6 +131,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 }
             }
             if (lastPortal === 'buyer') {
+                const isFirstTimeBuyer = await AsyncStorage.getItem('IS_FIRST_TIME_BUYER');
+                if (isFirstTimeBuyer) {
+                    return safeReplace('/complete-profile');
+                }
                 return safeReplace('/(buyer)');
             }
 
@@ -150,7 +152,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             }
 
             // Default fallback: Buyer
-            safeReplace('/(buyer)');
+            const isFirstTimeBuyer = await AsyncStorage.getItem('IS_FIRST_TIME_BUYER');
+            if (isFirstTimeBuyer) {
+                safeReplace('/complete-profile');
+            } else {
+                safeReplace('/(buyer)');
+            }
         };
 
         checkNavigation();

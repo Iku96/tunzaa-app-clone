@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 import { shopsApi } from '../src/services/shops';
+import { getOnboardingCache, clearOnboardingCache } from '../src/utils/onboardingStore';
 
 interface Business {
     id: string;
@@ -13,10 +14,11 @@ interface Business {
 
 export default function CreatorsScreen() {
     const router = useRouter();
-    const { user } = useTunzaaAuth();
+    const { user, updateUser } = useTunzaaAuth();
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [followedIds, setFollowedIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         fetchBusinesses();
@@ -45,8 +47,42 @@ export default function CreatorsScreen() {
         }
     };
 
-    const handleSkip = () => {
-        router.push('/(buyer)');
+    const handleContinueOrSkip = async () => {
+        try {
+            setSubmitting(true);
+            
+            // 1. Fetch entire accumulated onboarding cache
+            const cache = await getOnboardingCache();
+            const profileData = cache?.profile || {};
+            const interests = cache?.interests || [];
+            
+            console.log('📦 [Onboarding] Final Batched Commit to API');
+            
+            // 2. We use 'updateUser' because backend lacks dedicated structured columns for gender/dob yet.
+            // WARNING: Metadata Backup (Tracked for future structured DB columns)
+            await updateUser({
+                metadata: {
+                    ...user?.profiles?.[0]?.metadata,
+                    gender: profileData.gender,
+                    dateOfBirth: profileData.dateOfBirth,
+                    location: profileData.location,
+                    interests: interests,
+                    // "Follows" metadata placeholder until POST /user/follow exists
+                    follows: followedIds,
+                }
+            });
+            
+            // 3. Clear cache & Route Home safely
+            await clearOnboardingCache();
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
+            router.replace('/(buyer)');
+        } catch (e) {
+            console.error('Final Onboarding Commit Failed:', e);
+            alert('Could not finish onboarding. Please check your connection and try again.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const getInitials = (name: string) => {
@@ -129,9 +165,15 @@ export default function CreatorsScreen() {
                     </ScrollView>
                 </View>
 
-                <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-                    <Text style={styles.skipText}>Skip</Text>
-                    <Ionicons name="arrow-forward" size={16} color="#425BA4" />
+                <TouchableOpacity 
+                    style={styles.skipButton} 
+                    onPress={handleContinueOrSkip}
+                    disabled={submitting}
+                >
+                    <Text style={[styles.skipText, submitting && { opacity: 0.5 }]}>
+                        {submitting ? 'Saving...' : (followedIds.length > 0 ? 'Continue' : 'Skip')}
+                    </Text>
+                    {!submitting && <Ionicons name="arrow-forward" size={16} color="#425BA4" />}
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>

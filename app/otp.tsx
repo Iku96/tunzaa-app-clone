@@ -142,6 +142,7 @@ export default function OTPScreen() {
                                 email: email || '',
                             };
                             authResponse = await register(registrationData, portal);
+                            await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
                             console.log('✅ [OTP] Registration successful:', authResponse.user_id);
                         }
                         
