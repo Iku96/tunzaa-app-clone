@@ -98,12 +98,12 @@ export default function WelcomeScreen() {
                 router.replace('/(buyer)');
                 return;
             } else if (lastPortal === 'merchant') {
-                console.log('🚀 [Splash] No session, but found LAST_PORTAL=merchant, returning to login context');
-                router.replace('/(merchant)/merchant-login' as any);
+                console.log('🚀 [Splash] No session, but found LAST_PORTAL=merchant, returning to login');
+                router.replace('/login');
                 return;
             } else if (lastPortal === 'delivery') {
-                console.log('🚀 [Splash] No session, but found LAST_PORTAL=delivery, returning to login context');
-                router.replace('/(delivery)/delivery-login' as any);
+                console.log('🚀 [Splash] No session, but found LAST_PORTAL=delivery, returning to delivery login');
+                router.replace('/(delivery)/delivery-login');
                 return;
             }
 

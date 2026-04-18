@@ -63,7 +63,7 @@ export const saveTokens = async (accessToken?: string, refreshToken?: string): P
 };
 
 export const clearTokens = async (): Promise<void> => {
-    console.log("🔑 [Storage] Nuclear wipe of session and portal preference");
+    console.log("🔑 [Storage] Clearing session tokens (LAST_PORTAL preserved)");
     try {
         if (Platform.OS !== "web") {
             await Promise.all([
