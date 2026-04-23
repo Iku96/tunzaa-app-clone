@@ -121,7 +121,7 @@ export default function Step3Map() {
             console.log('✅ [Step3Map] Location persisted');
 
             router.push({
-                pathname: '/(merchant)/onboarding/step-1',
+                pathname: '/(vendor)/onboarding/step-1',
                 params: {
                     region,
                     municipal,

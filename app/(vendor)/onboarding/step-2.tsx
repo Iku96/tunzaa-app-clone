@@ -33,7 +33,7 @@ export default function Step3Location() {
                             {/* Manual Entry Button */}
                             <TouchableOpacity
                                 style={styles.manualButton}
-                                onPress={() => router.push('/(merchant)/onboarding/step-1-manual')}
+                                onPress={() => router.push('/(vendor)/onboarding/step-1-manual')}
                             >
                                 <Text style={styles.manualButtonText}>{t.onboardingStep3ManualButton}</Text>
                             </TouchableOpacity>
@@ -43,7 +43,7 @@ export default function Step3Location() {
                             {/* GPS Button */}
                             <TouchableOpacity
                                 style={styles.gpsButton}
-                                onPress={() => router.push('/(merchant)/onboarding/step-1-map')}
+                                onPress={() => router.push('/(vendor)/onboarding/step-1-map')}
                             >
                                 <Text style={styles.gpsButtonText}>{t.onboardingStep3GPSButton}</Text>
                             </TouchableOpacity>

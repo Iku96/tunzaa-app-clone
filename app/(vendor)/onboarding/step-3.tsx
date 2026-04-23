@@ -129,7 +129,7 @@ export default function Step4Review() {
 
                     <TouchableOpacity
                         style={styles.nextButton}
-                        onPress={() => router.push('/(merchant)/onboarding/step-1')}
+                        onPress={() => router.push('/(vendor)/onboarding/step-1')}
                     >
                         <Text style={styles.nextButtonText}>{t.onboardingStep1Next}</Text>
                     </TouchableOpacity>

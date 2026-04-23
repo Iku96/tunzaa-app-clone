@@ -53,7 +53,7 @@ export default function Step2Details() {
         setLoading(true);
         try {
             // Persist shop details for late creation
-            const { STORAGE_KEYS } = require('../../../src/services/config');
+            const { STORAGE_KEYS } = require('@/services/config');
             const AsyncStorage = require('@react-native-async-storage/async-storage').default;
             
             await Promise.all([
@@ -67,7 +67,7 @@ export default function Step2Details() {
             console.log('✅ [Step2] Shop details persisted');
             
             // Navigate to Step 3 (Selection Screen)
-            router.push('/(merchant)/onboarding/step-1');
+            router.push('/(vendor)/onboarding/step-1');
         } catch (e) {
             console.error('❌ [Step2] Failed to save shop details:', e);
         } finally {

@@ -60,7 +60,7 @@ export default function Step3Manual() {
             console.log('✅ [Step3] Location persisted');
             
             router.push({
-                pathname: '/(merchant)/onboarding/step-1',
+                pathname: '/(vendor)/onboarding/step-1',
                 params: { region, municipal, ward, extraInfo }
             });
         } catch (e) {
