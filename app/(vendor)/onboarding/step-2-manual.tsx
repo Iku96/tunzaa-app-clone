@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Touchabl
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useTunzaaAuth } from '@/context/auth';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
 

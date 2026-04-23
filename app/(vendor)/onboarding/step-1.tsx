@@ -1,9 +1,17 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Dimensions, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { Camera } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
+const { height } = Dimensions.get('window');
 
-export default function Step2Details() {
+export default function Step1Details() {
     const router = useRouter();
-import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
-import { useLanguage } from "@/context/LanguageContext";
     const { user } = useTunzaaAuth();
     const { t } = useLanguage();
 
@@ -58,8 +66,8 @@ import { useLanguage } from "@/context/LanguageContext";
             
             console.log('✅ [Step2] Shop details persisted');
             
-            // Navigate to Step 3 (Selection Screen)
-            router.push('/(vendor)/onboarding/step-1');
+            // Navigate to Step 2 (Location Screen)
+            router.push('/(vendor)/onboarding/step-2');
         } catch (e) {
             console.error('❌ [Step2] Failed to save shop details:', e);
         } finally {
@@ -69,7 +77,6 @@ import { useLanguage } from "@/context/LanguageContext";
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            {/* ✅ ADDED BACKGROUND COLOR TO FIX TRANSITION OVERLAP */}
             <View style={styles.container}>
                 <KeyboardAwareScrollView
                     enableOnAndroid={true}
@@ -151,7 +158,6 @@ import { useLanguage } from "@/context/LanguageContext";
                     </View>
                 </KeyboardAwareScrollView>
 
-                {/* Footer Pinned Outside Scroll */}
                 <View style={styles.footer}>
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                         <Text style={styles.buttonTextOutline}>{t.onboardingStep1Back}</Text>
@@ -166,207 +172,30 @@ import { useLanguage } from "@/context/LanguageContext";
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#315BA9', // ✅ FIX: Prevents overlapping during transitions
-    },
-    contentContainer: {
-        flexGrow: 1,
-        paddingBottom: 100,
-    },
-    staticContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        textAlign: 'left',
-        marginTop: 0,
-        fontFamily: 'Gilroy-Bold',
-    },
-    subtitle: {
-        fontSize: 14,
-        color: '#E0E7FF',
-        textAlign: 'left',
-        marginTop: 8,
-        marginBottom: 25,
-        paddingRight: 20,
-        lineHeight: 20,
-        fontFamily: 'System',
-    },
-    card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        width: '100%',
-        alignSelf: 'center',
-        minHeight: 396,
-        paddingBottom: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    coverImageContainer: {
-        width: '100%',
-        height: 112,
-        backgroundColor: '#CBDAFF',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        position: 'relative',
-        justifyContent: 'center',
-        overflow: 'hidden',
-    },
-    coverImage: {
-        width: '100%',
-        height: '100%',
-    },
-    cameraIconContainer: {
-        position: 'absolute',
-        right: 16,
-        bottom: 16,
-        backgroundColor: '#FFFFFF',
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 10,
-    },
-    logoContainer: {
-        alignItems: 'center',
-        marginTop: -40,
-        marginBottom: 10,
-    },
-    logoCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#FFFFFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#3A5BA9',
-        position: 'relative',
-        overflow: 'visible'
-    },
-    logoImage: {
-        width: 76,
-        height: 76,
-        borderRadius: 38,
-    },
-    logoText: {
-        fontSize: 10,
-        color: '#1F2937',
-        textAlign: 'center',
-    },
-    plusBadge: {
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        width: 22,
-        height: 22,
-        borderRadius: 11,
-        backgroundColor: '#FFFFFF',
-        borderWidth: 2,
-        borderColor: '#3A5BA9',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 12,
-    },
-    formContent: {
-        paddingHorizontal: 20,
-        marginTop: 10,
-    },
-    inputGroup: {
-        marginBottom: 16,
-    },
-    label: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 6,
-        textAlign: 'left',
-    },
-    input: {
-        textAlign: 'center',
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#111827',
-        paddingVertical: 12,
-        backgroundColor: '#F3F4F6',
-        borderRadius: 8,
-    },
-    phoneText: {
-        textAlign: 'center',
-        fontSize: 14,
-        color: '#374151',
-        marginTop: -10,
-        fontWeight: '500',
-    },
-    textArea: {
-        textAlign: 'left',
-        backgroundColor: '#F3F4F6',
-        borderRadius: 8,
-        padding: 12,
-        height: 120,
-        fontWeight: '400',
-        fontSize: 14,
-        marginTop: 6,
-        color: '#111827',
-        textAlignVertical: 'top',
-    },
-    charCount: {
-        fontSize: 10,
-        color: '#9CA3AF',
-        textAlign: 'right',
-        marginTop: 4,
-    },
-    requiredText: {
-        fontSize: 12,
-        color: '#9CA3AF',
-        marginTop: 4,
-    },
-    footer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingBottom: 40,
-        paddingTop: 20,
-        backgroundColor: '#315BA9',
-    },
-    backButton: {
-        width: 154,
-        height: 53,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#7EC155', // ✅ FIX: Green Border
-        backgroundColor: 'transparent',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    buttonTextOutline: {
-        color: '#FFFFFF', // White text
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    nextButton: {
-        width: 154,
-        height: 53,
-        borderRadius: 8,
-        backgroundColor: '#84CC16',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    buttonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
-    }
+    container: { flex: 1, backgroundColor: '#315BA9' },
+    contentContainer: { flexGrow: 1, paddingBottom: 100 },
+    staticContent: { paddingHorizontal: 20, paddingBottom: 20 },
+    title: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'left', marginTop: 0, fontFamily: 'Gilroy-Bold' },
+    subtitle: { fontSize: 14, color: '#E0E7FF', textAlign: 'left', marginTop: 8, marginBottom: 25, paddingRight: 20, lineHeight: 20, fontFamily: 'System' },
+    card: { backgroundColor: '#FFFFFF', borderRadius: 20, width: '100%', alignSelf: 'center', minHeight: 396, paddingBottom: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84, elevation: 5 },
+    coverImageContainer: { width: '100%', height: 112, backgroundColor: '#CBDAFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, position: 'relative', justifyContent: 'center', overflow: 'hidden' },
+    coverImage: { width: '100%', height: '100%' },
+    cameraIconContainer: { position: 'absolute', right: 16, bottom: 16, backgroundColor: '#FFFFFF', width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
+    logoContainer: { alignItems: 'center', marginTop: -40, marginBottom: 10 },
+    logoCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#3A5BA9', position: 'relative', overflow: 'visible' },
+    logoImage: { width: 76, height: 76, borderRadius: 38 },
+    logoText: { fontSize: 10, color: '#1F2937', textAlign: 'center' },
+    plusBadge: { position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#3A5BA9', justifyContent: 'center', alignItems: 'center', zIndex: 12 },
+    formContent: { paddingHorizontal: 20, marginTop: 10 },
+    inputGroup: { marginBottom: 16 },
+    label: { fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 6, textAlign: 'left' },
+    input: { textAlign: 'center', fontSize: 16, fontWeight: '600', color: '#111827', paddingVertical: 12, backgroundColor: '#F3F4F6', borderRadius: 8 },
+    textArea: { textAlign: 'left', backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, height: 120, fontWeight: '400', fontSize: 14, marginTop: 6, color: '#111827', textAlignVertical: 'top' },
+    charCount: { fontSize: 10, color: '#9CA3AF', textAlign: 'right', marginTop: 4 },
+    requiredText: { fontSize: 12, color: '#9CA3AF', marginTop: 4 },
+    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20, backgroundColor: '#315BA9' },
+    backButton: { width: 154, height: 53, borderRadius: 8, borderWidth: 1, borderColor: '#7EC155', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
+    buttonTextOutline: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+    nextButton: { width: 154, height: 53, borderRadius: 8, backgroundColor: '#84CC16', alignItems: 'center', justifyContent: 'center' },
+    buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' }
 });
