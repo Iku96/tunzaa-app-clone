@@ -1,17 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Dimensions, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { useTunzaaAuth } from '@/context/auth';
-import { useLanguage } from '@/context/LanguageContext';
-import { Camera } from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-const { height } = Dimensions.get('window');
 
 export default function Step2Details() {
     const router = useRouter();
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
+import { useLanguage } from "@/context/LanguageContext";
     const { user } = useTunzaaAuth();
     const { t } = useLanguage();
 
