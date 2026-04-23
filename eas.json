@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 16.9.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development"
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "staging"
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./still-processor-462409-n8-413cea976529.json",
+        "track": "production"
+      }
+    },
+    "internal": {
+      "android": {
+        "serviceAccountKeyPath": "./still-processor-462409-n8-413cea976529.json",
+        "track": "internal"
+      }
+    }
+  }
+}

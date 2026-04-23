@@ -1,0 +1,1814 @@
+{
+  "endpoints": [
+    {
+      "endpoint": "GET /health",
+      "description": "Health check",
+      "errors": [
+        {
+          "status": 500,
+          "code": "SERVICE_UNHEALTHY",
+          "message": "Service is temporarily unavailable",
+          "technical": "Health check failed",
+          "action": "Try again later"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /readiness",
+      "description": "Readiness check",
+      "errors": [
+        {
+          "status": 503,
+          "code": "SERVICE_NOT_READY",
+          "message": "Service is starting up. Please wait",
+          "technical": "Service not ready",
+          "action": "Wait and retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /liveness",
+      "description": "Liveness check",
+      "errors": [
+        {
+          "status": 500,
+          "code": "SERVICE_DOWN",
+          "message": "Service is down",
+          "technical": "Liveness check failed",
+          "action": "Contact support"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /auth/firebase/login",
+      "description": "Firebase social authentication",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_TOKEN",
+          "message": "Invalid authentication token",
+          "technical": "Firebase ID token is invalid or expired",
+          "action": "Try signing in again"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Authentication failed",
+          "technical": "Firebase authentication failed",
+          "action": "Check your credentials and try again"
+        },
+        {
+          "status": 409,
+          "code": "USER_ALREADY_EXISTS",
+          "message": "An account with this email already exists",
+          "technical": "User with this email address already exists in the system",
+          "action": "Try signing in with your existing account or use a different email"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your authentication information",
+          "technical": "Firebase token validation failed",
+          "action": "Try signing in again"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Authentication service temporarily unavailable",
+          "technical": "Firebase authentication service error",
+          "action": "Try again later"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /auth/otp/verify",
+      "description": "OTP Verification",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_OTP",
+          "message": "Invalid OTP. Please check the code and try again",
+          "technical": "Provided OTP does not match or is incorrect",
+          "action": "Check the code sent to your phone"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Invalid OTP. Please check the code and try again",
+          "technical": "Backend returned 401 for invalid OTP",
+          "action": "Check the code sent to your phone"
+        },
+        {
+          "status": 401,
+          "code": "INVALID_OR_EXPIRED_OTP",
+          "message": "Invalid or expired OTP. Please try again or request a new one",
+          "technical": "Backend returned 401 with detail 'Invalid or expired OTP'",
+          "action": "Check the code or request a new one"
+        },
+        {
+          "status": 400,
+          "code": "EXPIRED_OTP",
+          "message": "This OTP has expired",
+          "technical": "OTP has passed its validity period",
+          "action": "Request a new OTP"
+        },
+        {
+          "status": 404,
+          "code": "USER_NOT_FOUND",
+          "message": "User not found",
+          "technical": "No user associated with this request",
+          "action": "Check your phone number"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/wishlist/items",
+      "description": "Add item to wishlist",
+      "errors": [
+        {
+          "status": 400,
+          "code": "PRODUCT_INACTIVE",
+          "message": "This product is no longer available",
+          "technical": "Product is not active",
+          "action": "Browse other products"
+        },
+        {
+          "status": 400,
+          "code": "VARIANT_NOT_FOUND",
+          "message": "This product option is not available",
+          "technical": "Product variant not found",
+          "action": "Select different variant"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to save items to your wishlist",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Browse products"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your input and try again",
+          "technical": "Request validation failed",
+          "action": "Fix form errors"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to save to wishlist. Please try again",
+          "technical": "Internal server error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/wishlist",
+      "description": "Get user wishlist",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view your wishlist",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load your wishlist. Please try again",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "DELETE /v1/wishlist/items/{product_id}",
+      "description": "Remove item from wishlist",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to manage your wishlist",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "ITEM_NOT_FOUND",
+          "message": "Item not found in your wishlist",
+          "technical": "Wishlist item does not exist",
+          "action": "Refresh wishlist"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to remove item. Please try again",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/wishlist/check/{product_id}",
+      "description": "Check if product is in wishlist",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to check wishlist status",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to check wishlist status",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/wishlist/count",
+      "description": "Get wishlist item count",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view wishlist count",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to get wishlist count",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/wishlist/move-to-cart",
+      "description": "Move wishlist items to cart",
+      "errors": [
+        {
+          "status": 400,
+          "code": "STOCK_UNAVAILABLE",
+          "message": "Some items are no longer in stock",
+          "technical": "Inventory validation failed",
+          "action": "Review available items"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to add items to cart",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "NO_ITEMS",
+          "message": "No items found to move to cart",
+          "technical": "Empty wishlist",
+          "action": "Add items to wishlist"
+        },
+        {
+          "status": 500,
+          "code": "CART_SERVICE_ERROR",
+          "message": "Unable to move items to cart. Please try again",
+          "technical": "Cart service unavailable",
+          "action": "Retry later"
+        }
+      ]
+    },
+    {
+      "endpoint": "DELETE /v1/wishlist/clear",
+      "description": "Clear entire wishlist",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to clear your wishlist",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to clear wishlist. Please try again",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "PATCH /v1/wishlist/items/{wishlist_id}",
+      "description": "Update wishlist item",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update wishlist items",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "ITEM_NOT_FOUND",
+          "message": "Wishlist item not found",
+          "technical": "Wishlist item does not exist",
+          "action": "Refresh wishlist"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your input and try again",
+          "technical": "Request validation failed",
+          "action": "Fix form errors"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update wishlist item",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/products",
+      "description": "Create product",
+      "errors": [
+        {
+          "status": 400,
+          "code": "VENDOR_STORE_REQUIRED",
+          "message": "Vendor and store information is required",
+          "technical": "vendor_id and store_id are required",
+          "action": "Provide vendor and store details"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to create products",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to create products",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your product information",
+          "technical": "Product validation failed",
+          "action": "Review product details"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to create product. Please try again",
+          "technical": "Internal server error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/products",
+      "description": "Get products list",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_FILTERS",
+          "message": "Invalid search filters",
+          "technical": "Query parameters validation failed",
+          "action": "Adjust search criteria"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load products. Please try again",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/products/search",
+      "description": "Search products",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_SEARCH_QUERY",
+          "message": "Please enter a valid search term",
+          "technical": "Search query validation failed",
+          "action": "Check search input"
+        },
+        {
+          "status": 500,
+          "code": "SEARCH_SERVICE_ERROR",
+          "message": "Search is temporarily unavailable",
+          "technical": "Search service error",
+          "action": "Try again later"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/products/low-stock",
+      "description": "Get low stock products",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view inventory",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view inventory",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load inventory data",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/products/pending",
+      "description": "Get pending approval products",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view pending products",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view pending products",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load pending products",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/products/{product_id}",
+      "description": "Get product details",
+      "errors": [
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Browse other products"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load product details",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/products/slug/{slug}",
+      "description": "Get product by slug",
+      "errors": [
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product with slug does not exist",
+          "action": "Check URL or browse products"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load product",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "PUT /v1/products/{product_id}",
+      "description": "Update product",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update products",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to update this product",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Check product ID"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your product information",
+          "technical": "Product validation failed",
+          "action": "Review product details"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update product",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "PUT /v1/products/{product_id}/inventory",
+      "description": "Update product inventory",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_QUANTITY",
+          "message": "Please enter a valid quantity",
+          "technical": "Invalid inventory quantity",
+          "action": "Check quantity value"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update inventory",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to update inventory",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Check product ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update inventory",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "PUT /v1/products/{product_id}/status",
+      "description": "Update product status",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_STATUS",
+          "message": "Please select a valid status",
+          "technical": "Invalid status value",
+          "action": "Choose valid status"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update product status",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to update product status",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Check product ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update product status",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "DELETE /v1/products/{product_id}",
+      "description": "Delete product",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to delete products",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to delete this product",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Check product ID"
+        },
+        {
+          "status": 409,
+          "code": "PRODUCT_IN_USE",
+          "message": "Cannot delete product as it's in active orders",
+          "technical": "Product has dependencies",
+          "action": "Deactivate instead of delete"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to delete product",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "PATCH /v1/products/{product_id}/sale-price",
+      "description": "Update product sale price",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_PRICE",
+          "message": "Please enter a valid price",
+          "technical": "Invalid price value",
+          "action": "Check price format"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update prices",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to update prices",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Check product ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update price",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/carts/user",
+      "description": "Get user cart",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view your cart",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load your cart",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/carts/session",
+      "description": "Get session cart",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_SESSION",
+          "message": "Invalid session",
+          "technical": "Session validation failed",
+          "action": "Refresh page"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load cart",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/carts/merge",
+      "description": "Merge carts",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_CART_DATA",
+          "message": "Invalid cart information",
+          "technical": "Cart merge validation failed",
+          "action": "Check cart data"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to merge carts",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to merge carts",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/carts/{cart_id}",
+      "description": "Get cart by ID",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view cart",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_NOT_FOUND",
+          "message": "Cart not found",
+          "technical": "Cart does not exist",
+          "action": "Create new cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load cart",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/carts/{cart_id}/items",
+      "description": "Add items to cart",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INSUFFICIENT_STOCK",
+          "message": "Not enough items in stock",
+          "technical": "Inventory quantity exceeded",
+          "action": "Reduce quantity"
+        },
+        {
+          "status": 400,
+          "code": "PRODUCT_INACTIVE",
+          "message": "This product is no longer available",
+          "technical": "Product not active",
+          "action": "Browse other products"
+        },
+        {
+          "status": 400,
+          "code": "INVALID_QUANTITY",
+          "message": "Please enter a valid quantity",
+          "technical": "Quantity validation failed",
+          "action": "Check quantity value"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to add items to cart",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "PRODUCT_NOT_FOUND",
+          "message": "Product not found",
+          "technical": "Product does not exist",
+          "action": "Browse products"
+        },
+        {
+          "status": 404,
+          "code": "CART_NOT_FOUND",
+          "message": "Cart not found",
+          "technical": "Cart does not exist",
+          "action": "Create new cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to add item to cart",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "PUT /v1/carts/{cart_id}/items/{item_id}",
+      "description": "Update cart item",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INSUFFICIENT_STOCK",
+          "message": "Not enough items in stock",
+          "technical": "Inventory quantity exceeded",
+          "action": "Reduce quantity"
+        },
+        {
+          "status": 400,
+          "code": "INVALID_QUANTITY",
+          "message": "Please enter a valid quantity",
+          "technical": "Quantity validation failed",
+          "action": "Check quantity value"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update cart",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_ITEM_NOT_FOUND",
+          "message": "Item not found in cart",
+          "technical": "Cart item does not exist",
+          "action": "Refresh cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update cart item",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "DELETE /v1/carts/{cart_id}/items/{item_id}",
+      "description": "Remove cart item",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to modify cart",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_ITEM_NOT_FOUND",
+          "message": "Item not found in cart",
+          "technical": "Cart item does not exist",
+          "action": "Refresh cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to remove item from cart",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "DELETE /v1/carts/{cart_id}/items",
+      "description": "Clear cart",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to clear cart",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_NOT_FOUND",
+          "message": "Cart not found",
+          "technical": "Cart does not exist",
+          "action": "Create new cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to clear cart",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/carts/{cart_id}/discount",
+      "description": "Apply discount to cart",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_DISCOUNT_CODE",
+          "message": "Invalid or expired discount code",
+          "technical": "Discount code validation failed",
+          "action": "Check discount code"
+        },
+        {
+          "status": 400,
+          "code": "DISCOUNT_NOT_APPLICABLE",
+          "message": "This discount cannot be applied to your cart",
+          "technical": "Discount conditions not met",
+          "action": "Check discount requirements"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to apply discounts",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_NOT_FOUND",
+          "message": "Cart not found",
+          "technical": "Cart does not exist",
+          "action": "Create new cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to apply discount",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "DELETE /v1/carts/{cart_id}/discount",
+      "description": "Remove discount from cart",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to remove discounts",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_NOT_FOUND",
+          "message": "Cart not found",
+          "technical": "Cart does not exist",
+          "action": "Create new cart"
+        },
+        {
+          "status": 404,
+          "code": "DISCOUNT_NOT_FOUND",
+          "message": "No discount applied to cart",
+          "technical": "No active discount",
+          "action": "Check cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to remove discount",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/carts/{cart_id}/discount/preview",
+      "description": "Preview discount application",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_DISCOUNT_CODE",
+          "message": "Invalid discount code",
+          "technical": "Discount code validation failed",
+          "action": "Check discount code"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to preview discounts",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_NOT_FOUND",
+          "message": "Cart not found",
+          "technical": "Cart does not exist",
+          "action": "Create new cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to preview discount",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/carts/{cart_id}/totals",
+      "description": "Get cart totals",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view cart totals",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "CART_NOT_FOUND",
+          "message": "Cart not found",
+          "technical": "Cart does not exist",
+          "action": "Create new cart"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to calculate cart totals",
+          "technical": "Calculation error",
+          "action": "Refresh cart"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/orders",
+      "description": "Create order",
+      "errors": [
+        {
+          "status": 400,
+          "code": "EMPTY_CART",
+          "message": "Your cart is empty",
+          "technical": "No items in cart",
+          "action": "Add items to cart"
+        },
+        {
+          "status": 400,
+          "code": "PAYMENT_REQUIRED",
+          "message": "Please select a payment method",
+          "technical": "Payment method missing",
+          "action": "Choose payment option"
+        },
+        {
+          "status": 400,
+          "code": "ADDRESS_REQUIRED",
+          "message": "Please provide a delivery address",
+          "technical": "Shipping address missing",
+          "action": "Add delivery address"
+        },
+        {
+          "status": 400,
+          "code": "INSUFFICIENT_STOCK",
+          "message": "Some items are no longer in stock",
+          "technical": "Inventory validation failed",
+          "action": "Review cart items"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to place an order",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your order information",
+          "technical": "Order validation failed",
+          "action": "Review order details"
+        },
+        {
+          "status": 500,
+          "code": "PAYMENT_FAILED",
+          "message": "Payment processing failed",
+          "technical": "Payment service error",
+          "action": "Try different payment method"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to process your order. Please try again",
+          "technical": "Order creation failed",
+          "action": "Retry checkout"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/orders",
+      "description": "Get user orders",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view your orders",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load your orders",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/orders/{order_id}",
+      "description": "Get order details",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view order details",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view this order",
+          "technical": "Order access denied",
+          "action": "Check order ownership"
+        },
+        {
+          "status": 404,
+          "code": "ORDER_NOT_FOUND",
+          "message": "Order not found",
+          "technical": "Order does not exist",
+          "action": "Check order ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load order details",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/orders/{order_number}/pay",
+      "description": "Pay for order",
+      "errors": [
+        {
+          "status": 400,
+          "code": "ORDER_ALREADY_PAID",
+          "message": "This order has already been paid",
+          "technical": "Order payment completed",
+          "action": "Check order status"
+        },
+        {
+          "status": 400,
+          "code": "PAYMENT_METHOD_REQUIRED",
+          "message": "Please select a payment method",
+          "technical": "Payment method missing",
+          "action": "Choose payment option"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to make payment",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "ORDER_NOT_FOUND",
+          "message": "Order not found",
+          "technical": "Order does not exist",
+          "action": "Check order number"
+        },
+        {
+          "status": 500,
+          "code": "PAYMENT_FAILED",
+          "message": "Payment processing failed. Please try again",
+          "technical": "Payment service error",
+          "action": "Retry payment"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/orders/number/{order_number}",
+      "description": "Get order by number",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view order",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "ORDER_NOT_FOUND",
+          "message": "Order not found",
+          "technical": "Order number does not exist",
+          "action": "Check order number"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load order",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/orders/user/{user_id}/orders",
+      "description": "Get user orders by user ID",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view orders",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view these orders",
+          "technical": "Access denied",
+          "action": "Check permissions"
+        },
+        {
+          "status": 404,
+          "code": "USER_NOT_FOUND",
+          "message": "User not found",
+          "technical": "User does not exist",
+          "action": "Check user ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load orders",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/orders/vendor/{vendor_id}/orders",
+      "description": "Get vendor orders",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view vendor orders",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view vendor orders",
+          "technical": "Vendor access denied",
+          "action": "Check vendor permissions"
+        },
+        {
+          "status": 404,
+          "code": "VENDOR_NOT_FOUND",
+          "message": "Vendor not found",
+          "technical": "Vendor does not exist",
+          "action": "Check vendor ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load vendor orders",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "PUT /v1/orders/{order_id}/status",
+      "description": "Update order status",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_STATUS",
+          "message": "Invalid order status",
+          "technical": "Status validation failed",
+          "action": "Choose valid status"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update order status",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to update order status",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "ORDER_NOT_FOUND",
+          "message": "Order not found",
+          "technical": "Order does not exist",
+          "action": "Check order ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update order status",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "PUT /v1/orders/{order_id}/payment",
+      "description": "Update order payment",
+      "errors": [
+        {
+          "status": 400,
+          "code": "INVALID_PAYMENT_DATA",
+          "message": "Invalid payment information",
+          "technical": "Payment data validation failed",
+          "action": "Check payment details"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update payment",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 404,
+          "code": "ORDER_NOT_FOUND",
+          "message": "Order not found",
+          "technical": "Order does not exist",
+          "action": "Check order ID"
+        },
+        {
+          "status": 500,
+          "code": "PAYMENT_SERVICE_ERROR",
+          "message": "Payment service temporarily unavailable",
+          "technical": "Payment service error",
+          "action": "Try again later"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/orders/{order_id}/refunds",
+      "description": "Process refund",
+      "errors": [
+        {
+          "status": 400,
+          "code": "REFUND_NOT_ALLOWED",
+          "message": "This order is not eligible for refund",
+          "technical": "Refund conditions not met",
+          "action": "Check refund policy"
+        },
+        {
+          "status": 400,
+          "code": "INVALID_REFUND_AMOUNT",
+          "message": "Invalid refund amount",
+          "technical": "Refund amount validation failed",
+          "action": "Check refund amount"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to process refunds",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to process refunds",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "ORDER_NOT_FOUND",
+          "message": "Order not found",
+          "technical": "Order does not exist",
+          "action": "Check order ID"
+        },
+        {
+          "status": 500,
+          "code": "REFUND_FAILED",
+          "message": "Refund processing failed",
+          "technical": "Refund service error",
+          "action": "Contact support"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/orders/{order_number}/transactions",
+      "description": "Get order transactions",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view transactions",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view transactions",
+          "technical": "Access denied",
+          "action": "Check permissions"
+        },
+        {
+          "status": 404,
+          "code": "ORDER_NOT_FOUND",
+          "message": "Order not found",
+          "technical": "Order does not exist",
+          "action": "Check order number"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load transactions",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "POST /v1/users",
+      "description": "Create user",
+      "errors": [
+        {
+          "status": 400,
+          "code": "EMAIL_ALREADY_EXISTS",
+          "message": "An account with this email already exists",
+          "technical": "Email uniqueness constraint violation",
+          "action": "Try different email or login"
+        },
+        {
+          "status": 400,
+          "code": "PHONE_ALREADY_EXISTS",
+          "message": "An account with this phone number already exists",
+          "technical": "Phone uniqueness constraint violation",
+          "action": "Try different phone or login"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your information and try again",
+          "technical": "User validation failed",
+          "action": "Review form fields"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to create account. Please try again",
+          "technical": "User creation failed",
+          "action": "Retry registration"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/users/email/{email}",
+      "description": "Get user by email",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to search users",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to search users",
+          "technical": "Insufficient permissions",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "USER_NOT_FOUND",
+          "message": "User not found",
+          "technical": "User with email does not exist",
+          "action": "Check email address"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to search users",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/users/{user_id}",
+      "description": "Get user by ID",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view user profile",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view this profile",
+          "technical": "Access denied",
+          "action": "Check permissions"
+        },
+        {
+          "status": 404,
+          "code": "USER_NOT_FOUND",
+          "message": "User not found",
+          "technical": "User does not exist",
+          "action": "Check user ID"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load user profile",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "GET /v1/users",
+      "description": "Get users list",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to view users",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to view users",
+          "technical": "Admin access required",
+          "action": "Contact administrator"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to load users",
+          "technical": "Database error",
+          "action": "Refresh page"
+        }
+      ]
+    },
+    {
+      "endpoint": "PUT /v1/users/{user_id}",
+      "description": "Update user",
+      "errors": [
+        {
+          "status": 400,
+          "code": "EMAIL_ALREADY_EXISTS",
+          "message": "This email is already in use",
+          "technical": "Email uniqueness constraint violation",
+          "action": "Use different email"
+        },
+        {
+          "status": 400,
+          "code": "PHONE_ALREADY_EXISTS",
+          "message": "This phone number is already in use",
+          "technical": "Phone uniqueness constraint violation",
+          "action": "Use different phone"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to update profile",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to update this profile",
+          "technical": "Access denied",
+          "action": "Check permissions"
+        },
+        {
+          "status": 404,
+          "code": "USER_NOT_FOUND",
+          "message": "User not found",
+          "technical": "User does not exist",
+          "action": "Check user ID"
+        },
+        {
+          "status": 422,
+          "code": "VALIDATION_ERROR",
+          "message": "Please check your information",
+          "technical": "User validation failed",
+          "action": "Review form fields"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to update profile",
+          "technical": "Database error",
+          "action": "Retry"
+        }
+      ]
+    },
+    {
+      "endpoint": "DELETE /v1/users/{user_id}",
+      "description": "Delete user",
+      "errors": [
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Please log in to delete account",
+          "technical": "Authentication required",
+          "action": "Login"
+        },
+        {
+          "status": 403,
+          "code": "FORBIDDEN",
+          "message": "You don't have permission to delete this account",
+          "technical": "Access denied",
+          "action": "Contact support"
+        },
+        {
+          "status": 404,
+          "code": "USER_NOT_FOUND",
+          "message": "User not found",
+          "technical": "User does not exist",
+          "action": "Check user ID"
+        },
+        {
+          "status": 409,
+          "code": "USER_HAS_DEPENDENCIES",
+          "message": "Cannot delete user with active orders",
+          "technical": "User has related data",
+          "action": "Complete or cancel orders first"
+        },
+        {
+          "status": 500,
+          "code": "SERVER_ERROR",
+          "message": "Unable to delete account",
+          "technical": "Database error",
+          "action": "Contact support"
+        }
+      ]
+    }
+  ],
+  "global_errors": [
+    {
+      "status": 400,
+      "code": "BAD_REQUEST",
+      "message": "Please check your input and try again",
+      "technical": "Request validation failed",
+      "action": "Review form data"
+    },
+    {
+      "status": 401,
+      "code": "UNAUTHORIZED",
+      "message": "Please log in to continue",
+      "technical": "Authentication required",
+      "action": "Login"
+    },
+    {
+      "status": 403,
+      "code": "FORBIDDEN",
+      "message": "You don't have permission to perform this action",
+      "technical": "Insufficient permissions",
+      "action": "Contact support"
+    },
+    {
+      "status": 404,
+      "code": "NOT_FOUND",
+      "message": "The requested item was not found",
+      "technical": "Resource does not exist",
+      "action": "Check URL or browse"
+    },
+    {
+      "status": 409,
+      "code": "CONFLICT",
+      "message": "This resource conflicts with an existing item",
+      "technical": "Resource conflict",
+      "action": "Check your input or try a different approach"
+    },
+    {
+      "status": 422,
+      "code": "VALIDATION_ERROR",
+      "message": "Please check your input and try again",
+      "technical": "Request validation failed",
+      "action": "Review form fields"
+    },
+    {
+      "status": 429,
+      "code": "RATE_LIMITED",
+      "message": "Too many requests. Please try again later",
+      "technical": "Rate limit exceeded",
+      "action": "Wait before retrying"
+    },
+    {
+      "status": 500,
+      "code": "SERVER_ERROR",
+      "message": "Something went wrong. Please try again",
+      "technical": "Internal server error",
+      "action": "Retry or contact support"
+    },
+    {
+      "status": 502,
+      "code": "SERVICE_UNAVAILABLE",
+      "message": "Service temporarily unavailable",
+      "technical": "Upstream service error",
+      "action": "Try again later"
+    },
+    {
+      "status": 503,
+      "code": "MAINTENANCE",
+      "message": "Service under maintenance. Please try again later",
+      "technical": "Service maintenance",
+      "action": "Check status page"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+export const typography = {
+  fontFamily: {
+    // Lato font family variants
+    thin: "Lato_100Thin",
+    extraLight: "Lato_100Thin",
+    light: "Lato_300Light",
+    regular: "Lato_400Regular",
+    medium: "Lato_400Regular",
+    semiBold: "Lato_700Bold",
+    bold: "Lato_700Bold",
+    extraBold: "Lato_900Black",
+    black: "Lato_900Black",
+    // Italic variants
+    thinItalic: "Lato_100Thin_Italic",
+    extraLightItalic: "Lato_100Thin_Italic",
+    lightItalic: "Lato_300Light_Italic",
+    regularItalic: "Lato_400Regular_Italic",
+    mediumItalic: "Lato_400Regular_Italic",
+    semiBoldItalic: "Lato_700Bold_Italic",
+    boldItalic: "Lato_700Bold_Italic",
+    extraBoldItalic: "Lato_900Black_Italic",
+    blackItalic: "Lato_900Black_Italic",
+  },
+  fontSize: {
+    xs: 13,
+    sm: 15,
+    md: 17,
+    lg: 19,
+    xl: 21,
+    xxl: 25,
+  },
+  lineHeight: {
+    xs: 17,
+    sm: 21,
+    md: 25,
+    lg: 29,
+    xl: 33,
+    xxl: 37,
+  },
+};
