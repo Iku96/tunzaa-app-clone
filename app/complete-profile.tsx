@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { saveOnboardingStep, getOnboardingCache } from '../src/utils/onboardingStore';
 import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../src/services/config';
 
 /**
  * Complete Profile Screen
@@ -111,7 +113,10 @@ export default function CompleteProfileScreen() {
                 </View>
 
                 {/* Skip Button - Pinned to Bottom */}
-                <TouchableOpacity style={styles.skipButton} onPress={() => router.push('/(buyer)')}>
+                <TouchableOpacity style={styles.skipButton} onPress={async () => {
+                    await AsyncStorage.removeItem(STORAGE_KEYS.IS_FIRST_TIME_BUYER);
+                    router.push('/(buyer)');
+                }}>
                     <Text style={styles.skipText}>Skip</Text>
                     <Text style={styles.skipArrow}>→</Text>
                 </TouchableOpacity>

@@ -31,6 +31,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // ✅ Standardized Import
+import { STORAGE_KEYS } from '../src/services/config';
 
 // Global Contexts
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
@@ -139,18 +140,20 @@ export default function LoginScreen() {
             }
 
             if (response) {
-                console.log('✅ Social login success:', response?.name || response?.first_name);
+                console.log('✅ Social login success:', response?.display_name || response?.first_name);
 
-                // Set LAST_PORTAL based on URL intent, then let AuthGuard navigate
+                // Bug #6 fix: response is already piped through storeUserData by the context.
+                // Now we just set LAST_PORTAL and let AuthGuard navigate.
+                const serverRole = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
                 const portalTarget = targetRole === 'merchant' ? 'merchant'
                                    : targetRole === 'delivery' ? 'delivery'
-                                   : 'buyer';
-                await AsyncStorage.setItem('LAST_PORTAL', portalTarget);
+                                   : (['vendor', 'merchant', 'business'].includes(serverRole) ? 'merchant' : 'buyer');
+                await AsyncStorage.setItem(STORAGE_KEYS.LAST_PORTAL, portalTarget);
 
                 // AuthGuard handles navigation from here
             }
         } catch (e: any) {
-            console.error('❌ Social login error:', e);
+            console.warn('❌ Social login error:', e.message || e);
             Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}.`);
         } finally {
             setLoading(false);

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { useTunzaaAuth } from '../../contexts/TunzaaAuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../../services/config';
 
 /**
  * AuthGuard — Centralized role-based navigation protection.
@@ -104,7 +105,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             }
 
             // User is authenticated but sitting on an auth screen — route them to their portal
-            const lastPortal = await AsyncStorage.getItem('LAST_PORTAL');
+            const lastPortal = await AsyncStorage.getItem(STORAGE_KEYS.LAST_PORTAL);
             const role = user?.activeProfileRole || user?.active_profile_role;
             const hasVendorProfile = user?.profiles?.some((p: any) =>
                 ['vendor', 'merchant', 'business'].includes((p.role || '').toLowerCase())
@@ -131,7 +132,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 }
             }
             if (lastPortal === 'buyer') {
-                const isFirstTimeBuyer = await AsyncStorage.getItem('IS_FIRST_TIME_BUYER');
+                const isFirstTimeBuyer = await AsyncStorage.getItem(STORAGE_KEYS.IS_FIRST_TIME_BUYER);
                 if (isFirstTimeBuyer) {
                     return safeReplace('/complete-profile');
                 }
@@ -152,7 +153,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             }
 
             // Default fallback: Buyer
-            const isFirstTimeBuyer = await AsyncStorage.getItem('IS_FIRST_TIME_BUYER');
+            const isFirstTimeBuyer = await AsyncStorage.getItem(STORAGE_KEYS.IS_FIRST_TIME_BUYER);
             if (isFirstTimeBuyer) {
                 safeReplace('/complete-profile');
             } else {

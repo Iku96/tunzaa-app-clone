@@ -4,8 +4,10 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, Acti
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { STORAGE_KEYS } from '../src/services/config';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 import { useLanguage } from '../src/contexts/LanguageContext';
+import { getTempRegistrationPassword, clearTempRegistrationPassword } from '../src/utils/storage';
 
 /**
  * OTP Screen (Verify & create password)
@@ -14,7 +16,8 @@ import { useLanguage } from '../src/contexts/LanguageContext';
 export default function OTPScreen() {
     const router = useRouter();
     const params = useLocalSearchParams() as any;
-    const { phone_number, flow, first_name, last_name, password, role, email } = params;
+    // Bug #10 fix: password is no longer in URL params
+    const { phone_number, flow, first_name, last_name, role, email } = params;
     
     const { verifyOTP, requestOTP, register, createVendor, refreshProfile, saveAuthResponse, getUserDetails } = useTunzaaAuth();
     const { t } = useLanguage();
@@ -133,16 +136,22 @@ export default function OTPScreen() {
                             await AsyncStorage.setItem('LAST_PORTAL', portal);
                             authResponse = await saveAuthResponse(verifyResp);
                         } else {
+                            // Bug #10 fix: Retrieve securely stored password
+                            const securePassword = await getTempRegistrationPassword();
+                            
                             // Register new user
                             const registrationData: any = {
                                 first_name: first_name || '',
                                 last_name: last_name || '',
-                                password: password || '',
+                                password: securePassword || '',
                                 phone_number: phone_number,
                                 email: email || '',
                             };
                             authResponse = await register(registrationData, portal);
-                            await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
+                            await AsyncStorage.setItem(STORAGE_KEYS.IS_FIRST_TIME_BUYER, 'true');
+                            
+                            // Clear temp password after successful registration
+                            await clearTempRegistrationPassword();
                             console.log('✅ [OTP] Registration successful:', authResponse.user_id);
                         }
                         
@@ -154,17 +163,22 @@ export default function OTPScreen() {
                         const isAlreadyExists = errorMessage.toLowerCase().includes('already exists') 
                             || errorMessage.toLowerCase().includes('already registered');
 
-                        if (isAlreadyExists && password) {
+                        // Retrieve secure password for fallback login as well
+                        const securePassword = await getTempRegistrationPassword();
+                        if (isAlreadyExists && securePassword) {
                             // User already exists — fall back to login with the credentials they provided
                             console.log('🔄 [OTP] User already exists, falling back to login...');
                             try {
                                 const isPhone = !phone_number.includes('@');
                                 const identifier = phone_number;
                                 const { authApi } = await import('../src/services/auth');
-                                const loginResponse = await authApi.login({ identifier, password, is_phone: isPhone });
+                                const loginResponse = await authApi.login({ identifier, password: securePassword, is_phone: isPhone });
                                 
                                 await AsyncStorage.setItem('LAST_PORTAL', portal);
                                 authResponse = await saveAuthResponse(loginResponse);
+                                
+                                // Clear temp password
+                                await clearTempRegistrationPassword();
                                 console.log('✅ [OTP] Login fallback successful:', authResponse?.user_id);
                             } catch (loginErr: any) {
                                 console.error('❌ [OTP] Login fallback also failed:', loginErr);

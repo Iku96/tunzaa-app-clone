@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 import { shopsApi } from '../src/services/shops';
 import { getOnboardingCache, clearOnboardingCache } from '../src/utils/onboardingStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../src/services/config';
 
 interface Business {
     id: string;
@@ -74,8 +76,7 @@ export default function CreatorsScreen() {
             
             // 3. Clear cache & Route Home safely
             await clearOnboardingCache();
-            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-            await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
+            await AsyncStorage.removeItem(STORAGE_KEYS.IS_FIRST_TIME_BUYER);
             router.replace('/(buyer)');
         } catch (e) {
             console.error('Final Onboarding Commit Failed:', e);

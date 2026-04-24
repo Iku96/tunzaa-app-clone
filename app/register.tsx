@@ -17,6 +17,9 @@ import { useLanguage } from '../src/contexts/LanguageContext';
 import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
 import { setTempPhoneNumber } from '../src/utils/storage';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../src/services/config';
+import * as SecureStore from 'expo-secure-store';
 
 /**
  * Registration Screen (Pixel-Perfect Figma Implementation)
@@ -79,7 +82,7 @@ export default function RegisterScreen() {
         router.back();
     };
 
-    const { requestOTP, signInWithGoogle, signInWithApple } = useTunzaaAuth();
+    const { requestOTP, signInWithGoogle, signInWithApple, saveAuthResponse } = useTunzaaAuth();
 
     const handleCreateAccount = async () => {
         if (!agreedToTerms) {
@@ -107,7 +110,15 @@ export default function RegisterScreen() {
                 const otpResponse = await requestOTP(phoneNumber);
                 console.log('✅ OTP sent:', otpResponse);
 
-                // Navigate to OTP screen with registration context
+                // Bug #10 fix: Store password securely instead of passing in URL params
+                try {
+                    await SecureStore.setItemAsync(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD, password);
+                } catch (e) {
+                    // Fallback for Expo Go / web where SecureStore may not work
+                    await AsyncStorage.setItem(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD, password);
+                }
+
+                // Navigate to OTP screen with registration context (password NOT in params)
                 router.push({
                     pathname: '/otp',
                     params: {
@@ -115,7 +126,6 @@ export default function RegisterScreen() {
                         flow: 'register',
                         first_name: firstName,
                         last_name: secondName,
-                        password: password,
                         role: userRole,
                         email: '',
                     },
@@ -140,9 +150,9 @@ export default function RegisterScreen() {
         setLoading(true);
         try {
             let response;
-            if (provider === 'google') {
+            if (provider === 'google' && typeof signInWithGoogle === 'function') {
                 response = await signInWithGoogle();
-            } else if (provider === 'apple') {
+            } else if (provider === 'apple' && typeof signInWithApple === 'function') {
                 response = await signInWithApple();
             } else {
                 Alert.alert('Not Available', `${provider} login is not yet supported.`);
@@ -150,18 +160,18 @@ export default function RegisterScreen() {
             }
 
             if (response) {
-                console.log('✅ Social login success:', response.name);
-                // Navigate based on user role
-                const role = response.activeProfileRole || response.active_profile_role;
-                if (role === 'vendor') {
-                    router.replace('/(merchant)' as any);
-                } else {
-                    router.replace('/(buyer)' as any);
-                }
+                console.log('✅ Social login success:', response?.display_name || response?.first_name);
+                // Bug #5, #6 fix: Response already piped through storeUserData by context.
+                // Set LAST_PORTAL based on intent, then let AuthGuard navigate.
+                const serverRole = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
+                const portalTarget = userRole === 'merchant' ? 'merchant'
+                                   : (['vendor', 'merchant', 'business'].includes(serverRole) ? 'merchant' : 'buyer');
+                await AsyncStorage.setItem(STORAGE_KEYS.LAST_PORTAL, portalTarget);
+                // AuthGuard handles navigation from here
             }
             // null means user cancelled — do nothing
         } catch (e: any) {
-            console.error('❌ Social login error:', e);
+            console.warn('❌ Social login error:', e.message || e);
             Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}. Please try again.`);
         } finally {
             setLoading(false);

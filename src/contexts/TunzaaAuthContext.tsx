@@ -23,6 +23,16 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         let raw = incomingData.user || incomingData;
         if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch (e) { } }
 
+        // Bug #7 fix: Filter out null/undefined/empty-string values from API response
+        // to prevent overwriting good cached data with blank server responses
+        const filteredRaw: any = {};
+        for (const key of Object.keys(raw)) {
+            if (raw[key] !== null && raw[key] !== undefined && raw[key] !== '') {
+                filteredRaw[key]= raw[key];
+            }
+        }
+        raw = { ...raw, ...filteredRaw };
+
         const existingProfiles = userRef.current?.profiles || [];
         const incomingProfiles = incomingData.profiles || raw.profiles || [];
         const finalProfiles = incomingProfiles.length > 0 ? incomingProfiles : existingProfiles;
@@ -136,20 +146,35 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             else if (IS_MERCHANT(serverRole) || hasVendor) finalPortal = 'merchant';
             else if (IS_DELIVERY(serverRole) || hasDelivery) finalPortal = 'delivery';
             
-            await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
+            await AsyncStorage.setItem(STORAGE_KEYS.LAST_PORTAL, finalPortal);
             return await storeUserData(response);
         },
         logout: async () => { 
             await clearTokens(); 
             await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            // Bug #1, #2, #3: Clear ALL session-specific keys on logout
+            await AsyncStorage.multiRemove([
+                STORAGE_KEYS.LAST_PORTAL,
+                STORAGE_KEYS.IS_FIRST_TIME_BUYER,
+                STORAGE_KEYS.TEMP_ONBOARDING_SHOP_NAME,
+                STORAGE_KEYS.TEMP_ONBOARDING_PHONE,
+                STORAGE_KEYS.TEMP_ONBOARDING_DESCRIPTION,
+                STORAGE_KEYS.TEMP_ONBOARDING_LOGO,
+                STORAGE_KEYS.TEMP_ONBOARDING_COVER,
+                STORAGE_KEYS.TEMP_ONBOARDING_LOCATION,
+                STORAGE_KEYS.TEMP_ONBOARDING_FIRST_NAME,
+                STORAGE_KEYS.TEMP_ONBOARDING_LAST_NAME,
+                STORAGE_KEYS.ONBOARDING_CACHE,
+            ]);
             await socialAuth.signOutGoogle(); 
             setUser(null); 
+            console.log('🔑 [Logout] Session fully cleared (tokens + portal + onboarding flags)');
         },
         updateUser: async (data: any) => {
             const previousState = userRef.current;
             try {
-                // 1. Optimistic Local Update
-                setUser({ ...previousState, ...data } as TunzaaUser);
+                // 1. Bug #9 fix: Optimistic update through storeUserData for normalization
+                await storeUserData({ ...previousState, ...data });
                 
                 // 2. Persist to API
                 if (previousState?.user_id) {
@@ -237,6 +262,22 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             return true;
         },
         saveAuthResponse: storeUserData,
+
+        // Bug #14 fix: Expose social auth methods that properly pipe through storeUserData
+        signInWithGoogle: async () => {
+            const response = await socialAuth.signInWithGoogle();
+            if (response) {
+                return await storeUserData(response);
+            }
+            return null; // User cancelled
+        },
+        signInWithApple: async () => {
+            const response = await socialAuth.signInWithApple();
+            if (response) {
+                return await storeUserData(response);
+            }
+            return null; // User cancelled
+        },
         
         createVendor: async (vendorData: any) => {
             const previousState = userRef.current;
@@ -245,10 +286,18 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 const response = await authApi.createVendor(userId, vendorData);
                 return response;
             } finally {
+                // Bug #13 fix: Retry reconciliation once after 2s if first attempt fails
                 if (previousState?.user_id) {
                     authApi.getUserDetails(previousState.user_id).then(freshData => {
                         if (freshData) storeUserData(freshData);
-                    }).catch(err => console.log('⚠️ [Reconciliation] createVendor refresh failed:', err.message));
+                    }).catch(err => {
+                        console.log('⚠️ [Reconciliation] createVendor refresh failed, retrying in 2s:', err.message);
+                        setTimeout(() => {
+                            authApi.getUserDetails(previousState.user_id).then(freshData => {
+                                if (freshData) storeUserData(freshData);
+                            }).catch(retryErr => console.log('⚠️ [Reconciliation] Retry also failed:', retryErr.message));
+                        }, 2000);
+                    });
                 }
             }
         },

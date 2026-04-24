@@ -74,7 +74,22 @@ export const clearTokens = async (): Promise<void> => {
                 AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA).catch(() => { })
             ]);
         } else {
-            localStorage.clear();
+            // Bug #11 fix: Surgical key removal instead of localStorage.clear()
+            localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+            localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+            localStorage.removeItem("user_id");
+            localStorage.removeItem("temp_phone_number");
+            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            localStorage.removeItem(STORAGE_KEYS.IS_FIRST_TIME_BUYER);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_SHOP_NAME);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_PHONE);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_DESCRIPTION);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_LOGO);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_COVER);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_LOCATION);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_FIRST_NAME);
+            localStorage.removeItem(STORAGE_KEYS.TEMP_ONBOARDING_LAST_NAME);
+            localStorage.removeItem(STORAGE_KEYS.ONBOARDING_CACHE);
         }
     } catch (e) { console.error("Storage clear error:", e); }
 };
@@ -131,16 +146,43 @@ export const getPhoneNumberFromSources = async (): Promise<string | null> => {
 };
 
 // ------------------------------------------------------------------------
+// TEMPORARY REGISTRATION PASSWORD (SECURE)
+// ------------------------------------------------------------------------
+// Bug #10 fix: Store password securely during registration flow
+export const getTempRegistrationPassword = async (): Promise<string | null> => {
+    if (Platform.OS === "web") {
+        try { return localStorage.getItem(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD); } catch (e) { return null; }
+    } else {
+        try {
+            const password = await SecureStore.getItemAsync(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD);
+            if (password) return password;
+            // Fallback for environments where SecureStore isn't working
+            return await AsyncStorage.getItem(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD);
+        } catch (e) { return null; }
+    }
+};
+
+export const clearTempRegistrationPassword = async (): Promise<void> => {
+    if (Platform.OS === "web") {
+        try { localStorage.removeItem(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD); } catch (e) { }
+    } else {
+        try {
+            await SecureStore.deleteItemAsync(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD);
+            await AsyncStorage.removeItem(STORAGE_KEYS.TEMP_REGISTRATION_PASSWORD);
+        } catch (e) { }
+    }
+};
+
+// ------------------------------------------------------------------------
 // NEWLY REGISTERED FLAG
 // ------------------------------------------------------------------------
-const NEWLY_REGISTERED_KEY = "newly_registered_user";
 
 export const setNewlyRegisteredFlag = async (): Promise<void> => {
     try {
         if (Platform.OS === "web") {
-            localStorage.setItem(NEWLY_REGISTERED_KEY, "true");
+            localStorage.setItem(STORAGE_KEYS.NEWLY_REGISTERED_USER, "true");
         } else {
-            await AsyncStorage.setItem(NEWLY_REGISTERED_KEY, "true");
+            await AsyncStorage.setItem(STORAGE_KEYS.NEWLY_REGISTERED_USER, "true");
         }
     } catch (error) { console.error("Failed to set flag:", error); }
 };
@@ -148,17 +190,17 @@ export const setNewlyRegisteredFlag = async (): Promise<void> => {
 export const getNewlyRegisteredFlag = async (): Promise<boolean> => {
     try {
         if (Platform.OS === "web") {
-            return localStorage.getItem(NEWLY_REGISTERED_KEY) === "true";
+            return localStorage.getItem(STORAGE_KEYS.NEWLY_REGISTERED_USER) === "true";
         } else {
-            return (await AsyncStorage.getItem(NEWLY_REGISTERED_KEY)) === "true";
+            return (await AsyncStorage.getItem(STORAGE_KEYS.NEWLY_REGISTERED_USER)) === "true";
         }
     } catch (error) { return false; }
 };
 
 export const clearNewlyRegisteredFlag = async (): Promise<void> => {
     try {
-        if (Platform.OS === "web") localStorage.removeItem(NEWLY_REGISTERED_KEY);
-        else await AsyncStorage.removeItem(NEWLY_REGISTERED_KEY);
+        if (Platform.OS === "web") localStorage.removeItem(STORAGE_KEYS.NEWLY_REGISTERED_USER);
+        else await AsyncStorage.removeItem(STORAGE_KEYS.NEWLY_REGISTERED_USER);
     } catch (error) { }
 };
 

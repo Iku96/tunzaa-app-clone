@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../services/config';
 
-const ONBOARDING_KEY = '@tunzaa_onboarding_cache';
+const ONBOARDING_KEY = STORAGE_KEYS.ONBOARDING_CACHE;
 
 export const saveOnboardingStep = async (stepId: string, data: any) => {
     try {

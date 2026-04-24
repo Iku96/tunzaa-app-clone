@@ -46,12 +46,8 @@ export default function ResetPasswordScreen() {
         try {
             // Strategy 1: Try dedicated password-reset/confirm endpoint
             const payload: any = {
-                reset_token: reset_token || '',
-                otp: reset_token || '',
                 otp_code: reset_token || '',
-                code: reset_token || '',
                 new_password: newPassword,
-                password: newPassword,
             };
             if (phone_number) payload.phone_number = phone_number;
             if (email) payload.email = email;
