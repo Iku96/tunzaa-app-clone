@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useLanguage } from '@/context/LanguageContext';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
-export default function Step3Location() {
+export default function Step2Location() {
     const router = useRouter();
     const { t } = useLanguage();
 
@@ -21,7 +21,7 @@ export default function Step3Location() {
                         <View style={styles.cardHeader}>
                             {/* ✅ CUSTOM LOCATION ICON */}
                             <Image
-                                source={require('../../../assets/location-icon.png')}
+                                source={require('@/assets/location-icon.png')}
                                 style={{ width: 24, height: 24, marginRight: 10 }}
                                 resizeMode="contain"
                             />
@@ -33,7 +33,7 @@ export default function Step3Location() {
                             {/* Manual Entry Button */}
                             <TouchableOpacity
                                 style={styles.manualButton}
-                                onPress={() => router.push('/(vendor)/onboarding/step-1-manual')}
+                                onPress={() => router.push('/(vendor)/onboarding/step-2-manual')}
                             >
                                 <Text style={styles.manualButtonText}>{t.onboardingStep3ManualButton}</Text>
                             </TouchableOpacity>
@@ -43,7 +43,7 @@ export default function Step3Location() {
                             {/* GPS Button */}
                             <TouchableOpacity
                                 style={styles.gpsButton}
-                                onPress={() => router.push('/(vendor)/onboarding/step-1-map')}
+                                onPress={() => router.push('/(vendor)/onboarding/step-2-map')}
                             >
                                 <Text style={styles.gpsButtonText}>{t.onboardingStep3GPSButton}</Text>
                             </TouchableOpacity>
@@ -57,10 +57,12 @@ export default function Step3Location() {
                         <Text style={styles.backButtonText}>{t.onboardingStep1Back}</Text>
                     </TouchableOpacity>
 
-                    {/* Disabled Endelea */}
-                    <View style={[styles.nextButton, { opacity: 0.5 }]}>
+                    <TouchableOpacity
+                        style={styles.nextButton}
+                        onPress={() => router.push('/(vendor)/onboarding/step-3')}
+                    >
                         <Text style={styles.nextButtonText}>{t.onboardingStep1Next}</Text>
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
             </View>

@@ -1,0 +1,354 @@
+{
+    "endpoints": [
+        {
+            "endpoint": "POST /auth/otp/request",
+            "description": "Request OTP for phone verification",
+            "errors": [
+                {
+                    "status": 400,
+                    "code": "INVALID_PHONE",
+                    "message": "Please enter a valid phone number",
+                    "technical": "Phone number format invalid",
+                    "action": "Check phone number format"
+                },
+                {
+                    "status": 429,
+                    "code": "RATE_LIMITED",
+                    "message": "Too many OTP requests. Please wait before trying again",
+                    "technical": "OTP request rate limit exceeded",
+                    "action": "Wait and retry"
+                },
+                {
+                    "status": 500,
+                    "code": "SMS_SERVICE_ERROR",
+                    "message": "Unable to send verification code. Please try again",
+                    "technical": "SMS service unavailable",
+                    "action": "Retry later"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /auth/otp/verify",
+            "description": "Verify OTP code",
+            "errors": [
+                {
+                    "status": 400,
+                    "code": "INVALID_OTP",
+                    "message": "Invalid verification code. Please check and try again",
+                    "technical": "OTP code does not match",
+                    "action": "Re-enter code"
+                },
+                {
+                    "status": 400,
+                    "code": "OTP_EXPIRED",
+                    "message": "Verification code has expired. Please request a new one",
+                    "technical": "OTP has expired",
+                    "action": "Request new OTP"
+                },
+                {
+                    "status": 429,
+                    "code": "RATE_LIMITED",
+                    "message": "Too many verification attempts. Please wait",
+                    "technical": "OTP verify rate limit exceeded",
+                    "action": "Wait and retry"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /auth/register",
+            "description": "User registration",
+            "errors": [
+                {
+                    "status": 400,
+                    "code": "PHONE_NOT_VERIFIED",
+                    "message": "Please verify your phone number first",
+                    "technical": "Phone number has not been verified via OTP",
+                    "action": "Complete OTP verification"
+                },
+                {
+                    "status": 409,
+                    "code": "USER_ALREADY_EXISTS",
+                    "message": "An account with this phone number already exists",
+                    "technical": "Duplicate phone number",
+                    "action": "Try logging in or use a different number"
+                },
+                {
+                    "status": 422,
+                    "code": "VALIDATION_ERROR",
+                    "message": "Please check your registration details",
+                    "technical": "Registration data validation failed",
+                    "action": "Review form fields"
+                },
+                {
+                    "status": 500,
+                    "code": "SERVER_ERROR",
+                    "message": "Unable to create account. Please try again",
+                    "technical": "Internal server error during registration",
+                    "action": "Retry"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /auth/login",
+            "description": "User login",
+            "errors": [
+                {
+                    "status": 401,
+                    "code": "INVALID_CREDENTIALS",
+                    "message": "Invalid phone number or password",
+                    "technical": "Authentication failed - wrong credentials",
+                    "action": "Check your credentials"
+                },
+                {
+                    "status": 403,
+                    "code": "ACCOUNT_DISABLED",
+                    "message": "Your account has been disabled. Please contact support",
+                    "technical": "User account is disabled",
+                    "action": "Contact support"
+                },
+                {
+                    "status": 422,
+                    "code": "VALIDATION_ERROR",
+                    "message": "Please enter both phone number and password",
+                    "technical": "Login validation failed",
+                    "action": "Fill in all fields"
+                },
+                {
+                    "status": 500,
+                    "code": "SERVER_ERROR",
+                    "message": "Login service temporarily unavailable",
+                    "technical": "Internal server error during login",
+                    "action": "Try again later"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /auth/firebase/login",
+            "description": "Firebase social authentication",
+            "errors": [
+                {
+                    "status": 400,
+                    "code": "INVALID_TOKEN",
+                    "message": "Invalid authentication token",
+                    "technical": "Firebase ID token is invalid or expired",
+                    "action": "Try signing in again"
+                },
+                {
+                    "status": 401,
+                    "code": "UNAUTHORIZED",
+                    "message": "Authentication failed",
+                    "technical": "Firebase authentication failed",
+                    "action": "Check your credentials and try again"
+                },
+                {
+                    "status": 409,
+                    "code": "USER_ALREADY_EXISTS",
+                    "message": "An account with this email already exists",
+                    "technical": "User with this email address already exists in the system",
+                    "action": "Try signing in with your existing account or use a different email"
+                },
+                {
+                    "status": 422,
+                    "code": "VALIDATION_ERROR",
+                    "message": "Please check your authentication information",
+                    "technical": "Firebase token validation failed",
+                    "action": "Try signing in again"
+                },
+                {
+                    "status": 500,
+                    "code": "SERVER_ERROR",
+                    "message": "Authentication service temporarily unavailable",
+                    "technical": "Firebase authentication service error",
+                    "action": "Try again later"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /auth/password/reset/request",
+            "description": "Request password reset",
+            "errors": [
+                {
+                    "status": 404,
+                    "code": "USER_NOT_FOUND",
+                    "message": "No account found with this phone number or email",
+                    "technical": "User does not exist",
+                    "action": "Check your information or register"
+                },
+                {
+                    "status": 429,
+                    "code": "RATE_LIMITED",
+                    "message": "Too many reset requests. Please wait",
+                    "technical": "Password reset rate limit exceeded",
+                    "action": "Wait and retry"
+                },
+                {
+                    "status": 500,
+                    "code": "SERVER_ERROR",
+                    "message": "Unable to process password reset",
+                    "technical": "Password reset service error",
+                    "action": "Try again later"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /auth/password/reset/confirm",
+            "description": "Confirm password reset",
+            "errors": [
+                {
+                    "status": 400,
+                    "code": "INVALID_TOKEN",
+                    "message": "Reset token is invalid or expired. Please request a new one",
+                    "technical": "Password reset token invalid",
+                    "action": "Request new reset"
+                },
+                {
+                    "status": 422,
+                    "code": "VALIDATION_ERROR",
+                    "message": "Please check your new password",
+                    "technical": "Password validation failed",
+                    "action": "Use a stronger password"
+                },
+                {
+                    "status": 500,
+                    "code": "SERVER_ERROR",
+                    "message": "Unable to reset password",
+                    "technical": "Password reset service error",
+                    "action": "Try again later"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /marketplace/vendors",
+            "description": "Create vendor profile",
+            "errors": [
+                {
+                    "status": 401,
+                    "code": "UNAUTHORIZED",
+                    "message": "Please log in to create a vendor profile",
+                    "technical": "Authentication required",
+                    "action": "Login"
+                },
+                {
+                    "status": 409,
+                    "code": "VENDOR_EXISTS",
+                    "message": "You already have a vendor profile",
+                    "technical": "Vendor profile already exists for this user",
+                    "action": "Update existing profile"
+                },
+                {
+                    "status": 422,
+                    "code": "VALIDATION_ERROR",
+                    "message": "Please check your business information",
+                    "technical": "Vendor data validation failed",
+                    "action": "Review form fields"
+                },
+                {
+                    "status": 500,
+                    "code": "SERVER_ERROR",
+                    "message": "Unable to create vendor profile",
+                    "technical": "Internal server error",
+                    "action": "Retry"
+                }
+            ]
+        },
+        {
+            "endpoint": "POST /partners/",
+            "description": "Create delivery partner profile",
+            "errors": [
+                {
+                    "status": 401,
+                    "code": "UNAUTHORIZED",
+                    "message": "Please log in to register as a delivery partner",
+                    "technical": "Authentication required",
+                    "action": "Login"
+                },
+                {
+                    "status": 409,
+                    "code": "PARTNER_EXISTS",
+                    "message": "You already have a delivery partner profile",
+                    "technical": "Partner profile already exists for this user",
+                    "action": "Update existing profile"
+                },
+                {
+                    "status": 422,
+                    "code": "VALIDATION_ERROR",
+                    "message": "Please check your delivery partner details",
+                    "technical": "Partner data validation failed",
+                    "action": "Review form"
+                },
+                {
+                    "status": 500,
+                    "code": "SERVER_ERROR",
+                    "message": "Unable to create delivery partner profile",
+                    "technical": "Internal server error",
+                    "action": "Retry"
+                }
+            ]
+        }
+    ],
+    "global_errors": [
+        {
+            "status": 400,
+            "code": "BAD_REQUEST",
+            "message": "Please check your input and try again",
+            "technical": "Bad request",
+            "action": "Review form data"
+        },
+        {
+            "status": 401,
+            "code": "UNAUTHORIZED",
+            "message": "Please log in to continue",
+            "technical": "Authentication required",
+            "action": "Login"
+        },
+        {
+            "status": 403,
+            "code": "FORBIDDEN",
+            "message": "You don't have permission to perform this action",
+            "technical": "Insufficient permissions",
+            "action": "Contact support"
+        },
+        {
+            "status": 404,
+            "code": "NOT_FOUND",
+            "message": "The requested item was not found",
+            "technical": "Resource not found",
+            "action": "Check URL or browse"
+        },
+        {
+            "status": 422,
+            "code": "VALIDATION_ERROR",
+            "message": "Please check your input and try again",
+            "technical": "Validation failed",
+            "action": "Review form fields"
+        },
+        {
+            "status": 429,
+            "code": "RATE_LIMITED",
+            "message": "Too many requests. Please try again later",
+            "technical": "Rate limit exceeded",
+            "action": "Wait before retrying"
+        },
+        {
+            "status": 500,
+            "code": "SERVER_ERROR",
+            "message": "Something went wrong. Please try again",
+            "technical": "Internal server error",
+            "action": "Retry or contact support"
+        },
+        {
+            "status": 502,
+            "code": "SERVICE_UNAVAILABLE",
+            "message": "Service temporarily unavailable",
+            "technical": "Bad gateway",
+            "action": "Try again later"
+        },
+        {
+            "status": 503,
+            "code": "MAINTENANCE",
+            "message": "Service under maintenance. Please try again later",
+            "technical": "Service unavailable",
+            "action": "Check status page"
+        }
+    ]
+}

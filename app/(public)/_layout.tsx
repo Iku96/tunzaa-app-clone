@@ -23,7 +23,7 @@ const TabLayout = () => {
             borderTopWidth: 0.5,
             borderTopColor: resolvedColors?.muted || "#F5F5F5",
           },
-          tabBarActiveTintColor: resolvedColors?.primary || colors.primary,
+          tabBarActiveTintColor: "#425BA4",
           tabBarInactiveTintColor: resolvedColors?.muted || "#666666",
           tabBarLabelStyle: {
             fontFamily: "InterMedium",
@@ -41,7 +41,7 @@ const TabLayout = () => {
               resolvedColors ? (
                 <Home
                   size={size}
-                  color={focused ? resolvedColors.primary : resolvedColors.mutedForeground}
+                  color={focused ? "#425BA4" : resolvedColors.mutedForeground}
                 />
               ) : (
                 <Home
@@ -57,7 +57,7 @@ const TabLayout = () => {
                 <Text
                   className="text-xs font-medium"
                   style={{
-                    color: focused ? resolvedColors.primary : resolvedColors.mutedForeground,
+                    color: focused ? "#425BA4" : resolvedColors.mutedForeground,
                   }}
                 >
                   {t("nav.home")}
@@ -82,7 +82,7 @@ const TabLayout = () => {
               resolvedColors ? (
                 <Search
                   size={size}
-                  color={focused ? resolvedColors.primary : resolvedColors.mutedForeground}
+                  color={focused ? "#425BA4" : resolvedColors.mutedForeground}
                 />
               ) : (
                 <Search
@@ -98,7 +98,7 @@ const TabLayout = () => {
                 <Text
                   className="text-xs font-medium"
                   style={{
-                    color: focused ? resolvedColors.primary : resolvedColors.mutedForeground,
+                    color: focused ? "#425BA4" : resolvedColors.mutedForeground,
                   }}
                 >
                   {t("nav.search")}
@@ -181,7 +181,7 @@ const TabLayout = () => {
               resolvedColors ? (
                 <User
                   size={size}
-                  color={focused ? resolvedColors.primary : resolvedColors.mutedForeground}
+                  color={focused ? "#425BA4" : resolvedColors.mutedForeground}
                 />
               ) : (
                 <User
@@ -197,7 +197,7 @@ const TabLayout = () => {
                 <Text
                   className="text-xs font-medium"
                   style={{
-                    color: focused ? resolvedColors.primary : resolvedColors.mutedForeground,
+                    color: focused ? "#425BA4" : resolvedColors.mutedForeground,
                   }}
                 >
                   {t("nav.profile")}

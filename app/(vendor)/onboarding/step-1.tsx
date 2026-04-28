@@ -3,8 +3,8 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
-import { useLanguage } from '@/context/LanguageContext';
-import { Camera } from 'lucide-react-native';
+import { useLanguage } from '@/src/contexts/LanguageContext';
+import { Camera, LogOut } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
@@ -12,10 +12,10 @@ const { height } = Dimensions.get('window');
 
 export default function Step1Details() {
     const router = useRouter();
-    const { user } = useTunzaaAuth();
+    const { user, logout } = useTunzaaAuth();
     const { t } = useLanguage();
 
-    const [shopName, setShopName] = useState('');
+    const [shopName, setShopName] = useState(user?.display_name || '');
     const [phone, setPhone] = useState(user?.phone_number || '');
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
@@ -87,7 +87,15 @@ export default function Step1Details() {
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.staticContent}>
-                        <Text style={styles.title}>{t.onboardingStep2Title}</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text style={styles.title}>{t.onboardingStep2Title}</Text>
+                            <TouchableOpacity 
+                                onPress={logout}
+                                style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 20 }}
+                            >
+                                <LogOut size={20} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        </View>
                         <Text style={styles.subtitle}>
                             {t.onboardingStep2Subtitle}
                         </Text>

@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
-import { useLanguage } from '@/context/LanguageContext';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
 
 // ✅ STATIC DATA 
@@ -60,7 +60,7 @@ export default function Step3Manual() {
             console.log('✅ [Step3] Location persisted');
             
             router.push({
-                pathname: '/(vendor)/onboarding/step-1',
+                pathname: '/(vendor)/onboarding/step-3',
                 params: { region, municipal, ward, extraInfo }
             });
         } catch (e) {

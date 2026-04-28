@@ -32,7 +32,7 @@ export function useThemeColors() {
   const { colors } = useTheme();
 
   return {
-    primary: colors?.primary || "#1B1B1B",
+    primary: colors?.primary || "#425BA4",
     secondary: colors?.secondary || "#2D3748",
     accent: colors?.accent || "#3182CE",
     textPrimary: colors?.textPrimary || "#000000",
@@ -43,7 +43,7 @@ export function useThemeColors() {
 
     // Helper methods for common use cases
     asPrimaryStyle: () => ({
-      backgroundColor: colors?.primary || "#1B1B1B",
+      backgroundColor: colors?.primary || "#425BA4",
     }),
     asSecondaryStyle: () => ({
       backgroundColor: colors?.secondary || "#2D3748",
@@ -131,7 +131,7 @@ export function useResolvedThemeColors() {
     cardForeground: isDarkColorScheme ? "#FFFFFF" : "#000000",
 
     // Brand colors - use system-appropriate defaults with improved dark theme variants
-    primary: isDarkColorScheme ? "#1B1B1B" : "#1B1B1B", // Use #1B1B1B for both modes
+    primary: isDarkColorScheme ? "#425BA4" : "#425BA4", // Tunzaa Blue
     secondary: isDarkColorScheme ? "#9CA3AF" : "#4B5563", // Lighter gray for dark theme for better visibility
     accent: isDarkColorScheme ? "#22D3EE" : "#059669", // Lighter accent for dark theme
 

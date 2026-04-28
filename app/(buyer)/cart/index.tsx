@@ -1,565 +1,426 @@
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Image,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useFocusEffect } from "expo-router";
-import { ArrowLeft, Minus, Plus, Trash2, RefreshCw } from "lucide-react-native";
-import { useCallback, useState } from "react";
-import {
-  useCartCombined,
-  useUpdateCartItem,
-  useRemoveCartItem,
-  useCartTotals,
-  useClearCart,
-} from "@/stores/cart";
-import { useProductById } from "@/stores/products";
-import { Text } from "@/components/ui/text";
-import { Button } from "@/components/ui/button";
-import { ActivityIndicator } from "react-native";
-import { useAuth } from "@/context/auth";
-import { Alert } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Terminal } from "@/lib/icons/Terminal";
-import type { CartItem } from "@/services/cart";
-import type { LocalCartItem } from "@/stores/cart";
-import { getImageUrl } from "@/utils/images";
-import { CartItemSkeleton } from "@/components/ui/skeleton";
-import { useI18n } from "@/hooks/useI18n";
-import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import { usePageTitle } from "@/hooks/usePageTitle";
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useCartCombined } from '../../../src/stores/cart';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import BottomNav from '../../../src/components/navigation/BottomNav';
 
-// Separate component for cart items to properly use hooks
-const CartItemComponent = ({
-  item,
-  onQuantityChange,
-  onRemove,
-  isUpdating,
-}: {
-  item: CartItem;
-  onQuantityChange: (item: CartItem, delta: number) => void;
-  onRemove: (item: CartItem) => void;
-  isUpdating: boolean;
-}) => {
-  const { data: product, isLoading } = useProductById(item.product_id);
-  const resolvedColors = useResolvedThemeColors();
-  const { t } = useI18n();
+const { width } = Dimensions.get('window');
 
-  usePageTitle(t("cart.cart"));
-  if (isLoading) {
-    return <CartItemSkeleton />;
-  }
-
-  if (!product) {
-    return (
-      <View className="p-4 border-b border-border">
-        <Text className="text-muted-foreground">{t("products.product_not_found")}</Text>
-      </View>
-    );
-  }
-
-  // Get variant information if available
-  const getVariantInfo = () => {
-    // console.log("The Item:", JSON.stringify(item, null, 2));
-    // console.log("The Product:", JSON.stringify(product, null, 2));
+export default function CartScreen() {
+    const router = useRouter();
+    const { user } = useTunzaaAuth();
+    const userId = user?.user_id || user?.id || '';
+    const { cart, isLoading, updateCartItemQuantity, removeCartItem } = useCartCombined(userId);
     
-    // Check if cart item has variant data directly
-    const itemWithVariants = item as any;
-    if (itemWithVariants.variants?.sku) {
-      console.log("Found variant in item.variants:", itemWithVariants.variants);
-      return itemWithVariants.variants;
-    }
+    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+    const cartItems = useMemo(() => cart?.items || [], [cart]);
     
-    // Fallback to checking metadata (for backward compatibility)
-    if (!product.has_variants || !item.metadata?.sku) return null;
-    
-    const variant = product.variants?.find((v: any) => v.sku === item.metadata.sku);
-    return variant;
-  };
+    const subtotal = useMemo(() => {
+        return cartItems
+            .filter(item => selectedItems.includes(item.item_id || item.product_id))
+            .reduce((sum, item) => sum + ((item.unit_price || item.sale_price || 0) * item.quantity), 0);
+    }, [cartItems, selectedItems]);
 
-  const variant = getVariantInfo();
-  // console.log("The Variant:", JSON.stringify(variant, null, 2));
+    const selectedCount = selectedItems.length;
 
-  return (
-    <View className="flex-row p-4 border-b border-border">
-      <Image
-        source={{ uri: getImageUrl(product.images[0]) }}
-        className="w-20 h-20 rounded-lg"
-      />
-      <View className="flex-1 ml-4">
-        <Text className="text-base font-semibold text-foreground mb-1">
-          {product.name}
-        </Text>
-        {variant && (
-          <Text className="text-sm text-primary mb-1">
-            {variant.name}: {variant.sku}
-          </Text>
-        )}
-        <Text className="text-sm text-muted-foreground mb-2">
-          {t("cart.sku")}: {product.sku}
-        </Text>
-        <Text className="text-base font-bold text-foreground mb-3">
-          TShs {item.unit_price.toLocaleString()}
-        </Text>
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center bg-muted rounded-full p-1">
-            <TouchableOpacity
-              className={`w-8 h-8 rounded-full items-center justify-center bg-background ${Platform.select(
-                {
-                  web: "shadow-sm",
-                  default: "elevation-1",
-                }
-              )} ${item.quantity === 1 ? "bg-muted" : ""}`}
-              onPress={() => onQuantityChange(item, -1)}
-              disabled={item.quantity === 1 || isUpdating}
-            >
-              <Minus
-                size={16}
-                className={
-                  item.quantity === 1
-                    ? "text-muted-foreground"
-                    : "text-foreground"
-                }
-                color={ item.quantity === 1 ? resolvedColors?.foreground || "#000000" : resolvedColors?.primary || "#000000"}
-              />
-            </TouchableOpacity>
-            <Text className="text-sm font-semibold px-4">{item.quantity}</Text>
-            <TouchableOpacity
-              className={`w-8 h-8 rounded-full items-center justify-center bg-background ${Platform.select(
-                {
-                  web: "shadow-sm",
-                  default: "elevation-1",
-                }
-              )} ${item.quantity === 5 ? "bg-muted" : ""}`}
-              onPress={() => onQuantityChange(item, 1)}
-              disabled={item.quantity === 5 || isUpdating}
-            >
-              <Plus
-                size={16}
-                className={
-                  item.quantity === 5
-                    ? "text-muted-foreground"
-                    : "text-foreground"
-                }
-                color={ item.quantity === 5 ? resolvedColors?.foreground || "#000000" : resolvedColors?.primary || "#000000"}
-              />
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            className="p-2"
-            onPress={() => onRemove(item)}
-            disabled={isUpdating}
-          >
-            <Trash2 size={20} className="text-destructive" color={resolvedColors?.destructive || "#000000"} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-};
+    const toggleSelectItem = (id: string) => {
+        setSelectedItems(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
 
-// Separate component for optimistic cart items
-const OptimisticCartItemComponent = ({ item }: { item: LocalCartItem }) => {
-  const { data: product, isLoading } = useProductById(item.product_id);
-  const { t } = useI18n();
-
-  if (isLoading) {
-    return (
-      <View className="opacity-60">
-        <CartItemSkeleton />
-      </View>
-    );
-  }
-
-  if (!product) {
-    return (
-      <View className="p-4 border-b border-border opacity-60">
-        <Text className="text-muted-foreground">{t("products.product_not_found")}</Text>
-      </View>
-    );
-  }
-
-  // Get variant information if available
-  const getVariantInfo = () => {
-    if (!product.has_variants || !item.sku) return null;
-    
-    const variant = product.variants?.find((v: any) => v.sku === item.sku);
-    return variant;
-  };
-
-  const variant = getVariantInfo();
-
-  return (
-    <View className="flex-row p-4 border-b border-border opacity-60">
-      <Image
-        source={{ uri: getImageUrl(product.images[0]) }}
-        className="w-20 h-20 rounded-lg"
-      />
-      <View className="flex-1 ml-4">
-        <Text className="text-base font-semibold text-foreground mb-1">
-          {product.name}
-        </Text>
-        {variant && (
-          <Text className="text-sm text-primary mb-1">
-            {variant.name}: {variant.sku}
-          </Text>
-        )}
-        <Text className="text-sm text-muted-foreground mb-2">
-          {t("cart.sku")}: {product.sku}
-        </Text>
-        <Text className="text-base font-bold text-foreground mb-3">
-          TShs {product.base_price.toLocaleString()}
-        </Text>
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center bg-muted rounded-full p-1">
-            <View className="w-8 h-8 rounded-full items-center justify-center bg-muted">
-              <Minus size={16} className="text-muted-foreground" />
-            </View>
-            <Text className="text-sm font-semibold px-4 text-muted-foreground">
-              {item.quantity}
-            </Text>
-            <View className="w-8 h-8 rounded-full items-center justify-center bg-muted">
-              <Plus size={16} className="text-muted-foreground" />
-            </View>
-          </View>
-          <Badge variant="secondary">
-            <Text className="text-xs">{t("cart.adding")}</Text>
-          </Badge>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-const CartScreen = () => {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const resolvedColors = useResolvedThemeColors();
-  const { t } = useI18n();
-  // Move all hooks to the top before any conditional returns
-  const cart = useCartCombined(user?.user_id ?? "");
-  const updateCartItem = useUpdateCartItem();
-  const removeCartItem = useRemoveCartItem();
-  const clearCart = useClearCart();
-
-  // Get cart totals from server
-  const { data: cartTotals, isLoading: isLoadingTotals, refetch: refetchTotals } = useCartTotals(
-    cart.cart?.cart_id ?? ""
-  );
-
-  // Memoize refetchTotals to prevent unnecessary re-renders
-  const stableRefetchTotals = useCallback(() => {
-    if (cart.cart?.cart_id) {
-      refetchTotals();
-    }
-  }, [cart.cart?.cart_id, refetchTotals]);
-
-  // Fix the useFocusEffect to prevent infinite loops
-  useFocusEffect(
-    useCallback(() => {
-      if (user?.user_id) {
-        cart.refetch();
-        // Only refetch totals if cart exists
-        if (cart.cart?.cart_id) {
-          stableRefetchTotals();
+    const toggleSelectAll = () => {
+        if (selectedItems.length === cartItems.length && cartItems.length > 0) {
+            setSelectedItems([]);
+        } else {
+            setSelectedItems(cartItems.map(item => item.item_id || item.product_id));
         }
-      }
-    }, [user?.user_id, cart.refetch, stableRefetchTotals])
-  );
+    };
 
-  // Add user validation after hooks
-  if (!user) {
+    const handleUpdateQuantity = async (item: any, increment: boolean) => {
+        const newQty = increment ? item.quantity + 1 : item.quantity - 1;
+        if (newQty < 0) return;
+
+        if (newQty === 0) {
+            handleRemoveItem(item);
+        } else {
+            try {
+                await updateCartItemQuantity(item.product_id, item.metadata?.sku, newQty);
+            } catch (err: any) {
+                if (err.message?.includes('inventory') || err.message?.includes('stock')) {
+                    Alert.alert("Out of Stock", "Sorry, there is no more inventory available for this item.");
+                } else {
+                    Alert.alert("Error", "Could not update quantity. Please try again.");
+                }
+            }
+        }
+    };
+
+    const handleRemoveItem = (item: any) => {
+        Alert.alert(
+            "Remove Item",
+            `Are you sure you want to remove ${item.product_name} from your cart?`,
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Remove", 
+                    style: "destructive", 
+                    onPress: () => removeCartItem(item.product_id, item.metadata?.sku) 
+                }
+            ]
+        );
+    };
+
+    const renderCartItem = (item: any) => {
+        const id = item.item_id || item.product_id;
+        const isSelected = selectedItems.includes(id);
+        const rawImage = item.image_url;
+        const image = typeof rawImage === 'string' 
+            ? rawImage 
+            : (rawImage?.url || 'https://via.placeholder.com/300x300?text=No+Image');
+            
+        const price = item.unit_price || item.sale_price || 0;
+        const metadata = item.metadata || {};
+        const deliveryFee = metadata.delivery_fee || 0;
+        const warranty = metadata.warranty_period;
+        const category = metadata.category || '';
+        const isFood = category.toLowerCase().includes('food') || category.toLowerCase().includes('grocery');
+
+        return (
+            <View key={id} style={styles.cardContainer}>
+                <View style={styles.cardHeader}>
+                    <TouchableOpacity style={styles.checkbox} onPress={() => toggleSelectItem(id)}>
+                        <Ionicons 
+                            name={isSelected ? "checkbox" : "square-outline"} 
+                            size={24} 
+                            color={isSelected ? "#425BA4" : "#D1D5DB"} 
+                        />
+                    </TouchableOpacity>
+                    
+                    <View style={styles.imageWrapper}>
+                        <Image source={{ uri: image }} style={styles.productImage} />
+                    </View>
+
+                    <View style={styles.detailsWrapper}>
+                        <View style={styles.titleRow}>
+                            <Text style={styles.productTitle} numberOfLines={1}>{item.product_name}</Text>
+                            <TouchableOpacity style={styles.trashBtn} onPress={() => handleRemoveItem(item)}>
+                                <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.ratingRow}>
+                            <Ionicons name="star" size={14} color="#FBBF24" />
+                            <Text style={styles.ratingText}>4.8 (56)</Text>
+                        </View>
+
+                        <Text style={styles.price}>Tsh {price.toLocaleString()}</Text>
+
+                        <View style={styles.actionRow}>
+                            <View style={styles.deliveryInfo}>
+                                {deliveryFee > 0 ? (
+                                    <View style={styles.infoRow}>
+                                        <Ionicons name="location-outline" size={12} color="#6B7280" />
+                                        <Text style={styles.infoText}>Delivery: Tsh. {deliveryFee.toLocaleString()}</Text>
+                                    </View>
+                                ) : (
+                                    <View style={styles.infoRow}>
+                                        <Ionicons name="location-outline" size={12} color="#10B981" />
+                                        <Text style={[styles.infoText, { color: '#10B981' }]}>Free Delivery</Text>
+                                    </View>
+                                )}
+                                
+                                {warranty && !isFood && (
+                                    <View style={styles.infoRow}>
+                                        <Ionicons name="shield-checkmark-outline" size={12} color="#6B7280" />
+                                        <Text style={styles.infoText}>{warranty} warranty</Text>
+                                    </View>
+                                )}
+                            </View>
+
+                            <View style={styles.qtyRow}>
+                                <TouchableOpacity style={styles.qtyButton} onPress={() => handleUpdateQuantity(item, false)}>
+                                    <Ionicons name="remove" size={16} color="#6B7280" />
+                                </TouchableOpacity>
+                                <Text style={styles.qtyText}>{item.quantity}</Text>
+                                <TouchableOpacity style={[styles.qtyButton, styles.qtyButtonAdd]} onPress={() => handleUpdateQuantity(item, true)}>
+                                    <Ionicons name="add" size={16} color="#FFFFFF" />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        );
+    };
+
     return (
-      <SafeAreaView className="flex-1 bg-background items-center justify-center">
-        <Text className="text-lg text-muted-foreground mb-4">
-          {t("cart.please_login")}
-        </Text>
-        <Button onPress={() => router.push("../../(auth)/login")}>
-          <Text className="text-white">{t("auth.login")}</Text>
-        </Button>
-      </SafeAreaView>
-    );
-  }
+        <View style={styles.container}>
+            <SafeAreaView edges={['top']} style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Shopping Cart</Text>
+                <View style={{ width: 40 }} />
+            </SafeAreaView>
 
-  const handleQuantityChange = async (item: CartItem, delta: number) => {
-    if (!cart.cart) return;
+            <View style={styles.content}>
+                <TouchableOpacity style={styles.selectAllRow} onPress={toggleSelectAll}>
+                    <Text style={styles.selectAllText}>Select all items</Text>
+                </TouchableOpacity>
 
-    const newQuantity = item.quantity + delta;
-    if (newQuantity < 1 || newQuantity > 5) return;
+                {isLoading ? (
+                    <View style={styles.centerContainer}>
+                        <ActivityIndicator size="large" color="#425BA4" />
+                    </View>
+                ) : cartItems.length === 0 ? (
+                    <View style={styles.centerContainer}>
+                        <Ionicons name="cart-outline" size={64} color="#9CA3AF" />
+                        <Text style={styles.emptyText}>Your cart is empty</Text>
+                        <TouchableOpacity style={styles.browseButton} onPress={() => router.push('/(buyer)')}>
+                            <Text style={styles.browseText}>Continue Shopping</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
+                        {cartItems.map(renderCartItem)}
+                    </ScrollView>
+                )}
+            </View>
 
-    try {
-      await updateCartItem.mutateAsync({
-        cartId: cart.cart.cart_id,
-        itemId: item.item_id,
-        update: { quantity: newQuantity },
-      });
-    } catch (error) {
-      console.error("Failed to update cart item:", error);
-    }
-  };
-
-  const handleRemoveItem = async (item: CartItem) => {
-    if (!cart.cart) return;
-
-    try {
-      await removeCartItem.mutateAsync({
-        cartId: cart.cart.cart_id,
-        item: {
-          item_id: item.item_id,
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          added_at: item.added_at,
-          metadata: item.metadata,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to remove cart item:", error);
-    }
-  };
-
-  const handleClearCart = async () => {
-    if (!cart.cart) return;
-
-    try {
-      await clearCart.mutateAsync({
-        cartId: cart.cart.cart_id,
-      });
-    } catch (error) {
-      console.error("Failed to clear cart:", error);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([
-        cart.refetch(),
-        cart.cart?.cart_id ? stableRefetchTotals() : Promise.resolve(),
-      ]);
-    } catch (error) {
-      console.error("Failed to refresh cart:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleProceedToCheckout = () => {
-    router.push({
-      // pathname: "/(buyer)/cart/checkout",
-      pathname: "/(payment)/checkout",
-      params: {
-        returnTo: "cart",
-      },
-    });
-  };
-
-  if (cart.isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-row justify-between items-center p-4 border-b border-border">
-          <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} className="text-foreground" color={resolvedColors?.foreground || "#000000"} />
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-foreground">
-            {t("cart.shopping_cart")}
-          </Text>
-          <View className="w-6" />
-        </View>
-        <ScrollView className="flex-1">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <CartItemSkeleton key={index} />
-          ))}
-        </ScrollView>
-        <View className="p-4 border-t border-border bg-background">
-          <View className="flex-row justify-between items-center mb-4 pt-2 border-t border-border">
-            <Text className="text-lg font-bold text-foreground">{t("cart.total")}</Text>
-            <View className="w-20 h-6 bg-muted rounded animate-pulse" />
-          </View>
-          <Button disabled className="w-full">
-            <Text className="text-foreground">{t("common.loading")}</Text>
-          </Button>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (cart.error) {
-    return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-row justify-between items-center p-4 border-b border-border">
-          <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} className="text-foreground" color={resolvedColors?.foreground || "#000000"} />
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-foreground">
-            {t("cart.shopping_cart")}
-          </Text>
-          <View className="w-6" />
-        </View>
-        <View className="p-4">
-          <Alert icon={Terminal} variant="destructive">
-            <Text className="text-sm text-destructive">
-              {cart.error.message || t("cart.error_loading_cart")}
-            </Text>
-          </Alert>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onPress={() => cart.refetch()}
-          >
-            <RefreshCw size={16} className="text-foreground mr-2" />
-            <Text>{t("common.retry")}</Text>
-          </Button>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!cart.hasItems()) {
-    return (
-      <SafeAreaView className="flex-1 bg-background">
-        <View className="flex-row justify-between items-center p-4 border-b border-border">
-          <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft size={24} className="text-foreground" color={resolvedColors?.foreground || "#000000"} />
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-foreground">
-            {t("cart.shopping_cart")}
-          </Text>
-          <View className="w-6" />
-        </View>
-        <View className="flex-1 items-center justify-center p-4">
-          <Text className="text-lg text-muted-foreground text-center">
-            {t("cart.empty")}
-          </Text>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onPress={() => router.push("/")}
-          >
-            <Text>{t("cart.continue_shopping")}</Text>
-          </Button>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const cartItems = cart.cart?.items || [];
-  const isUpdating = updateCartItem.isPending || removeCartItem.isPending || clearCart.isPending;
-  const isAnyOperationInProgress = isUpdating || cart.addToCartMutation.isPending || isRefreshing;
-
-  // console.log("The Cart Items:", JSON.stringify(cartItems, null, 2));
-  return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top", "right", "left"]}>
-      <View className="flex-row justify-between items-center p-4 border-b border-border">
-        <TouchableOpacity onPress={() => router.back()}>
-          <ArrowLeft size={24} className="text-foreground" color={resolvedColors?.foreground || "#000000"} />
-        </TouchableOpacity>
-        <Text className="text-lg font-semibold text-foreground">
-          {t("cart.shopping_cart")}
-        </Text>
-        <View className="flex-row items-center">
-          {isAnyOperationInProgress && (
-            <Badge variant="secondary" className="mr-2">
-              <ActivityIndicator size="small" className="mr-1" />
-              <Text className="text-xs">{t("cart.updating")}</Text>
-            </Badge>
-          )}
-          {cart.optimisticItems.length > 0 && (
-            <Badge variant="default" className="mr-2">
-              <Text className="text-xs">
-                {t("cart.pending_items", { count: cart.optimisticItems.length })}
-              </Text>
-            </Badge>
-          )}
-          <TouchableOpacity 
-            onPress={handleClearCart}
-            disabled={clearCart.isPending}
-            className="mr-2"
-          >
-            {clearCart.isPending ? (
-              <ActivityIndicator size="small" className="text-muted-foreground" />
-            ) : (
-              <Trash2 
-                size={20} 
-                className="text-destructive" 
-                color={resolvedColors?.destructive || "#000000"}
-              />
+            {cartItems.length > 0 && (
+                <View style={styles.bottomBarContainer}>
+                    <View style={styles.bottomBar}>
+                        <View>
+                            <Text style={styles.itemCountText}>{selectedCount} item{selectedCount !== 1 ? 's' : ''}</Text>
+                            <Text style={styles.subtotalText}>Subtotal: Tsh. {subtotal.toLocaleString()}</Text>
+                        </View>
+                        <TouchableOpacity 
+                            style={[styles.checkoutButton, selectedCount === 0 && styles.disabledButton]}
+                            onPress={() => selectedCount > 0 && router.push('/(buyer)/cart/checkout' as any)}
+                        >
+                            <Text style={styles.checkoutButtonText}>Proceed to checkout</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             )}
-          </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={handleRefresh}
-            disabled={isRefreshing}
-            className="ml-2"
-          >
-            {isRefreshing ? (
-              <ActivityIndicator size="small" className="text-muted-foreground" />
-            ) : (
-              <RefreshCw size={20} className="text-muted-foreground" color={resolvedColors?.foreground || "#000000"} />
-            )}
-          </TouchableOpacity>
+
+            <BottomNav />
         </View>
-      </View>
+    );
+}
 
-      <ScrollView className="flex-1">
-        {/* Render server cart items using proper component */}
-        {cartItems.map((item) => (
-          <CartItemComponent
-            key={item.item_id}
-            item={item}
-            onQuantityChange={handleQuantityChange}
-            onRemove={handleRemoveItem}
-            isUpdating={isUpdating}
-          />
-        ))}
-
-        {/* Render optimistic items using proper component */}
-        {cart.optimisticItems.map((item) => (
-          <OptimisticCartItemComponent key={item.temp_id} item={item} />
-        ))}
-      </ScrollView>
-
-      <View className="p-4 border-t border-border bg-background">
-        <View className="flex-row justify-between items-center mb-4 pt-2">
-          <Text className="text-lg font-bold text-foreground">{t("cart.total")}</Text>
-          {isLoadingTotals ? (
-            <View className="flex-row items-center">
-              <ActivityIndicator size="small" className="mr-2" />
-              <View className="w-20 h-6 bg-muted rounded animate-pulse" />
-            </View>
-          ) : (
-            <Text className="text-lg font-bold text-success">
-              TShs {(cartTotals?.total || 0).toLocaleString()}
-            </Text>
-          )}
-        </View>
-        <Button
-          variant="default"
-          onPress={handleProceedToCheckout}
-          disabled={!cart.hasItems() || isUpdating || isLoadingTotals}
-          className="w-full"
-        >
-          {isUpdating ? (
-            <View className="flex-row items-center">
-              <ActivityIndicator size="small" className="mr-2" />
-              <Text className="text-primary">{t("cart.updating_cart")}</Text>
-            </View>
-          ) : isLoadingTotals ? (
-            <View className="flex-row items-center">
-              <ActivityIndicator size="small" className="mr-2" />
-              <Text className="text-primary">{t("common.loading")}</Text>
-            </View>
-          ) : (
-            <Text className="text-primary font-bold">{t("cart.proceed_to_checkout")}</Text>
-          )}
-        </Button>
-      </View>
-    </SafeAreaView>
-  );
-};
-
-export default CartScreen;
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F9FAFB',
+    },
+    header: {
+        backgroundColor: '#425BA4',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+    },
+    backButton: {
+        padding: 4,
+    },
+    headerTitle: {
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    content: {
+        flex: 1,
+    },
+    selectAllRow: {
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
+    },
+    selectAllText: {
+        fontSize: 15,
+        color: '#1A1A1A',
+    },
+    listContent: {
+        padding: 16,
+        paddingBottom: 160,
+        gap: 16,
+    },
+    cardContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    checkbox: {
+        marginTop: 4,
+    },
+    imageWrapper: {
+        width: 70,
+        height: 70,
+        borderRadius: 10,
+        backgroundColor: '#F3F4F6',
+        overflow: 'hidden',
+    },
+    productImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    detailsWrapper: {
+        flex: 1,
+        gap: 1,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    productTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#425BA4',
+        flex: 1,
+        marginRight: 8,
+    },
+    trashBtn: {
+        padding: 4,
+    },
+    ratingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    ratingText: {
+        fontSize: 11,
+        color: '#6B7280',
+    },
+    price: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginTop: 2,
+    },
+    actionRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        marginTop: 4,
+    },
+    deliveryInfo: {
+        flex: 1,
+        gap: 2,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    infoText: {
+        fontSize: 10,
+        color: '#6B7280',
+    },
+    qtyRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F3F4F6',
+        borderRadius: 12,
+        padding: 2,
+    },
+    qtyButton: {
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    qtyButtonAdd: {
+        backgroundColor: '#425BA4',
+    },
+    qtyText: {
+        marginHorizontal: 8,
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    bottomBarContainer: {
+        position: 'absolute',
+        bottom: 85,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 16,
+    },
+    bottomBar: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 40,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    itemCountText: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    subtotalText: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    checkoutButton: {
+        backgroundColor: '#425BA4',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 25,
+    },
+    disabledButton: {
+        backgroundColor: '#9CA3AF',
+    },
+    checkoutButtonText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#6B7280',
+        marginTop: 16,
+    },
+    browseButton: {
+        marginTop: 24,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        backgroundColor: '#425BA4',
+        borderRadius: 24,
+    },
+    browseText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+    },
+});

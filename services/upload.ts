@@ -16,18 +16,7 @@ export const uploadApi = {
   uploadDocument: async (file: FormData): Promise<UploadResponse> => {
     const response = await documentClient.post<UploadResponse>(
       "upload",
-      file,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        transformRequest: [
-          (data, headers) => {
-            delete headers["Authorization"];
-            return data;
-          },
-        ],
-      }
+      file
     );
     return response.data;
   },

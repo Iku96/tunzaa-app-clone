@@ -1,188 +1,217 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  View,
-  TextInput,
-  Alert,
-  useWindowDimensions,
-  Platform,
-  KeyboardAvoidingView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import AuthHeader from "@/features/auth/components/AuthHeader";
-import { useVerifyOTP, useRequestOTP } from "@/services/auth";
-import { useAuthStore } from "@/stores/auth";
-import { usePageTitle } from "@/hooks/usePageTitle";
+/**
+ * ============================================================================
+ * OTP SCREEN (TUNZAA 2.0 RESTORED)
+ * ============================================================================
+ */
 
-const OTP_LENGTH = 6;
-const RESEND_TIMEOUT = 60;
+import { useState, useEffect, useRef } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 export default function OTPScreen() {
-  const { phone } = useLocalSearchParams();
-  const router = useRouter();
-  const [otp, setOtp] = useState("");
-  const [timer, setTimer] = useState(RESEND_TIMEOUT);
-  const [isResendActive, setIsResendActive] = useState(false);
-  const inputRefs = useRef<TextInput[]>([]);
-  usePageTitle("OTP");
-  const verifyOTP = useVerifyOTP();
-  const requestOTP = useRequestOTP();
-  const { setOtpVerified } = useAuthStore();
+    const router = useRouter();
+    const params = useLocalSearchParams() as any;
+    const { phone_number, flow, first_name, last_name, password, role, email } = params;
+    
+    const { verifyOTP, requestOTP, register, saveAuthResponse } = useTunzaaAuth();
+    const { t } = useLanguage();
 
-  const { width } = useWindowDimensions();
-  const isWide = width >= 768;
+    const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+    const [timer, setTimer] = useState(30);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const inputRefs = useRef<Array<TextInput | null>>([]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setIsResendActive(true);
-          return 0;
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleOtpChange = (text: string, index: number) => {
+        if (text.length > 1) {
+            const pastedText = text.slice(0, 6).split('');
+            const newDigits = [...otpDigits];
+            pastedText.forEach((char, i) => { if (index + i < 6) newDigits[index + i] = char; });
+            setOtpDigits(newDigits);
+            const nextIndex = Math.min(index + pastedText.length, 5);
+            inputRefs.current[nextIndex]?.focus();
+            return;
         }
-        return prev - 1;
-      });
-    }, 1000);
 
-    return () => clearInterval(interval);
-  }, [timer === RESEND_TIMEOUT]);
+        const newDigits = [...otpDigits];
+        newDigits[index] = text.slice(-1);
+        setOtpDigits(newDigits);
+        if (text && index < 5) {
+            setTimeout(() => { inputRefs.current[index + 1]?.focus(); }, 10);
+        }
+    };
 
-  const handleOtpChange = (value: string, index: number) => {
-    const newOtp = otp.split("");
-    newOtp[index] = value;
-    const updatedOtp = newOtp.join("");
-    setOtp(updatedOtp);
+    const handleKeyPress = (e: any, index: number) => {
+        if (e.nativeEvent.key === 'Backspace' && !otpDigits[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
 
-    if (value && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    const handleResend = async () => {
+        if (timer === 0 && phone_number) {
+            try {
+                const response = await requestOTP(phone_number);
+                setTimer(response?.ttl || 30);
+                setOtpDigits(['', '', '', '', '', '']);
+            } catch (error: any) {
+                Alert.alert('Error', error.message || 'Failed to resend code.');
+            }
+        }
+    };
 
-    if (updatedOtp.length === OTP_LENGTH) {
-      handleVerify(updatedOtp);
-    }
-  };
+    const handleContinue = async () => {
+        const code = otpDigits.join('');
+        if (code.length !== 6) {
+            Alert.alert(t.otpInvalidCode, t.otpEnterAllDigits);
+            return;
+        }
 
-  const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
+        setIsVerifying(true);
+        try {
+            const response = await verifyOTP(phone_number, code);
+            const verifyResp = response as any;
+            
+            if (verifyResp.verified || verifyResp.is_verified || verifyResp.access_token) {
+                if (flow === 'register') {
+                    const portal = role === 'merchant' ? 'merchant' : (role === 'delivery' ? 'delivery' : 'buyer');
+                    
+                    // NEW FLOW: If we have a nextStep, go there instead of registering immediately
+                    if (params.nextStep === 'password') {
+                        return router.replace({
+                            pathname: '/register',
+                            params: {
+                                step: 'password',
+                                first_name: first_name,
+                                last_name: last_name,
+                                phone_number: phone_number,
+                                role: role,
+                            }
+                        } as any);
+                    }
 
-  const handleVerify = async (code: string) => {
-    try {
-      await verifyOTP.mutateAsync({
-        phone_number: phone as string,
-        otp: code,
-      });
+                    // If verified via existing token
+                    if (verifyResp.access_token && verifyResp.access_token.includes('.')) {
+                        await AsyncStorage.setItem('LAST_PORTAL', portal);
+                        await saveAuthResponse(verifyResp);
+                    } else {
+                        // Create new registration
+                        const registrationData = { first_name, last_name, password, phone_number, email };
+                        await register(registrationData, portal);
+                    }
+                } else {
+                    router.replace({ pathname: '/create-password', params: { phone_number } } as any);
+                }
+            } else {
+                Alert.alert(t.otpVerifyFailed, t.otpInvalidCode);
+            }
+        } catch (error: any) {
+            Alert.alert(t.otpVerifyFailed, error.message || 'Verification failed');
+        } finally {
+            setIsVerifying(false);
+        }
+    };
 
-      setOtpVerified(true);
-      router.push("/complete-profile");
-    } catch (error: any) {
-      const message = error.apiError?.message || error.message || "Invalid OTP. Please try again.";
-      Alert.alert("Verification Failed", message);
-      setOtp("");
-      inputRefs.current[0]?.focus();
-    }
-  };
+    return (
+        <SafeAreaView style={styles.safe} edges={['top']}>
+            <View style={styles.container}>
+                <View style={styles.contentWrapper}>
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                            <Ionicons name="arrow-back" size={24} color="#1D1E1F" />
+                        </TouchableOpacity>
+                        <Text style={styles.title}>{t.otpTitle}</Text>
+                    </View>
 
-  const handleResend = async () => {
-    if (!isResendActive) return;
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('@/assets/blue-tunzaa-logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                    </View>
 
-    try {
-      await requestOTP.mutateAsync({
-        phone_number: phone as string,
-      });
+                    <Text style={styles.instruction}>{t.otpInstruction}</Text>
 
-      setTimer(RESEND_TIMEOUT);
-      setIsResendActive(false);
+                    <View style={styles.otpContainer}>
+                        {otpDigits.map((digit, index) => (
+                            <TextInput
+                                key={index}
+                                ref={(ref) => { inputRefs.current[index] = ref; }}
+                                style={styles.otpBox}
+                                value={digit}
+                                onChangeText={(text) => handleOtpChange(text, index)}
+                                onKeyPress={(e) => handleKeyPress(e, index)}
+                                keyboardType="number-pad"
+                                maxLength={index === 0 ? 6 : 1}
+                                textContentType="oneTimeCode"
+                                autoComplete="one-time-code"
+                            />
+                        ))}
+                    </View>
 
-      Alert.alert("Success", "OTP has been resent to your phone.");
-    } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ||
-        "Failed to resend OTP. Please try again."
-      );
-    }
-  };
+                    <View style={styles.resendContainer}>
+                        <Text style={styles.resendText}>
+                            {t.otpNoCode}{' '}
+                            <Text
+                                style={[styles.resendLink, timer > 0 && styles.resendDisabled]}
+                                onPress={handleResend}
+                            >
+                                {t.otpResend}
+                            </Text>
+                        </Text>
+                    </View>
 
-  return (
-    <SafeAreaView className="flex-1 bg-muted">
-      <AuthHeader />
+                    <View style={styles.timerContainer}>
+                        <Ionicons name="time-outline" size={16} color="#666666" />
+                        <Text style={styles.timerText}>{t.otpTimer} {timer}s</Text>
+                    </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
-      >
-        <View
-          className="flex-1"
-          style={{
-            justifyContent: isWide ? "center" : "flex-start",
-            alignItems: isWide ? "center" : "stretch",
-            paddingVertical: 32,
-          }}
-        >
-          <View
-            className={`w-full ${isWide
-                ? "max-w-md rounded-2xl bg-white border border-border px-8 py-10"
-                : "px-6"
-              }`}
-          >
-            <Text className="text-4xl font-bold text-foreground mb-2 text-center">
-              Enter OTP sent via SMS
-            </Text>
-            <Text className="text-base text-muted-foreground mb-8 text-center">
-              We’ve sent OTP to {phone}
-            </Text>
+                    <TouchableOpacity style={styles.continueButton} onPress={handleContinue} disabled={isVerifying}>
+                        {isVerifying ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.continueButtonText}>{t.otpContinue}</Text>}
+                    </TouchableOpacity>
+                </View>
 
-            <View className="flex-row justify-between mb-6">
-              {[...Array(OTP_LENGTH)].map((_, index) => (
-                <Input
-                  key={index}
-                  ref={(ref) => {
-                    inputRefs.current[index] = ref as TextInput;
-                  }}
-                  className="w-12 h-12 text-xl font-semibold text-center bg-muted rounded-xl"
-                  maxLength={1}
-                  keyboardType="number-pad"
-                  value={otp[index] || ""}
-                  onChangeText={(value) => handleOtpChange(value, index)}
-                  onKeyPress={(e) => handleKeyPress(e, index)}
-                  editable={!verifyOTP.isPending}
-                />
-              ))}
+                <TouchableOpacity style={styles.skipButton} onPress={() => router.replace('/(buyer)')}>
+                    <Text style={styles.skipText}>{t.loginSkip}</Text>
+                    <Text style={styles.skipArrow}>→</Text>
+                </TouchableOpacity>
             </View>
-
-            <View className="flex-row items-center justify-end gap-2 mb-4">
-              <View
-                className={`w-2 h-2 rounded-full ${timer > 0 ? "bg-primary" : "bg-muted"
-                  }`}
-              />
-              <Text className="text-base font-semibold text-foreground">
-                {String(Math.floor(timer / 60)).padStart(2, "0")}:
-                {String(timer % 60).padStart(2, "0")}
-              </Text>
-            </View>
-
-            <Button
-              variant="outline"
-              className="self-center mt-2 px-5 py-2.5 rounded-full"
-              onPress={handleResend}
-              disabled={!isResendActive || requestOTP.isPending}
-            >
-              <Text
-                className={`text-sm font-semibold ${isResendActive ? "text-foreground" : "text-muted-foreground"
-                  }`}
-              >
-                {requestOTP.isPending ? "Resending..." : "Resend code"}
-              </Text>
-            </Button>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+        </SafeAreaView>
+    );
 }
+
+const styles = StyleSheet.create({
+    safe: { flex: 1, backgroundColor: '#FFFFFF' },
+    container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 24, paddingTop: 20, justifyContent: 'space-between', paddingBottom: 20 },
+    contentWrapper: { width: '100%', maxWidth: 353, alignSelf: 'center' },
+    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 30 },
+    backButton: { marginRight: 12 },
+    title: { fontSize: 18, fontWeight: '600', color: '#1D1E1F' },
+    logoContainer: { alignItems: 'center', marginBottom: 32 },
+    logo: { width: 170, height: 60 },
+    instruction: { fontSize: 14, color: '#666666', textAlign: 'center', marginBottom: 24 },
+    otpContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
+    otpBox: { flex: 1, aspectRatio: 1, backgroundColor: '#F3F4F6', borderRadius: 12, fontSize: 24, fontWeight: '700', textAlign: 'center', color: '#1D1E1F' },
+    resendContainer: { alignItems: 'center', marginBottom: 8 },
+    resendText: { fontSize: 14, color: '#1D1E1F' },
+    resendLink: { fontWeight: '700', color: '#3B5191' },
+    resendDisabled: { color: '#9CA3AF' },
+    timerContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 24, gap: 6 },
+    timerText: { fontSize: 13, color: '#666666' },
+    continueButton: { height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+    continueButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+    skipButton: { flexDirection: 'row', alignSelf: 'center', alignItems: 'center', paddingBottom: 20, marginTop: 16 },
+    skipText: { fontSize: 16, fontWeight: '500', color: '#3B5191', marginRight: 8 },
+    skipArrow: { fontSize: 16, color: '#3B5191', fontWeight: '500' },
+});

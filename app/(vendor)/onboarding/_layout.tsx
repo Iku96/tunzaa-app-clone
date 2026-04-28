@@ -2,29 +2,32 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 
-// ✅ DEFINED: Exactly 4 Steps
+// ✅ DEFINED: Exactly 5 Steps (including Intro)
 const STEPS = [
+    { title: 'Intro', path: '/mauzo-intro' },
     { title: 'Shop Details', path: '/(vendor)/onboarding/step-1' },
-    { title: 'Location', path: '/(vendor)/onboarding/step-1' },
-    { title: 'Review', path: '/(vendor)/onboarding/step-1' },
-    { title: 'Documents', path: '/(vendor)/onboarding/step-1' },
+    { title: 'Location', path: '/(vendor)/onboarding/step-2' },
+    { title: 'Review', path: '/(vendor)/onboarding/step-3' },
+    { title: 'Documents', path: '/(vendor)/onboarding/step-4' },
 ];
 
 export default function OnboardingLayout() {
     const router = useRouter();
     const segments = useSegments();
+    const { logout } = useTunzaaAuth();
 
     // Get the current file name (e.g., 'step-3-manual')
     const currentRouteName = segments[segments.length - 1] as string;
 
     // Helper to find the logic-based index (ignoring sub-routes like manual/map)
     const getActiveStepIndex = () => {
-        if (currentRouteName === 'step-1') return 0;
-        if (currentRouteName === 'step-2' || currentRouteName === 'step-2-manual' || currentRouteName === 'step-2-map') return 1;
-        if (currentRouteName === 'step-3') return 2;
-        if (currentRouteName === 'step-4') return 3;
-        return 0;
+        if (currentRouteName === 'step-1') return 1;
+        if (currentRouteName === 'step-2' || currentRouteName === 'step-2-manual' || currentRouteName === 'step-2-map') return 2;
+        if (currentRouteName === 'step-3') return 3;
+        if (currentRouteName === 'step-4') return 4;
+        return 1; // Default to step 1 (Brand Identity) since intro is completed
     };
 
     const activeStepIndex = getActiveStepIndex();
@@ -36,8 +39,13 @@ export default function OnboardingLayout() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Merchant Onboarding</Text>
-                <View style={{ width: 40 }} />
+                <TouchableOpacity onPress={logout} style={styles.backButton}>
+                    <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.titleContainer}>
+                <Text style={styles.mainTitle}>Mauzo by Tunzaa</Text>
             </View>
 
             {/* Stepper Indicator */}
@@ -48,12 +56,16 @@ export default function OnboardingLayout() {
                             styles.stepCircle,
                             index <= activeStepIndex ? styles.stepCircleActive : styles.stepCircleInactive
                         ]}>
-                            <Text style={[
-                                styles.stepNumber,
-                                index <= activeStepIndex ? styles.stepNumberActive : styles.stepNumberInactive
-                            ]}>
-                                {index + 1}
-                            </Text>
+                            {index < activeStepIndex ? (
+                                <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                            ) : (
+                                <Text style={[
+                                    styles.stepNumber,
+                                    index <= activeStepIndex ? styles.stepNumberActive : styles.stepNumberInactive
+                                ]}>
+                                    {index + 1}
+                                </Text>
+                            )}
                         </View>
                         {index < STEPS.length - 1 && (
                             <View style={[
@@ -83,7 +95,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingTop: 12,
     },
     backButton: {
         width: 40,
@@ -93,10 +105,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    headerTitle: {
+    titleContainer: {
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    mainTitle: {
         color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '700',
+        fontSize: 22,
+        fontWeight: '600',
+        fontFamily: 'Gilroy-Bold',
     },
     stepperContainer: {
         flexDirection: 'row',

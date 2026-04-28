@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Touchabl
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useLanguage } from '@/context/LanguageContext';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 import MapView, { Marker, Region, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MapPin } from 'lucide-react-native';
@@ -121,7 +121,7 @@ export default function Step3Map() {
             console.log('✅ [Step3Map] Location persisted');
 
             router.push({
-                pathname: '/(vendor)/onboarding/step-1',
+                pathname: '/(vendor)/onboarding/step-3',
                 params: {
                     region,
                     municipal,

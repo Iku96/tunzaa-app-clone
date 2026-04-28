@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
-export default function Step4Review() {
+export default function Step3Review() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const { t } = useLanguage();
@@ -20,7 +21,6 @@ export default function Step4Review() {
     useEffect(() => {
         (async () => {
             try {
-                const AsyncStorage = require('@react-native-async-storage/async-storage').default;
                 const saved = await AsyncStorage.getItem('TEMP_ONBOARDING_LOCATION');
                 if (saved) {
                     const data = JSON.parse(saved);
@@ -129,7 +129,7 @@ export default function Step4Review() {
 
                     <TouchableOpacity
                         style={styles.nextButton}
-                        onPress={() => router.push('/(vendor)/onboarding/step-1')}
+                        onPress={() => router.push('/(vendor)/onboarding/step-4')}
                     >
                         <Text style={styles.nextButtonText}>{t.onboardingStep1Next}</Text>
                     </TouchableOpacity>

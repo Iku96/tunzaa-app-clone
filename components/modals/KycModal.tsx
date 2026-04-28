@@ -673,8 +673,7 @@ export function KycModal({ isOpen, onClose, onSuccess }: KycModalProps) {
     }
 
     if (verificationStatus && verificationStatus.toLowerCase() === "approved") {
-      console.log("KYC Modal: Vendor KYC already approved, not rendering");
-      return null;
+      console.log("KYC Modal: Vendor KYC already approved, continuing to render status");
     }
   }
 
@@ -688,8 +687,7 @@ export function KycModal({ isOpen, onClose, onSuccess }: KycModalProps) {
     }
 
     if (isDeliveryVerified) {
-      console.log("KYC Modal: Delivery KYC already verified, not rendering");
-      return null;
+      console.log("KYC Modal: Delivery KYC already verified, continuing to render status");
     }
   }
 

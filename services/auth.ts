@@ -39,14 +39,9 @@ export const authApi = {
 
   // User Registration
   register: async (data: RegisterBody): Promise<AuthResponse> => {
-    const payload = {
-      ...data,
-      email: data.email || `${data.phone_number}@${API_CONFIG.TENANT_ID}.com`,
-    };
-
     const response = await apiClient.post<AuthResponse>(
       "auth/register",
-      payload
+      data
     );
     return response.data;
   },

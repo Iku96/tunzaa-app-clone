@@ -229,7 +229,8 @@ export function BuyerHome() {
 
   return (
     <View
-      className={`flex-1 ${isDesktop ? 'bg-white' : 'bg-background'}`}
+      className="flex-1"
+      style={{ backgroundColor: resolvedColors?.background || "#F8F9FD" }}
     >
       {/* Mobile/Tablet Header - Hidden on Desktop */}
       {/* Address picker - only show if delivery enabled */}

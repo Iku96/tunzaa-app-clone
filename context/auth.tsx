@@ -306,6 +306,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         is_phone: is_phone,
       });
 
+      const cleanName = (val: string) => {
+        if (!val || typeof val !== 'string') return '';
+        const trimmed = val.trim();
+        const lower = trimmed.toLowerCase();
+        const generic = ['vendor', 'merchant', 'business', 'null', 'undefined', 'user'];
+        if (generic.includes(lower) || trimmed.length < 2) return '';
+        return trimmed;
+      };
+
+      const personalName = response.name || `${response.first_name} ${response.last_name}`.trim();
+
       // Map API response to existing User structure
       const userData: User = {
         id: response.user_id,
@@ -313,16 +324,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: response.name || `${response.first_name} ${response.last_name}`,
         email: response.email || "",
         activeProfileRole: response.active_profile_role,
-        profiles: response.profiles.map((profile) => ({
-          profile_id: profile.profile_id,
-          role: profile.role as UserRole,
-          displayName: profile.display_name || response.name,
-          kyc: {
-            verified: false,
-            documents: [],
-          },
-          // Add other profile fields based on role
-        })),
+        profiles: response.profiles.map((profile) => {
+          const p = profile as any;
+          const meta = p.metadata || {};
+          const isBusiness = ['vendor', 'merchant', 'business', 'delivery', 'driver'].includes(p.role?.toLowerCase());
+          
+          const rawName = isBusiness 
+            ? (meta.business_name || meta.company_name || meta.shop_name || meta.organization_name || meta.legal_name ||
+               meta.merchant_name || meta.store_name || meta.partner_name || meta.trading_name || meta.registered_name || meta.name ||
+               (p.name && p.name !== personalName ? p.name : '') ||
+               p.business_name || p.company_name || p.shop_name || p.organization_name || p.legal_name ||
+               p.storeDetails?.storeName || p.storeDetails?.businessName || 
+               p.display_name || p.displayName || '')
+            : (p.display_name || p.displayName || '');
+
+          const name = cleanName(rawName) || personalName || response.name;
+
+          return {
+            profile_id: profile.profile_id,
+            role: profile.role as UserRole,
+            displayName: name,
+            kyc: {
+              verified: false,
+              documents: [],
+            },
+          };
+        }),
         meta: {
           createdAt: response.created_at,
           updatedAt: response.updated_at,
@@ -362,7 +389,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // For now, let's prioritize backend permissions if present, otherwise derive from active role.
       const permissions = response.permissions || getPermissionsForRole(priorityRole);
 
-      const updated = { ...userData, activeProfileRole: priorityRole, permissions };
+      // Pick the correct name for the root user object based on the active profile
+      const activeProfile = userData.profiles.find(p => p.role.toLowerCase() === priorityRole.toLowerCase()) || userData.profiles[0];
+      const finalName = activeProfile?.displayName || userData.name;
+
+      const updated = { ...userData, name: finalName, activeProfileRole: priorityRole, permissions };
 
       // Fetch profile details for non-buyer profiles
       const updatedWithDetails = await fetchProfileDetails(updated);
@@ -728,24 +759,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const activeRole = user?.activeProfileRole || freshUserData.active_profile_role;
 
         // Map API response to existing User structure (similar to login)
+        const personalName = freshUserData.name || `${freshUserData.first_name} ${freshUserData.last_name}`.trim();
+
+        const cleanName = (val: string) => {
+          if (!val || typeof val !== 'string') return '';
+          const trimmed = val.trim();
+          const lower = trimmed.toLowerCase();
+          const generic = ['vendor', 'merchant', 'business', 'null', 'undefined', 'user'];
+          if (generic.includes(lower) || trimmed.length < 2) return '';
+          return trimmed;
+        };
+
         const userData: User = {
           id: freshUserData.user_id,
           user_id: freshUserData.user_id,
-          name:
-            freshUserData.name ||
-            `${freshUserData.first_name} ${freshUserData.last_name}`,
+          name: personalName || freshUserData.name || `${freshUserData.first_name} ${freshUserData.last_name}`,
           email: freshUserData.email || "",
           activeProfileRole: activeRole,
-          profiles: freshUserData.profiles.map((profile: any) => ({
-            profile_id: profile.profile_id,
-            role: profile.role as UserRole,
-            displayName: profile.display_name || freshUserData.name,
-            kyc: {
-              verified: false,
-              documents: [],
-            },
-            // Add other profile fields based on role
-          })),
+          profiles: freshUserData.profiles.map((profile: any) => {
+            const p = profile as any;
+            const meta = p.metadata || {};
+            const isBusiness = ['vendor', 'merchant', 'business', 'delivery', 'driver'].includes(p.role?.toLowerCase());
+            
+            const rawName = isBusiness 
+              ? (meta.business_name || meta.company_name || meta.shop_name || meta.organization_name || meta.legal_name ||
+                 meta.merchant_name || meta.store_name || meta.partner_name || meta.trading_name || meta.registered_name || meta.name ||
+                 (p.name && p.name !== personalName ? p.name : '') ||
+                 p.business_name || p.company_name || p.shop_name || p.organization_name || p.legal_name ||
+                 p.storeDetails?.storeName || p.storeDetails?.businessName || 
+                 p.display_name || p.displayName || '')
+              : (p.display_name || p.displayName || '');
+
+            const name = cleanName(rawName) || freshUserData.name || personalName;
+
+            return {
+              profile_id: profile.profile_id,
+              role: profile.role as UserRole,
+              displayName: name,
+              kyc: {
+                verified: false,
+                documents: [],
+              },
+            };
+          }),
           meta: {
             createdAt: freshUserData.created_at,
             updatedAt: freshUserData.updated_at,
@@ -755,12 +811,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           permissions: freshUserData.permissions || getPermissionsForRole(activeRole),
           created_at: freshUserData.created_at,
           updated_at: freshUserData.updated_at,
+          is_active: freshUserData.is_active || false,
           is_verified: freshUserData.is_verified || false,
           tenant_id: freshUserData.tenant_id,
           last_login: freshUserData.last_login,
           provider: freshUserData.provider,
           firebase_uid: freshUserData.firebase_uid,
         };
+
+        // Pick the correct name for the root user object based on the active profile
+        const activeProfileObj = userData.profiles.find(p => p.role.toLowerCase() === activeRole.toLowerCase()) || userData.profiles[0];
+        userData.name = activeProfileObj?.displayName || userData.name;
 
         // Fetch profile details for non-buyer profiles
         const updatedWithDetails = await fetchProfileDetails(userData);

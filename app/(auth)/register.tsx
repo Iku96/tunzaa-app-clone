@@ -1,277 +1,419 @@
-import { useState } from "react";
+/**
+ * ============================================================================
+ * REGISTRATION SCREEN (TUNZAA 2.0 RESTORED)
+ * ============================================================================
+ */
+
+import { useState, useEffect } from 'react';
 import {
-  View,
-  Image,
-  Alert,
-  ScrollView,
-  Platform,
-  KeyboardAvoidingView,
-  useWindowDimensions,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { LanguageSelector } from "@/components/modals/LanguageSelector";
-import { PhoneInput } from "@/components/PhoneInput";
-import { Button } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
-import { Checkbox } from "@/components/ui/checkbox";
-import AuthHeader from "@/features/auth/components/AuthHeader";
-import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
-import { useRequestOTP } from "@/services/auth";
-import { useAuthStore } from "@/stores/auth";
-import { useAuth } from "@/context/auth";
-import { setTempPhoneNumber } from "@/utils/storage";
-import { useI18n } from "@/hooks/useI18n";
-import { WebViewScreen } from "@/components/ui/webview";
-import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import { DynamicLogo } from "@/components/ui/DynamicLogo";
-import { usePageTitle } from "@/hooks/usePageTitle";
-import { useTenantStore } from "@/stores/tenant";
-import { API_CONFIG } from "@/services/config";
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    StyleSheet,
+    KeyboardAvoidingView,
+    ScrollView,
+    Platform,
+    Alert,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Global Contexts
+import { useLanguage } from '@/src/contexts/LanguageContext';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 
 export default function RegisterScreen() {
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState({
-    name: "Tanzania",
-    code: "+255",
-    flag: "🇹🇿",
-  });
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [showTermsWebView, setShowTermsWebView] = useState(false);
-  const [showPrivacyWebView, setShowPrivacyWebView] = useState(false);
+    const router = useRouter();
+    const { t } = useLanguage();
 
-  const router = useRouter();
-  const requestOTP = useRequestOTP();
-  const { setRegistrationPhone } = useAuthStore();
-  const { socialLogin } = useAuth();
-  const { t } = useI18n();
-  const { tenant } = useTenantStore();
-  const { width } = useWindowDimensions();
-  const isWide = width >= 768;
-  const resolvedColors = useResolvedThemeColors();
-  usePageTitle("Register");
+    const params = useLocalSearchParams<{ 
+        role: 'buyer' | 'merchant', 
+        pendingOnboarding: string,
+        step: string,
+        first_name: string,
+        last_name: string,
+        phone_number: string,
+    }>();
+    const userRole = params.role || 'buyer';
+    const pendingOnboarding = params.pendingOnboarding || '';
+    const currentStep = params.step || '1';
 
-  const tenantName = tenant?.name || "Marketplace";
-  const fallbackTermsUrl =
-    "https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf";
-  const fallbackPrivacyUrl = "https://www.orimi.com/pdf-test.pdf";
+    const [firstName, setFirstName] = useState(params.first_name || '');
+    const [secondName, setSecondName] = useState(params.last_name || '');
+    const [phone, setPhone] = useState(params.phone_number || '');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-  const getPdfViewerUrl = (url: string) => {
-    if (url.toLowerCase().includes(".pdf")) {
-      const encodedUrl = encodeURIComponent(url);
-      return `https://docs.google.com/viewer?url=${encodedUrl}&embedded=true`;
-    }
-    return url;
-  };
+    const { requestOTP, register, signInWithGoogle, signInWithApple } = useTunzaaAuth();
 
-  const handleContinue = async () => {
-    if (!phoneNumber) {
-      Alert.alert(t("auth.error"), "Please enter your phone number.");
-      return;
-    }
+    const handleBack = () => {
+        router.back();
+    };
 
-    if (!agreeToTerms) {
-      Alert.alert(
-        t("auth.error"),
-        "Please agree to the Terms of Service and Privacy Policy to continue."
-      );
-      return;
-    }
+    const handleCreateAccount = async () => {
+        if (!agreedToTerms) {
+            Alert.alert('Terms Required', 'Please agree to Terms and Conditions');
+            return;
+        }
+        if (!phone || !email || !firstName || !secondName) {
+            Alert.alert('Missing Fields', 'Please fill in all fields (Name, Phone, and Email)');
+            return;
+        }
 
-    const fullPhoneNumber = selectedCountry.code + phoneNumber;
+        const isEmailValid = email.includes('@') && email.includes('.');
+        if (!isEmailValid) {
+            Alert.alert('Invalid Email', 'Please enter a valid email address');
+            return;
+        }
 
-    try {
-      await requestOTP.mutateAsync({
-        phone_number: fullPhoneNumber,
-      });
+        setLoading(true);
+        try {
+            const phoneNumber = phone.startsWith('+') ? phone : `+255${phone.replace(/^0/, '')}`;
+            
+            // Request OTP
+            await requestOTP(phoneNumber);
+            
+            router.push({
+                pathname: '/otp',
+                params: {
+                    phone_number: phoneNumber,
+                    email: email,
+                    flow: 'register',
+                    first_name: firstName,
+                    last_name: secondName,
+                    role: userRole,
+                    nextStep: 'password', // Tell OTP to return here for password
+                },
+            } as any);
+        } catch (e: any) {
+            console.error('❌ OTP request error:', e);
+            Alert.alert('Error', e.message || 'Error requesting verification code.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      setRegistrationPhone(fullPhoneNumber);
-      await setTempPhoneNumber(fullPhoneNumber);
+    const handleFinalRegister = async () => {
+        if (!password || password.length < 6) {
+            Alert.alert('Password Error', 'Password must be at least 6 characters');
+            return;
+        }
 
-      router.push({
-        pathname: "/otp",
-        params: { phone: fullPhoneNumber },
-      });
-    } catch (error: any) {
-      Alert.alert(
-        t("auth.error"),
-        error.response?.data?.message || "Failed to send OTP. Please try again."
-      );
-    }
-  };
+        if (password !== confirmPassword) {
+            Alert.alert('Password Error', 'Passwords do not match');
+            return;
+        }
 
-  const handleSocialAuthSuccess = async (socialData: any) => {
-    try {
-      // console.log("socialData RJ45::", JSON.stringify(socialData, null, 2));
-      // Check if user is new or existing based on the actual data structure
-      const hasNonBuyerProfiles = socialData.profiles?.some((profile: any) => 
-        profile.role !== "buyer" && profile.is_active === true
-      );
-      
-      // Check if user has logged in before (last_login is not null)
-      const hasLoggedInBefore = socialData.last_login !== null;
-      
-      // If user has non-buyer profiles or has logged in before, they're existing
-      if (hasNonBuyerProfiles || hasLoggedInBefore) {
-        // User has existing profiles or has logged in before, log them in directly
-        await socialLogin(socialData);
-        // The useRouting hook will handle navigation based on their activeProfileRole
-        return;
-      } else {
-        // New user (last_login is null, only has buyer profile), send them to complete profile
-        router.push({
-          pathname: "/complete-profile",
-          params: {
-            socialAuth: "true",
-            socialData: JSON.stringify(socialData),
-          },
-        });
-      }
-    } catch (error: any) {
-      Alert.alert(
-        t("auth.error"),
-        "Failed to process social authentication. Please try again."
-      );
-    }
-  };
+        setLoading(true);
+        try {
+            const registrationData = {
+                first_name: firstName,
+                last_name: secondName,
+                phone_number: phone,
+                email: email,
+                password: password,
+            };
 
-  const handleSocialAuthError = (error: any) => {
-    console.error("Social auth error:", error);
-  };
+            const portal = userRole === 'merchant' ? 'merchant' : 'buyer';
+            await register(registrationData, portal);
+            
+            // Set first-time buyer flag to ensure index.tsx routes correctly
+            if (userRole === 'buyer') {
+                await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
+            } else if (userRole === 'merchant') {
+                console.log('📝 [Register] Setting HAS_PENDING_MERCHANT_ONBOARDING for merchant flow');
+                await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
+                await AsyncStorage.setItem('LAST_PORTAL', 'merchant');
+            }
+            
+            // NOTE: We don't call router.replace here anymore to avoid navigation race conditions.
+            // The AuthLayout/RootLayout will detect the authenticated state and redirect to /
+            // which in turn will check the IS_FIRST_TIME_BUYER or HAS_PENDING_MERCHANT_ONBOARDING flag.
+        } catch (e: any) {
+            console.error('❌ Final registration error:', e);
+            
+            // Handle "User already exists" (409 Conflict)
+            const errorMsg = e.message || '';
+            const isAlreadyExists = errorMsg.toLowerCase().includes('already exists') || e.status === 409;
 
-  return (
-    <SafeAreaView className="flex-1 bg-muted">
-      <AuthHeader />
+            if (isAlreadyExists) {
+                if (userRole === 'merchant') {
+                    Alert.alert(
+                        'Account Found',
+                        'You already have a Tunzaa account. Please sign in to continue your merchant application.',
+                        [
+                            {
+                                text: 'Sign In',
+                                onPress: () => router.replace({ 
+                                    pathname: '/login', 
+                                    params: { 
+                                        role: 'merchant',
+                                        phone_number: phoneOrEmail 
+                                    } 
+                                })
+                            }
+                        ]
+                    );
+                } else {
+                    Alert.alert(
+                        'Account Found',
+                        'This phone number is already registered. Please sign in to your account.',
+                        [
+                            {
+                                text: 'Sign In',
+                                onPress: () => router.replace({ 
+                                    pathname: '/login', 
+                                    params: { 
+                                        phone_number: phoneOrEmail 
+                                    } 
+                                })
+                            }
+                        ]
+                    );
+                }
+            } else {
+                Alert.alert('Registration Error', e.message || 'Error creating account.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
-      >
-        <ScrollView
-          className="flex-1"
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: isWide ? "center" : "flex-start",
-            alignItems: isWide ? "center" : "stretch",
-            paddingVertical: 32,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View
-            className={`w-full ${
-              isWide
-                ? "max-w-md rounded-2xl bg-white border border-border px-8 py-10"
-                : "px-6"
-            }`}
-          >
-            <Text className="text-4xl font-bold text-foreground mb-2 text-center">
-              {t("auth.welcome", { tenantName })}
-            </Text>
-            <Text className="text-base text-muted-foreground mb-8 text-center">
-              {t("auth.enter_or_create_account")}
-            </Text>
+    const handleSocialLogin = async (provider: string) => {
+        setLoading(true);
+        try {
+            if (provider === 'google') await signInWithGoogle();
+            else if (provider === 'apple') await signInWithApple();
+        } catch (e: any) {
+            console.error('❌ Social login error:', e);
+            Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}.`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            <View className="gap-6">
-              {/* <SocialAuthButtons
-                onSuccess={handleSocialAuthSuccess}
-                onError={handleSocialAuthError}
-                disabled={requestOTP.isPending}
-              /> */}
+    const handleSkip = () => {
+        router.replace('/(buyer)');
+    };
 
-              {/* <View className="flex-row items-center gap-4 my-2">
-                <View className="flex-1 h-px bg-border" />
-                <Text className="text-sm text-muted-foreground px-2">
-                  {t("auth.or")}
-                </Text>
-                <View className="flex-1 h-px bg-border" />
-              </View> */}
-
-              <PhoneInput
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                selectedCountry={selectedCountry}
-                onCountryChange={setSelectedCountry}
-                label={t("auth.phone_number")}
-                required
-              />
-
-              <View className="flex-row justify-start items-center space-x-3 mr-2">
-                <Checkbox
-                  checked={agreeToTerms}
-                  onCheckedChange={setAgreeToTerms}
-                  className="mt-1"
-                />
-                <View className="flex-1 pt-0.5">
-                  <Text className="text-sm text-muted-foreground leading-5 ml-2">
-                    I agree to the{" "}
-                    <Text
-                      className="text-primary  text-sm underline"
-                      onPress={() => setShowTermsWebView(true)}
-                    >
-                      Terms of Service
-                    </Text>{" "}
-                    and{" "}
-                    <Text
-                      className="text-primary text-sm underline"
-                      onPress={() => setShowPrivacyWebView(true)}
-                    >
-                      Privacy Policy
-                    </Text>
-                    .
-                  </Text>
-                </View>
-              </View>
-
-              <Button
-                variant="default"
-                className="w-full mt-2"
-                onPress={handleContinue}
-                disabled={!phoneNumber || !agreeToTerms || requestOTP.isPending}
-              >
-                <Text className="text-base font-semibold text-primary">
-                  {requestOTP.isPending ? t("auth.sending") : t("auth.continue")}
-                </Text>
-              </Button>
-            </View>
-              <View className="flex-row justify-center items-center mt-6">
-                <Text className="text-sm text-muted-foreground">
-                  {t("auth.already_have_account")}{" "}
-                </Text>
-                <Button
-                  variant="link"
-                  className="p-0"
-                  onPress={() => router.push("/login")}
+    return (
+        <SafeAreaView style={styles.safe}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
                 >
-                  <Text className="text-sm font-semibold text-primary">
-                    {t("auth.log_in")}
-                  </Text>
-                </Button>
-              </View>
-            <DynamicLogo width={120} height={40} className="self-center mt-10" />
-          </View>
+                    <View style={styles.container}>
+                        <View style={styles.contentWrapper}>
+                            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                                <Ionicons name="arrow-back" size={24} color="#1D1E1F" />
+                            </TouchableOpacity>
 
-          {showTermsWebView && (
-            <View className="absolute inset-0 z-50">
-              <WebViewScreen
-                url={getPdfViewerUrl(fallbackTermsUrl)}
-                title="Terms of Service"
-                onClose={() => setShowTermsWebView(false)}
-              />
-            </View>
-          )}
+                            <View style={styles.header}>
+                                <Text style={styles.title}>
+                                    {currentStep === 'password' 
+                                        ? 'Verify and Create Password' 
+                                        : (userRole === 'merchant' ? t.registerTitleMerchant : t.registerTitleBuyer)}
+                                </Text>
+                                <Text style={styles.subtitle}>
+                                    {currentStep === 'password' 
+                                        ? 'Set a secure password for your account' 
+                                        : t.registerSubtitleEmpty}
+                                </Text>
+                            </View>
 
-          {showPrivacyWebView && (
-            <View className="absolute inset-0 z-50">
-              <WebViewScreen
-                url={getPdfViewerUrl(fallbackPrivacyUrl)}
-                title="Privacy Policy"
-                onClose={() => setShowPrivacyWebView(false)}
-              />
-            </View>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+                            <View style={styles.logoContainer}>
+                                <Image
+                                    source={require('@/assets/blue-tunzaa-logo.png')}
+                                    style={styles.logo}
+                                    resizeMode="contain"
+                                />
+                            </View>
+
+                            <View style={styles.formContainer}>
+                                {currentStep === '1' ? (
+                                    <>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder={t.registerFirstNamePlaceholder}
+                                            placeholderTextColor="#9CA3AF"
+                                            value={firstName}
+                                            onChangeText={setFirstName}
+                                        />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder={t.registerLastNamePlaceholder}
+                                            placeholderTextColor="#9CA3AF"
+                                            value={secondName}
+                                            onChangeText={setSecondName}
+                                        />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder={t.registerPhoneEmailPlaceholder.split('/')[0] || "Phone Number"}
+                                            placeholderTextColor="#9CA3AF"
+                                            value={phone}
+                                            onChangeText={setPhone}
+                                            keyboardType="phone-pad"
+                                        />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Email Address"
+                                            placeholderTextColor="#9CA3AF"
+                                            value={email}
+                                            onChangeText={setEmail}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <View style={styles.passwordContainer}>
+                                            <TextInput
+                                                style={styles.passwordInput}
+                                                placeholder={t.registerPasswordPlaceholder}
+                                                placeholderTextColor="#9CA3AF"
+                                                value={password}
+                                                onChangeText={setPassword}
+                                                secureTextEntry={!showPassword}
+                                                autoCapitalize="none"
+                                            />
+                                            <TouchableOpacity
+                                                onPress={() => setShowPassword(!showPassword)}
+                                                style={styles.eyeIcon}
+                                            >
+                                                <Ionicons
+                                                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                                                    size={20}
+                                                    color="#9CA3AF"
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        <View style={styles.passwordContainer}>
+                                            <TextInput
+                                                style={styles.passwordInput}
+                                                placeholder="Confirm Password"
+                                                placeholderTextColor="#9CA3AF"
+                                                value={confirmPassword}
+                                                onChangeText={setConfirmPassword}
+                                                secureTextEntry={!showConfirmPassword}
+                                                autoCapitalize="none"
+                                            />
+                                            <TouchableOpacity
+                                                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                style={styles.eyeIcon}
+                                            >
+                                                <Ionicons
+                                                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                                                    size={20}
+                                                    color="#9CA3AF"
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </>
+                                )}
+                            </View>
+
+                            {currentStep === '1' && (
+                                <TouchableOpacity
+                                    style={styles.termsContainer}
+                                    onPress={() => setAgreedToTerms(!agreedToTerms)}
+                                >
+                                    <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+                                        {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                    </View>
+                                    <Text style={styles.termsText}>
+                                        {t.loginAgreedTerms}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+
+                            <TouchableOpacity 
+                                style={styles.createButton} 
+                                onPress={currentStep === 'password' ? handleFinalRegister : handleCreateAccount} 
+                                disabled={loading}
+                            >
+                                <Text style={styles.createButtonText}>
+                                    {loading ? '...' : (currentStep === 'password' ? 'Complete Account' : t.registerButton)}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.dividerRow}>
+                                <View style={styles.dividerLine} />
+                                <Text style={styles.dividerText}>{t.loginOrContinue}</Text>
+                                <View style={styles.dividerLine} />
+                            </View>
+
+                            <View style={styles.socialContainer}>
+                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
+                                    <FontAwesome name="google" size={19} color="#EA4335" />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
+                                    <Ionicons name="logo-apple" size={20} color="#1D1E1F" />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
+                                    <FontAwesome name="facebook-f" size={20} color="#1877F2" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <TouchableOpacity onPress={() => router.replace({ pathname: '/login', params: { role: userRole } })} style={styles.loginContainer}>
+                                <Text style={styles.loginText}>{t.registerAlreadyAccount}</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+                            <Text style={styles.skipText}>{t.loginSkip}</Text>
+                            <Text style={styles.skipArrow}>→</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
+    );
 }
+
+const styles = StyleSheet.create({
+    safe: { flex: 1, backgroundColor: '#FFFFFF' },
+    scrollContent: { flexGrow: 1 },
+    container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 24, paddingTop: 20, justifyContent: 'space-between', paddingBottom: 20 },
+    backButton: { marginBottom: 20 },
+    header: { alignItems: 'center' },
+    title: { fontSize: 20, fontWeight: '600', color: '#1D1E1F', textAlign: 'center' },
+    subtitle: { marginTop: 9, fontSize: 14, color: '#666666', textAlign: 'center' },
+    logoContainer: { alignItems: 'center', marginTop: 22, marginBottom: 18 },
+    logo: { width: 170, height: 60 },
+    formContainer: { gap: 16 },
+    input: { height: 54, backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1F2937' },
+    passwordContainer: { height: 54, backgroundColor: '#F3F4F6', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 },
+    passwordInput: { flex: 1, fontSize: 16, color: '#1D1E1F' },
+    eyeIcon: { padding: 4 },
+    termsContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 14 },
+    checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
+    checkboxChecked: { backgroundColor: '#425BA4', borderColor: '#425BA4' },
+    termsText: { fontSize: 13, color: '#666666', flex: 1 },
+    createButton: { height: 47, marginTop: 19, backgroundColor: '#425BA4', borderRadius: 40, alignItems: 'center', justifyContent: 'center' },
+    createButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+    dividerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 18, marginBottom: 16 },
+    dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
+    dividerText: { marginHorizontal: 12, fontSize: 12, color: '#666666' },
+    socialContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginBottom: 18 },
+    socialButton: { flex: 1, height: 46, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', alignItems: 'center', justifyContent: 'center' },
+    loginContainer: { alignItems: 'center', marginTop: 6 },
+    loginText: { fontSize: 13, color: '#1D1E1F', fontWeight: '600' },
+    skipButton: { width: 190, height: 54, borderRadius: 1000, flexDirection: 'row', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 18 },
+    skipText: { fontSize: 16, fontWeight: '500', color: '#3B5191' },
+    skipArrow: { fontSize: 20, color: '#3B5191' },
+    contentWrapper: { width: '100%', maxWidth: 353, alignSelf: 'center' },
+});

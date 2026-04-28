@@ -1,0 +1,358 @@
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, ScrollView, StatusBar, FlatList } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useRef, useMemo } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTunzaaAuth } from '../src/contexts/TunzaaAuthContext';
+
+const { width, height } = Dimensions.get('window');
+
+// Define slides data
+import { useLanguage } from '../src/contexts/LanguageContext';
+
+export default function MauzoIntro() {
+    const router = useRouter();
+    const { t } = useLanguage();
+    const { flow } = useLocalSearchParams<{ flow: string }>();
+    const { isAuthenticated, user, createVendor, refreshProfile } = useTunzaaAuth();
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const flatListRef = useRef<FlatList>(null);
+
+    // Define slides data inside the component to use translations
+    const SLIDES = useMemo(() => [
+        {
+            id: '1',
+            title: t.mauzoSlide1Title,
+            description: t.mauzoSlide1Desc,
+            image: require('@/assets/mauzo-intro-illustration.png'),
+        },
+        {
+            id: '2',
+            title: t.mauzoSlide2Title,
+            description: t.mauzoSlide2Desc,
+            image: require('@/assets/mauzo-intro-illustration screen 2.png'),
+        },
+        {
+            id: '3',
+            title: t.mauzoSlide3Title,
+            description: t.mauzoSlide3Desc,
+            image: require('@/assets/mauzo-intro-illustration screen 3.png'),
+        },
+        {
+            id: '4',
+            title: t.mauzoSlide4Title,
+            description: t.mauzoSlide4Desc,
+            image: require('@/assets/mauzo-intro-illustration screen 4.png'),
+        },
+    ], [t]);
+
+    const handleBack = () => {
+        if (currentIndex > 0) {
+            flatListRef.current?.scrollToIndex({ index: currentIndex - 1 });
+        } else {
+            router.back();
+        }
+    };
+
+    const handleCreateAccount = async () => {
+        if (flow === 'delivery') {
+            router.push('/delivery-register');
+        } else {
+            if (isAuthenticated) {
+                // If already logged in as a buyer, create a shell vendor profile
+                try {
+                    const vendorData = {
+                        business_name: `${user?.first_name || 'My'}'s Store`,
+                        metadata: {
+                            onboarding_status: 'incomplete'
+                        }
+                    };
+                    await createVendor(vendorData);
+                    await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
+                    await AsyncStorage.setItem('LAST_PORTAL', 'merchant');
+                    await refreshProfile();
+                    router.replace('/(vendor)/onboarding/step-1');
+                } catch (e: any) {
+                    console.error('❌ [MauzoIntro] Failed to create shell vendor:', e);
+                    // Fallback to register if something goes wrong, though user exists
+                    router.push({ pathname: '/register', params: { role: 'merchant' } });
+                }
+            } else {
+                // Register an account first, then collect shop details
+                router.push({ pathname: '/register', params: { role: 'merchant' } });
+            }
+        }
+    };
+
+    const handleSkip = () => {
+        if (flow === 'delivery') {
+            router.push('/delivery-login');
+        } else {
+            if (isAuthenticated) {
+                // Already authenticated, just treat as "Create Account"
+                handleCreateAccount();
+            } else {
+                // Register an account first
+                router.push({ pathname: '/login', params: { role: 'merchant' } });
+            }
+        }
+    };
+
+    // Update current index on scroll
+    const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
+        if (viewableItems.length > 0) {
+            setCurrentIndex(viewableItems[0].index);
+        }
+    }).current;
+
+    const viewabilityConfig = useRef({
+        itemVisiblePercentThreshold: 50,
+    }).current;
+
+    const renderItem = ({ item }: { item: typeof SLIDES[0] }) => (
+        <View style={styles.slide}>
+            <ScrollView 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingBottom: 20 }}
+                style={{ width: '100%' }}
+            >
+                {/* Illustration Area */}
+                <View style={styles.imageContainer}>
+                    <Image
+                        source={item.image}
+                        style={styles.illustration}
+                        resizeMode="contain"
+                    />
+                </View>
+
+                {/* Text Content */}
+                <View style={styles.textWrapper}>
+                    <Text style={styles.title}>
+                        {item.title}
+                    </Text>
+                    <Text style={styles.description}>
+                        {item.description}
+                    </Text>
+                </View>
+            </ScrollView>
+        </View>
+    );
+
+    return (
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" />
+
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                    <ArrowLeft size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>{t.mauzoHeader}</Text>
+                {/* Balance view for center alignment */}
+                <View style={{ width: 40 }} />
+            </View>
+
+            {/* Carousel */}
+            <FlatList
+                ref={flatListRef}
+                data={SLIDES}
+                renderItem={renderItem}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item) => item.id}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                scrollEventThrottle={32}
+                bounces={false}
+                style={{ flex: 1 }}
+            />
+
+            {/* Fixed Bottom Section */}
+            <View style={styles.bottomSection}>
+
+                {/* Pagination Dots */}
+                <View style={styles.pagination}>
+                    {SLIDES.map((_, index) => (
+                        <View
+                            key={index}
+                            style={[
+                                styles.dot,
+                                currentIndex === index ? styles.activeDot : styles.inactiveDot,
+                            ]}
+                        />
+                    ))}
+                </View>
+
+                {/* Main Action Button */}
+                <TouchableOpacity
+                    style={styles.createButton}
+                    onPress={handleCreateAccount}
+                    activeOpacity={0.8}
+                >
+                    <Text style={styles.createButtonText}>{t.mauzoCreateAccount}</Text>
+                </TouchableOpacity>
+
+                {/* Skip Link */}
+                <View style={styles.secondaryActions}>
+                    <TouchableOpacity
+                        style={styles.skipButton}
+                        onPress={handleSkip}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.skipText}>{t.loginSkip}</Text>
+                        <ArrowRight size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+
+                    <View style={styles.divider} />
+
+                    <TouchableOpacity
+                        onPress={() => flow === 'delivery' ? router.push('/delivery-login') : router.push({ pathname: '/login', params: { role: 'merchant' } })}
+                        style={styles.loginLink}
+                    >
+                        <Text style={styles.loginText}>{t.mauzoAlreadyAccount} <Text style={styles.loginTextBold}>{t.mauzoSignIn}</Text></Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#425BA4', // Confirmed Tunzaa Blue
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 60, // Status bar spacing
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+    },
+    backButton: {
+        padding: 8,
+        marginLeft: -8,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontFamily: 'Gilroy-SemiBold',
+        fontWeight: '600',
+        color: '#FFFFFF',
+        textAlign: 'center',
+    },
+    slide: {
+        width: width,
+        flex: 1,
+        alignItems: 'center',
+        paddingHorizontal: 24,
+    },
+    imageContainer: {
+        flex: 1, // Changed from fixed height to flexible
+        minHeight: 250, // Ensure it never completely disappears
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        marginTop: 10,
+    },
+    illustration: {
+        width: '100%',
+        height: '100%',
+        maxHeight: 300, // Limit max size so it doesn't push text too far
+    },
+    textWrapper: {
+        alignItems: 'center',
+        paddingVertical: 10,
+        width: '100%',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#FFFFFF',
+        marginBottom: 12,
+        textAlign: 'center',
+        fontFamily: 'Gilroy-Bold',
+    },
+    description: {
+        fontSize: 14,
+        color: '#E0E7FF',
+        textAlign: 'center',
+        lineHeight: 22,
+        paddingHorizontal: 10,
+        fontFamily: 'System',
+        fontWeight: '400',
+    },
+    bottomSection: {
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        paddingBottom: 40,
+    },
+    pagination: {
+        flexDirection: 'row',
+        gap: 8,
+        marginBottom: 30,
+        marginTop: 10,
+    },
+    dot: {
+        height: 4,
+        borderRadius: 2,
+    },
+    activeDot: {
+        width: 32,
+        backgroundColor: '#4ade80',
+    },
+    inactiveDot: {
+        width: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    createButton: {
+        width: '100%',
+        maxWidth: 320,
+        height: 52,
+        borderRadius: 26,
+        borderWidth: 1.5,
+        borderColor: '#01AC00',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    createButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    secondaryActions: {
+        width: '100%',
+        alignItems: 'center',
+    },
+    skipButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        padding: 10,
+    },
+    skipText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    divider: {
+        height: 1,
+        width: '40%',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        marginVertical: 15,
+    },
+    loginLink: {
+        padding: 5,
+    },
+    loginText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontFamily: 'System',
+    },
+    loginTextBold: {
+        fontWeight: '700',
+        textDecorationLine: 'underline',
+    },
+});

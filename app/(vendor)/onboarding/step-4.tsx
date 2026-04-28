@@ -4,14 +4,15 @@ import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
-import { useLanguage } from '@/context/LanguageContext';
+import { useLanguage } from '@/src/contexts/LanguageContext';
 import { uploadApi } from '@/services/upload';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 type DocType = 'license' | 'tin' | 'brela' | null;
 
-export default function Step5Documents() {
+export default function Step4Documents() {
     const router = useRouter();
     const { isAuthenticated, isLoading, createVendor, submitVendorKyc, refreshProfile, user } = useTunzaaAuth();
     const { t } = useLanguage();
@@ -53,7 +54,6 @@ export default function Step5Documents() {
             console.log('⏳ [Step4] No authenticated user yet, checking for pending onboarding...');
 
             try {
-                const AsyncStorage = require('@react-native-async-storage/async-storage').default;
 
                 const [
                     lastPortal,
@@ -95,7 +95,6 @@ export default function Step5Documents() {
         setLoading(true);
         try {
             // Retrieve persisted shop details
-            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
             const [savedShopName, savedPhone, savedDesc, savedLogo, savedCover, savedLocationStr] = await Promise.all([
                 AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_PHONE'),
@@ -163,7 +162,8 @@ export default function Step5Documents() {
                     municipal: location?.municipal || '',
                     ward: location?.ward || '',
                     extraInfo: location?.extraInfo || '',
-                    location: location // Store the whole object for convenience
+                    location: location, // Store the whole object for convenience
+                    onboarding_status: 'complete'
                 },
                 store: {
                     store_name: finalShopName,
@@ -208,6 +208,9 @@ export default function Step5Documents() {
             // 3. Create Vendor
             await createVendor(vendorData);
             console.log('✅ [Step5] Vendor profile created successfully!');
+            
+            // Explicitly refresh profile to ensure the new vendor state is propagated
+            await refreshProfile().catch(e => console.log('⚠️ [Step5] Background profile refresh failed:', e.message));
 
             // 4. Upload Documents if any were picked
             const documentsToUpload = [
@@ -219,6 +222,7 @@ export default function Step5Documents() {
             if (documentsToUpload.length > 0) {
                 console.log(`📤 [Step5] Uploading ${documentsToUpload.length} documents...`);
                 const uploadedDocs = [];
+                const uploadErrors: string[] = [];
                 
                 for (const doc of documentsToUpload) {
                     try {
@@ -231,6 +235,7 @@ export default function Step5Documents() {
                         });
                     } catch (e: any) {
                         console.error(`❌ [Step5] Failed to upload ${doc.label}:`, e);
+                        uploadErrors.push(`${doc.label}: ${e.apiError?.message || e.message || 'Upload failed'}`);
                     }
                 }
 
@@ -238,7 +243,16 @@ export default function Step5Documents() {
                     console.log('📄 [Step5] Submitting KYC documents...');
                     await submitVendorKyc(uploadedDocs).catch(e => {
                         console.error('❌ [Step5] KYC Submission failed:', e);
+                        uploadErrors.push(`KYC Submit: ${e.apiError?.message || e.message}`);
                     });
+                }
+
+                if (uploadErrors.length > 0) {
+                    Alert.alert(
+                        'Partial Completion',
+                        `Your vendor profile was created, but some documents failed to upload:\n\n${uploadErrors.join('\n')}\n\nYou can upload these later from your business profile.`,
+                        [{ text: 'OK' }]
+                    );
                 }
             }
 
@@ -250,9 +264,11 @@ export default function Step5Documents() {
                 AsyncStorage.removeItem('TEMP_ONBOARDING_LOGO'),
                 AsyncStorage.removeItem('TEMP_ONBOARDING_COVER'),
                 AsyncStorage.removeItem('TEMP_ONBOARDING_LOCATION'),
+                AsyncStorage.removeItem('HAS_PENDING_MERCHANT_ONBOARDING'),
             ]);
 
-            // Note: refreshProfile() is now handled universally by TunzaaAuthContext mutations
+            // Final refresh to ensure everything is in sync
+            await refreshProfile().catch(() => null);
             setShowSuccessModal(true);
         } catch (error: any) {
             console.error('❌ [Step5] Failed to finalize vendor:', error);
@@ -265,7 +281,7 @@ export default function Step5Documents() {
 
     const handleFinishOnboarding = () => {
         setShowSuccessModal(false);
-        router.replace('/(merchant)' as any);
+        router.replace('/(vendor)' as any);
     };
 
     // ACCORDION ITEM

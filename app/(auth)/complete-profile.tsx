@@ -32,6 +32,8 @@ import { useCreateAffiliate } from "@/services/affiliates";
 import { useAuthStore } from "@/stores/auth";
 import { navigateToRoleHome } from "@/utils/navigation";
 import { getTempPhoneNumber, clearTempPhoneNumber, setNewlyRegisteredFlag } from "@/utils/storage";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_CONFIG } from "@/services/config";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTenantModules } from "@/hooks/useTenantModules";
@@ -50,6 +52,7 @@ type Step = "basic-info" | "role-selection" | "role-form";
 
 export default function CompleteProfileScreen() {
   const { userType, error, register, setUserType, login, socialLogin } = useAuth();
+  const { user: tunzaaUser, isAuthenticated: isTunzaaAuthenticated } = useTunzaaAuth();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>("basic-info");
@@ -104,6 +107,22 @@ export default function CompleteProfileScreen() {
     }
   }, [params.socialAuth, params.socialData]);
 
+  // BRIDGE: Detect if user just came from Tunzaa registration flow
+  useEffect(() => {
+    if (isTunzaaAuthenticated && tunzaaUser && !registrationData && !isSocialAuth) {
+      console.log("🌉 [CompleteProfile] Bridging TunzaaAuth user data...");
+      setRegistrationData({
+        userData: {
+          name: `${tunzaaUser.first_name || ''} ${tunzaaUser.last_name || ''}`.trim(),
+          email: tunzaaUser.email || '',
+          password: '', // Password already set in previous step
+        },
+        isRegistered: true,
+      });
+      setCurrentStep("role-selection");
+    }
+  }, [isTunzaaAuthenticated, tunzaaUser, isSocialAuth]);
+
   useEffect(() => {
     const loadPhoneNumber = async () => {
       const tempPhone = await getTempPhoneNumber();
@@ -139,17 +158,17 @@ export default function CompleteProfileScreen() {
 
     setIsSubmitting(true);
     try {
-      if (isSocialAuth) {
-        // For social auth, we need to call socialLogin to authenticate the user
-        setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
-        await socialLogin(socialAuthData);
+      if (isSocialAuth || registrationData.isRegistered) {
+        // User is already authenticated or registered
+        if (isSocialAuth) {
+            setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
+            await socialLogin(socialAuthData);
+        }
         
-        // Set newly registered flag for referral modal
         await setNewlyRegisteredFlag();
-        
+        await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
         setRegistrationProgress({ step: 'done', message: 'Success!' });
-        // The useRouting hook will handle navigation based on their activeProfileRole
-        // No need to manually navigate
+        navigateToRoleHome(router, "buyer");
       } else {
         // Regular registration flow - register user first
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
@@ -176,12 +195,9 @@ export default function CompleteProfileScreen() {
 
         clearRegistrationState();
         await clearTempPhoneNumber();
-
-        // Set newly registered flag for referral modal
         await setNewlyRegisteredFlag();
-
+        await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
         setRegistrationProgress({ step: 'done', message: 'Success!' });
-        // Navigate to buyer home
         navigateToRoleHome(router, "buyer");
       }
     } catch (err: any) {
@@ -207,9 +223,9 @@ export default function CompleteProfileScreen() {
       const lastName = nameParts.slice(1).join(" ") || firstName;
       const storeSlug = generateStoreSlug(data.businessName);
 
-      // Step 1: Register user (if not social auth)
-      if (isSocialAuth) {
-        userId = socialAuthData.user_id;
+      // Step 1: Register user (if not already registered)
+      if (isSocialAuth || registrationData.isRegistered) {
+        userId = socialAuthData?.user_id || tunzaaUser?.user_id || tunzaaUser?.id;
       } else {
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
         
@@ -230,10 +246,10 @@ export default function CompleteProfileScreen() {
       setRegistrationProgress({ step: 'creating-profile', message: 'Setting up your vendor profile...' });
       
       await createVendor.mutateAsync({
-        userId: userId,
+        userId: userId || "",
         data: {
           user: {
-            user_id: userId,
+            user_id: userId || "",
             first_name: firstName,
             last_name: lastName,
             email: registrationData.userData.email,
@@ -280,23 +296,21 @@ export default function CompleteProfileScreen() {
         },
       });
 
-      // Step 3: Login
-      setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
-      
-      clearRegistrationState();
-      await clearTempPhoneNumber();
-
-      if (isSocialAuth) {
-        await socialLogin(socialAuthData);
-        await setNewlyRegisteredFlag();
-      } else {
+      // Step 3: Login (if not already authenticated)
+      if (!isSocialAuth && !registrationData.isRegistered) {
+        setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
+        clearRegistrationState();
+        await clearTempPhoneNumber();
         const identifier = registrationData.userData.email || cachedPhoneNumber || "";
         await login(identifier, registrationData.userData.password);
-        await setNewlyRegisteredFlag();
-        navigateToRoleHome(router, "vendor");
+      } else if (isSocialAuth) {
+        await socialLogin(socialAuthData);
       }
       
+      await setNewlyRegisteredFlag();
+      await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
       setRegistrationProgress({ step: 'done', message: 'Success!' });
+      navigateToRoleHome(router, "vendor");
     } catch (err: any) {
       setRegistrationProgress({ step: 'idle', message: '' });
       
@@ -305,7 +319,6 @@ export default function CompleteProfileScreen() {
       let errorMessage = err.message || "An error occurred";
       
       if (userId && registrationProgress.step === 'creating-profile') {
-        // Registration succeeded but vendor profile creation failed
         errorTitle = "Profile Creation Failed";
         errorMessage = "Your account was created, but we couldn't complete your vendor profile. Please try logging in or contact support.";
       }
@@ -326,9 +339,9 @@ export default function CompleteProfileScreen() {
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || firstName;
 
-      // Step 1: Register user (if not social auth)
-      if (isSocialAuth) {
-        userId = socialAuthData.user_id;
+      // Step 1: Register user (if not already registered)
+      if (isSocialAuth || registrationData.isRegistered) {
+        userId = socialAuthData?.user_id || tunzaaUser?.user_id || tunzaaUser?.id;
       } else {
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
         
@@ -362,27 +375,25 @@ export default function CompleteProfileScreen() {
       };
 
       await createDeliveryPartner.mutateAsync({
-        userId: userId,
+        userId: userId || "",
         data: deliveryData,
       });
 
-      // Step 3: Login
-      setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
-      
-      clearRegistrationState();
-      await clearTempPhoneNumber();
-
-      if (isSocialAuth) {
-        await socialLogin(socialAuthData);
-        await setNewlyRegisteredFlag();
-      } else {
+      // Step 3: Login (if not already authenticated)
+      if (!isSocialAuth && !registrationData.isRegistered) {
+        setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
+        clearRegistrationState();
+        await clearTempPhoneNumber();
         const identifier = registrationData.userData.email || cachedPhoneNumber || "";
         await login(identifier, registrationData.userData.password);
-        await setNewlyRegisteredFlag();
-        navigateToRoleHome(router, "delivery");
+      } else if (isSocialAuth) {
+        await socialLogin(socialAuthData);
       }
       
+      await setNewlyRegisteredFlag();
+      await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
       setRegistrationProgress({ step: 'done', message: 'Success!' });
+      navigateToRoleHome(router, "delivery");
     } catch (err: any) {
       setRegistrationProgress({ step: 'idle', message: '' });
       
@@ -412,9 +423,9 @@ export default function CompleteProfileScreen() {
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || firstName;
 
-      // Step 1: Register user (if not social auth)
-      if (isSocialAuth) {
-        userId = socialAuthData.user_id;
+      // Step 1: Register user (if not already registered)
+      if (isSocialAuth || registrationData.isRegistered) {
+        userId = socialAuthData?.user_id || tunzaaUser?.user_id || tunzaaUser?.id;
       } else {
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
         
@@ -441,7 +452,7 @@ export default function CompleteProfileScreen() {
 
       await createAffiliate.mutateAsync({
         tenant_id: API_CONFIG.TENANT_ID,
-        user_id: userId,
+        user_id: userId || "",
         name: registrationData.userData.name,
         email: registrationData.userData.email,
         phone: cachedPhoneNumber || "",
@@ -450,89 +461,26 @@ export default function CompleteProfileScreen() {
         social_media: Object.keys(socialMedia).length > 0 ? socialMedia : undefined,
       });
 
-      // Step 3: Login
-      setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
-      
-      clearRegistrationState();
-      await clearTempPhoneNumber();
-
-      if (isSocialAuth) {
-        await socialLogin(socialAuthData);
-        await setNewlyRegisteredFlag();
-      } else {
+      // Step 3: Login (if not already authenticated)
+      if (!isSocialAuth && !registrationData.isRegistered) {
+        setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
+        clearRegistrationState();
+        await clearTempPhoneNumber();
         const identifier = registrationData.userData.email || cachedPhoneNumber || "";
         await login(identifier, registrationData.userData.password);
-        await setNewlyRegisteredFlag();
-        navigateToRoleHome(router, "winga");
+      } else if (isSocialAuth) {
+        await socialLogin(socialAuthData);
       }
       
+      await setNewlyRegisteredFlag();
+      await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
       setRegistrationProgress({ step: 'done', message: 'Success!' });
+      navigateToRoleHome(router, "affiliate" as any);
     } catch (err: any) {
       setRegistrationProgress({ step: 'idle', message: '' });
-      
-      // Enhanced error handling
-      let errorTitle = "Registration Failed";
-      let errorMessage = err.message || "An error occurred";
-      
-      if (userId && registrationProgress.step === 'creating-profile') {
-        errorTitle = "Profile Creation Failed";
-        errorMessage = "Your account was created, but we couldn't complete your affiliate profile. Please try logging in or contact support.";
-      }
-      
-      Alert.alert(errorTitle, errorMessage);
+      Alert.alert("Registration Failed", err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const renderRoleSelection = () => {
-    const { isAffiliatesEnabled } = useTenantModules();
-    const roles = [
-      { key: "buyer", title: "Buyer", description: "Shop and purchase products" },
-      { key: "vendor", title: "Vendor", description: "Sell your products online" },
-      { key: "delivery", title: "Delivery Partner", description: "Deliver products to customers" },
-      { key: "winga", title: "Affiliate", description: "Earn by promoting products" },
-    ].filter((role) => {
-      // Exclude 'winga' and 'delivery' roles on web
-      if (Platform.OS === "web") {
-        return role.key !== "winga" && role.key !== "delivery";
-      }
-      // Include or exclude 'winga' based on tenant module config
-      if (role.key === "winga" && !isAffiliatesEnabled) {
-        return false;
-      }
-      return true;
-    });
-
-    return (
-      <View style={styles.roleContainer}>
-        <Text className="text-lg font-semibold text-foreground mb-4">
-          Select Your Role
-        </Text>
-        {roles.map((role) => (
-          <TouchableOpacity
-            className="bg-muted-foreground rounded-lg p-4 border-2 border-border"
-            key={role.key}
-            onPress={() => handleRoleSelection(role.key as UserRole)}
-          >
-            <Text className="text-base font-semibold mb-1">{role.title}</Text>
-            <Text className="text-sm">{role.description}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
-
-  const renderRoleForm = () => {
-    switch (userType) {
-      case "vendor":
-        return <VendorForm onSubmit={handleVendorSubmit} isLoading={isSubmitting} />;
-      case "delivery":
-        return <DeliveryForm onSubmit={handleDeliverySubmit} isLoading={isSubmitting} />;
-      case "winga":
-        return <AffiliateForm onSubmit={handleAffiliateSubmit} isLoading={isSubmitting} />;
-      default:
-        return null;
     }
   };
 
@@ -541,9 +489,52 @@ export default function CompleteProfileScreen() {
       case "basic-info":
         return <BuyerForm onSubmit={handleBasicInfoSubmit} isLoading={isSubmitting} />;
       case "role-selection":
-        return renderRoleSelection();
+        return (
+          <View style={styles.roleContainer}>
+            <TouchableOpacity
+              className="p-4 bg-primary/10 rounded-xl border border-primary/20"
+              onPress={() => handleRoleSelection("buyer")}
+            >
+              <Text className="text-lg font-semibold text-primary">Buyer</Text>
+              <Text className="text-sm text-muted-foreground">Shop for products on Tunzaa</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="p-4 bg-primary/10 rounded-xl border border-primary/20"
+              onPress={() => handleRoleSelection("vendor")}
+            >
+              <Text className="text-lg font-semibold text-primary">Vendor</Text>
+              <Text className="text-sm text-muted-foreground">Sell your products on Tunzaa</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="p-4 bg-primary/10 rounded-xl border border-primary/20"
+              onPress={() => handleRoleSelection("delivery")}
+            >
+              <Text className="text-lg font-semibold text-primary">Delivery Partner</Text>
+              <Text className="text-sm text-muted-foreground">Deliver orders to customers</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="p-4 bg-primary/10 rounded-xl border border-primary/20"
+              onPress={() => handleRoleSelection("winga")}
+            >
+              <Text className="text-lg font-semibold text-primary">Affiliate (Winga)</Text>
+              <Text className="text-sm text-muted-foreground">Earn commissions by referring sales</Text>
+            </TouchableOpacity>
+          </View>
+        );
       case "role-form":
-        return renderRoleForm();
+        switch (userType) {
+          case "vendor":
+            return <VendorForm onSubmit={handleVendorSubmit} isLoading={isSubmitting} />;
+          case "delivery":
+            return <DeliveryForm onSubmit={handleDeliverySubmit} isLoading={isSubmitting} />;
+          case "winga":
+            return <AffiliateForm onSubmit={handleAffiliateSubmit} isLoading={isSubmitting} />;
+          default:
+            return null;
+        }
       default:
         return null;
     }

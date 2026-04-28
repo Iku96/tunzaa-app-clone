@@ -242,11 +242,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           },
         };
 
-        // Get tenant brand colors (maintain brand identity)
+        // Get Tunzaa brand colors (Locking branding to Tunzaa 2.0)
         const brandColors = {
-          primary: colors.primary,
-          secondary: colors.secondary,
-          accent: colors.accent,
+          primary: "#315BA9", // Tunzaa Blue
+          secondary: "#84CC16", // Tunzaa Green
+          accent: "#FBBF24", // Tunzaa Yellow
         };
 
         // Create CSS variable styles for adaptive theming
@@ -440,11 +440,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           },
         };
 
-        // Default brand colors
+        // Tunzaa default brand colors
         const defaultBrandColors = {
-          primary: "#1B1B1B", // Use #1B1B1B for both modes
-          secondary: isDarkColorScheme ? "#9CA3AF" : "#4B5563", // Lighter gray for dark theme
-          accent: isDarkColorScheme ? "#10B981" : "#059669",
+          primary: "#315BA9", // Tunzaa Blue
+          secondary: "#84CC16", // Tunzaa Green
+          accent: "#FBBF24", // Tunzaa Yellow
         };
 
         const defaultStyles = {
@@ -553,18 +553,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           setRetryCount((prev) => prev + 1);
         }, 1000 * Math.pow(2, retryCount));
       } else if (!cachedTenant && retryCount >= 3) {
-        console.warn(
-          "Max retries reached, using fallback tenant configuration"
-        );
         const fallbackTenant = {
           id: "fallback",
           name: "Default App",
           branding: {
             theme: {
               colors: {
-                primary: "#1B1B1B",
-                secondary: "#4B5563",
-                accent: "#059669",
+                primary: "#315BA9",
+                secondary: "#84CC16",
+                accent: "#FBBF24",
               },
             },
           },

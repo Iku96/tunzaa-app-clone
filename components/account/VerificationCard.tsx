@@ -85,12 +85,12 @@ export function VerificationCard({ onPress }: VerificationCardProps) {
     // For other roles (buyer, affiliate), use the profile KYC status
     if (currentProfile) {
       return {
-        isVerified: currentProfile.kyc.verified,
-        status: currentProfile.kyc.verified ? "verified" : "not_verified",
+        isVerified: currentProfile.kyc?.verified || false,
+        status: currentProfile.kyc?.verified ? "verified" : "not_verified",
         hasRejectedDocuments: false,
         rejectedDocuments: [],
         pendingDocuments: [],
-        statusText: currentProfile.kyc.verified ? t("verification.verified_account") : t("verification.unverified_account")
+        statusText: currentProfile.kyc?.verified ? t("verification.verified_account") : t("verification.unverified_account")
       };
     }
 

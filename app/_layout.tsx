@@ -24,6 +24,8 @@ import { queryClient } from "@/lib/react-query";
 import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
 import { PushNotificationsProvider } from "@/components/notifications";
 import { ForegroundNotificationProvider } from "@/context/foreground-notifications";
+import { LanguageProvider } from "@/src/contexts/LanguageContext";
+import { TunzaaAuthProvider } from "@/src/contexts/TunzaaAuthContext";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import { Toaster } from "burnt/web";
 import {
@@ -148,7 +150,7 @@ const linking = {
 
 // Centralized routing component to prevent multiple useRouting calls
 function AppWithRouting() {
-  useRouting();
+  // useRouting(); // Disabled to allow app/index.tsx to control Tunzaa 2.0 flow
   useAppStateRefresh();
   return <Slot />;
 }
@@ -171,6 +173,12 @@ export default function RootLayout() {
     Lato_700Bold_Italic,
     Lato_900Black,
     Lato_900Black_Italic,
+  });
+
+  // Custom Tunzaa fonts
+  const [customFontsLoaded] = useFonts({
+    'Gilroy-SemiBold': require('../assets/fonts/Gilroy-SemiBold.ttf'),
+    'Calibri': require('../assets/fonts/Calibri Regular.ttf'),
   });
 
   React.useEffect(() => {
@@ -205,10 +213,10 @@ export default function RootLayout() {
 
   // Handle app readiness and splash screen hiding
   React.useEffect(() => {
-    if (isColorSchemeLoaded && (fontsLoaded || fontError)) {
+    if (isColorSchemeLoaded && (fontsLoaded || fontError) && customFontsLoaded) {
       setAppIsReady(true);
     }
-  }, [isColorSchemeLoaded, fontsLoaded, fontError]);
+  }, [isColorSchemeLoaded, fontsLoaded, fontError, customFontsLoaded]);
 
   const onLayoutRootView = React.useCallback(() => {
     if (appIsReady) {
@@ -253,31 +261,35 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
           <BottomSheetModalProvider>
             <AuthProvider>
-              {/* <ChatProvider> */}
-              <ReferralProvider>
-                {/* <RoleValidator> */}
-                <PushNotificationsProvider>
-                  <ForegroundNotificationProvider>
-                    <AppThemeProvider>
-                      <AppWithRouting />
-                      <View
-                        pointerEvents="box-none"
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                        }}
-                      >
-                        <PortalHost />
-                      </View>
-                    </AppThemeProvider>
-                  </ForegroundNotificationProvider>
-                </PushNotificationsProvider>
-                {/* </RoleValidator> */}
-              </ReferralProvider>
-              {/* </ChatProvider> */}
+              <LanguageProvider>
+                <TunzaaAuthProvider>
+                  {/* <ChatProvider> */}
+                  <ReferralProvider>
+                    {/* <RoleValidator> */}
+                    <PushNotificationsProvider>
+                      <ForegroundNotificationProvider>
+                        <AppThemeProvider>
+                          <AppWithRouting />
+                          <View
+                            pointerEvents="box-none"
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                            }}
+                          >
+                            <PortalHost />
+                          </View>
+                        </AppThemeProvider>
+                      </ForegroundNotificationProvider>
+                    </PushNotificationsProvider>
+                    {/* </RoleValidator> */}
+                  </ReferralProvider>
+                  {/* </ChatProvider> */}
+                </TunzaaAuthProvider>
+              </LanguageProvider>
             </AuthProvider>
           </BottomSheetModalProvider>
           {Platform.OS === "web" && <Toaster position="bottom-right" />}
