@@ -138,6 +138,8 @@ const VendorLayout = () => {
           isOpen={showKycModal}
           onClose={() => setShowKycModal(false)}
           onSuccess={handleKycSuccess}
+          user={user}
+          userRole={user?.activeProfileRole}
         />
       </KycModalErrorBoundary>
     </>

@@ -107,8 +107,16 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     : (userRef.current?.first_name 
                         ? `${userRef.current.first_name} ${userRef.current.last_name || ''}`.trim()
                         : 'User')),
+            name: activeProfile?.display_name || 
+                (raw.first_name 
+                    ? `${raw.first_name} ${raw.last_name || ''}`.trim()
+                    : (userRef.current?.first_name 
+                        ? `${userRef.current.first_name} ${userRef.current.last_name || ''}`.trim()
+                        : 'User')),
             profiles: normalizedProfiles,
             activeProfileRole: activeRole,
+            vendorDetails: profileDetails?.vendorDetails || normalizedProfiles.find(p => IS_MERCHANT(p.role))?.metadata,
+            deliveryDetails: profileDetails?.deliveryDetails || normalizedProfiles.find(p => IS_DELIVERY(p.role))?.metadata,
         };
 
         setUser(updatedUser);

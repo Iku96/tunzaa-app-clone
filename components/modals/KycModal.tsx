@@ -31,13 +31,14 @@ interface DocumentUpload {
   document_number?: string; // For delivery partners
 }
 
-export function KycModal({ isOpen, onClose, onSuccess }: KycModalProps) {
-  const { user } = useAuth();
+export function KycModal({ isOpen, onClose, onSuccess, user: propUser, userRole: propUserRole }: KycModalProps) {
+  const authContext = useAuth();
+  const user = propUser || authContext.user;
+  const userRole = propUserRole || user?.activeProfileRole;
+  
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const userRole = user?.activeProfileRole;
 
   // Only fetch entities if modal is open and user role is supported
   const shouldFetchEntities = isOpen && userRole && ["vendor", "delivery"].includes(userRole);

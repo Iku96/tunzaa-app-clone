@@ -56,13 +56,9 @@ export default function BusinessProfileScreen() {
     // Category
     const categoryText = metadata?.category || '';
 
-    // Dynamic certificate count
-    const certificates = [
-        metadata?.business_license_url,
-        metadata?.tin_certificate_url,
-        metadata?.brela_certificate_url,
-    ].filter(Boolean);
-    const certCount = certificates.length;
+    // Dynamic certificate count from verification_documents array
+    const verificationDocs = metadata?.verification_documents || vendorProfile?.kyc?.documents || [];
+    const certCount = Array.isArray(verificationDocs) ? verificationDocs.length : 0;
     const certText = certCount > 0 
         ? `${certCount} document${certCount > 1 ? 's' : ''} uploaded`
         : 'No documents uploaded';

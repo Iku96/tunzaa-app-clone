@@ -44,13 +44,22 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
     }, [pathname]);
 
     // Find vendor profile and extract details
-    const vendorProfile = user?.profiles?.find((p: any) => p.role === 'vendor');
+    const vendorProfile = user?.profiles?.find((p: any) => 
+        ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase())
+    );
     
     // Check metadata for branding if not directly on profile
     const metadata = vendorProfile?.metadata || {};
     const logoUrl = metadata.logo_url || metadata.image_url || vendorProfile?.branding?.logo_url;
     
-    const displayName = metadata.business_name || vendorProfile?.display_name || vendorProfile?.business_name || user?.name || 'Merchant';
+    const displayName = metadata.business_name || 
+                        vendorProfile?.display_name || 
+                        vendorProfile?.displayName || 
+                        metadata.display_name || 
+                        vendorProfile?.business_name || 
+                        user?.display_name || 
+                        user?.name || 
+                        'Merchant';
     
     // Calculate initials
     const initials = displayName

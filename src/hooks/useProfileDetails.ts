@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useGetVendor } from "@/services/vendors";
 import { useGetDeliveryPartner } from "@/services/delivery";
 import { useGetAffiliate } from "@/services/affiliates";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "../contexts/TunzaaAuthContext";
 
 interface ProfileDetails {
   vendorDetails: any | null;
@@ -23,24 +23,23 @@ interface ProfileDetails {
  * Falls back to context data if available, otherwise fetches fresh data
  */
 export const useProfileDetails = (): ProfileDetails => {
-  const { user, getVendorDetails, getDeliveryDetails, getAffiliateDetails } =
-    useAuth();
+  const { user } = useTunzaaAuth();
 
   // Get profile IDs from user profiles
   const vendorProfile = user?.profiles?.find(
-    (profile) => profile.role === "vendor"
+    (profile: any) => profile.role === "vendor" || profile.role === "merchant"
   );
   const deliveryProfile = user?.profiles?.find(
-    (profile) => profile.role === "delivery"
+    (profile: any) => profile.role === "delivery" || profile.role === "driver"
   );
   const affiliateProfile = user?.profiles?.find(
-    (profile) => profile.role === "winga"
+    (profile: any) => profile.role === "winga"
   );
 
-  // Check if we already have details in context
-  const contextVendorDetails = getVendorDetails();
-  const contextDeliveryDetails = getDeliveryDetails();
-  const contextAffiliateDetails = getAffiliateDetails();
+  // Check if we already have details in context (attached in TunzaaAuthContext)
+  const contextVendorDetails = user?.vendorDetails;
+  const contextDeliveryDetails = user?.deliveryDetails;
+  const contextAffiliateDetails = user?.affiliateDetails;
 
   // Conditionally fetch vendor details
   const {
