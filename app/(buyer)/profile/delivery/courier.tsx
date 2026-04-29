@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import { deliveryApi } from '../../../../src/services/delivery';
 
 export default function ChooseCourierScreen() {
     const router = useRouter();
-    const [selectedCourier, setSelectedCourier] = useState<string | null>('simba');
+    const [selectedCourier, setSelectedCourier] = useState<string | null>(null);
+
+    // Fetch delivery partners (couriers)
+    const { data: partnersRes, isLoading } = useQuery({
+        queryKey: ['delivery-partners'],
+        queryFn: () => deliveryApi.listPartners({ is_active: true, is_available: true })
+    });
+
+    const partners = partnersRes?.items || [];
 
     const renderProgressStepper = () => (
         <View style={styles.stepperContainer}>
@@ -36,7 +46,7 @@ export default function ChooseCourierScreen() {
         </View>
     );
 
-    const renderCourierCard = (id: string, name: string, type: string, eta: string) => (
+    const renderCourierCard = (id: string, name: string, type: string, eta: string, logo: string) => (
         <TouchableOpacity
             key={id}
             style={[styles.courierCard, selectedCourier === id && styles.courierCardSelected]}
@@ -45,11 +55,9 @@ export default function ChooseCourierScreen() {
             <View style={styles.courierLeft}>
                 <View style={styles.logoBox}>
                     <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?w=100&h=100&fit=crop' }}
+                        source={{ uri: logo || 'https://images.unsplash.com/photo-1599305090598-fe179d501227?w=100&h=100&fit=crop' }}
                         style={styles.logo}
                     />
-                    <Text style={styles.logoText}>Simba</Text>
-                    <Text style={styles.logoSubText}>Courier</Text>
                 </View>
                 <View style={styles.courierInfo}>
                     <Text style={styles.courierName}>{name}</Text>
@@ -60,7 +68,11 @@ export default function ChooseCourierScreen() {
                     </View>
                 </View>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            <Ionicons 
+                name={selectedCourier === id ? "checkmark-circle" : "chevron-forward"} 
+                size={18} 
+                color={selectedCourier === id ? "#425BA4" : "#9CA3AF"} 
+            />
         </TouchableOpacity>
     );
 
@@ -79,14 +91,30 @@ export default function ChooseCourierScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <Text style={styles.sectionTitle}>Select your preferred delivery company.</Text>
 
-                {renderCourierCard("simba", "Simba Courier", "Reliable nationwide delivery.", "Estimated delivery: 24-48 hours")}
-                {renderCourierCard("simba-light", "Simba Courier", "Reliable nationwide delivery.", "Estimated delivery: 24-48 hours")}
+                {isLoading ? (
+                    <View style={{ padding: 40 }}>
+                        <ActivityIndicator color="#425BA4" size="large" />
+                    </View>
+                ) : partners.length === 0 ? (
+                    <Text style={{ textAlign: 'center', color: '#6B7280', marginTop: 20 }}>No couriers available at the moment.</Text>
+                ) : (
+                    partners.map(p => renderCourierCard(
+                        p.partner_id, 
+                        p.name, 
+                        p.location_description || "Nationwide delivery.", 
+                        "Estimated delivery: 24-48 hours",
+                        p.profile_picture || ""
+                    ))
+                )}
             </ScrollView>
 
             <View style={styles.footer}>
                 <TouchableOpacity
                     style={[styles.continueButton, !selectedCourier && styles.continueButtonDisabled]}
-                    onPress={() => router.push('/(buyer)/profile/delivery/address')}
+                    onPress={() => router.push({
+                        pathname: '/(buyer)/profile/delivery/address',
+                        params: { courierId: selectedCourier }
+                    })}
                     disabled={!selectedCourier}
                 >
                     <Text style={styles.continueButtonText}>Continue</Text>

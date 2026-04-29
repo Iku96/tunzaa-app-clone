@@ -9,7 +9,7 @@ import { ChevronRight, ChevronUp, ArrowRight } from 'lucide-react-native';
 export default function LanguageScreen() {
     const router = useRouter();
     const { locale, setLocale, t } = useLanguage();
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
 
     const handleLanguageSelect = async (code: string) => {
         await setLocale(code as any);

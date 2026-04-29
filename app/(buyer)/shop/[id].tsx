@@ -9,6 +9,8 @@ import ProductCardVertical from '../../../src/components/product/ProductCardVert
 import CertificateModal from '../../../src/components/shop/CertificateModal';
 import BusinessMenuSheet from '../../../src/components/shop/BusinessMenuSheet';
 import ShareSheet from '../../../src/components/shop/ShareSheet';
+import { useWishlistStore } from '../../../src/stores/wishlist';
+import { useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +24,35 @@ export default function ShopProfileScreen() {
     const [certType, setCertType] = useState<'LICENSE' | 'TIN' | 'BRELA' | null>(null);
     const [menuVisible, setMenuVisible] = useState(false);
     const [shareVisible, setShareVisible] = useState(false);
+
+    // Wishlist Logic for Stories
+    const { isInWishlist, addItem, removeItem } = useWishlistStore();
+    const { mutate: addToWishlist } = useAddToWishlist();
+    const { mutate: removeFromWishlist } = useRemoveFromWishlist();
+
+    const handleLikeStory = (banner: any) => {
+        // Try to extract product_id from destination_url (e.g. /product/123)
+        const productId = banner.destination_url?.split('/').pop();
+        if (!productId) return;
+
+        const isLiked = isInWishlist(productId);
+        if (isLiked) {
+            removeItem(productId);
+            removeFromWishlist({ productId });
+        } else {
+            const newItem = {
+                product_id: productId,
+                product: {
+                    product_id: productId,
+                    name: banner.title || 'Product',
+                    images: [banner.image_url],
+                    base_price: 0 // We don't have the price here easily
+                }
+            } as any;
+            addItem(newItem);
+            addToWishlist({ product_id: productId });
+        }
+    };
 
     const mappedProducts = useMemo(() => {
         return products.map(mapApiProductToUI);
@@ -89,10 +120,10 @@ export default function ShopProfileScreen() {
                     </View>
                 </View>
 
-                {/* Shop Title & Badges */}
+                {/* Shop Title & Meta Section */}
                 <View style={styles.titleSection}>
                     <View style={styles.nameRow}>
-                        <View>
+                        <View style={{ flex: 1 }}>
                             <View style={styles.shopNameRow}>
                                 <Text style={styles.shopName}>{shop.store_name}</Text>
                                 {shop.is_active && (
@@ -103,52 +134,53 @@ export default function ShopProfileScreen() {
                                 )}
                             </View>
                             
-                            {/* Detailed Metadata List */}
-                            <View style={styles.metaList}>
-                                <View style={styles.metaItem}>
-                                    <Ionicons name="briefcase-outline" size={14} color="#6B7280" />
-                                    <Text style={styles.metaText}>
-                                        Joined {shop.created_at ? new Date(shop.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown'}
-                                    </Text>
-                                </View>
-                                <View style={styles.metaItem}>
-                                    <Ionicons name="location-outline" size={14} color="#6B7280" />
-                                    <Text style={styles.metaText}>{shop.metadata?.location || 'Location not specified'}</Text>
-                                </View>
-                                <View style={styles.metaRowWithLink}>
+                            <View style={styles.metaAndDistanceRow}>
+                                {/* Left Side Meta List */}
+                                <View style={styles.metaList}>
+                                    <View style={styles.metaItem}>
+                                        <Ionicons name="briefcase-outline" size={14} color="#6B7280" />
+                                        <Text style={styles.metaText}>
+                                            Joined {shop.created_at ? new Date(shop.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown'}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.metaItem}>
+                                        <Ionicons name="location-outline" size={14} color="#6B7280" />
+                                        <Text style={styles.metaText}>{shop.metadata?.location || 'Location not specified'}</Text>
+                                    </View>
                                     <View style={styles.metaItem}>
                                         <Ionicons name="bicycle-outline" size={14} color="#6B7280" />
                                         <Text style={styles.metaText}>
-                                            Est. Delivery Fees: {shop.metadata?.delivery_fee ? `Tsh. ${shop.metadata.delivery_fee.toLocaleString()}` : 'Tsh. 0'}
+                                            Est. Delivery Fees: Tsh. {shop.metadata?.delivery_fee?.toLocaleString() || '0'}
                                         </Text>
                                     </View>
-                                    <TouchableOpacity>
-                                        <Text style={styles.metaLink}>Change delivery location</Text>
+                                    <TouchableOpacity style={styles.metaItem} onPress={() => handleOpenCert('TIN')}>
+                                        <Ionicons name="images-outline" size={14} color="#6B7280" />
+                                        <Text style={styles.metaText}>
+                                            TIN Certificate and {Math.max(0, (shop.metadata?.certificates_count || 1) - 1)} more
+                                        </Text>
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity style={styles.metaItem} onPress={() => handleOpenCert('TIN')}>
-                                    <Ionicons name="images-outline" size={14} color="#6B7280" />
-                                    <Text style={styles.metaText}>
-                                        {shop.metadata?.certificates_count || 0} Certificates verified
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
 
-                        {/* Right Side Badges */}
-                        <View style={styles.rightBadges}>
-                            {shop.is_featured && (
-                                <View style={styles.tierBadge}>
-                                    <Ionicons name="diamond" size={14} color="#2DD4BF" />
-                                    <Text style={styles.tierText}>{shop.metadata?.tier || 'Diamond'}</Text>
+                                {/* Right Side Badges & Distance */}
+                                <View style={styles.rightBadgesContainer}>
+                                    {shop.is_featured && (
+                                        <View style={styles.tierBadge}>
+                                            <Ionicons name="diamond" size={14} color="#2DD4BF" />
+                                            <Text style={styles.tierText}>{shop.metadata?.tier || 'Diamond'}</Text>
+                                        </View>
+                                    )}
+                                    
+                                    <View style={styles.distanceSection}>
+                                        <View style={styles.distanceBadge}>
+                                            <Ionicons name="navigate-outline" size={14} color="#6B7280" />
+                                            <Text style={styles.distanceText}>{shop.metadata?.distance || '2'}km from you</Text>
+                                        </View>
+                                        <TouchableOpacity>
+                                            <Text style={styles.metaLink}>Change delivery location</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
-                            )}
-                            {shop.metadata?.distance && (
-                                <View style={styles.distanceBadge}>
-                                    <Ionicons name="navigate-outline" size={14} color="#6B7280" />
-                                    <Text style={styles.distanceText}>{shop.metadata.distance}km from you</Text>
-                                </View>
-                            )}
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -172,21 +204,32 @@ export default function ShopProfileScreen() {
                         style={[styles.tab, activeTab === 'STORIES' && styles.activeTab]} 
                         onPress={() => setActiveTab('STORIES')}
                     >
-                        <Ionicons name="play-circle-outline" size={28} color={activeTab === 'STORIES' ? '#1E3A8A' : '#9CA3AF'} />
+                        <Ionicons name="play-circle-outline" size={32} color={activeTab === 'STORIES' ? '#1E3A8A' : '#9CA3AF'} />
                     </TouchableOpacity>
                     <TouchableOpacity 
                         style={[styles.tab, activeTab === 'GRID' && styles.activeTab]} 
                         onPress={() => setActiveTab('GRID')}
                     >
-                        <Ionicons name="grid-outline" size={24} color={activeTab === 'GRID' ? '#1E3A8A' : '#9CA3AF'} />
+                        <Ionicons name="grid-outline" size={28} color={activeTab === 'GRID' ? '#1E3A8A' : '#9CA3AF'} />
                     </TouchableOpacity>
                 </View>
 
                 {/* Content Grid */}
                 {activeTab === 'GRID' ? (
-                    <View style={styles.productGrid}>
+                    <View style={styles.instagramGrid}>
                         {mappedProducts.map(product => (
-                            <ProductCardVertical key={product.id} product={product} />
+                            <TouchableOpacity 
+                                key={product.id} 
+                                style={styles.gridImageContainer}
+                                onPress={() => router.push({ pathname: '/(buyer)/shop/product/[id]', params: { id: product.id, storeId: id } })}
+                            >
+                                <Image source={{ uri: product.image }} style={styles.gridImage} />
+                                {product.has_variants && (
+                                    <View style={styles.gridIconOverlay}>
+                                        <Ionicons name="layers-outline" size={16} color="white" />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
                         ))}
                         {mappedProducts.length === 0 && (
                             <View style={styles.emptyContainer}>
@@ -224,7 +267,18 @@ export default function ShopProfileScreen() {
                                     </View>
 
                                     {/* Large Media Component */}
-                                    <View style={styles.storyMediaContainer}>
+                                    <TouchableOpacity 
+                                        style={styles.storyMediaContainer}
+                                        onPress={() => {
+                                            const prodId = banner.destination_url?.split('/').pop();
+                                            if (prodId) {
+                                                router.push({ 
+                                                    pathname: '/(buyer)/shop/product/[id]', 
+                                                    params: { id: prodId, storeId: id } 
+                                                });
+                                            }
+                                        }}
+                                    >
                                         <Image source={{ uri: banner.image_url }} style={styles.storyImage} />
                                         <TouchableOpacity style={styles.playCenterBtn}>
                                             <Ionicons name="play" size={40} color="#FFFFFF" />
@@ -233,6 +287,18 @@ export default function ShopProfileScreen() {
                                             <Ionicons name="volume-mute-outline" size={20} color="#FFFFFF" />
                                         </TouchableOpacity>
                                         
+                                        {/* Instagram-style Like Button */}
+                                        <TouchableOpacity 
+                                            style={styles.storyLikeBtn}
+                                            onPress={() => handleLikeStory(banner)}
+                                        >
+                                            <Ionicons 
+                                                name={isInWishlist(banner.destination_url?.split('/').pop() || '') ? "heart" : "heart-outline"} 
+                                                size={32} 
+                                                color={isInWishlist(banner.destination_url?.split('/').pop() || '') ? "#EF4444" : "#FFFFFF"} 
+                                            />
+                                        </TouchableOpacity>
+
                                         {/* Pagination inside story */}
                                         <View style={styles.storyPagination}>
                                             <View style={[styles.storyDot, styles.storyDotActive]} />
@@ -240,7 +306,7 @@ export default function ShopProfileScreen() {
                                             <View style={styles.storyDot} />
                                             <View style={styles.storyDot} />
                                         </View>
-                                    </View>
+                                    </TouchableOpacity>
                                 </View>
                             ))
                         ) : (
@@ -266,7 +332,10 @@ export default function ShopProfileScreen() {
             <ShareSheet 
                 visible={shareVisible} 
                 onClose={() => setShareVisible(false)} 
+                id={shop.store_id}
+                type="shop"
                 title={shop.store_name}
+                image={shop.branding?.logo_url || ''}
             />
         </SafeAreaView>
     );
@@ -362,31 +431,38 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
     },
-    metaRowWithLink: {
+    metaAndDistanceRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        width: width - 40,
+        alignItems: 'flex-start',
     },
     metaText: {
-        fontSize: 12,
-        color: '#6B7280',
+        fontSize: 13,
+        color: '#4B5563',
         fontWeight: '500',
     },
     metaLink: {
         fontSize: 11,
-        color: '#1E3A8A',
+        color: '#425BA4',
         fontWeight: '500',
         textDecorationLine: 'underline',
+        marginTop: 2,
     },
-    rightBadges: {
+    rightBadgesContainer: {
         alignItems: 'flex-end',
-        gap: 12,
+        gap: 16,
+    },
+    distanceSection: {
+        alignItems: 'flex-end',
     },
     tierBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
+        backgroundColor: '#F0FDFA',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
     },
     tierText: {
         fontSize: 13,
@@ -399,8 +475,8 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     distanceText: {
-        fontSize: 12,
-        color: '#1E3A8A',
+        fontSize: 13,
+        color: '#4B5563',
         fontWeight: '500',
     },
     actionRow: {
@@ -606,8 +682,24 @@ const styles = StyleSheet.create({
         paddingVertical: 40,
         alignItems: 'center',
     },
-    emptyText: {
-        color: '#9CA3AF',
-        fontSize: 14,
+    instagramGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        paddingTop: 2,
+    },
+    gridImageContainer: {
+        width: width / 3,
+        height: width / 3,
+        padding: 1,
+        position: 'relative',
+    },
+    gridImage: {
+        width: '100%',
+        height: '100%',
+    },
+    gridIconOverlay: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
     }
 });

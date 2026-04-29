@@ -26,7 +26,7 @@ export default function OrdersScreen() {
 
     const renderTabs = () => (
         <View style={styles.tabsContainer}>
-            {['Pending', 'Completed', 'Gift cards'].map((tab) => {
+            {['Pending', 'Shipped', 'Completed', 'Gift cards'].map((tab) => {
                 const isActive = activeTab === tab;
                 return (
                     <TouchableOpacity
@@ -127,7 +127,8 @@ export default function OrdersScreen() {
     };
 
     const orders = ordersData?.items || [];
-    const pendingOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'completed');
+    const pendingOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'completed' && o.status !== 'shipped' && o.status !== 'in_transit');
+    const shippedOrders = orders.filter(o => o.status === 'shipped' || o.status === 'in_transit');
     const completedOrders = orders.filter(o => o.status === 'delivered' || o.status === 'completed');
 
     return (
@@ -139,9 +140,9 @@ export default function OrdersScreen() {
                 <Text style={styles.headerTitle}>Order</Text>
                 <View style={{ width: 24 }} />
             </View>
-
+ 
             {renderTabs()}
-
+ 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {isLoading ? (
                     <View style={{ padding: 40, alignItems: 'center' }}>
@@ -157,6 +158,15 @@ export default function OrdersScreen() {
                                 </View>
                             ) : (
                                 pendingOrders.map(renderPendingCard)
+                            )
+                        )}
+                        {activeTab === 'Shipped' && (
+                            shippedOrders.length === 0 ? (
+                                <View style={styles.emptyState}>
+                                    <Text style={styles.emptyText}>No orders in transit</Text>
+                                </View>
+                            ) : (
+                                shippedOrders.map(renderPendingCard) // Reuse pending card style for shipped
                             )
                         )}
                         {activeTab === 'Completed' && (

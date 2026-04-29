@@ -1,39 +1,72 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTunzaaAuth } from '../../../../src/contexts/TunzaaAuthContext';
+import { useGetBuyerProfile, useUpdateBuyerProfile } from '../../../../src/services/buyers';
 
 export default function MyLocationScreen() {
     const router = useRouter();
-    const [defaultAddressId, setDefaultAddressId] = useState('home');
+    const { user } = useTunzaaAuth();
+    
+    const { data: profile, isLoading: profileLoading } = useGetBuyerProfile(user?.user_id || user?.id || '');
+    const { mutate: updateProfile, isPending: isUpdating } = useUpdateBuyerProfile();
 
-    const savedAddresses = [
-        {
-            id: 'home',
-            type: 'Home',
-            icon: 'home',
-            iconColor: '#425BA4',
-            iconBg: '#EEF2FF',
-            address: '772M+VJX Shoppers Plaza Masaki, Haile Selassie Rd, Dar',
-        },
-        {
-            id: 'work',
-            type: 'Work',
-            icon: 'briefcase',
-            iconColor: '#9333EA',
-            iconBg: '#F5F3FF',
-            address: '772M+VJX Shoppers Plaza Masaki, Haile Selassie Rd, Dar',
-        },
-        {
-            id: 'hotel',
-            type: 'Hotel',
-            icon: 'bed',
-            iconColor: '#10B981',
-            iconBg: '#ECFDF5',
-            address: '772M+VJX Shoppers Plaza Masaki, Haile Selassie Rd, Dar',
-        },
-    ];
+    const savedAddresses = profile?.delivery_address || [];
+    const defaultAddress = profile?.default_delivery_address;
+
+    const handleDelete = (addressId: string) => {
+        Alert.alert(
+            'Delete Address',
+            'Are you sure you want to delete this address?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => {
+                        const updatedAddresses = savedAddresses.filter(addr => addr.address_id !== addressId);
+                        updateProfile({
+                            userId: user?.user_id || user?.id || '',
+                            data: {
+                                ...profile!,
+                                delivery_address: updatedAddresses
+                            }
+                        });
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleSetDefault = (addressLine: string) => {
+        updateProfile({
+            userId: user?.user_id || user?.id || '',
+            data: {
+                ...profile!,
+                default_delivery_address: addressLine
+            }
+        });
+    };
+
+    const getIconForType = (type: string) => {
+        const t = type.toLowerCase();
+        if (t === 'home') return { name: 'home', color: '#425BA4', bg: '#EEF2FF' };
+        if (t === 'work') return { name: 'briefcase', color: '#9333EA', bg: '#F5F3FF' };
+        if (t === 'hotel') return { name: 'bed', color: '#10B981', bg: '#ECFDF5' };
+        return { name: 'location', color: '#6B7280', bg: '#F3F4F6' };
+    };
+
+    if (profileLoading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#425BA4" />
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -48,54 +81,81 @@ export default function MyLocationScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <Text style={styles.sectionTitle}>Save address</Text>
 
-                {savedAddresses.map((item) => (
-                    <View key={item.id} style={styles.addressCard}>
-                        <View style={styles.cardHeader}>
-                            <View style={styles.typeBox}>
-                                <View style={[styles.iconBox, { backgroundColor: item.iconBg }]}>
-                                    <Ionicons name={item.icon as any} size={16} color={item.iconColor} />
-                                </View>
-                                <Text style={styles.typeText}>{item.type}</Text>
-                            </View>
-
-                            <View style={styles.actionRow}>
-                                <TouchableOpacity style={styles.actionBtn}>
-                                    <Ionicons name="trash-outline" size={18} color="#FF6B6B" />
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.actionBtn}>
-                                    <Ionicons name="create-outline" size={18} color="#9CA3AF" />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        <Text style={styles.addressText}>{item.address}</Text>
-
-                        <TouchableOpacity
-                            style={styles.defaultRow}
-                            onPress={() => setDefaultAddressId(item.id)}
-                        >
-                            <Text style={styles.defaultText}>Set as default</Text>
-                            <View style={[styles.radioButton, defaultAddressId === item.id && styles.radioButtonActive]}>
-                                {defaultAddressId === item.id && <View style={styles.radioInner} />}
-                            </View>
-                        </TouchableOpacity>
-
-                        {/* Small Mini-map Indicator */}
-                        <View style={styles.miniMap}>
-                            <Image
-                                source={{ uri: 'https://images.unsplash.com/photo-1569336415962-a4bd9f67c07a?w=100&h=100' }}
-                                style={styles.miniMapImg}
-                                resizeMode="cover"
-                            />
-                        </View>
+                {savedAddresses.length === 0 ? (
+                    <View style={styles.emptyContainer}>
+                        <Ionicons name="location-outline" size={64} color="#D1D5DB" />
+                        <Text style={styles.emptyText}>No addresses saved yet</Text>
                     </View>
-                ))}
+                ) : (
+                    savedAddresses.map((item, index) => {
+                        const iconInfo = getIconForType(item.title || 'Other');
+                        const isDefault = defaultAddress === item.address_line1;
+                        
+                        return (
+                            <View key={item.address_id || index} style={styles.addressCard}>
+                                <View style={styles.cardHeader}>
+                                    <View style={styles.typeBox}>
+                                        <View style={[styles.iconBox, { backgroundColor: iconInfo.bg }]}>
+                                            <Ionicons name={iconInfo.name as any} size={16} color={iconInfo.color} />
+                                        </View>
+                                        <Text style={styles.typeText}>{item.title}</Text>
+                                    </View>
+
+                                    <View style={styles.actionRow}>
+                                        <TouchableOpacity 
+                                            style={styles.actionBtn}
+                                            onPress={() => item.address_id && handleDelete(item.address_id)}
+                                        >
+                                            <Ionicons name="trash-outline" size={18} color="#FF6B6B" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            style={styles.actionBtn}
+                                            onPress={() => router.push({
+                                                pathname: '/(buyer)/profile/delivery/address',
+                                                params: { 
+                                                    id: item.address_id,
+                                                    address: item.address_line1,
+                                                    city: item.city,
+                                                    note: item.land_mark
+                                                }
+                                            })}
+                                        >
+                                            <Ionicons name="create-outline" size={18} color="#9CA3AF" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <Text style={styles.addressText}>{item.address_line1}, {item.city}</Text>
+
+                                <TouchableOpacity
+                                    style={styles.defaultRow}
+                                    onPress={() => handleSetDefault(item.address_line1)}
+                                    disabled={isUpdating}
+                                >
+                                    <Text style={styles.defaultText}>Set as default</Text>
+                                    <View style={[styles.radioButton, isDefault && styles.radioButtonActive]}>
+                                        {isDefault && <View style={styles.radioInner} />}
+                                    </View>
+                                </TouchableOpacity>
+
+                                {/* Small Mini-map Indicator */}
+                                <View style={styles.miniMap}>
+                                    <Image
+                                        source={{ uri: `https://images.unsplash.com/photo-1569336415962-a4bd9f67c07a?w=100&h=100&q=80` }}
+                                        style={styles.miniMapImg}
+                                        resizeMode="cover"
+                                    />
+                                </View>
+                            </View>
+                        );
+                    })
+                )}
             </ScrollView>
 
             <View style={styles.footer}>
                 <TouchableOpacity
                     style={styles.addButton}
-                    onPress={() => router.push('/(buyer)/profile/delivery/method')}
+                    onPress={() => router.push('/(buyer)/profile/delivery/address')}
                 >
                     <Text style={styles.addButtonText}>Add New Address</Text>
                 </TouchableOpacity>

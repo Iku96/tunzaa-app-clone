@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../src/contexts/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,6 +20,7 @@ import ProductCard from '../../src/components/product/ProductCardVertical';
 import PromoBannerCarousel from '../../src/components/home/PromoBannerCarousel';
 import { useBanners } from '../../src/services/tenant';
 import BottomNav from '../../src/components/navigation/BottomNav';
+import { useProfileCompletion } from '../../src/hooks/useProfileCompletion';
 
 const { width } = Dimensions.get('window');
 const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
@@ -26,8 +28,10 @@ const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
 export default function AccountScreen() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
-    const { products } = useMarketplace();
+    const { t } = useLanguage();
+    const { products, loading: marketplaceLoading } = useMarketplace();
     const { data: banners, isLoading: bannersLoading } = useBanners();
+    const { percentage, missingFields } = useProfileCompletion();
 
     const [profileData, setProfileData] = useState({
         username: '',
@@ -78,9 +82,9 @@ export default function AccountScreen() {
 
     // Order status actions
     const orderActions = [
-        { icon: 'bus-outline' as const, label: 'Shipped', route: '/(buyer)/orders/delivery' },
-        { icon: 'download-outline' as const, label: 'Received', route: '/(buyer)/orders' },
-        { icon: 'reload-circle-outline' as const, label: 'Return', route: '/(buyer)/orders' },
+        { icon: 'bus-outline' as const, label: t.orderShipped, route: '/(buyer)/orders/delivery' },
+        { icon: 'download-outline' as const, label: t.orderReceived, route: '/(buyer)/orders' },
+        { icon: 'reload-circle-outline' as const, label: t.orderReturn, route: '/(buyer)/orders' },
     ];
 
     // Quick actions
@@ -130,41 +134,30 @@ export default function AccountScreen() {
                 </View>
 
                 {/* ── Profile Completion Bar ── */}
-                {(() => {
-                    const fields = [
-                        !!user?.first_name,
-                        !!user?.last_name,
-                        !!user?.email,
-                        !!user?.phone_number,
-                        !!profileData.username,
-                        !!profileData.location,
-                        !!profileData.profile_picture,
-                        !!user?.is_verified,
-                    ];
-                    const filled = fields.filter(Boolean).length;
-                    const percent = Math.round((filled / fields.length) * 100);
-
-                    return percent < 100 ? (
-                        <TouchableOpacity
-                            style={styles.completionBar}
-                            onPress={() => router.push('/(buyer)/profile/edit' as any)}
-                            activeOpacity={0.8}
-                        >
-                            <View style={styles.completionContent}>
-                                <Ionicons name="person-circle-outline" size={20} color="#425BA4" />
-                                <View style={styles.completionTextCol}>
-                                    <Text style={styles.completionTitle}>
-                                        Complete your profile – {percent}%
-                                    </Text>
-                                    <View style={styles.progressTrack}>
-                                        <View style={[styles.progressFill, { width: `${percent}%` }]} />
-                                    </View>
+                {percentage < 100 && (
+                    <TouchableOpacity
+                        style={styles.completionBar}
+                        onPress={() => router.push('/(buyer)/profile/edit' as any)}
+                        activeOpacity={0.8}
+                    >
+                        <View style={styles.completionContent}>
+                            <Ionicons name="person-circle-outline" size={20} color="#425BA4" />
+                            <View style={styles.completionTextCol}>
+                                <Text style={styles.completionTitle}>
+                                    Complete your profile – {percentage}%
+                                </Text>
+                                <Text style={styles.completionSubtitle}>
+                                    Missing: {missingFields.map(f => f.label).slice(0, 2).join(', ')}
+                                    {missingFields.length > 2 ? '...' : ''}
+                                </Text>
+                                <View style={styles.progressTrack}>
+                                    <View style={[styles.progressFill, { width: `${percentage}%` }]} />
                                 </View>
-                                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
                             </View>
-                        </TouchableOpacity>
-                    ) : null;
-                })()}
+                            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+                        </View>
+                    </TouchableOpacity>
+                )}
 
                 {/* ── Featured Dynamic Sliding Banner ── */}
                 <View style={{ marginBottom: 10 }}>
@@ -439,6 +432,11 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#1F2937',
         marginBottom: 6,
+    },
+    completionSubtitle: {
+        fontSize: 11,
+        color: '#6B7280',
+        marginBottom: 8,
     },
     progressTrack: {
         height: 6,

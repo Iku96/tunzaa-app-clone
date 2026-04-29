@@ -20,6 +20,7 @@ import { AuthProvider, useAuth } from "@/context/auth";
 import { ReferralProvider } from "@/context/referral";
 import { useRouting } from "@/hooks/useRouting";
 import { useAppStateRefresh } from "@/hooks/useAppStateRefresh";
+import { useTimeTracker } from "@/src/hooks/useTimeTracker";
 import { queryClient } from "@/lib/react-query";
 import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
 import { PushNotificationsProvider } from "@/components/notifications";
@@ -152,6 +153,7 @@ const linking = {
 function AppWithRouting() {
   // useRouting(); // Disabled to allow app/index.tsx to control Tunzaa 2.0 flow
   useAppStateRefresh();
+  useTimeTracker();
   return <Slot />;
 }
 

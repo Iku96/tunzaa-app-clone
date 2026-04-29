@@ -228,7 +228,19 @@ export const useGetUserOrders = (
 ) => {
     return useQuery({
         queryKey: ["userOrders", userId, params],
-        queryFn: () => orderApi.getUserOrders(userId, params),
+        queryFn: async () => {
+            const response = await orderApi.getOrders({ user_id: userId, ...params });
+            // Normalize response if it's a plain array
+            if (Array.isArray(response)) {
+                return {
+                    items: response,
+                    total: response.length,
+                    skip: 0,
+                    limit: response.length
+                } as GetOrdersResponse;
+            }
+            return response;
+        },
         enabled: enabled && !!userId,
     });
 };

@@ -11,6 +11,7 @@ import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useGetRatingSummary } from '../../../src/services/ratings';
 import { recommendationsApi } from '../../../src/services/recommendations';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
+import ShareSheet from '../../../src/components/shop/ShareSheet';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,6 +29,7 @@ export default function ProductDetailScreen() {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+    const [shareVisible, setShareVisible] = useState(false);
 
     const toggleSection = (section: string) => {
         setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -278,7 +280,7 @@ export default function ProductDetailScreen() {
                                         color={isWishlisted ? "#EF4444" : "#6B7280"}
                                     />
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.actionBtn}>
+                                <TouchableOpacity style={styles.actionBtn} onPress={() => setShareVisible(true)}>
                                     <Ionicons name="share-social-outline" size={20} color="#6B7280" />
                                 </TouchableOpacity>
                             </View>
@@ -291,7 +293,7 @@ export default function ProductDetailScreen() {
                                     <Ionicons name="location-outline" size={16} color="#4B5563" />
                                     <Text style={styles.deliveryText}>Delivery available for this item</Text>
                                 </View>
-                                <TouchableOpacity>
+                                <TouchableOpacity onPress={() => router.push('/(buyer)/profile/delivery/address')}>
                                     <Text style={styles.changeLocationText}>Set delivery location</Text>
                                 </TouchableOpacity>
                             </View>
@@ -314,7 +316,7 @@ export default function ProductDetailScreen() {
                                     </Text>
                                     <View style={styles.dividerPipe} />
                                     <Text style={styles.soldText}>
-                                        {ratingSummary?.total_ratings || 0} reviews
+                                        {ratingSummary?.total_ratings || 0} {ratingSummary?.total_ratings === 1 ? 'review' : 'reviews'}
                                     </Text>
                                 </View>
                                 {product.inventoryTracking && (
@@ -532,7 +534,13 @@ export default function ProductDetailScreen() {
                                             <Text style={styles.reviewCount}>{ratingSummary?.total_ratings || 0} Ratings</Text>
                                         </View>
                                     </View>
-                                    <TouchableOpacity style={styles.viewAllReviews}>
+                                    <TouchableOpacity 
+                                        style={styles.viewAllReviews}
+                                        onPress={() => router.push({ 
+                                            pathname: '/(buyer)/shop/product/[id]', 
+                                            params: { id: id as string, storeId: product.vendor.id } 
+                                        })}
+                                    >
                                         <Text style={styles.viewAllText}>View All Reviews</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -629,7 +637,7 @@ export default function ProductDetailScreen() {
                                                     currency: 'TZS',
                                                 }
                                             });
-                                            router.push('/(buyer)/cart');
+                                            router.push('/(buyer)/cart/summary');
                                         } catch (error) {
                                             console.error('Failed to add to cart:', error);
                                         }
@@ -644,6 +652,17 @@ export default function ProductDetailScreen() {
                     </View>
                 </View>
             </View>
+
+            {product && (
+                <ShareSheet 
+                    visible={shareVisible} 
+                    onClose={() => setShareVisible(false)} 
+                    id={product.id}
+                    type="product"
+                    title={product.name}
+                    image={product.image}
+                />
+            )}
         </SafeAreaView>
     );
 }

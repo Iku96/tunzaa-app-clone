@@ -16,6 +16,8 @@ const BuyerLayout = () => {
       );
       if (currentProfile?.kyc && !currentProfile.kyc.verified) {
         setShowKycModal(true);
+      } else {
+        setShowKycModal(false);
       }
     }
   }, [user?.activeProfileRole, user?.profiles]);
@@ -29,12 +31,10 @@ const BuyerLayout = () => {
         }}
       />
       
-      {showKycModal && (
-        <KycModal
-          visible={showKycModal}
-          onClose={() => setShowKycModal(false)}
-        />
-      )}
+      <KycModal
+        isOpen={showKycModal}
+        onClose={() => setShowKycModal(false)}
+      />
     </>
   );
 };

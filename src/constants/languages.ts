@@ -13,7 +13,7 @@
 export const LANGUAGE_STORAGE_KEY = 'tunzaa_app_language';
 
 /** ISO 639-1 language code type for type safety when adding new languages. */
-export type LanguageCode = 'en' | 'sw' | string;
+export type LanguageCode = 'en' | 'sw' | 'fr' | 'ar' | 'es' | 'pt' | 'zh' | 'de';
 
 /**
  * Single supported language entry.

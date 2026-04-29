@@ -28,8 +28,14 @@ interface ProductCardVerticalProps {
     product: UIProduct;
 }
 
+import { useGetRatingSummary } from '../../services/ratings';
+
 export default function ProductCardVertical({ product }: ProductCardVerticalProps) {
     const router = useRouter();
+    const { data: summary } = useGetRatingSummary(product.id, !!product.id);
+
+    const displayRating = summary?.average_rating !== undefined ? summary.average_rating.toFixed(1) : (product.rating || '0.0');
+    const displayReviews = summary?.total_ratings !== undefined ? summary.total_ratings : (product.reviews || 0);
 
     // Wishlist logic
     const { isInWishlist } = useWishlistStore();
@@ -96,7 +102,7 @@ export default function ProductCardVertical({ product }: ProductCardVerticalProp
             <View style={styles.details}>
                 <View style={styles.ratingRow}>
                     <Ionicons name="star" size={14} color="#FBBF24" />
-                    <Text style={styles.ratingText}>{product.rating} ({product.reviews})</Text>
+                    <Text style={styles.ratingText}>{displayRating} ({displayReviews})</Text>
                 </View>
 
                 <Text style={styles.title} numberOfLines={1}>{product.name}</Text>

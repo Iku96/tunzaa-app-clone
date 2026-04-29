@@ -4,22 +4,32 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useSharesStore } from '@/src/stores/shares';
+
 const { width } = Dimensions.get('window');
 // 3 columns with minimal spacing
 const ITEM_SIZE = (width - 4) / 3;
 
 export default function SharesScreen() {
     const router = useRouter();
+    const { items: sharedItems } = useSharesStore();
 
-    // Mock images based on the watch items in screenshot
-    const mockImages = [
-        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1517420879524-86d64ac2f339?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1523456338356-9ddf4453b516?auto=format&fit=crop&q=80&w=400',
-    ];
+    const renderItem = ({ item }: { item: any }) => {
+        return (
+            <TouchableOpacity 
+                style={styles.imageContainer}
+                onPress={() => {
+                    if (item.type === 'product') {
+                        router.push(`/(buyer)/product/${item.id}`);
+                    } else {
+                        router.push(`/(buyer)/shop/${item.id}`);
+                    }
+                }}
+            >
+                <Image source={{ uri: item.image }} style={styles.image} />
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -28,22 +38,25 @@ export default function SharesScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Share</Text>
+                <Text style={styles.headerTitle}>Shares</Text>
                 <View style={{ width: 24 }} />
             </View>
 
-            <FlatList
-                data={mockImages}
-                keyExtractor={(item, index) => index.toString()}
-                numColumns={3}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.imageContainer}>
-                        <Image source={{ uri: item }} style={styles.image} />
-                    </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-            />
+            {sharedItems.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Ionicons name="share-social-outline" size={64} color="#D1D5DB" />
+                    <Text style={styles.emptyText}>You haven't shared anything yet.</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={sharedItems}
+                    keyExtractor={(item) => item.id}
+                    numColumns={3}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                />
+            )}
         </SafeAreaView>
     );
 }
@@ -84,5 +97,17 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#9CA3AF',
+        textAlign: 'center',
+        marginTop: 16,
     },
 });

@@ -3,21 +3,22 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useActivitiesStore } from '../../../../src/stores/activities';
 
 export default function TimeUsageScreen() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'Daily' | 'Weekly'>('Daily');
-
-    // Mock bar chart data
-    const chartData = [
-        { day: 'M', height: 20 },
-        { day: 'T', height: 0 },
-        { day: 'W', height: 0 },
-        { day: 'T', height: 0 },
-        { day: 'F', height: 0 },
-        { day: 'S', height: 0 },
-        { day: 'S', height: 0 },
-    ];
+    
+    const getDailyMinutes = useActivitiesStore((state) => state.getDailyMinutes);
+    const getWeeklyStats = useActivitiesStore((state) => state.getWeeklyStats);
+    
+    const today = new Date().toISOString().split('T')[0];
+    const todayMinutes = getDailyMinutes(today);
+    const chartData = getWeeklyStats();
+    
+    const totalWeeklyMinutes = chartData.reduce((acc, curr) => acc + curr.minutes, 0);
+    const displayMinutes = activeTab === 'Daily' ? todayMinutes : totalWeeklyMinutes;
+    const displayLabel = activeTab === 'Daily' ? 'Today' : 'This Week';
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -51,15 +52,18 @@ export default function TimeUsageScreen() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Today Summary */}
+                {/* Summary */}
                 <View style={styles.summaryContainer}>
-                    <Text style={styles.todayText}>Today</Text>
+                    <Text style={styles.todayText}>{displayLabel}</Text>
                     <View style={styles.clockIconContainer}>
                         <Ionicons name="time-outline" size={32} color="#1A1A1A" />
                     </View>
-                    <Text style={styles.timeValue}>20m</Text>
+                    <Text style={styles.timeValue}>{displayMinutes}m</Text>
                     <Text style={styles.descriptionText}>
-                        Average time this you spent looking for the items you want.
+                        {activeTab === 'Daily' 
+                            ? 'Average time this you spent looking for the items you want today.'
+                            : 'Total time you spent on the app over the last 7 days.'
+                        }
                     </Text>
                 </View>
 

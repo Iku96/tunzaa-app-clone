@@ -88,17 +88,17 @@ export default function OrderSummaryScreen() {
                                 </View>
                             ))}
 
-                            {/* Order List Breakdown */}
-                            <Text style={styles.sectionTitle}>Order({cart?.items.length || 0} items)</Text>
-
+                            {/* Order Breakdown */}
                             <View style={styles.orderItemRow}>
-                                <Text style={styles.orderLabel}>Product</Text>
-                                <Text style={styles.orderValue}>{product.name}</Text>
+                                <Text style={styles.orderLabel}>Items</Text>
+                                <Text style={styles.orderValue}>{cart?.items.length || 0} items</Text>
                             </View>
-                            <View style={styles.orderItemRow}>
-                                <Text style={styles.orderLabel}>Price</Text>
-                                <Text style={styles.orderValue}>Tsh. {new Intl.NumberFormat('en-US').format(product.price)}</Text>
-                            </View>
+                            {cart?.items[0] && (
+                                <View style={styles.orderItemRow}>
+                                    <Text style={styles.orderLabel}>Primary Item</Text>
+                                    <Text style={styles.orderValue}>{cart.items[0].product_name}</Text>
+                                </View>
+                            )}
 
                             <View style={styles.divider} />
 

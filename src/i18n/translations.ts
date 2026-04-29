@@ -238,6 +238,21 @@ export interface TranslationKeys {
     deliveryRegisterFullNameLabel: string;
     deliveryRegisterFullNamePlaceholder: string;
     deliveryRegisterNameError: string;
+    // --- Order & Delivery ---
+    orderShipped: string;
+    orderReceived: string;
+    orderReturn: string;
+    deliveryReviewOrder: string;
+    deliveryDropOffLocation: string;
+    deliveryNoActive: string;
+    deliveryEstimatedTime: string;
+    deliveryStandard: string;
+    deliveryExpress: string;
+    deliveryPostalAddress: string;
+    deliveryDropOffAddress: string;
+    deliveryCallDriver: string;
+    deliveryCost: string;
+    deliveryConfirm: string;
 }
 
 /** English (default). */
@@ -452,6 +467,20 @@ const en: TranslationKeys = {
     deliveryRegisterFullNameLabel: "Full Name",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
     deliveryRegisterNameError: "Please enter at least two names.",
+    orderShipped: "Shipped",
+    orderReceived: "Received",
+    orderReturn: "Return",
+    deliveryReviewOrder: "Review your order before delivery",
+    deliveryDropOffLocation: "Drop-off location",
+    deliveryNoActive: "No active delivery",
+    deliveryEstimatedTime: "Estimated delivery time",
+    deliveryStandard: "Standard",
+    deliveryExpress: "Express",
+    deliveryPostalAddress: "Postal Address",
+    deliveryDropOffAddress: "Drop-off Address",
+    deliveryCallDriver: "Call Driver",
+    deliveryCost: "Delivery Cost",
+    deliveryConfirm: "Confirm",
 };
 
 /** Swahili. */
@@ -666,6 +695,21 @@ const sw: TranslationKeys = {
     deliveryRegisterFullNameLabel: "Jina Kamili",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
     deliveryRegisterNameError: "Tafadhali ingiza angalau majina mawili.",
+    // --- Order & Delivery ---
+    orderShipped: "Imesafirishwa",
+    orderReceived: "Imepokelewa",
+    orderReturn: "Rudisha",
+    deliveryReviewOrder: "Hakiki agizo lako kabla ya usafirishaji",
+    deliveryDropOffLocation: "Eneo la kushusha",
+    deliveryNoActive: "Hakuna usafirishaji unaoendelea",
+    deliveryEstimatedTime: "Muda wa makadirio ya kufika",
+    deliveryStandard: "Kawaida",
+    deliveryExpress: "Haraka",
+    deliveryPostalAddress: "Anwani ya Posta",
+    deliveryDropOffAddress: "Anwani ya Kushushia",
+    deliveryCallDriver: "Mpige Dereva",
+    deliveryCost: "Gharama ya Usafirishaji",
+    deliveryConfirm: "Thibitisha",
 };
 
 /** French. */
@@ -878,6 +922,20 @@ const fr: TranslationKeys = {
     deliveryRegisterFullNameLabel: "Full Name",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
     deliveryRegisterNameError: "Please enter at least two names.",
+    orderShipped: "Expédié",
+    orderReceived: "Reçu",
+    orderReturn: "Retour",
+    deliveryReviewOrder: "Vérifiez votre commande avant la livraison",
+    deliveryDropOffLocation: "Lieu de dépôt",
+    deliveryNoActive: "Pas de livraison active",
+    deliveryEstimatedTime: "Heure de livraison estimée",
+    deliveryStandard: "Standard",
+    deliveryExpress: "Express",
+    deliveryPostalAddress: "Adresse postale",
+    deliveryDropOffAddress: "Adresse de dépôt",
+    deliveryCallDriver: "Appeler le chauffeur",
+    deliveryCost: "Frais de livraison",
+    deliveryConfirm: "Confirmer",
 };
 
 /** Arabic. */
@@ -1090,6 +1148,20 @@ const ar: TranslationKeys = {
     deliveryRegisterFullNameLabel: "Full Name",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
     deliveryRegisterNameError: "Please enter at least two names.",
+    orderShipped: "تم الشحن",
+    orderReceived: "تم الاستلام",
+    orderReturn: "إرجاع",
+    deliveryReviewOrder: "راجع طلبك قبل التوصيل",
+    deliveryDropOffLocation: "موقع التسليم",
+    deliveryNoActive: "لا يوجد توصيل نشط",
+    deliveryEstimatedTime: "وقت التوصيل المتوقع",
+    deliveryStandard: "قياسي",
+    deliveryExpress: "سريع",
+    deliveryPostalAddress: "العنوان البريدي",
+    deliveryDropOffAddress: "عنوان التسليم",
+    deliveryCallDriver: "اتصل بالسائق",
+    deliveryCost: "تكلفة التوصيل",
+    deliveryConfirm: "تأكيد",
 };
 
 /** Spanish. */
@@ -1303,6 +1375,20 @@ const es: TranslationKeys = {
     deliveryRegisterFullNameLabel: "Full Name",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
     deliveryRegisterNameError: "Please enter at least two names.",
+    orderShipped: "Enviado",
+    orderReceived: "Recibido",
+    orderReturn: "Devolver",
+    deliveryReviewOrder: "Revise su pedido antes de la entrega",
+    deliveryDropOffLocation: "Lugar de entrega",
+    deliveryNoActive: "No hay entrega activa",
+    deliveryEstimatedTime: "Tiempo de entrega estimado",
+    deliveryStandard: "Estándar",
+    deliveryExpress: "Exprés",
+    deliveryPostalAddress: "Dirección postal",
+    deliveryDropOffAddress: "Dirección de entrega",
+    deliveryCallDriver: "Llamar al conductor",
+    deliveryCost: "Costo de envío",
+    deliveryConfirm: "Confirmar",
 };
 
 /** Portuguese. */
@@ -1516,6 +1602,20 @@ const pt: TranslationKeys = {
     deliveryRegisterFullNameLabel: "Full Name",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
     deliveryRegisterNameError: "Please enter at least two names.",
+    orderShipped: "Enviado",
+    orderReceived: "Recebido",
+    orderReturn: "Devolver",
+    deliveryReviewOrder: "Revise seu pedido antes da entrega",
+    deliveryDropOffLocation: "Local de entrega",
+    deliveryNoActive: "Nenhuma entrega ativa",
+    deliveryEstimatedTime: "Tempo de entrega estimado",
+    deliveryStandard: "Padrão",
+    deliveryExpress: "Expresso",
+    deliveryPostalAddress: "Endereço postal",
+    deliveryDropOffAddress: "Endereço de entrega",
+    deliveryCallDriver: "Ligar para o motorista",
+    deliveryCost: "Custo de entrega",
+    deliveryConfirm: "Confirmar",
 };
 
 /** Chinese (Simplified). */

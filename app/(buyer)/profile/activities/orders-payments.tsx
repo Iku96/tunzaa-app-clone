@@ -3,9 +3,32 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGetUserOrders } from '@/src/services/orders';
+import { useAuth } from '@/context/auth';
+import { format, isSameMonth } from 'date-fns';
 
 export default function OrdersPaymentsScreen() {
     const router = useRouter();
+    const { user } = useAuth();
+    const { data: ordersData, isLoading } = useGetUserOrders(user?.id || '');
+    const orders = ordersData?.items || [];
+
+    const now = new Date();
+    const monthlyOrders = orders.filter(o => isSameMonth(new Date(o.created_at), now));
+    
+    // Distribution Calculations
+    const oneTimeOrders = orders.filter(o => o.payment_details.method !== 'tunzaa');
+    const installmentOrders = orders.filter(o => o.payment_details.method === 'tunzaa');
+    
+    const totalOneTime = oneTimeOrders.reduce((sum, o) => sum + o.totals.total, 0);
+    const totalInstallments = installmentOrders.reduce((sum, o) => sum + o.totals.total, 0);
+    const grandTotal = totalOneTime + totalInstallments;
+    
+    const installmentPercent = grandTotal > 0 ? (totalInstallments / grandTotal) * 100 : 0;
+    const oneTimePercent = grandTotal > 0 ? (totalOneTime / grandTotal) * 100 : 0;
+
+    // Active Installments (Simplified for MVP)
+    const activeInstallments = installmentOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -25,19 +48,19 @@ export default function OrdersPaymentsScreen() {
                     <View style={styles.cardHeaderRow}>
                         <Text style={styles.cardTitle}>Monthly Overview</Text>
                         <View style={styles.badge}>
-                            <Text style={styles.badgeText}>May 2024</Text>
+                            <Text style={styles.badgeText}>{format(now, 'MMM yyyy')}</Text>
                         </View>
                     </View>
 
                     <View style={styles.statsRow}>
                         <View style={styles.statCol}>
                             <Text style={styles.statLabel}>Total one time</Text>
-                            <Text style={styles.statValue}>Tzs 22, 000</Text>
+                            <Text style={styles.statValue}>Tzs {totalOneTime.toLocaleString()}</Text>
                         </View>
                         <View style={styles.statDivider} />
                         <View style={styles.statCol}>
                             <Text style={styles.statLabel}>Total Installment</Text>
-                            <Text style={styles.statValue}>Tzs 70,000.</Text>
+                            <Text style={styles.statValue}>Tzs {totalInstallments.toLocaleString()}</Text>
                         </View>
                     </View>
                 </View>
@@ -47,7 +70,7 @@ export default function OrdersPaymentsScreen() {
 
                 {/* Custom Donut Chart visualization (Approximation) */}
                 <View style={styles.chartContainer}>
-                    <View style={styles.donutRing}>
+                    <View style={[styles.donutRing, { borderTopColor: oneTimePercent > 0 ? '#425BA4' : '#22C55E' }]}>
                         <View style={styles.donutInner} />
                     </View>
                 </View>
@@ -55,35 +78,42 @@ export default function OrdersPaymentsScreen() {
                 <View style={styles.legendContainer}>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
-                        <Text style={styles.legendText}>Installments (80%)</Text>
+                        <Text style={styles.legendText}>Installments ({Math.round(installmentPercent)}%)</Text>
                     </View>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: '#425BA4' }]} />
-                        <Text style={styles.legendText}>one-time payment (20%)</Text>
+                        <Text style={styles.legendText}>One-time ({Math.round(oneTimePercent)}%)</Text>
                     </View>
                 </View>
 
                 {/* Active installments */}
                 <Text style={[styles.sectionTitle, { marginTop: 40 }]}>Active installments</Text>
 
-                <View style={styles.installmentCard}>
-                    <View style={styles.installmentHeader}>
-                        <Text style={styles.productName}>iPhone 16 pro Max</Text>
-                        <Text style={styles.productPrice}>Tsh 450,000 / 6 months</Text>
-                    </View>
-                    <View style={styles.installmentMeta}>
-                        <Text style={styles.metaText}>3 of 12 paid  •  Next : Aug 22</Text>
-                        <View style={styles.activeBadge}>
-                            <Text style={styles.activeBadgeText}>Active</Text>
-                        </View>
-                    </View>
+                {isLoading ? (
+                    <Text style={styles.loadingText}>Loading payment history...</Text>
+                ) : activeInstallments.length === 0 ? (
+                    <Text style={styles.emptyText}>No active installments found.</Text>
+                ) : (
+                    activeInstallments.map((order) => (
+                        <View key={order.order_id} style={styles.installmentCard}>
+                            <View style={styles.installmentHeader}>
+                                <Text style={styles.productName}>{order.items[0]?.name || 'Unknown Item'}</Text>
+                                <Text style={styles.productPrice}>Tzs {order.totals.total.toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.installmentMeta}>
+                                <Text style={styles.metaText}>Created on {format(new Date(order.created_at), 'MMM d, yyyy')}</Text>
+                                <View style={styles.activeBadge}>
+                                    <Text style={styles.activeBadgeText}>{order.status}</Text>
+                                </View>
+                            </View>
 
-                    {/* Progress Bar */}
-                    <View style={styles.progressBarContainer}>
-                        <View style={[styles.progressBarFill, { width: '45%' }]} />
-                        <Text style={styles.progressText}>45%</Text>
-                    </View>
-                </View>
+                            <View style={styles.progressBarContainer}>
+                                <View style={[styles.progressBarFill, { width: order.status === 'completed' ? '100%' : '33%' }]} />
+                                <Text style={styles.progressText}>{order.status === 'completed' ? '100%' : 'In Progress'}</Text>
+                            </View>
+                        </View>
+                    ))
+                )}
 
             </ScrollView>
         </SafeAreaView>
@@ -276,5 +306,16 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: '#1A1A1A',
         fontWeight: '500',
-    }
+    },
+    loadingText: {
+        textAlign: 'center',
+        marginTop: 20,
+        color: '#6B7280',
+    },
+    emptyText: {
+        textAlign: 'center',
+        marginTop: 20,
+        color: '#9CA3AF',
+        fontStyle: 'italic',
+    },
 });

@@ -10,6 +10,7 @@ import { ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { documentClient } from '../../../src/services/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useProfileCompletion } from '../../../src/hooks/useProfileCompletion';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 
@@ -27,6 +28,7 @@ export default function EditProfileScreen() {
     const { mutateAsync: updateUser, isPending: isUpdatingUser } = useUpdateUser();
     const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
     const isPending = isUpdatingUser || isUpdatingProfile;
+    const { percentage } = useProfileCompletion();
 
     const initialName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : '');
     const [name, setName] = useState(initialName || '');
@@ -150,7 +152,10 @@ export default function EditProfileScreen() {
                 } as any);
 
                 const uploadResponse = await documentClient.post('/upload', formData);
-                const uploadedUrl = uploadResponse.data?.url || uploadResponse.data?.file_url;
+                // Fix: Server uses fileUrl (camelCase), not file_url
+                const uploadedUrl = uploadResponse.data?.fileUrl || uploadResponse.data?.url || uploadResponse.data?.data?.url;
+
+                console.log('📸 [EditProfile] Upload Success. URL:', uploadedUrl);
 
                 if (uploadedUrl) {
                     setProfileImage(uploadedUrl);
@@ -161,13 +166,23 @@ export default function EditProfileScreen() {
                         localData.profile_picture = uploadedUrl;
                         await AsyncStorage.setItem(`${PROFILE_EXTRAS_KEY}_${userId}`, JSON.stringify(localData));
                     }
-                    // Also try API metadata save
+                    // Sync to API Metadata
                     const buyerProfile = user?.profiles?.find((p: any) => p.role === 'buyer') || user?.profiles?.[0];
                     if (userId && buyerProfile?.profile_id) {
                         const meta = (buyerProfile as any).metadata || {};
+                        console.log('🔄 [EditProfile] Syncing avatar to server profile metadata...');
                         await authApi.updateUserProfile(userId, buyerProfile.profile_id, {
                             metadata: { ...meta, profile_picture: uploadedUrl }
-                        }).catch(() => { });
+                        }).then(() => {
+                            console.log('✅ [EditProfile] Server profile metadata updated with avatar');
+                        }).catch((err) => {
+                            console.warn('❌ [EditProfile] Failed to save avatar to server metadata:', err.message);
+                        });
+
+                        // Also sync to User object for top-level persistence
+                        await authApi.updateUser(userId, {
+                            metadata: { ...meta, profile_picture: uploadedUrl }
+                        }).catch(() => {});
                     }
                     if (refreshProfile) await refreshProfile();
                 }
@@ -193,21 +208,35 @@ export default function EditProfileScreen() {
         }
 
         try {
+            // Prepare Metadata for sync
+            const profiles = user?.profiles || [];
+            let targetProfile = profiles.find((p: any) => p.role === 'buyer') || profiles[0];
+            const updatedMeta = {
+                ...(targetProfile?.metadata || {}),
+                username: username || undefined,
+                gender: gender || undefined,
+                date_of_birth: dob || undefined,
+            };
+
             // 1. Update first_name / last_name on Tunzaa API
             const nameParts = name.trim().split(' ');
             const first_name = nameParts[0] || '';
             const last_name = nameParts.slice(1).join(' ');
+            
+            // 3. Update User Object (First Name, Last Name, Metadata)
+            const updatePayload = {
+                first_name,
+                last_name,
+                email: email.trim(), // Fix: Include email in update
+                display_name: name.trim(),
+                name: name.trim(),
+                metadata: updatedMeta // Include metadata here for global persistence
+            };
 
-            try {
-                console.log('📝 [EditProfile] Attempting to update user via /users/profile');
-                await updateProfile({ first_name, last_name, name: name.trim() });
-            } catch (err: any) {
-                console.warn('⚠️ [EditProfile] /users/profile failed, trying fallback /users/:id', err.message);
-                await updateUser({
-                    userId: targetUserId,
-                    data: { first_name, last_name, name: name.trim() }
-                });
-            }
+            console.log('📝 [EditProfile] Updating user object with metadata...');
+            await authApi.updateUser(targetUserId, updatePayload)
+                .then(() => console.log('✅ [EditProfile] User object updated'))
+                .catch(err => console.warn('⚠️ [EditProfile] User object update failed:', err.message));
 
             // 2. Save metadata extras to AsyncStorage (always works)
             const storedExtras = await AsyncStorage.getItem(`${PROFILE_EXTRAS_KEY}_${targetUserId}`);
@@ -217,18 +246,11 @@ export default function EditProfileScreen() {
             if (dob) localData.date_of_birth = dob;
             await AsyncStorage.setItem(`${PROFILE_EXTRAS_KEY}_${targetUserId}`, JSON.stringify(localData));
 
-            // 3. Also try saving to API metadata (will work once backend is updated)
-            const profiles = user?.profiles || [];
-            let targetProfile = profiles.find((p: any) => p.role === 'buyer') || profiles[0];
+            // 3. Also try saving to API metadata
             console.log('👤 [EditProfile] Target Profile:', JSON.stringify(targetProfile, null, 2));
-            const updatedMeta = {
-                ...(targetProfile?.metadata || {}),
-                username: username || undefined,
-                gender: gender || undefined,
-                date_of_birth: dob || undefined,
-            };
 
             if (targetProfile?.profile_id) {
+                console.log('🔄 [EditProfile] Updating metadata via updateUserProfile...');
                 await authApi.updateUserProfile(
                     targetUserId,
                     targetProfile.profile_id,
@@ -236,8 +258,10 @@ export default function EditProfileScreen() {
                         display_name: name.trim(),
                         metadata: updatedMeta 
                     }
-                ).catch((err: any) => {
-                    console.warn('[EditProfile] API metadata save failed (not critical):', err.message);
+                ).then(() => {
+                    console.log('✅ [EditProfile] Metadata sync successful');
+                }).catch((err: any) => {
+                    console.warn('❌ [EditProfile] API metadata sync failed:', err.message);
                 });
             }
 
@@ -247,7 +271,7 @@ export default function EditProfileScreen() {
                 finalUser.first_name = first_name;
                 finalUser.last_name = last_name;
                 finalUser.name = name.trim();
-                
+                finalUser.email = email.trim();
                 const pIndex = finalUser.profiles.findIndex((p: any) => p.profile_id === targetProfile?.profile_id);
                 if (pIndex > -1) {
                     finalUser.profiles[pIndex].display_name = name.trim();
@@ -325,7 +349,9 @@ export default function EditProfileScreen() {
                 </View>
 
                 {/* Banner */}
-                <ProfileSetupBanner progress={0.5} points={50} />
+                {percentage < 100 && (
+                    <ProfileSetupBanner progress={percentage / 100} points={100 - percentage} />
+                )}
 
                 {/* Form */}
                 <View style={styles.form}>

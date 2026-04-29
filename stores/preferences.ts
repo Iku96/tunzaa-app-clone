@@ -19,16 +19,21 @@ function getInitialSystemTheme(): "light" | "dark" {
 }
 
 export interface Preferences {
-  language: "en" | "fr" | "sw";
+  language: "en" | "sw" | "fr" | "ar" | "es" | "pt" | "zh" | "de";
   theme: "light" | "dark";
   notifications: boolean;
   hasSetLanguage: boolean; // Track if user has explicitly set a language
 }
 
 export const languages = [
-  { code: "sw", name: "Kiswahili", flag: "🇹🇿" },
   { code: "en", name: "English", flag: "🇬🇧" },
-  // { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "sw", name: "Kiswahili", flag: "🇹🇿" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "ar", name: "العربية", flag: "🇦🇪" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "pt", name: "Português", flag: "🇵🇹" },
+  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
 ] as const;
 
 interface PreferencesState extends Preferences {

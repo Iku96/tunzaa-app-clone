@@ -4,10 +4,17 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
+import { Modal } from 'react-native';
+import { SUPPORTED_LANGUAGES } from '../../../src/constants/languages';
 
 export default function SettingsScreen() {
     const router = useRouter();
     const { logout } = useTunzaaAuth();
+    const { locale, setLocale, t } = useLanguage();
+    const [showLanguageModal, setShowLanguageModal] = React.useState(false);
+
+    const languages = SUPPORTED_LANGUAGES;
 
     const handleSignOut = async () => {
         Alert.alert(
@@ -55,9 +62,39 @@ export default function SettingsScreen() {
                 {renderSettingItem("alarm-outline", "Reminders", () => router.push('/(buyer)/profile/settings/reminder' as any))}
                 {renderSettingItem("cube-outline", "Delivery Method", () => router.push('/(buyer)/profile/delivery' as any))}
                 {renderSettingItem("document-text-outline", "Policies", () => router.push('/(buyer)/profile/settings/policies' as any))}
-                {renderSettingItem("globe-outline", "Language")}
+                {renderSettingItem("globe-outline", "Language", () => setShowLanguageModal(true))}
                 {renderSettingItem("person-outline", "Account Manager", () => router.push('/(buyer)/profile/manager'))}
                 {renderSettingItem("log-out-outline", "Log out", handleSignOut, true)}
+
+                <Modal visible={showLanguageModal} transparent animationType="slide">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Select Language</Text>
+                                <TouchableOpacity onPress={() => setShowLanguageModal(false)}>
+                                    <Ionicons name="close" size={24} color="#1F2937" />
+                                </TouchableOpacity>
+                            </View>
+                            {languages.map((lang) => (
+                                <TouchableOpacity
+                                    key={lang.code}
+                                    style={styles.langOption}
+                                    onPress={() => {
+                                        setLocale(lang.code as any);
+                                        setShowLanguageModal(false);
+                                    }}
+                                >
+                                    <Text style={[styles.langText, locale === lang.code && styles.langTextActive]}>
+                                        {lang.nativeName || lang.name}
+                                    </Text>
+                                    {locale === lang.code && (
+                                        <Ionicons name="checkmark" size={20} color="#425BA4" />
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+                </Modal>
 
                 <View style={styles.footer}>
                     <Text style={styles.versionText}>Tunzaa Version 2.0</Text>
@@ -124,5 +161,44 @@ const styles = StyleSheet.create({
     versionText: {
         fontSize: 12,
         color: '#9CA3AF',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        paddingBottom: 40,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#111827',
+    },
+    langOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    langText: {
+        fontSize: 16,
+        color: '#4B5563',
+    },
+    langTextActive: {
+        color: '#425BA4',
+        fontWeight: 'bold',
     },
 });

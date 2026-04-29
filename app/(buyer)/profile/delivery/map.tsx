@@ -1,29 +1,128 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Modal, ActivityIndicator, Alert, Platform } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
+
+const { width, height } = Dimensions.get('window');
 
 export default function DeliveryTrackingScreen() {
     const router = useRouter();
-    // 0 = Review, 1 = Assigned Modal, 2 = Active Tracking
+    const params = useLocalSearchParams();
+    
+    // 0 = Pick/Review, 1 = Assigned Modal, 2 = Active Tracking
     const [trackingState, setTrackingState] = useState(0);
+    const [region, setRegion] = useState({
+        latitude: -6.7924,
+        longitude: 39.2083,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+    });
+    const [selectedLocation, setSelectedLocation] = useState({
+        latitude: -6.7924,
+        longitude: 39.2083,
+    });
+    const [address, setAddress] = useState('Fetching address...');
+    const [isLoading, setIsLoading] = useState(true);
+    
+    // Date State
+    const [date, setDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
-    const handleConfirm = () => {
-        setTrackingState(1);
+    useEffect(() => {
+        (async () => {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'Permission to access location was denied');
+                setIsLoading(false);
+                return;
+            }
+
+            let location = await Location.getCurrentPositionAsync({});
+            const newCoords = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            };
+            setSelectedLocation(newCoords);
+            setRegion({
+                ...region,
+                ...newCoords,
+            });
+            reverseGeocode(newCoords.latitude, newCoords.longitude);
+            setIsLoading(false);
+        })();
+    }, []);
+
+    const reverseGeocode = async (lat: number, lng: number) => {
+        try {
+            const results = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+            if (results.length > 0) {
+                const item = results[0];
+                const addr = `${item.name || ''} ${item.street || ''}, ${item.city || item.region || ''}`;
+                setAddress(addr.trim());
+            }
+        } catch (e) {
+            console.error(e);
+        }
     };
 
-    const handleMockDelivered = () => {
-        // Navigates to rating flow once "Call driver" is clicked or mock finishes
-        router.push('/(buyer)/orders/rate');
+    const handleRegionChangeComplete = (newRegion: any) => {
+        // Only update if we are in "Pick" mode (simulated here)
+        setSelectedLocation({
+            latitude: newRegion.latitude,
+            longitude: newRegion.longitude,
+        });
+        reverseGeocode(newRegion.latitude, newRegion.longitude);
+    };
+
+    const handleConfirm = () => {
+        if (trackingState === 0) {
+            // If we came from the address form, we should go back with the result
+            if (params.mode === 'pick') {
+                router.replace({
+                    pathname: '/(buyer)/profile/delivery/address',
+                    params: { 
+                        address: address,
+                        lat: selectedLocation.latitude,
+                        lng: selectedLocation.longitude
+                    }
+                });
+            } else {
+                setTrackingState(1);
+            }
+        }
+    };
+
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        setShowDatePicker(false);
+        if (selectedDate) {
+            setDate(selectedDate);
+        }
     };
 
     const renderReviewCard = () => (
         <View style={styles.floatingCard}>
-            <View style={styles.dateLabelRow}>
+            <TouchableOpacity 
+                style={styles.dateLabelRow} 
+                onPress={() => setShowDatePicker(true)}
+            >
                 <Ionicons name="calendar-outline" size={16} color="#4B5563" />
-                <Text style={styles.dateLabelText}>Thursday January 10th</Text>
-            </View>
+                <Text style={styles.dateLabelText}>{format(date, 'EEEE MMMM do')}</Text>
+                <Ionicons name="chevron-down" size={14} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            {showDatePicker && (
+                <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                />
+            )}
 
             <View style={styles.locationTimeline}>
                 <View style={styles.timelineItem}>
@@ -38,9 +137,11 @@ export default function DeliveryTrackingScreen() {
                     <View style={styles.greenRing} />
                     <View style={styles.timelineContent}>
                         <Text style={styles.locationTitle}>Drop off location</Text>
-                        <Text style={styles.locationSubtitle}>Mbezi shoppers Kawe</Text>
+                        <Text style={styles.locationSubtitle}>{address || 'Mbezi shoppers Kawe'}</Text>
                     </View>
-                    <Ionicons name="create-outline" size={20} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
+                    <TouchableOpacity onPress={() => setTrackingState(0)}>
+                        <Ionicons name="create-outline" size={20} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -50,7 +151,7 @@ export default function DeliveryTrackingScreen() {
             </View>
 
             <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirm}>
-                <Text style={styles.confirmBtnText}>Confirm</Text>
+                <Text style={styles.confirmBtnText}>{params.mode === 'pick' ? 'Confirm Location' : 'Confirm Order'}</Text>
             </TouchableOpacity>
         </View>
     );
@@ -59,7 +160,7 @@ export default function DeliveryTrackingScreen() {
         <Modal visible={trackingState === 1} transparent animationType="fade">
             <View style={styles.modalOverlay}>
                 <View style={styles.successModalCard}>
-                    <Image source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3209/3209955.png' }} style={styles.scooterIcon} />
+                    <Ionicons name="bicycle" size={60} color="#425BA4" style={{ marginBottom: 16 }} />
                     <Text style={styles.successText}>
                         Your Order successfully assigned. To: <Text style={{ fontWeight: 'bold' }}>Everest driver</Text>
                     </Text>
@@ -75,12 +176,11 @@ export default function DeliveryTrackingScreen() {
         <View style={styles.floatingCard}>
             <View style={styles.trackingHeaderRow}>
                 <Text style={styles.trackingTitle}>Your order is being processed</Text>
-                <TouchableOpacity onPress={handleMockDelivered}>
+                <TouchableOpacity onPress={() => setTrackingState(0)}>
                     <Ionicons name="refresh" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
             </View>
 
-            {/* Horizontal timeline */}
             <View style={styles.horizontalTimeline}>
                 <View style={styles.hLine} />
                 <View style={[styles.hNode, styles.hNodeActive]}>
@@ -97,10 +197,6 @@ export default function DeliveryTrackingScreen() {
             <View style={styles.divider} />
 
             <View style={styles.driverRow}>
-                <View style={styles.vodacomLogoMock}>
-                    {/* Mock identical to screenshot red vodacom circle icon */}
-                    <Image source={{ uri: 'https://1000logos.net/wp-content/uploads/2021/04/Vodacom-logo.png' }} style={{ width: 30, height: 30, borderRadius: 15 }} />
-                </View>
                 <View style={styles.driverInfo}>
                     <Text style={styles.driverSub}>Vodacom Shop</Text>
                     <Text style={styles.driverName}>Everest driver</Text>
@@ -111,7 +207,7 @@ export default function DeliveryTrackingScreen() {
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.callBtn} onPress={handleMockDelivered}>
+            <TouchableOpacity style={styles.callBtn} onPress={() => Alert.alert('Calling...', 'Calling Everest driver...')}>
                 <Ionicons name="call" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
                 <Text style={styles.callBtnText}>Call the driver</Text>
             </TouchableOpacity>
@@ -120,49 +216,41 @@ export default function DeliveryTrackingScreen() {
 
     return (
         <View style={styles.container}>
-            {/* Map Placeholder */}
-            <View style={styles.mapContainer}>
-                <Image
-                    source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&auto=format&fit=crop&q=80' }}
-                    style={styles.mapImage}
+            <MapView
+                style={styles.map}
+                provider={PROVIDER_GOOGLE}
+                initialRegion={region}
+                onRegionChangeComplete={handleRegionChangeComplete}
+            >
+                <Marker
+                    coordinate={selectedLocation}
+                    draggable
+                    pinColor="#425BA4"
                 />
+            </MapView>
 
-                {/* Simulated Pins/Route on Map */}
-                <View style={styles.mapOverlayLayer}>
-                    {trackingState === 2 ? (
-                        <>
-                            {/* Blue route line and Car icon simulation */}
-                            <Ionicons name="location" size={36} color="#22C55E" style={{ position: 'absolute', top: '30%', right: '30%' }} />
-                            <Ionicons name="car" size={32} color="#425BA4" style={{ position: 'absolute', top: '45%', left: '45%' }} />
-                            <View style={styles.mockRouteLine} />
-                        </>
-                    ) : (
-                        <Ionicons name="location" size={40} color="#425BA4" style={{ position: 'absolute', top: '40%', left: '40%' }} />
-                    )}
-                </View>
-            </View>
-
-            {/* Content Overlays */}
-            <SafeAreaView style={styles.overlay} edges={['top']}>
-
-                {/* Dynamic Header */}
+            <SafeAreaView style={styles.overlay} pointerEvents="box-none" edges={['top']}>
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                         <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                     </TouchableOpacity>
-                    {trackingState === 0 && (
-                        <Text style={styles.headerTitle}>Review your order before delivery</Text>
-                    )}
+                    <Text style={styles.headerTitle}>
+                        {trackingState === 2 ? 'Tracking Order' : 'Review Delivery Details'}
+                    </Text>
                 </View>
 
-                {/* Bottom Card content */}
                 <View style={styles.bottomContainer}>
                     {trackingState === 0 ? renderReviewCard() : renderTrackingCard()}
                 </View>
-
             </SafeAreaView>
 
             {renderAssignedModal()}
+            
+            {isLoading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color="#425BA4" />
+                </View>
+            )}
         </View>
     );
 }
@@ -172,28 +260,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
-    mapContainer: {
+    map: {
+        width: width,
+        height: height,
+    },
+    loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#E5E7EB',
-    },
-    mapImage: {
-        width: '100%',
-        height: '100%',
-        opacity: 0.9,
-    },
-    mapOverlayLayer: {
-        ...StyleSheet.absoluteFillObject,
-    },
-    mockRouteLine: {
-        position: 'absolute',
-        top: '35%',
-        left: '48%',
-        width: 60,
-        height: 80,
-        borderLeftWidth: 4,
-        borderBottomWidth: 4,
-        borderColor: '#425BA4',
-        borderBottomLeftRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     overlay: {
         flex: 1,
@@ -204,7 +279,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingVertical: 12,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
         marginHorizontal: 16,
         marginTop: 16,
         borderRadius: 12,
@@ -237,8 +312,6 @@ const styles = StyleSheet.create({
         shadowRadius: 12,
         elevation: 8,
     },
-
-    // Review Card Styles
     dateLabelRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -301,7 +374,7 @@ const styles = StyleSheet.create({
         marginBottom: 2,
     },
     locationSubtitle: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#1A1A1A',
     },
@@ -334,8 +407,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-
-    // Modal Styles
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.4)',
@@ -347,12 +418,6 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 32,
         alignItems: 'center',
-    },
-    scooterIcon: {
-        width: 80,
-        height: 80,
-        resizeMode: 'contain',
-        marginBottom: 16,
     },
     successText: {
         fontSize: 15,
@@ -373,8 +438,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: 'bold',
     },
-
-    // Tracking Card Styles
     trackingHeaderRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -444,16 +507,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 24,
-    },
-    vodacomLogoMock: {
-        marginRight: 12,
-        borderRadius: 15,
-        backgroundColor: '#FFFFFF',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 1,
     },
     driverInfo: {
         flex: 1,

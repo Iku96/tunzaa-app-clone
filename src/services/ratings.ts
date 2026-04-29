@@ -30,8 +30,19 @@ export const ratingsApi = {
 
   // Update an existing rating
   updateRating: async (ratingId: string, data: UpdateRatingBody): Promise<Rating> => {
-    const response = await apiClient.put<Rating>(`/ratings/${ratingId}`, data);
-    return response.data;
+    console.log(`🌐 [RatingsAPI] Updating rating ${ratingId}`, data);
+    try {
+      const response = await apiClient.put<Rating>(`/ratings/${ratingId}`, data);
+      console.log("✅ [RatingsAPI] Update Success", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ [RatingsAPI] Update Failed", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      throw error;
+    }
   },
 
   // Delete a rating

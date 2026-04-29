@@ -4,22 +4,40 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useWishlistStore } from '@/src/stores/wishlist';
+
 const { width } = Dimensions.get('window');
 // 3 columns with minimal spacing
 const ITEM_SIZE = (width - 4) / 3;
 
 export default function LikesScreen() {
     const router = useRouter();
+    const { items: likedItems } = useWishlistStore();
 
-    // Mock images based on the watch items in screenshot
-    const mockImages = [
-        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1517420879524-86d64ac2f339?auto=format&fit=crop&q=80&w=400',
-        'https://images.unsplash.com/photo-1523456338356-9ddf4453b516?auto=format&fit=crop&q=80&w=400',
-    ];
+    const renderItem = ({ item }: { item: any }) => {
+        const product = item.product || item;
+        
+        // Handle images array or single image field
+        let imageUrl = 'https://via.placeholder.com/400x400?text=No+Image';
+        if (product.images && product.images.length > 0) {
+            imageUrl = product.images[0].url || product.images[0];
+        } else if (product.image) {
+            imageUrl = product.image;
+        }
+        
+        return (
+            <TouchableOpacity 
+                style={styles.imageContainer}
+                onPress={() => router.push(`/(buyer)/product/${item.product_id}`)}
+            >
+                <Image 
+                    source={{ uri: imageUrl }} 
+                    style={styles.image}
+                    defaultSource={{ uri: 'https://via.placeholder.com/400x400?text=Loading...' }}
+                />
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -32,18 +50,21 @@ export default function LikesScreen() {
                 <View style={{ width: 24 }} />
             </View>
 
-            <FlatList
-                data={mockImages}
-                keyExtractor={(item, index) => index.toString()}
-                numColumns={3}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.imageContainer}>
-                        <Image source={{ uri: item }} style={styles.image} />
-                    </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-            />
+            {likedItems.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Ionicons name="heart-outline" size={64} color="#D1D5DB" />
+                    <Text style={styles.emptyText}>You haven't liked any products yet.</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={likedItems}
+                    keyExtractor={(item) => item.product_id}
+                    numColumns={3}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                />
+            )}
         </SafeAreaView>
     );
 }
@@ -84,5 +105,17 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#9CA3AF',
+        textAlign: 'center',
+        marginTop: 16,
     },
 });

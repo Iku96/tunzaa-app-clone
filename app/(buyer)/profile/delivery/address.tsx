@@ -1,16 +1,83 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTunzaaAuth } from '../../../../src/contexts/TunzaaAuthContext';
+import { useGetBuyerProfile, useUpdateBuyerProfile } from '../../../../src/services/buyers';
+import { DeliveryAddress } from '../../../../src/services/types/buyers';
 
 export default function AddDeliveryAddressScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const { user } = useTunzaaAuth();
+    
+    // API Data
+    const { data: profile, isLoading: profileLoading } = useGetBuyerProfile(user?.user_id || user?.id || '');
+    const { mutate: updateProfile, isPending: isSaving } = useUpdateBuyerProfile();
+
+    // Form State
     const [addressType, setAddressType] = useState<'home' | 'work' | 'hotel' | 'other'>('home');
+    const [street, setStreet] = useState('');
+    const [houseNo, setHouseNo] = useState('');
+    const [city, setCity] = useState('');
+    const [deliveryNote, setDeliveryNote] = useState('');
 
     // Check if we came back from the map with a selected address
     const selectedMapAddress = params.address ? String(params.address) : '';
+
+    useEffect(() => {
+        if (selectedMapAddress) {
+            setStreet(selectedMapAddress);
+        }
+    }, [selectedMapAddress]);
+
+    const handleSaveAddress = () => {
+        if (!street.trim() || !city.trim()) {
+            Alert.alert('Error', 'Please enter at least a street and city.');
+            return;
+        }
+
+        if (!user) {
+            Alert.alert('Error', 'You must be logged in to save addresses.');
+            return;
+        }
+
+        const newAddress: DeliveryAddress = {
+            title: addressType.charAt(0).toUpperCase() + addressType.slice(1),
+            land_mark: deliveryNote,
+            address_line1: `${houseNo} ${street}`.trim(),
+            city: city,
+            state_province: city, // Fallback
+            country: 'Tanzania',
+            lat: params.lat ? String(params.lat) : undefined,
+            lng: params.lng ? String(params.lng) : undefined,
+        };
+
+        const currentAddresses = profile?.delivery_address || [];
+        
+        updateProfile({
+            userId: user.user_id || user.id,
+            data: {
+                user_id: user.user_id || user.id,
+                tenant_id: profile?.tenant_id || user.tenant_id || '',
+                contact_email: profile?.contact_email || user.email || '',
+                contact_phone: profile?.contact_phone || user.phone_number || '',
+                delivery_address: [...currentAddresses, newAddress],
+                default_delivery_address: newAddress.address_line1
+            }
+        }, {
+            onSuccess: () => {
+                Alert.alert('Success', 'Address saved successfully!', [
+                    { text: 'OK', onPress: () => router.replace('/(buyer)/profile/delivery/saved') }
+                ]);
+            },
+            onError: (err) => {
+                console.error('Failed to save address:', err);
+                Alert.alert('Error', 'Failed to save address. Please try again.');
+            }
+        });
+    };
 
     const renderProgressStepper = () => (
         <View style={styles.stepperContainer}>
@@ -42,6 +109,7 @@ export default function AddDeliveryAddressScreen() {
 
     const renderTypeBtn = (id: 'home' | 'work' | 'hotel' | 'other', icon: any, label: string) => (
         <TouchableOpacity
+            key={id}
             style={[styles.typeBtn, addressType === id && styles.typeBtnActive]}
             onPress={() => setAddressType(id)}
         >
@@ -54,6 +122,16 @@ export default function AddDeliveryAddressScreen() {
             <Text style={[styles.typeText, addressType === id && styles.typeTextActive]}>{label}</Text>
         </TouchableOpacity>
     );
+
+    if (profileLoading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#425BA4" />
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -87,8 +165,8 @@ export default function AddDeliveryAddressScreen() {
                         onPress={() => router.push('/(buyer)/profile/delivery/map')}
                     >
                         <Ionicons name="search-outline" size={20} color="#9CA3AF" />
-                        <Text style={[styles.mapSearchText, !selectedMapAddress && styles.mapSearchPlaceholder]}>
-                            {selectedMapAddress || "772M+VJX Shoppers Plaza Masaki, Dar Es Salaam, TZ..."}
+                        <Text style={[styles.mapSearchText, !street && styles.mapSearchPlaceholder]}>
+                            {street || "772M+VJX Shoppers Plaza Masaki, Dar Es Salaam, TZ..."}
                         </Text>
                         <Ionicons name="map-outline" size={18} color="#425BA4" />
                     </TouchableOpacity>
@@ -97,18 +175,24 @@ export default function AddDeliveryAddressScreen() {
                         style={styles.input}
                         placeholder="Enter Street name"
                         placeholderTextColor="#9CA3AF"
+                        value={street}
+                        onChangeText={setStreet}
                     />
 
                     <TextInput
                         style={styles.input}
                         placeholder="Enter House No."
                         placeholderTextColor="#9CA3AF"
+                        value={houseNo}
+                        onChangeText={setHouseNo}
                     />
 
                     <TextInput
                         style={styles.input}
                         placeholder="City"
                         placeholderTextColor="#9CA3AF"
+                        value={city}
+                        onChangeText={setCity}
                     />
 
                     <Text style={styles.formLabel}>Delivery Note<Text style={{ color: '#EF4444' }}>*</Text></Text>
@@ -118,15 +202,22 @@ export default function AddDeliveryAddressScreen() {
                         placeholderTextColor="#9CA3AF"
                         multiline
                         textAlignVertical="top"
+                        value={deliveryNote}
+                        onChangeText={setDeliveryNote}
                     />
                 </ScrollView>
 
                 <View style={styles.footer}>
                     <TouchableOpacity
-                        style={styles.saveButton}
-                        onPress={() => router.replace('/(buyer)/profile/delivery/saved')}
+                        style={[styles.saveButton, isSaving && { opacity: 0.7 }]}
+                        onPress={handleSaveAddress}
+                        disabled={isSaving}
                     >
-                        <Text style={styles.saveButtonText}>Save Address</Text>
+                        {isSaving ? (
+                            <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                            <Text style={styles.saveButtonText}>Save Address</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>

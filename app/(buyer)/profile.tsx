@@ -10,6 +10,7 @@ import ProductCard from '../../src/components/product/ProductCardVertical';
 import { useMarketplace } from '../../src/hooks/useMarketplace';
 import { authApi } from '../../src/services/auth';
 import BottomNav from '../../src/components/navigation/BottomNav';
+import { useProfileCompletion } from '../../src/hooks/useProfileCompletion';
 
 const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
 
@@ -17,6 +18,7 @@ export default function ProfileScreen() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
     const { products } = useMarketplace();
+    const { percentage } = useProfileCompletion();
 
     const [profileData, setProfileData] = useState({
         username: '',
@@ -147,9 +149,15 @@ export default function ProfileScreen() {
                 </View>
 
                 {/* Setup Banner */}
-                <View style={styles.bannerContainer}>
-                    <ProfileSetupBanner progress={0.6} points={53} onPress={() => router.push('/(buyer)/profile/edit')} />
-                </View>
+                {percentage < 100 && (
+                    <View style={styles.bannerContainer}>
+                        <ProfileSetupBanner
+                            progress={percentage / 100}
+                            points={100 - percentage}
+                            onPress={() => router.push('/(buyer)/profile/edit')}
+                        />
+                    </View>
+                )}
 
                 {/* Recommended Section */}
                 <View style={styles.recommendedSection}>

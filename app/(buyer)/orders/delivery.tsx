@@ -3,6 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView,
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useGetBuyerProfile } from '../../../src/services/buyers';
+import { useGetUserOrders } from '../../../src/services/orders';
+import { ActivityIndicator } from 'react-native';
+
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -11,7 +17,31 @@ const MAP_IMAGE = 'https://media.wired.com/photos/59269cd37034dc5f91bec0f1/maste
 
 export default function DeliverySetupScreen() {
     const router = useRouter();
+    const { user } = useTunzaaAuth();
+    const { t } = useLanguage();
+    const userId = user?.user_id || user?.id || '';
+
+    const { data: profile, isLoading: profileLoading } = useGetBuyerProfile(userId);
+    const { data: ordersData, isLoading: ordersLoading } = useGetUserOrders(userId, { limit: 10 }, !!userId);
+
     const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
+
+    const defaultAddress = profile?.default_delivery_address || (profile?.delivery_address?.[0]?.address_line1) || 'No address set';
+    const city = profile?.delivery_address?.[0]?.city || 'Tanzania';
+
+    const shippedOrder = React.useMemo(() => {
+        if (!ordersData) return null;
+        const items = Array.isArray(ordersData) ? ordersData : (ordersData as any).items || [];
+        return items.find((o: any) => o.status?.toLowerCase() === 'shipped' || o.status?.toLowerCase() === 'transit' || o.status?.toLowerCase() === 'pending') || items[0];
+    }, [ordersData]);
+
+    if (profileLoading || ordersLoading) {
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#425BA4" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -24,15 +54,17 @@ export default function DeliverySetupScreen() {
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#1F2937" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Review your order before delivery</Text>
+                    <Text style={styles.headerTitle}>{t.deliveryReviewOrder}</Text>
                     <View style={{ width: 40 }} />
                 </View>
 
                 {/* Drop-off Location Bubble on Map */}
                 <View style={styles.mapBubble}>
                     <View style={styles.bubbleContent}>
-                        <Text style={styles.bubbleTitle}>Drop-off location</Text>
-                        <Text style={styles.bubbleSubtitle}>Picked up at 2:35 PM</Text>
+                        <Text style={styles.bubbleTitle}>{t.deliveryDropOffLocation}</Text>
+                        <Text style={styles.bubbleSubtitle}>
+                            {shippedOrder ? `Order #${shippedOrder.order_number}` : t.deliveryNoActive}
+                        </Text>
                     </View>
                     <View style={styles.bubbleArrow} />
                 </View>
@@ -44,7 +76,7 @@ export default function DeliverySetupScreen() {
 
                 <View style={styles.timeInfo}>
                     <Ionicons name="time-outline" size={20} color="#6B7280" />
-                    <Text style={styles.timeText}>Estimated delivery time</Text>
+                    <Text style={styles.timeText}>{t.deliveryEstimatedTime}</Text>
                     <Text style={styles.timeValue}>30 - 40 min</Text>
                 </View>
 
@@ -60,7 +92,7 @@ export default function DeliverySetupScreen() {
                             {deliveryType === 'standard' && <View style={styles.radioInner} />}
                         </View>
                         <View>
-                            <Text style={styles.typeTitle}>Standard</Text>
+                            <Text style={styles.typeTitle}>{t.deliveryStandard}</Text>
                             <Text style={styles.typeTime}>30 - 40 min</Text>
                         </View>
                     </TouchableOpacity>
@@ -73,7 +105,7 @@ export default function DeliverySetupScreen() {
                             {deliveryType === 'express' && <View style={styles.radioInner} />}
                         </View>
                         <View>
-                            <Text style={styles.typeTitle}>Express</Text>
+                            <Text style={styles.typeTitle}>{t.deliveryExpress}</Text>
                             <Text style={styles.typeTime}>20 - 30 min</Text>
                         </View>
                     </TouchableOpacity>
@@ -86,8 +118,8 @@ export default function DeliverySetupScreen() {
                             <Ionicons name="location-outline" size={20} color="#425BA4" />
                         </View>
                         <View style={styles.addressDetails}>
-                            <Text style={styles.addressLabel}>Postal Address</Text>
-                            <Text style={styles.addressValue} numberOfLines={1}>Dar es salaam, Kariakoo</Text>
+                            <Text style={styles.addressLabel}>{t.deliveryPostalAddress}</Text>
+                            <Text style={styles.addressValue} numberOfLines={1}>{city}</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                     </View>
@@ -97,8 +129,8 @@ export default function DeliverySetupScreen() {
                             <Ionicons name="navigate-outline" size={20} color="#425BA4" />
                         </View>
                         <View style={styles.addressDetails}>
-                            <Text style={styles.addressLabel}>Drop-off Address</Text>
-                            <Text style={styles.addressValue} numberOfLines={1}>Delivery address: Wasafi Shoppers, Haile..</Text>
+                            <Text style={styles.addressLabel}>{t.deliveryDropOffAddress}</Text>
+                            <Text style={styles.addressValue} numberOfLines={1}>{defaultAddress}</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                     </View>
@@ -107,19 +139,21 @@ export default function DeliverySetupScreen() {
                 {/* Driver Call Section */}
                 <TouchableOpacity style={styles.callDriver}>
                     <Ionicons name="call-outline" size={20} color="#4B5563" />
-                    <Text style={styles.callText}>Call Driver</Text>
+                    <Text style={styles.callText}>{t.deliveryCallDriver}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.costRow}>
-                    <Text style={styles.costLabel}>Delivery Cost</Text>
-                    <Text style={styles.costValue}>Tsh. 10,300</Text>
+                    <Text style={styles.costLabel}>{t.deliveryCost}</Text>
+                    <Text style={styles.costValue}>
+                        Tsh {shippedOrder?.totals?.shipping?.toLocaleString() || '0'}
+                    </Text>
                 </View>
 
                 <TouchableOpacity
                     style={styles.confirmButton}
                     onPress={() => router.push('/(buyer)/orders/success')}
                 >
-                    <Text style={styles.confirmButtonText}>Confirm</Text>
+                    <Text style={styles.confirmButtonText}>{t.deliveryConfirm}</Text>
                 </TouchableOpacity>
 
             </View>

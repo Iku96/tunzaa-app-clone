@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, ScrollView, Dimensions, ActivityIndicator, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { format, differenceInDays, differenceInWeeks, startOfDay } from 'date-fns';
 
 const { width } = Dimensions.get('window');
 
 import { useQuery } from '@tanstack/react-query';
 import { productsApi } from '../../../src/services/products';
 import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
-import { ActivityIndicator } from 'react-native';
 
 export default function InstallmentPlanScreen() {
     const router = useRouter();
@@ -25,12 +26,34 @@ export default function InstallmentPlanScreen() {
     const product = apiProduct ? mapApiProductToUI(apiProduct) : null;
 
     // State
-    const [completionDate, setCompletionDate] = useState('20/02/2026');
+    const [date, setDate] = useState(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // Default 30 days from now
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [completionDate, setCompletionDate] = useState(format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'dd/MM/yyyy'));
     const [frequency, setFrequency] = useState('Every day');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    // Dynamic calculation: e.g. pay over 5 months (approx 150 days)
-    const goalAmount = product ? Math.ceil(product.price / 50) : 0; // Simplified for demo
+    const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        const currentDate = selectedDate || date;
+        setShowDatePicker(Platform.OS === 'ios');
+        setDate(currentDate);
+        setCompletionDate(format(currentDate, 'dd/MM/yyyy'));
+    };
+
+    // Dynamic calculations
+    const today = startOfDay(new Date());
+    const targetDate = startOfDay(date);
+    const daysUntilCompletion = Math.max(1, differenceInDays(targetDate, today));
+    
+    const getIntervals = () => {
+        if (frequency === 'Every day') return daysUntilCompletion;
+        if (frequency === 'Every week') return Math.max(1, Math.floor(daysUntilCompletion / 7));
+        if (frequency === 'After 3 days') return Math.max(1, Math.floor(daysUntilCompletion / 3));
+        return 1;
+    };
+
+    const intervals = getIntervals();
+    const goalAmount = product ? Math.ceil(product.price / intervals) : 0;
+    const durationMonths = Math.max(1, Math.ceil(daysUntilCompletion / 30));
 
     const handleContinue = () => {
         setShowSuccessModal(true);
@@ -39,7 +62,14 @@ export default function InstallmentPlanScreen() {
     const handleMakePayment = () => {
         setShowSuccessModal(false);
         // Navigate to payment selection/input
-        router.push('/(buyer)/checkout/payment-input');
+        router.push({
+            pathname: '/(buyer)/payment',
+            params: {
+                productId: productId,
+                paymentMethod: 'tunzaa_instalments',
+                returnTo: 'product'
+            }
+        });
     };
 
     return (
@@ -79,7 +109,7 @@ export default function InstallmentPlanScreen() {
                                 <Text style={styles.productName}>{product.name}</Text>
                                 <Text style={styles.productPrice}>Tzs {product.price.toLocaleString()}</Text>
                                 <View style={styles.badge}>
-                                    <Text style={styles.badgeText}>Goal duration: 5 months</Text>
+                                    <Text style={styles.badgeText}>Goal duration: {durationMonths} {durationMonths === 1 ? 'month' : 'months'}</Text>
                                 </View>
                             </View>
                         </View>
@@ -90,11 +120,24 @@ export default function InstallmentPlanScreen() {
                 <Text style={styles.label}>When do you want to complete your payment?</Text>
                 <Text style={styles.helperText}>Schedule your time</Text>
 
-                <TouchableOpacity style={styles.inputButton}>
+                <TouchableOpacity 
+                    style={styles.inputButton} 
+                    onPress={() => setShowDatePicker(true)}
+                >
                     <Ionicons name="calendar-outline" size={20} color="#6B7280" />
                     <Text style={styles.inputText}>{completionDate}</Text>
                     <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
                 </TouchableOpacity>
+
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="default"
+                        onChange={onDateChange}
+                        minimumDate={new Date()}
+                    />
+                )}
 
                 {/* Frequency Selection */}
                 <Text style={styles.label}>How often do you want to pay?</Text>
@@ -119,8 +162,8 @@ export default function InstallmentPlanScreen() {
 
                 {/* Custom Frequency Option */}
                 <View style={styles.customFreqRow}>
-                    <Text style={styles.customFreqLabel}>After 3 days</Text>
-                    <TouchableOpacity>
+                    <Text style={styles.customFreqLabel}>Or</Text>
+                    <TouchableOpacity onPress={() => setShowDatePicker(true)}>
                         <Text style={styles.setOwnTime}>Set your own time</Text>
                     </TouchableOpacity>
                 </View>
@@ -156,7 +199,7 @@ export default function InstallmentPlanScreen() {
                             You've set a goal for <Text style={styles.boldText}>{product?.name}</Text>
                         </Text>
                         <Text style={styles.modalText}>
-                            To reach Your goal, you'll need to pay <Text style={styles.highlightText}>Tzs. {goalAmount.toLocaleString()}</Text> {frequency.toLowerCase()} until June 30,2025
+                            To reach Your goal, you'll need to pay <Text style={styles.highlightText}>Tzs. {goalAmount.toLocaleString()}</Text> {frequency.toLowerCase()} until {completionDate}
                         </Text>
 
                         <TouchableOpacity style={styles.modalButton} onPress={handleMakePayment}>
@@ -295,16 +338,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     freqButtonActive: {
-        borderColor: '#425BA4',
-        backgroundColor: '#EFF6FF',
+        borderColor: '#1E3A8A',
+        backgroundColor: '#1E3A8A', // Solid blue for active tab
     },
     freqText: {
         fontSize: 12,
         color: '#6B7280',
+        fontWeight: '500',
     },
     freqTextActive: {
-        color: '#425BA4',
-        fontWeight: '600',
+        color: '#FFFFFF', // White text on active tab
+        fontWeight: '700',
     },
     customFreqRow: {
         flexDirection: 'row',
