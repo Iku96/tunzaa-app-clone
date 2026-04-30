@@ -48,7 +48,7 @@ export default function AccountScreen() {
                     if (!userId) return;
 
                     const storedExtras = await AsyncStorage.getItem(`${PROFILE_EXTRAS_KEY}_${userId}`);
-                    const localData = storedExtras ? JSON.parse(storedExtras) : {};
+                    const localData = storedExtras ? (JSON.parse(storedExtras) || {}) : {};
 
                     let apiMeta: Record<string, any> = {};
                     try {

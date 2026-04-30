@@ -21,7 +21,7 @@ export function useProfileCompletion() {
                 const stored = await AsyncStorage.getItem(`${PROFILE_EXTRAS_KEY}_${userId}`);
                 if (stored) {
                     try {
-                        setLocalExtras(JSON.parse(stored));
+                        setLocalExtras(JSON.parse(stored) || {});
                     } catch (e) {
                         console.warn('[useProfileCompletion] Failed to parse local extras');
                     }
@@ -45,11 +45,11 @@ export function useProfileCompletion() {
     }
 
     // 3. Merge: Local Extras (AsyncStorage) takes priority for immediate feedback
-    const metadata = { ...topMeta, ...profileMeta, ...localExtras };
+    const metadata = { ...(topMeta || {}), ...(profileMeta || {}), ...(localExtras || {}) };
     
     // 4. Robust value finder
     const getValue = (key: string, topLevelVal?: any) => {
-        return !!(topLevelVal || metadata[key] || (user as any)[key] || (buyerProfile as any)?.[key]);
+        return !!(topLevelVal || metadata[key] || (user as any)?.[key] || (buyerProfile as any)?.[key]);
     };
 
     const fields: CompletionField[] = [

@@ -216,6 +216,7 @@ export default function EditProfileScreen() {
                 username: username || undefined,
                 gender: gender || undefined,
                 date_of_birth: dob || undefined,
+                profile_picture: profileImage || targetProfile?.metadata?.profile_picture || undefined,
             };
 
             // 1. Update first_name / last_name on Tunzaa API

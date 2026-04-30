@@ -34,6 +34,12 @@ export default function ShopProductDetailScreen() {
     const [selectedScore, setSelectedScore] = useState(5);
     const [isEditing, setIsEditing] = useState(false);
 
+    // Helper for safe avatar URLs
+    const getAvatarUrl = (url: string | null | undefined, name: string) => {
+        if (url && url.startsWith('http')) return url;
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=EFF6FF&color=425BA4`;
+    };
+
     // Likes (Social)
     const likesStore = useLikesStore();
     const isLiked = likesStore.isLiked(id as string);
@@ -258,7 +264,7 @@ export default function ShopProductDetailScreen() {
                     <View style={styles.cardHeader}>
                         <View style={styles.vendorLogoContainer}>
                             <Image 
-                                source={{ uri: shop?.branding?.logo_url || 'https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=200' }} 
+                                source={{ uri: getAvatarUrl(shop?.branding?.logo_url, shop?.store_name || 'Store') }} 
                                 style={styles.vendorLogo} 
                             />
                         </View>
@@ -374,8 +380,7 @@ export default function ShopProductDetailScreen() {
                                 <View style={styles.reviewItem}>
                                     <View style={styles.reviewAvatar}>
                                         <Image 
-                                            source={{ uri: (user?.metadata?.profile_picture || userRating.metadata?.user_avatar_url) || 
-                                                           `https://ui-avatars.com/api/?name=${user?.display_name || 'User'}&background=EFF6FF&color=425BA4` }} 
+                                            source={{ uri: getAvatarUrl(user?.metadata?.profile_picture || userRating.metadata?.user_avatar_url, user?.display_name || 'User') }} 
                                             style={styles.avatarImage} 
                                         />
                                     </View>
@@ -432,8 +437,7 @@ export default function ShopProductDetailScreen() {
                                     <View key={review.rating_id} style={styles.reviewItem}>
                                         <View style={styles.reviewerAvatar}>
                                             <Image 
-                                                source={{ uri: review.metadata?.user_avatar_url || 
-                                                               `https://ui-avatars.com/api/?name=${review.metadata?.user_display_name || review.user_display_name || 'User'}&background=3B82F6&color=FFFFFF` }} 
+                                                source={{ uri: getAvatarUrl(review.metadata?.user_avatar_url, review.metadata?.user_display_name || review.user_display_name || 'User') }} 
                                                 style={styles.avatarImage} 
                                             />
                                         </View>
