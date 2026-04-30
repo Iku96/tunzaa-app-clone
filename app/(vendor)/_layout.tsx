@@ -131,7 +131,9 @@ const VendorLayout = () => {
         <Stack.Screen name="inventory" />
         <Stack.Screen name="business-profile" />
         <Stack.Screen name="add-product" />
-      </Stack>
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="edit-business" />
+    </Stack>
 
       <KycModalErrorBoundary>
         <KycModal

@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "./client";
 
 export interface ProductImage {
@@ -105,4 +106,21 @@ export const productsApi = {
         );
         return response.data;
     },
+};
+
+// React Query Hooks
+export const useGetProducts = (params?: ProductsParams, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["products", params],
+        queryFn: () => productsApi.getProducts(params),
+        enabled: enabled,
+    });
+};
+
+export const useGetProduct = (id: string, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["product", id],
+        queryFn: () => productsApi.getProductById(id),
+        enabled: enabled && !!id,
+    });
 };

@@ -190,6 +190,14 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             <Text style={[styles.navText, isActive('/(vendor)/business-profile') && styles.activeNavText]}>Business Profile</Text>
                         </TouchableOpacity>
 
+                        <TouchableOpacity 
+                            style={[styles.navItem, isActive('/(vendor)/settings') && styles.activeNavItem]}
+                            onPress={() => navigateTo('/(vendor)/settings')}
+                        >
+                            <Settings size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(vendor)/settings') && styles.activeNavText]}>Settings</Text>
+                        </TouchableOpacity>
+
                         <TouchableOpacity style={[styles.navItem, { marginTop: 20 }]} onPress={handleLogout}>
                             <LogOut size={22} color="#EF4444" style={styles.navIcon} />
                             <Text style={[styles.navText, { color: '#EF4444' }]}>Logout</Text>

@@ -16,6 +16,7 @@ import {
     UserCircle2
 } from 'lucide-react-native';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
+import { useGetProducts } from '../../src/services/products';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width / 3;
@@ -27,9 +28,17 @@ export default function BusinessProfileScreen() {
     
     // Vendor/Business profile data
     const vendorProfile = user?.profiles?.find((p: any) => p.role === 'vendor' || p.role === 'business') || {} as any;
+    const vendorId = vendorProfile?.metadata?.vendor_id || vendorProfile?.profile_id;
+    
     const metadata = vendorProfile?.metadata || {};
     const branding = vendorProfile?.branding || {};
     
+    // Fetch real products for this vendor
+    const { data: productsData, isLoading: isLoadingProducts } = useGetProducts({ 
+        vendor_id: vendorId,
+        limit: 50 
+    }, !!vendorId);
+
     const displayName = metadata?.business_name || vendorProfile?.display_name || vendorProfile?.displayName || user?.first_name || '';
     const logoUrl = metadata?.logo_url || metadata?.image_url || branding?.logo_url;
     
@@ -63,13 +72,18 @@ export default function BusinessProfileScreen() {
         ? `${certCount} document${certCount > 1 ? 's' : ''} uploaded`
         : 'No documents uploaded';
 
-    // Social stats — will be dynamic when backend supports it
-    const postsCount = metadata?.posts_count || 0;
+    // Social stats — dynamic posts count
+    const postsCount = productsData?.total || metadata?.posts_count || 0;
     const followersCount = metadata?.followers_count || 0;
     const followingCount = metadata?.following_count || 0;
 
-    // Posts — empty until backend provides endpoint
-    const posts: any[] = [];
+    // Map products to posts
+    const posts = (productsData?.items || []).map(p => ({
+        id: p.product_id,
+        image: typeof p.images?.[0] === 'string' ? p.images[0] : (p.images?.[0] as any)?.url,
+        isVideo: false,
+        name: p.name
+    })).filter(p => !!p.image);
 
 
     const renderHeader = () => (
@@ -162,7 +176,7 @@ export default function BusinessProfileScreen() {
             <View style={styles.actionRow}>
                 <TouchableOpacity 
                     style={styles.editProfileBtn}
-                    onPress={() => router.push('/(vendor)/account/details')}
+                    onPress={() => router.push('/(vendor)/settings')}
                 >
                     <Text style={styles.editProfileBtnText}>Edit Profile</Text>
                 </TouchableOpacity>
