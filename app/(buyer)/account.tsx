@@ -21,6 +21,7 @@ import PromoBannerCarousel from '../../src/components/home/PromoBannerCarousel';
 import { useBanners } from '../../src/services/tenant';
 import BottomNav from '../../src/components/navigation/BottomNav';
 import { useProfileCompletion } from '../../src/hooks/useProfileCompletion';
+import { getAvatarUrl } from '../../src/utils/images';
 
 const { width } = Dimensions.get('window');
 const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
@@ -77,8 +78,7 @@ export default function AccountScreen() {
         ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Tunzaa User'
         : 'Tunzaa User';
 
-    const avatarUrl = profileData.profile_picture ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=425ba4`;
+    const avatarUrl = getAvatarUrl(profileData.profile_picture, displayName);
 
     // Order status actions
     const orderActions = [

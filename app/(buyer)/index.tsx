@@ -10,6 +10,7 @@ import PriceTag from '../../src/components/common/PriceTag';
 import PromoBannerCarousel from '../../src/components/home/PromoBannerCarousel';
 import { useBanners } from '../../src/services/tenant';
 import ProductCardVertical from '../../src/components/product/ProductCardVertical';
+import { getAvatarUrl } from '../../src/utils/images';
 
 const { width } = Dimensions.get('window');
 
@@ -32,8 +33,9 @@ export default function BuyerHome() {
         React.useCallback(() => {
             const loadProfilePic = async () => {
                 const userId = user?.user_id || user?.id;
-                let picUrl = null;
+                let picUrl = '';
                 
+                // 1. Check API profiles
                 if (user?.profiles) {
                     const buyerProfile = user.profiles.find((p: any) => p.role === 'buyer') || user.profiles[0];
                     if (buyerProfile && buyerProfile.metadata?.profile_picture) {
@@ -41,6 +43,7 @@ export default function BuyerHome() {
                     }
                 }
                 
+                // 2. Check Local storage fallback
                 if (userId && !picUrl) {
                     try {
                         const storedExtras = await AsyncStorage.getItem(`@tunzaa_profile_extras_${userId}`);
@@ -53,11 +56,7 @@ export default function BuyerHome() {
                     } catch(e) {}
                 }
                 
-                if (picUrl) {
-                    setDisplayImage(picUrl);
-                } else {
-                    setDisplayImage(`https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=4A55A2`);
-                }
+                setDisplayImage(getAvatarUrl(picUrl, displayName));
             };
             loadProfilePic();
         }, [user, displayName])

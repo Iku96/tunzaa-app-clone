@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
     ArrowLeft, 
-    UserCircle2, 
     ShieldCheck, 
     ChevronRight,
     Store,
@@ -23,6 +22,7 @@ export default function VendorSettingsScreen() {
             title: 'Business Profile',
             subtitle: 'Edit business name, logo, and categories',
             icon: <Store size={24} color="#3A5BA9" />,
+            iconBg: '#EEF2FF',
             onPress: () => router.push('/(vendor)/edit-business')
         },
         {
@@ -30,13 +30,15 @@ export default function VendorSettingsScreen() {
             title: 'Business Verification',
             subtitle: 'Manage your documents and KYC status',
             icon: <ShieldCheck size={24} color="#10B981" />,
-            onPress: () => router.push('/(vendor)/account/details') // Linking to details for now as it handles KYC/docs
+            iconBg: '#F0FDF4',
+            onPress: () => router.push('/(vendor)/edit-business') // Direct to documents section
         },
         {
             id: 'security',
             title: 'Security',
             subtitle: 'Password and account security',
             icon: <Lock size={24} color="#F59E0B" />,
+            iconBg: '#FFFBEB',
             onPress: () => router.push('/(vendor)/account/details')
         }
     ];
@@ -51,16 +53,16 @@ export default function VendorSettingsScreen() {
                 <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView style={styles.content}>
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Business Management</Text>
+                    <Text style={styles.sectionHeader}>BUSINESS MANAGEMENT</Text>
                     {menuItems.map((item) => (
                         <TouchableOpacity 
                             key={item.id} 
                             style={styles.menuItem}
                             onPress={item.onPress}
                         >
-                            <View style={styles.menuIconContainer}>
+                            <View style={[styles.menuIconContainer, { backgroundColor: item.iconBg }]}>
                                 {item.icon}
                             </View>
                             <View style={styles.menuTextContainer}>
@@ -73,12 +75,12 @@ export default function VendorSettingsScreen() {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Account</Text>
+                    <Text style={styles.sectionHeader}>ACCOUNT</Text>
                     <TouchableOpacity 
                         style={styles.menuItem}
                         onPress={() => logout()}
                     >
-                        <View style={[styles.menuIconContainer, { backgroundColor: '#FEE2E2' }]}>
+                        <View style={[styles.menuIconContainer, { backgroundColor: '#FEF2F2' }]}>
                             <LogOut size={24} color="#EF4444" />
                         </View>
                         <View style={styles.menuTextContainer}>
@@ -103,9 +105,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: '#F9FAFB',
     },
     backBtn: {
         width: 40,
@@ -122,29 +124,27 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     section: {
-        paddingTop: 24,
-        paddingHorizontal: 16,
+        paddingTop: 32,
+        paddingHorizontal: 20,
     },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#6B7280',
-        marginBottom: 16,
+    sectionHeader: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#9CA3AF',
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 0.5,
+        marginBottom: 20,
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        paddingVertical: 12,
+        marginBottom: 16,
     },
     menuIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 12,
-        backgroundColor: '#F3F4F6',
+        width: 56,
+        height: 56,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16,
@@ -154,12 +154,13 @@ const styles = StyleSheet.create({
     },
     menuTitle: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
         color: '#111827',
+        marginBottom: 2,
     },
     menuSubtitle: {
         fontSize: 13,
-        color: '#6B7280',
-        marginTop: 2,
+        color: '#9CA3AF',
     },
 });
+

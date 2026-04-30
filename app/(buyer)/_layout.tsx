@@ -9,19 +9,6 @@ const BuyerLayout = () => {
   const [showKycModal, setShowKycModal] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (user) {
-      const currentProfile = user.profiles?.find(
-        (profile: any) => profile.role === user.activeProfileRole
-      );
-      if (currentProfile?.kyc && !currentProfile.kyc.verified) {
-        setShowKycModal(true);
-      } else {
-        setShowKycModal(false);
-      }
-    }
-  }, [user?.activeProfileRole, user?.profiles]);
-
   return (
     <>
       <Stack
@@ -29,11 +16,6 @@ const BuyerLayout = () => {
           headerShown: false,
           contentStyle: { backgroundColor: '#FFFFFF' }
         }}
-      />
-      
-      <KycModal
-        isOpen={showKycModal}
-        onClose={() => setShowKycModal(false)}
       />
     </>
   );

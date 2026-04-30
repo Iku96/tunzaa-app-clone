@@ -11,6 +11,8 @@ import { useMarketplace } from '../../src/hooks/useMarketplace';
 import { authApi } from '../../src/services/auth';
 import BottomNav from '../../src/components/navigation/BottomNav';
 import { useProfileCompletion } from '../../src/hooks/useProfileCompletion';
+import ShareSheet from '../../src/components/shop/ShareSheet';
+import { getAvatarUrl } from '../../src/utils/images';
 
 const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
 
@@ -27,6 +29,7 @@ export default function ProfileScreen() {
         following_count: 0,
         profile_picture: ''
     });
+    const [shareVisible, setShareVisible] = useState(false);
 
     // Load profile metadata
     useFocusEffect(
@@ -73,10 +76,10 @@ export default function ProfileScreen() {
         : 'Tunzaa User';
 
     const headerTitle = profileData.username || displayName;
-    const avatarUrl = profileData.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=425ba4`;
+    const avatarUrl = getAvatarUrl(profileData.profile_picture, displayName);
 
     const handleShareProfile = () => {
-        Alert.alert('Share Profile', 'Sharing functionality coming soon!');
+        setShareVisible(true);
     };
 
     const renderProductItem = ({ item }: { item: any }) => (
@@ -179,6 +182,14 @@ export default function ProfileScreen() {
                 </View>
             </ScrollView>
             <BottomNav />
+            <ShareSheet
+                visible={shareVisible}
+                onClose={() => setShareVisible(false)}
+                id={user?.user_id || user?.id || ''}
+                type="profile"
+                title={displayName}
+                image={avatarUrl}
+            />
         </SafeAreaView>
     );
 }

@@ -44,6 +44,11 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             };
         }) : (userRef.current?.profiles || []);
 
+        console.log('📝 [AuthContext] Hydrated Profiles Metadata:');
+        finalProfiles.forEach((p: any) => {
+            console.log(`   - Role ${p.role}: pic="${p.metadata?.profile_picture || 'N/A'}", keys=[${Object.keys(p.metadata || {}).join(', ')}]`);
+        });
+
         const normalizedProfiles = finalProfiles.map((p: any) => {
             const meta = p.metadata || {};
             const isBusiness = IS_MERCHANT(p.role) || IS_DELIVERY(p.role);

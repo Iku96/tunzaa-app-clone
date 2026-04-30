@@ -11,6 +11,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { documentClient } from '../../../src/services/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProfileCompletion } from '../../../src/hooks/useProfileCompletion';
+import { getAvatarUrl, isValidUrl } from '../../../src/utils/images';
+import { uploadApi } from '../../../src/services/upload';
+import { API_CONFIG } from '../../../src/services/config';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 
@@ -141,54 +144,90 @@ export default function EditProfileScreen() {
             // Try upload to server in background
             setUploadingPhoto(true);
             try {
-                const formData = new FormData();
                 const fileName = asset.uri.split('/').pop() || 'profile.jpg';
                 const fileType = asset.mimeType || 'image/jpeg';
 
-                formData.append('file', {
-                    uri: asset.uri,
-                    name: fileName,
-                    type: fileType,
-                } as any);
+                console.log('📸 [EditProfile] Starting upload for:', fileName);
+                const uploadResponse = await uploadApi.uploadFile(asset.uri, fileName, fileType);
+                console.log('📸 [EditProfile] Full Upload Response:', JSON.stringify(uploadResponse, null, 2));
+                
+                // Aggressive extraction and cleaning of the URL
+                let uploadedUrl = uploadResponse?.fileCDNUrl || uploadResponse?.fileUrl;
 
-                const uploadResponse = await documentClient.post('/upload', formData);
-                // Fix: Server uses fileUrl (camelCase), not file_url
-                const uploadedUrl = uploadResponse.data?.fileUrl || uploadResponse.data?.url || uploadResponse.data?.data?.url;
+                // If we only have 'url', check if it's an upload-only presigned URL (common in Linode/S3 configs)
+                if (!uploadedUrl && uploadResponse?.url) {
+                    if (uploadResponse.url.includes('PutObject') || uploadResponse.url.includes('X-Amz-Signature')) {
+                        console.log('⚠️ [EditProfile] URL appears to be a restricted presigned URL. Attempting to clean...');
+                        // Strategy A: Strip query params if it's an S3-like URL (might work if bucket is public-read)
+                        const cleanUrl = uploadResponse.url.split('?')[0];
+                        
+                        // Strategy B: Use the ID to construct a gateway-proxied URL (most reliable in Tunzaa)
+                        if (uploadResponse.id) {
+                            uploadedUrl = `${API_CONFIG.BASE_URL}/documents/${uploadResponse.id}`;
+                            console.log('🔗 [EditProfile] Using ID-based Gateway URL:', uploadedUrl);
+                        } else {
+                            uploadedUrl = cleanUrl;
+                            console.log('🔗 [EditProfile] Using Cleaned URL:', uploadedUrl);
+                        }
+                    } else {
+                        uploadedUrl = uploadResponse.url;
+                    }
+                }
 
-                console.log('📸 [EditProfile] Upload Success. URL:', uploadedUrl);
+                // Final fallback to filePath or ID if still nothing
+                if (!uploadedUrl && uploadResponse?.id) {
+                    uploadedUrl = `${API_CONFIG.BASE_URL}/documents/${uploadResponse.id}`;
+                } else if (!uploadedUrl && uploadResponse?.filePath) {
+                    const baseUrl = API_CONFIG.BASE_URL.endsWith('/') ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL;
+                    uploadedUrl = `${baseUrl}${uploadResponse.filePath}`;
+                }
 
-                if (uploadedUrl) {
-                    setProfileImage(uploadedUrl);
-                    // Update local storage with the server URL
+                console.log('🔗 [EditProfile] Final Resolved URL:', uploadedUrl);
+
+                if (isValidUrl(uploadedUrl)) {
+                    setProfileImage(uploadedUrl!);
+                    
+                    // Update local storage immediately
                     if (userId) {
                         const storedExtras = await AsyncStorage.getItem(`${PROFILE_EXTRAS_KEY}_${userId}`);
                         const localData = storedExtras ? JSON.parse(storedExtras) : {};
                         localData.profile_picture = uploadedUrl;
                         await AsyncStorage.setItem(`${PROFILE_EXTRAS_KEY}_${userId}`, JSON.stringify(localData));
                     }
+
                     // Sync to API Metadata
                     const buyerProfile = user?.profiles?.find((p: any) => p.role === 'buyer') || user?.profiles?.[0];
                     if (userId && buyerProfile?.profile_id) {
                         const meta = (buyerProfile as any).metadata || {};
+                        const newMeta = { ...meta, profile_picture: uploadedUrl };
+                        
                         console.log('🔄 [EditProfile] Syncing avatar to server profile metadata...');
-                        await authApi.updateUserProfile(userId, buyerProfile.profile_id, {
-                            metadata: { ...meta, profile_picture: uploadedUrl }
-                        }).then(() => {
-                            console.log('✅ [EditProfile] Server profile metadata updated with avatar');
-                        }).catch((err) => {
-                            console.warn('❌ [EditProfile] Failed to save avatar to server metadata:', err.message);
-                        });
-
-                        // Also sync to User object for top-level persistence
-                        await authApi.updateUser(userId, {
-                            metadata: { ...meta, profile_picture: uploadedUrl }
-                        }).catch(() => {});
+                        
+                        // Use a Promise.all to ensure both sources are updated
+                        try {
+                            await Promise.all([
+                                authApi.updateUserProfile(userId, buyerProfile.profile_id, {
+                                    metadata: newMeta
+                                }),
+                                authApi.updateUser(userId, {
+                                    metadata: newMeta
+                                }).catch(e => console.log('⚠️ [EditProfile] User object metadata update failed (non-critical):', e.message))
+                            ]);
+                            console.log('✅ [EditProfile] Server metadata sync successful');
+                        } catch (syncErr: any) {
+                            console.error('❌ [EditProfile] Profile metadata sync failed:', syncErr.message);
+                            Alert.alert('Persistence Error', 'Photo uploaded but could not be linked to your profile on the server.');
+                        }
                     }
+                    
                     if (refreshProfile) await refreshProfile();
+                } else {
+                    console.warn('⚠️ [EditProfile] Upload succeeded but returned invalid URL format:', uploadedUrl);
+                    Alert.alert('Upload Error', 'The server returned an unrecognized image path format. Please contact support.');
                 }
             } catch (uploadError: any) {
-                console.warn('[EditProfile] Photo upload failed:', uploadError.message);
-                Alert.alert('Upload failed', 'Photo saved locally but could not be uploaded to server.');
+                console.error('❌ [EditProfile] Photo upload failed:', uploadError.message);
+                Alert.alert('Upload failed', `Failed to upload photo to server: ${uploadError.message}`);
             } finally {
                 setUploadingPhoto(false);
             }
@@ -336,8 +375,9 @@ export default function EditProfileScreen() {
                 <View style={styles.avatarSection}>
                     <View style={styles.avatarContainer}>
                         <Image
-                            source={{ uri: profileImage || `https://ui-avatars.com/api/?name=${name || 'User'}&background=eff6ff&color=425ba4` }}
+                            source={{ uri: getAvatarUrl(profileImage || '', name || 'User') }}
                             style={styles.avatar}
+                            onError={(e) => console.error('🖼️ [EditProfile] Image Load Error:', e.nativeEvent.error, 'for URL:', profileImage)}
                         />
                         <TouchableOpacity style={styles.cameraButton} onPress={pickImage} disabled={uploadingPhoto}>
                             {uploadingPhoto ? (

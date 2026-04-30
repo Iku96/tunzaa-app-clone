@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Dimensions, FlatList, Linking, Clipboard, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Dimensions, FlatList, Linking, Clipboard, Alert, Share } from 'react-native';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 
 import { useSharesStore } from '../../stores/shares';
@@ -7,7 +7,7 @@ interface ShareSheetProps {
     visible: boolean;
     onClose: () => void;
     id: string;
-    type: 'product' | 'shop';
+    type: 'product' | 'shop' | 'profile';
     title: string;
     image: string;
 }
@@ -19,6 +19,7 @@ const SOCIAL_APPS = [
     { id: '4', name: 'WhatsApp', icon: 'logo-whatsapp', color: '#25D366', type: 'ion' },
     { id: '5', name: 'LinkedIn', icon: 'logo-linkedin', color: '#0A66C2', type: 'ion' },
     { id: '6', name: 'Copy Link', icon: 'link', color: '#6B7280', type: 'ion' },
+    { id: '7', name: 'More', icon: 'share-social', color: '#425BA4', type: 'ion' },
 ];
 
 export default function ShareSheet({ visible, onClose, id, type, title, image }: ShareSheetProps) {
@@ -26,21 +27,41 @@ export default function ShareSheet({ visible, onClose, id, type, title, image }:
 
     if (!visible) return null;
 
-    const handleShare = (app?: any) => {
-        const url = `https://tunzaa.co.tz/${type}s/${id}`;
-        
-        if (app?.name === 'Copy Link' || !app) {
-            Clipboard.setString(url);
-            Alert.alert('Link Copied', 'The product link has been copied to your clipboard.');
+    const getShareUrl = () => {
+        if (type === 'profile') {
+            return `https://tunzaa.co.tz/users/profile/${id}`;
         } else {
-            // Functional sharing would use Linking.openURL
-            // For now, let's just log and show a success message
-            console.log(`Sharing ${url} via ${app.name}`);
-            
+            return `https://tunzaa.co.tz/${type}s/${id}`;
+        }
+    };
+
+    const handleShare = async (app?: any) => {
+        const url = getShareUrl();
+        const shareMessage = `${title}\nCheck this out on Tunzaa: ${url}`;
+        
+        if (app?.name === 'Copy Link') {
+            Clipboard.setString(url);
+            Alert.alert('Link Copied', `The ${type} link has been copied to your clipboard.`);
+            onClose();
+        } else if (app?.name === 'More' || !app) {
+            try {
+                const result = await Share.share({
+                    message: shareMessage,
+                    url: url,
+                    title: title
+                });
+                if (result.action === Share.sharedAction) {
+                    onClose();
+                }
+            } catch (error: any) {
+                Alert.alert('Error', error.message);
+            }
+        } else {
+            // Specific app deep links
             let shareUrl = '';
             switch (app.name) {
                 case 'WhatsApp':
-                    shareUrl = `whatsapp://send?text=${encodeURIComponent(title + ' ' + url)}`;
+                    shareUrl = `whatsapp://send?text=${encodeURIComponent(shareMessage)}`;
                     break;
                 case 'Facebook':
                     shareUrl = `fb://facewebmodal/f?href=${encodeURIComponent(url)}`;
@@ -53,18 +74,18 @@ export default function ShareSheet({ visible, onClose, id, type, title, image }:
             }
 
             if (shareUrl) {
-                Linking.canOpenURL(shareUrl).then(supported => {
-                    if (supported) {
-                        Linking.openURL(shareUrl);
+                const canOpen = await Linking.canOpenURL(shareUrl);
+                if (canOpen) {
+                    await Linking.openURL(shareUrl);
+                } else {
+                    // Fallback to native share or web
+                    if (app.name === 'WhatsApp') {
+                        await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`);
                     } else {
-                        // Fallback to web browser if app not installed
-                        if (app.name === 'WhatsApp') {
-                            Linking.openURL(`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`);
-                        } else {
-                            Alert.alert('App not installed', `The ${app.name} app is not installed on your device.`);
-                        }
+                        // If specific app fails, use generic native share
+                        await Share.share({ message: shareMessage, url });
                     }
-                });
+                }
             }
         }
 
@@ -75,10 +96,6 @@ export default function ShareSheet({ visible, onClose, id, type, title, image }:
             image,
             shared_at: new Date().toISOString()
         });
-        
-        if (!app || app.name === 'Copy Link') {
-            onClose();
-        }
     };
 
     const renderItem = ({ item }: { item: any }) => (
@@ -110,9 +127,9 @@ export default function ShareSheet({ visible, onClose, id, type, title, image }:
                     {/* Copy Link Input Lookalike */}
                     <View style={styles.linkContainer}>
                         <Text style={styles.linkText} numberOfLines={1}>
-                            https://tunzaa.co.tz/{type}s/{id}
+                            {type === 'profile' ? `https://tunzaa.co.tz/users/profile/${id}` : `https://tunzaa.co.tz/${type}s/${id}`}
                         </Text>
-                        <TouchableOpacity style={styles.copyButton} onPress={handleShare}>
+                        <TouchableOpacity style={styles.copyButton} onPress={() => handleShare()}>
                             <Ionicons name="copy-outline" size={18} color="#425BA4" />
                         </TouchableOpacity>
                     </View>
