@@ -4,19 +4,21 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
     ArrowLeft, 
-    Search, 
-    LayoutGrid, 
     MoreHorizontal, 
     CheckCircle2, 
     MapPin, 
-    Calendar, 
-    FileText, 
+    Briefcase,
+    Image as ImageIcon,
+    LayoutGrid,
     Share2,
     Play,
-    UserCircle2
+    UserCircle2,
+    ChevronDown
 } from 'lucide-react-native';
+import { Share } from 'react-native';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { useGetProducts } from '../../src/services/products';
+import { useGetVendor } from '../../src/services/vendors';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width / 3;
@@ -38,6 +40,10 @@ export default function BusinessProfileScreen() {
         vendor_id: vendorId,
         limit: 50 
     }, !!vendorId);
+
+    // Fetch vendor store data for banners/promotional videos
+    const { data: vendorData } = useGetVendor(vendorId, !!vendorId);
+    const storeBanners = vendorData?.stores?.[0]?.banners || vendorData?.store?.banners || [];
 
     const displayName = metadata?.business_name || vendorProfile?.display_name || vendorProfile?.displayName || user?.first_name || '';
     const logoUrl = metadata?.logo_url || metadata?.image_url || branding?.logo_url;
@@ -68,9 +74,31 @@ export default function BusinessProfileScreen() {
     // Dynamic certificate count from verification_documents array
     const verificationDocs = metadata?.verification_documents || vendorProfile?.kyc?.documents || [];
     const certCount = Array.isArray(verificationDocs) ? verificationDocs.length : 0;
-    const certText = certCount > 0 
-        ? `${certCount} document${certCount > 1 ? 's' : ''} uploaded`
-        : 'No documents uploaded';
+    
+    let certText = 'No documents uploaded';
+    if (certCount > 0) {
+        let firstDocName = verificationDocs[0].name || '';
+        if (!firstDocName) {
+            const docStr = JSON.stringify(verificationDocs[0]).toLowerCase();
+            if (docStr.includes('tin')) firstDocName = 'TIN Certificate';
+            else if (docStr.includes('license')) firstDocName = 'Business License';
+            else if (docStr.includes('brela')) firstDocName = 'BRELA Registration';
+            else if (docStr.includes('nida')) firstDocName = 'NIDA';
+            else {
+                const firstDocType = verificationDocs[0].document_type_id || '';
+                // Use type ID if it's a short string (not a UUID)
+                firstDocName = (typeof firstDocType === 'string' && firstDocType.length > 0 && firstDocType.length < 20) 
+                    ? (firstDocType.charAt(0).toUpperCase() + firstDocType.slice(1)) 
+                    : 'Registration Document';
+            }
+        }
+        
+        if (certCount === 1) {
+            certText = firstDocName;
+        } else {
+            certText = `${firstDocName} and ${certCount - 1} more`;
+        }
+    }
 
     // Social stats — dynamic posts count
     const postsCount = productsData?.total || metadata?.posts_count || 0;
@@ -87,28 +115,24 @@ export default function BusinessProfileScreen() {
 
 
     const renderHeader = () => (
-        <View style={styles.header}>
-            <TouchableOpacity onPress={() => setIsSidebarOpen(true)} style={styles.headerBtn}>
-                <LayoutGrid size={24} color="#111827" />
+        <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+            <TouchableOpacity onPress={() => router.back()} style={{ padding: 4, marginLeft: -4, marginBottom: 12, alignSelf: 'flex-start' }}>
+                <ArrowLeft size={24} color="#111827" />
             </TouchableOpacity>
             
-            <View style={styles.headerTitleContainer}>
-                <Text style={styles.headerTitle}>{displayName}</Text>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <ArrowLeft size={16} color="#111827" style={{ transform: [{ rotate: '-90deg' }], marginLeft: 4 }} />
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#111827' }}>{user?.username || displayName}</Text>
+                    <ChevronDown size={20} color="#111827" style={{ marginLeft: 4 }} />
                 </TouchableOpacity>
-            </View>
-            
-            <View style={styles.headerRight}>
-                <TouchableOpacity style={styles.headerBtn}>
-                    <Search size={22} color="#111827" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.headerBtn}>
-                    <LayoutGrid size={22} color="#111827" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.headerBtn}>
-                    <MoreHorizontal size={22} color="#111827" />
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <TouchableOpacity onPress={() => setIsSidebarOpen(true)} style={styles.headerBtn}>
+                        <LayoutGrid size={24} color="#111827" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.headerBtn}>
+                        <MoreHorizontal size={24} color="#111827" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -142,13 +166,25 @@ export default function BusinessProfileScreen() {
         </View>
     );
 
+    const handleShare = async () => {
+        try {
+            const url = `https://tunzaa.co/shop/${vendorId}`;
+            await Share.share({
+                message: url,
+                url: url
+            });
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    };
+
     const renderBio = () => (
         <View style={styles.bioContainer}>
             <View style={styles.nameRow}>
                 <Text style={styles.businessName}>{displayName}</Text>
-                <CheckCircle2 size={16} color={isVerified ? "#3A5BA9" : "#9CA3AF"} style={{ marginLeft: 6 }} />
-                <Text style={[styles.verifiedText, !isVerified && { color: '#6B7280' }]}>
-                    {isVerified ? 'Verified' : 'Pending Verification'}
+                <CheckCircle2 size={16} color={isVerified ? "#10B981" : "#9CA3AF"} style={{ marginLeft: 6 }} />
+                <Text style={[styles.verifiedText, { color: isVerified ? '#3A5BA9' : '#6B7280' }]}>
+                    {isVerified ? 'Verified' : 'Pending'}
                 </Text>
             </View>
 
@@ -159,7 +195,7 @@ export default function BusinessProfileScreen() {
             </View>
             
             <View style={styles.infoRow}>
-                <Calendar size={14} color="#6B7280" style={{ marginRight: 6 }} />
+                <Briefcase size={14} color="#6B7280" style={{ marginRight: 6 }} />
                 <Text style={styles.infoText}>Joined {joinedDate}</Text>
             </View>
             
@@ -169,18 +205,18 @@ export default function BusinessProfileScreen() {
             </View>
             
             <View style={styles.infoRow}>
-                <FileText size={14} color="#6B7280" style={{ marginRight: 6 }} />
+                <ImageIcon size={14} color="#6B7280" style={{ marginRight: 6 }} />
                 <Text style={styles.infoText}>{certText}</Text>
             </View>
             
             <View style={styles.actionRow}>
                 <TouchableOpacity 
                     style={styles.editProfileBtn}
-                    onPress={() => router.push('/(vendor)/settings')}
+                    onPress={() => router.push('/(vendor)/edit-business')}
                 >
                     <Text style={styles.editProfileBtnText}>Edit Profile</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.shareBtn}>
+                <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
                     <Share2 size={20} color="#111827" />
                 </TouchableOpacity>
             </View>
@@ -205,19 +241,13 @@ export default function BusinessProfileScreen() {
                 style={[styles.tab, activeTab === 'grid' && styles.activeTab]}
                 onPress={() => setActiveTab('grid')}
             >
-                <LayoutGrid size={24} color={activeTab === 'grid' ? '#3A5BA9' : '#9CA3AF'} />
-            </TouchableOpacity>
-            <TouchableOpacity 
-                style={[styles.tab, activeTab === 'tagged' && styles.activeTab]}
-                onPress={() => setActiveTab('tagged')}
-            >
-                <UserCircle2 size={24} color={activeTab === 'tagged' ? '#3A5BA9' : '#9CA3AF'} />
+                <LayoutGrid size={24} color={activeTab === 'grid' ? '#111827' : '#9CA3AF'} />
             </TouchableOpacity>
             <TouchableOpacity 
                 style={[styles.tab, activeTab === 'videos' && styles.activeTab]}
                 onPress={() => setActiveTab('videos')}
             >
-                <Play size={24} color={activeTab === 'videos' ? '#3A5BA9' : '#9CA3AF'} />
+                <Play size={24} color={activeTab === 'videos' ? '#111827' : '#9CA3AF'} />
             </TouchableOpacity>
         </View>
     );
@@ -248,21 +278,47 @@ export default function BusinessProfileScreen() {
                 {renderInsightsCard()}
                 {renderTabs()}
                 
-                {posts.length > 0 ? (
-                    <FlatList
-                        data={posts}
-                        renderItem={renderGridItem}
-                        keyExtractor={item => item.id}
-                        numColumns={3}
-                        scrollEnabled={false}
-                        contentContainerStyle={styles.gridContent}
-                    />
+                {activeTab === 'grid' ? (
+                    posts.length > 0 ? (
+                        <FlatList
+                            data={posts}
+                            renderItem={renderGridItem}
+                            keyExtractor={item => item.id}
+                            numColumns={3}
+                            scrollEnabled={false}
+                            contentContainerStyle={styles.gridContent}
+                        />
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <LayoutGrid size={48} color="#D1D5DB" />
+                            <Text style={styles.emptyStateTitle}>No posts yet</Text>
+                            <Text style={styles.emptyStateSubtitle}>Share your first post to showcase your products!</Text>
+                        </View>
+                    )
                 ) : (
-                    <View style={styles.emptyState}>
-                        <LayoutGrid size={48} color="#D1D5DB" />
-                        <Text style={styles.emptyStateTitle}>No posts yet</Text>
-                        <Text style={styles.emptyStateSubtitle}>Share your first post to showcase your products!</Text>
-                    </View>
+                    storeBanners.length > 0 ? (
+                        <FlatList
+                            data={storeBanners}
+                            renderItem={({ item }: { item: any }) => (
+                                <TouchableOpacity style={styles.gridItem}>
+                                    <Image source={{ uri: item.image_url }} style={styles.gridImage} />
+                                    <View style={styles.videoBadge}>
+                                        <Play size={12} color="#FFFFFF" fill="#FFFFFF" />
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item, index) => item.banner_id || `banner-${index}`}
+                            numColumns={3}
+                            scrollEnabled={false}
+                            contentContainerStyle={styles.gridContent}
+                        />
+                    ) : (
+                        <View style={styles.emptyState}>
+                            <Play size={48} color="#D1D5DB" />
+                            <Text style={styles.emptyStateTitle}>No promotional videos yet</Text>
+                            <Text style={styles.emptyStateSubtitle}>Create promotional content to engage your audience!</Text>
+                        </View>
+                    )
                 )}
             </ScrollView>
         </SafeAreaView>
@@ -456,7 +512,7 @@ const styles = StyleSheet.create({
     },
     activeTab: {
         borderBottomWidth: 2,
-        borderBottomColor: '#3A5BA9',
+        borderBottomColor: '#111827',
     },
     gridContent: {
         paddingTop: 1,

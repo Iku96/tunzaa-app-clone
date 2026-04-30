@@ -402,25 +402,37 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                 let promise2 = Promise.resolve();
                 if (vendorId) {
+                    // Extract logo and banner with aggressive fallback
+                    const logo = vendorData.metadata?.logo_url || vendorData.metadata?.logoUrl || 
+                                vendorData.metadata?.image_url || vendorData.metadata?.profile_picture || 
+                                vendorData.logo_url || vendorData.logoUrl || vendorData.image_url;
+                                
+                    const banner = vendorData.metadata?.banner_url || vendorData.metadata?.bannerUrl || 
+                                  vendorData.banner_url || vendorData.bannerUrl;
+
                     const marketplaceData = {
                         business_name: vendorData.display_name || vendorData.business_name,
                         display_name: vendorData.display_name || vendorData.business_name,
-                        contact_email: vendorData.metadata?.contact_email,
-                        contact_phone: vendorData.metadata?.contact_phone,
+                        contact_email: vendorData.metadata?.contact_email || vendorData.contact_email,
+                        contact_phone: vendorData.metadata?.contact_phone || vendorData.contact_phone,
                         tax_id: vendorData.tax_id || vendorData.metadata?.tax_id || vendorData.metadata?.tin_number,
                         store: {
                             store_name: vendorData.display_name || vendorData.business_name,
-                            store_slug: vendorData.metadata?.store_slug || `${vendorId.substring(0, 8)}-store`,
-                            description: vendorData.metadata?.description,
+                            store_slug: vendorData.metadata?.store_slug || vendorData.store_slug || `${vendorId.substring(0, 8)}-store`,
+                            description: vendorData.metadata?.description || vendorData.description,
                             branding: { 
-                                logo_url: vendorData.metadata?.logo_url, 
-                                banner_url: vendorData.metadata?.banner_url,
-                                colors: vendorData.metadata?.colors || { primary: '#315BA9', secondary: '#84CC16', accent: '#FBBF24', text: '#1F2937', background: '#FFFFFF' }
+                                logo_url: logo, 
+                                banner_url: banner,
+                                colors: vendorData.metadata?.colors || vendorData.colors || { primary: '#315BA9', secondary: '#84CC16', accent: '#FBBF24', text: '#1F2937', background: '#FFFFFF' }
                             },
-                            banners: vendorData.metadata?.banner_url ? [vendorData.metadata?.banner_url] : []
+                            banners: banner ? [banner] : []
                         }
                     };
-                    promise2 = authApi.updateVendor(vendorId, marketplaceData).catch(e => { throw new Error(`Marketplace update failed: ${e.message}`); });
+                    console.log('🔄 [AuthContext] Updating Marketplace Vendor:', vendorId);
+                    promise2 = authApi.updateVendor(vendorId, marketplaceData).catch(e => { 
+                        console.error('❌ [AuthContext] Marketplace update failed:', e.message);
+                        throw new Error(`Marketplace update failed: ${e.message}`); 
+                    });
                 }
 
                 // 2. Optimistic Update Local UI while APIs are flying

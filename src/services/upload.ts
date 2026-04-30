@@ -3,13 +3,20 @@ import { Platform } from "react-native";
 import { documentClient } from "./client";
 
 interface UploadResponse {
-  id: string;
-  url: string;
+  id?: string;
+  url?: string;
+  fileUrl?: string;
   fileCDNUrl?: string;
-  filename: string;
-  size: number;
-  mimetype: string;
-  created_at: string;
+  filePath?: string;
+  fileName?: string;
+  filename?: string;
+  fileSize?: number;
+  size?: number;
+  mimeType?: string;
+  mimetype?: string;
+  uploadDate?: string;
+  created_at?: string;
+  isPublic?: boolean;
 }
 
 export const uploadApi = {

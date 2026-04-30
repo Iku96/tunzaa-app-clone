@@ -409,6 +409,17 @@ export default function ShopProductDetailScreen() {
                                             ))}
                                         </View>
                                         <Text style={styles.reviewText}>{userRating.content}</Text>
+                                        
+                                        {/* Vendor Reply Display */}
+                                        {userRating.metadata?.vendor_reply && (
+                                            <View style={styles.buyerVendorReplyBox}>
+                                                <View style={styles.vendorReplyHeader}>
+                                                    <Ionicons name="business" size={14} color="#3B5494" />
+                                                    <Text style={styles.vendorReplyLabel}>Response from Seller</Text>
+                                                </View>
+                                                <Text style={styles.vendorReplyText}>{userRating.metadata.vendor_reply}</Text>
+                                            </View>
+                                        )}
                                     </View>
                                 </View>
                             )}
@@ -446,6 +457,17 @@ export default function ShopProductDetailScreen() {
                                                 ))}
                                             </View>
                                             <Text style={styles.reviewText}>{review.content}</Text>
+
+                                            {/* Vendor Reply Display */}
+                                            {review.metadata?.vendor_reply && (
+                                                <View style={styles.buyerVendorReplyBox}>
+                                                    <View style={styles.vendorReplyHeader}>
+                                                        <Ionicons name="business" size={14} color="#3B5494" />
+                                                        <Text style={styles.vendorReplyLabel}>Response from Seller</Text>
+                                                    </View>
+                                                    <Text style={styles.vendorReplyText}>{review.metadata.vendor_reply}</Text>
+                                                </View>
+                                            )}
                                         </View>
                                     </View>
                                 ))
@@ -797,6 +819,30 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
         marginBottom: 20,
+    },
+    buyerVendorReplyBox: {
+        backgroundColor: '#F3F4F6',
+        padding: 12,
+        borderRadius: 8,
+        marginTop: 12,
+        borderLeftWidth: 3,
+        borderLeftColor: '#3B5494',
+    },
+    vendorReplyHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 4,
+    },
+    vendorReplyLabel: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#3B5494',
+    },
+    vendorReplyText: {
+        fontSize: 14,
+        color: '#4B5563',
+        lineHeight: 20,
     },
     bigRating: {
         fontSize: 32,
