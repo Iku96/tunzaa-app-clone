@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, ChevronDown, Filter, Search } from 'lucide-react-native';
+import { ArrowLeft, ChevronDown, Filter, Search, LayoutGrid } from 'lucide-react-native';
 import Svg, { G, Circle } from 'react-native-svg';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { useGetOrderStatusDistribution } from '../../src/services/reports';

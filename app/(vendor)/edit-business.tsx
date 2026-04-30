@@ -8,25 +8,27 @@ import {
     Image, 
     ActivityIndicator,
     Alert,
-    Platform
+    Dimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
     ArrowLeft, 
-    Camera, 
     Check, 
-    ChevronDown,
-    Building2,
-    MapPin,
-    Hash,
-    Tag
+    Pencil, 
+    ChevronDown, 
+    UploadCloud,
+    Eye,
+    Trash2,
+    Plus,
+    FileText
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { useCategories } from '@/src/services/categories';
 import { CategorySelector } from '@/components/vendor/CategorySelector';
-import { Input } from '@/components/ui/input';
+
+const { width } = Dimensions.get('window');
 
 export default function EditBusinessScreen() {
     const router = useRouter();
@@ -39,17 +41,18 @@ export default function EditBusinessScreen() {
     
     // Form State
     const [businessName, setBusinessName] = useState(metadata?.business_name || '');
+    const [email, setEmail] = useState(metadata?.contact_email || user?.email || '');
+    const [phone, setPhone] = useState(metadata?.contact_phone || user?.phone_number || '');
     const [logo, setLogo] = useState(metadata?.logo_url || metadata?.image_url || null);
     const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
-    const [region, setRegion] = useState(metadata?.region || '');
-    const [municipal, setMunicipal] = useState(metadata?.municipal || '');
-    const [ward, setWard] = useState(metadata?.ward || '');
     const [tin, setTin] = useState(metadata?.tax_id || '');
     
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCategoryModal, setShowCategoryModal] = useState(false);
 
-    // Load initial categories
+    // Documents from metadata
+    const verificationDocs = metadata?.verification_documents || [];
+
     useEffect(() => {
         if (metadata?.categories && Array.isArray(metadata.categories)) {
             setSelectedCategories(metadata.categories);
@@ -80,56 +83,54 @@ export default function EditBusinessScreen() {
             const vendorId = metadata?.vendor_id || vendorProfile?.profile_id;
             const profileId = vendorProfile?.profile_id;
 
-            if (!vendorId || !profileId) {
-                throw new Error('Profile details missing');
-            }
-
             const updateData = {
                 business_name: businessName,
                 display_name: businessName,
+                contact_email: email,
+                contact_phone: phone,
                 tax_id: tin,
-                region,
-                municipal,
-                ward,
                 categories: selectedCategories,
-                logo_url: logo, // In real app, upload logo first
-                location: {
-                    region,
-                    ward,
-                    municipal
-                }
+                logo_url: logo,
             };
 
             await updateVendor(vendorId, profileId, updateData);
-            
             Alert.alert('Success', 'Business profile updated successfully', [
                 { text: 'OK', onPress: () => router.back() }
             ]);
         } catch (error: any) {
-            console.error('Update failed:', error);
             Alert.alert('Error', error.message || 'Failed to update profile');
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const renderCard = (label: string, value: string, icon?: React.ReactNode, onPress?: () => void) => (
+        <TouchableOpacity 
+            style={styles.card} 
+            onPress={onPress}
+            activeOpacity={onPress ? 0.7 : 1}
+        >
+            <View style={styles.cardContent}>
+                <Text style={styles.cardLabel}>{label}</Text>
+                <Text style={styles.cardValue}>{value || `Enter ${label.toLowerCase()}`}</Text>
+            </View>
+            {icon && <View style={styles.cardIcon}>{icon}</View>}
+        </TouchableOpacity>
+    );
+
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
                     <ArrowLeft size={24} color="#111827" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Edit Business</Text>
-                <TouchableOpacity 
-                    onPress={handleSave} 
-                    disabled={isSubmitting}
-                    style={styles.saveBtn}
-                >
+                <Text style={styles.headerTitle}>Edit business profile</Text>
+                <TouchableOpacity onPress={handleSave} disabled={isSubmitting} style={styles.headerBtn}>
                     {isSubmitting ? (
-                        <ActivityIndicator size="small" color="#3A5BA9" />
+                        <ActivityIndicator size="small" color="#111827" />
                     ) : (
-                        <Check size={24} color="#3A5BA9" />
+                        <Check size={24} color="#111827" />
                     )}
                 </TouchableOpacity>
             </View>
@@ -137,126 +138,88 @@ export default function EditBusinessScreen() {
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Logo Section */}
                 <View style={styles.logoSection}>
-                    <TouchableOpacity onPress={pickImage} style={styles.logoContainer}>
-                        {logo ? (
-                            <Image source={{ uri: logo }} style={styles.logoImage} />
-                        ) : (
-                            <View style={styles.logoPlaceholder}>
-                                <Building2 size={40} color="#9CA3AF" />
-                            </View>
-                        )}
-                        <View style={styles.cameraIcon}>
-                            <Camera size={16} color="#FFFFFF" />
+                    <TouchableOpacity onPress={pickImage} style={styles.logoWrapper}>
+                        <View style={styles.logoContainer}>
+                            {logo ? (
+                                <Image source={{ uri: logo }} style={styles.logoImage} />
+                            ) : (
+                                <View style={styles.logoPlaceholder}>
+                                    <Text style={styles.logoInitials}>
+                                        {businessName?.substring(0, 2).toUpperCase() || 'BZ'}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                        <View style={styles.logoBadge}>
+                            <Plus size={16} color="#FFFFFF" strokeWidth={3} />
                         </View>
                     </TouchableOpacity>
-                    <Text style={styles.logoLabel}>Business Logo</Text>
                 </View>
 
-                {/* Form Sections */}
-                <View style={styles.form}>
-                    {/* Basic Info */}
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <Building2 size={18} color="#3A5BA9" />
-                            <Text style={styles.sectionTitle}>Business Details</Text>
-                        </View>
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Business Name</Text>
-                            <Input 
-                                value={businessName}
-                                onChangeText={setBusinessName}
-                                placeholder="e.g. Acme Corporation"
-                                className="bg-gray-50 border-gray-200"
+                {/* Business Details Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Business details</Text>
+                    
+                    {renderCard('Business name', businessName)}
+                    {renderCard('Email address', email, <Pencil size={18} color="#111827" />)}
+                    {renderCard('Phone number', phone, <Pencil size={18} color="#111827" />)}
+                    {renderCard(
+                        'Category', 
+                        selectedCategories.length > 0 ? selectedCategories[0].name : 'Select Category', 
+                        <ChevronDown size={20} color="#111827" />,
+                        () => setShowCategoryModal(!showCategoryModal)
+                    )}
+
+                    {showCategoryModal && (
+                        <View style={styles.categoryPickerContainer}>
+                            <CategorySelector 
+                                categories={categoriesData?.items || []}
+                                selectedCategories={selectedCategories}
+                                onCategoryChange={(cats) => {
+                                    setSelectedCategories(cats);
+                                    if (cats.length > 0) setShowCategoryModal(false);
+                                }}
                             />
                         </View>
-                    </View>
+                    )}
+                </View>
 
-                    {/* Category Selection */}
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <Tag size={18} color="#3A5BA9" />
-                            <Text style={styles.sectionTitle}>Categories</Text>
+                {/* Certificate / Compliance Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Certificate / compliance</Text>
+                    <Text style={styles.sectionSubtitle}>upload or updated verification file</Text>
+                    
+                    <TouchableOpacity style={styles.uploadArea}>
+                        <UploadCloud size={32} color="#425BA4" />
+                        <View style={styles.uploadBtn}>
+                            <Text style={styles.uploadBtnText}>Upload file</Text>
                         </View>
-                        <TouchableOpacity 
-                            style={styles.selector}
-                            onPress={() => setShowCategoryModal(!showCategoryModal)}
-                        >
-                            <Text style={styles.selectorText}>
-                                {selectedCategories.length > 0 
-                                    ? `${selectedCategories.length} Categories Selected`
-                                    : 'Select business categories'}
-                            </Text>
-                            <ChevronDown size={20} color="#9CA3AF" />
-                        </TouchableOpacity>
-                        
-                        {showCategoryModal && (
-                            <View style={styles.categoryContainer}>
-                                <CategorySelector 
-                                    categories={categoriesData?.items || []}
-                                    selectedCategories={selectedCategories}
-                                    onCategoryChange={setSelectedCategories}
-                                />
-                            </View>
-                        )}
-                    </View>
+                        <Text style={styles.uploadFormats}>Choose PDF, PNG, JPG</Text>
+                    </TouchableOpacity>
 
-                    {/* Location Stack */}
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <MapPin size={18} color="#3A5BA9" />
-                            <Text style={styles.sectionTitle}>Location</Text>
-                        </View>
-                        <View style={styles.inputRow}>
-                            <View style={[styles.inputGroup, { flex: 1 }]}>
-                                <Text style={styles.label}>Region (Mkoa)</Text>
-                                <Input 
-                                    value={region}
-                                    onChangeText={setRegion}
-                                    placeholder="e.g. Dar es Salaam"
-                                    className="bg-gray-50 border-gray-200"
-                                />
+                    {/* Document List */}
+                    <View style={styles.docList}>
+                        {verificationDocs.map((doc: any, index: number) => (
+                            <View key={index} style={styles.docItem}>
+                                <View style={styles.docIconContainer}>
+                                    <FileText size={20} color="#EF4444" />
+                                </View>
+                                <View style={styles.docInfo}>
+                                    <Text style={styles.docName}>{doc.document_type_name || 'Certificate'}</Text>
+                                    <Text style={styles.docMeta}>
+                                        Uploaded {new Date(doc.submitted_at).toLocaleDateString()}
+                                    </Text>
+                                </View>
+                                <View style={styles.docActions}>
+                                    <TouchableOpacity style={styles.docActionBtn}>
+                                        <Eye size={20} color="#9CA3AF" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.docActionBtn}>
+                                        <Trash2 size={20} color="#EF4444" />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                        </View>
-                        <View style={styles.inputRow}>
-                            <View style={[styles.inputGroup, { flex: 1 }]}>
-                                <Text style={styles.label}>Municipal (Wilaya)</Text>
-                                <Input 
-                                    value={municipal}
-                                    onChangeText={setMunicipal}
-                                    placeholder="e.g. Kinondoni"
-                                    className="bg-gray-50 border-gray-200"
-                                />
-                            </View>
-                            <View style={{ width: 12 }} />
-                            <View style={[styles.inputGroup, { flex: 1 }]}>
-                                <Text style={styles.label}>Ward (Kata)</Text>
-                                <Input 
-                                    value={ward}
-                                    onChangeText={setWard}
-                                    placeholder="e.g. Msasani"
-                                    className="bg-gray-50 border-gray-200"
-                                />
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Tax Info */}
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <Hash size={18} color="#3A5BA9" />
-                            <Text style={styles.sectionTitle}>Tax & Compliance</Text>
-                        </View>
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>TIN Number</Text>
-                            <Input 
-                                value={tin}
-                                onChangeText={setTin}
-                                placeholder="Enter 9-digit TIN"
-                                keyboardType="numeric"
-                                maxLength={9}
-                                className="bg-gray-50 border-gray-200"
-                            />
-                        </View>
+                        ))}
                     </View>
                 </View>
 
@@ -276,58 +239,55 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        paddingVertical: 16,
+        backgroundColor: '#FFFFFF',
     },
-    backBtn: {
-        width: 40,
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
+    headerBtn: {
+        padding: 4,
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: '600',
         color: '#111827',
-    },
-    saveBtn: {
-        width: 40,
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     content: {
         flex: 1,
     },
     logoSection: {
         alignItems: 'center',
-        paddingVertical: 30,
+        marginVertical: 20,
+    },
+    logoWrapper: {
+        position: 'relative',
     },
     logoContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 140,
+        height: 140,
+        borderRadius: 70,
         backgroundColor: '#F9FAFB',
         borderWidth: 1,
         borderColor: '#E5E7EB',
+        overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',
-        position: 'relative',
     },
     logoImage: {
         width: '100%',
         height: '100%',
-        borderRadius: 50,
     },
     logoPlaceholder: {
         alignItems: 'center',
         justifyContent: 'center',
     },
-    cameraIcon: {
+    logoInitials: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#3A5BA9',
+    },
+    logoBadge: {
         position: 'absolute',
-        bottom: 0,
-        right: 0,
+        bottom: 5,
+        right: 5,
         backgroundColor: '#3A5BA9',
         width: 32,
         height: 32,
@@ -337,62 +297,127 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#FFFFFF',
     },
-    logoLabel: {
-        marginTop: 12,
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#3A5BA9',
-    },
-    form: {
-        paddingHorizontal: 16,
-    },
     section: {
-        marginBottom: 24,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
+        paddingHorizontal: 16,
+        marginTop: 20,
     },
     sectionTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#111827',
-        marginLeft: 8,
-    },
-    inputGroup: {
+        fontWeight: '600',
+        color: '#374151',
         marginBottom: 16,
     },
-    label: {
+    sectionSubtitle: {
         fontSize: 13,
-        fontWeight: '600',
-        color: '#4B5563',
-        marginBottom: 8,
+        color: '#9CA3AF',
+        marginTop: -12,
+        marginBottom: 16,
     },
-    inputRow: {
-        flexDirection: 'row',
-    },
-    selector: {
+    card: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
+        borderColor: '#F3F4F6',
+        // Subtle shadow
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
     },
-    selectorText: {
+    cardContent: {
+        flex: 1,
+    },
+    cardLabel: {
+        fontSize: 12,
+        color: '#6B7280',
+        marginBottom: 4,
+    },
+    cardValue: {
         fontSize: 14,
         color: '#111827',
+        fontWeight: '500',
     },
-    categoryContainer: {
-        marginTop: 12,
-        padding: 12,
+    cardIcon: {
+        marginLeft: 12,
+    },
+    categoryPickerContainer: {
+        marginBottom: 20,
         backgroundColor: '#F9FAFB',
         borderRadius: 12,
+        padding: 12,
         borderWidth: 1,
-        borderColor: '#EDF2F7',
+        borderColor: '#E5E7EB',
+    },
+    uploadArea: {
+        height: 160,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderStyle: 'dashed',
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        marginBottom: 20,
+    },
+    uploadBtn: {
+        backgroundColor: '#425BA4',
+        paddingHorizontal: 24,
+        paddingVertical: 10,
+        borderRadius: 8,
+        marginTop: 12,
+    },
+    uploadBtnText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    uploadFormats: {
+        fontSize: 12,
+        color: '#6B7280',
+        marginTop: 8,
+    },
+    docList: {
+        gap: 12,
+    },
+    docItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F9FAFB',
+        borderRadius: 12,
+        padding: 12,
+    },
+    docIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        backgroundColor: '#FFFFFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    docInfo: {
+        flex: 1,
+    },
+    docName: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#111827',
+    },
+    docMeta: {
+        fontSize: 11,
+        color: '#9CA3AF',
+        marginTop: 2,
+    },
+    docActions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    docActionBtn: {
+        padding: 6,
     }
 });

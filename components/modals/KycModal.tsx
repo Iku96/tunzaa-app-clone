@@ -36,6 +36,7 @@ export function KycModal({ isOpen, onClose, onSuccess, user: propUser, userRole:
   const user = propUser || authContext.user;
   const userRole = propUserRole || user?.activeProfileRole;
   
+  if (!isOpen) return null;
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
