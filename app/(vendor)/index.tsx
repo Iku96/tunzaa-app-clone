@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, ActivityIndicator, BackHandler } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions, ActivityIndicator, BackHandler, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { ArrowLeft, LayoutGrid, PlusSquare, MoreHorizontal, Calendar, Maximize2 } from 'lucide-react-native';
@@ -98,6 +98,11 @@ export default function MerchantDashboardScreen() {
         .slice(0, 10);
 
     const topProducts = topProductsData?.data || [];
+    
+    const logoUrl = vendorProfile?.metadata?.logo_url || 
+                    vendorProfile?.metadata?.image_url || 
+                    vendorProfile?.branding?.logo_url || 
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(vendorProfile?.display_name || 'V')}&background=425BA4&color=FFFFFF`;
 
     const loading = pulseLoading || gmvLoading || productsLoading || statusLoading;
 
@@ -133,7 +138,12 @@ export default function MerchantDashboardScreen() {
                             style={styles.headerBtn}
                             onPress={() => router.push('/(vendor)/settings')}
                         >
-                            <MoreHorizontal size={24} color="#111827" />
+                            <View style={styles.avatarContainer}>
+                                <Image 
+                                    source={{ uri: logoUrl }} 
+                                    style={styles.avatarImage} 
+                                />
+                            </View>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -341,7 +351,20 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     headerBtn: {
-        padding: 8,
+        padding: 4,
+    },
+    avatarContainer: {
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: '#F3F4F6',
+        overflow: 'hidden',
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
     },
     headerRightRow: {
         flexDirection: 'row',

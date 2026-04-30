@@ -4,11 +4,11 @@
  */
 export const API_CONFIG = {
     BASE_URL:
-        process.env.EXPO_PUBLIC_API_BASE_URL || "https://multi-tenant-api.tunzaa.co.tz/v1",
+        process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.demo.tunzaa.co.tz/v1",
     DOCUMENT_UPLOAD_URL:
         process.env.EXPO_PUBLIC_DOCUMENT_UPLOAD_URL || "https://docs.afrizon.africa/api/documents",
     TENANT_ID:
-        process.env.EXPO_PUBLIC_TENANT_ID || "429841b1-76a3-4d67-a5fc-1c61178bb6a7",
+        process.env.EXPO_PUBLIC_TENANT_ID || "90c9aad8-4201-4416-8af6-c5561b7e6b35",
     APP_URL:
         process.env.EXPO_PUBLIC_APP_URL || "https://afrizon.africa",
     TIMEOUT: 30000,

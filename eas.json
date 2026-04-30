@@ -11,7 +11,11 @@
     },
     "preview": {
       "distribution": "internal",
-      "channel": "staging"
+      "channel": "staging",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.demo.tunzaa.co.tz/v1",
+        "EXPO_PUBLIC_TENANT_ID": "90c9aad8-4201-4416-8af6-c5561b7e6b35"
+      }
     },
     "production": {
       "channel": "production",
