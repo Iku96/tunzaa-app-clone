@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Afrizon",
-    "owner": "billgwakisa",
+    "owner": "iku101",
     "slug": "dynamic-marketplace",
     "version": "1.0.10",
     "orientation": "portrait",
@@ -200,14 +200,14 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "595c16b1-b97f-430c-b726-eb76bd3a9342"
+        "projectId": ""
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/595c16b1-b97f-430c-b726-eb76bd3a9342"
+      "url": ""
     }
   }
 }
