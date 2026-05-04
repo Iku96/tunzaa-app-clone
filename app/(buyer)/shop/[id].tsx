@@ -13,6 +13,7 @@ import ContactSheet from '../../../src/components/shop/ContactSheet';
 import { useWishlistStore } from '../../../src/stores/wishlist';
 import { useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
 import { useSearchHistory } from '../../../src/stores/searchHistory';
+import { getVendorLogoUrl } from '../../../src/utils/images';
 
 const { width } = Dimensions.get('window');
 
@@ -102,8 +103,7 @@ export default function ShopProfileScreen() {
         );
     }
 
-    const logoUri = shop.branding?.logo_url || shop.metadata?.logo_url || shop.metadata?.avatar;
-    const validLogoUri = logoUri && logoUri.trim() !== '' ? logoUri : 'https://via.placeholder.com/100x100?text=Shop';
+    const validLogoUri = getVendorLogoUrl({ vendorData: shop, metadata: shop.metadata, branding: shop.branding }) || 'https://via.placeholder.com/100x100?text=Shop';
 
     const certs = shop.metadata?.verification_documents || [];
     const certCount = Array.isArray(certs) ? certs.length : Object.keys(certs).length;

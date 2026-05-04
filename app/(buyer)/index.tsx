@@ -38,9 +38,15 @@ export default function BuyerHome() {
                 // 1. Check API profiles
                 if (user?.profiles) {
                     const buyerProfile = user.profiles.find((p: any) => p.role === 'buyer') || user.profiles[0];
-                    if (buyerProfile && buyerProfile.metadata?.profile_picture) {
-                        picUrl = buyerProfile.metadata.profile_picture;
-                    }
+                    picUrl = buyerProfile?.metadata?.profile_picture || 
+                             buyerProfile?.metadata?.avatar || 
+                             buyerProfile?.metadata?.avatar_url || 
+                             buyerProfile?.profile_picture || '';
+                }
+                
+                // 1.5 Fallback to root user properties
+                if (!picUrl && user) {
+                    picUrl = user.profile_picture || user.avatar || user.avatar_url || user.image_url || '';
                 }
                 
                 // 2. Check Local storage fallback

@@ -34,8 +34,8 @@ export default function NotificationHubScreen() {
                     <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Notifications</Text>
-                <TouchableOpacity style={styles.filterButton}>
-                    <Ionicons name="options-outline" size={20} color="#4B5563" />
+                <TouchableOpacity style={[styles.filterButton, { backgroundColor: '#F0F4FA' }]}>
+                    <Ionicons name="settings-outline" size={20} color="#425BA4" />
                 </TouchableOpacity>
             </View>
 

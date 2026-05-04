@@ -54,13 +54,20 @@ export default function ProfileScreen() {
                         // Ignore API error, use local
                     }
 
+                    const picUrl = apiMeta.profile_picture || 
+                                 apiMeta.avatar || 
+                                 profile?.profile_picture || 
+                                 userData?.profile_picture || 
+                                 userData?.avatar || 
+                                 localData.profile_picture || '';
+
                     // 3. Merge
                     setProfileData({
                         username: apiMeta.username || localData.username || '',
                         location: apiMeta.location || localData.location || 'Dar es Salaam',
                         followers_count: apiMeta.followers_count || 0,
                         following_count: apiMeta.following_count || 0,
-                        profile_picture: apiMeta.profile_picture || localData.profile_picture || ''
+                        profile_picture: picUrl
                     });
 
                 } catch (e) {
