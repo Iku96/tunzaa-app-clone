@@ -80,10 +80,10 @@ export default function RoleScreen() {
     });
 
     const businessOptions = [
+        { label: t.roleScreenOptionAffiliate, value: 'affiliate' },
         { label: t.roleScreenOptionSell, value: 'sell' },
         { label: t.roleScreenOptionDelivery, value: 'delivery' },
-        { label: t.roleScreenOptionFinancial, value: 'financial' },
-        { label: t.roleScreenOptionAffiliate, value: 'affiliate' }
+        { label: t.roleScreenOptionFinancial, value: 'financial' }
     ];
 
     return (

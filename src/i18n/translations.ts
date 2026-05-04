@@ -445,7 +445,7 @@ const en: TranslationKeys = {
     roleScreenOptionSell: "Sell products / Services",
     roleScreenOptionDelivery: "Provide delivery services",
     roleScreenOptionFinancial: "Offer loans and financial services",
-    roleScreenOptionAffiliate: "Join as an affiliate marketer",
+    roleScreenOptionAffiliate: "Join as winga",
     roleScreenAlreadyAccount: "Already have an account?",
     // Common
     commonNext: "Next",
@@ -676,7 +676,7 @@ const sw: TranslationKeys = {
     roleScreenOptionSell: "Uza bidhaa / Huduma",
     roleScreenOptionDelivery: "Toa huduma za usafirishaji",
     roleScreenOptionFinancial: "Toa mikopo na huduma za kifedha",
-    roleScreenOptionAffiliate: "Jiunge kama mshirika wa masoko",
+    roleScreenOptionAffiliate: "Jiunge kama winga",
     roleScreenAlreadyAccount: "Tayari una akaunti?",
     // Common
     commonNext: "Endelea",
@@ -898,7 +898,7 @@ const fr: TranslationKeys = {
     roleScreenOptionSell: "Vendre des produits / Services",
     roleScreenOptionDelivery: "Fournir des services de livraison",
     roleScreenOptionFinancial: "Offrir des prêts et services financiers",
-    roleScreenOptionAffiliate: "Rejoindre en tant que marketeur affilié",
+    roleScreenOptionAffiliate: "Join as winga",
     roleScreenAlreadyAccount: "Vous avez déjà un compte ? Connexion",
     commonNext: "Continuer",
     commonBack: "Retour",
