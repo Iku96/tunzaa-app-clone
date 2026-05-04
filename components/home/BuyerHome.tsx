@@ -19,7 +19,7 @@ import { useCategories } from "@/stores/categories";
 import { useFeaturedShops, useShops } from "@/stores/shops";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 import {
   CategoryTileSkeleton,
   ShopTileSkeleton,

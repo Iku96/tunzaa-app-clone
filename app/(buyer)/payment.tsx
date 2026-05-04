@@ -13,11 +13,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { useAuth } from "@/context/auth";
-import { useInitiatePayment, paymentsApi } from "@/services/payments";
-import { useGetOrder, useCreateOrder } from "@/services/orders";
-import { cartApi } from "@/services/cart";
-import { buyersApi } from "@/services/buyers";
-import { useDeliveryTypesWithFallback } from "@/services/delivery";
+import { useInitiatePayment, paymentsApi } from "@/src/services/payments";
+import { useGetOrder, useCreateOrder } from "@/src/services/orders";
+import { cartApi } from "@/src/services/cart";
+import { buyersApi } from "@/src/services/buyers";
+import { useDeliveryTypesWithFallback } from "@/src/services/delivery";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Terminal } from "@/lib/icons/Terminal";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 import { PaymentMethodSelector, InstallmentPlanCreator, PaymentForm, InstallmentTimeline } from "@/components/payment";
 import {
   getPaymentMethodsForCategory,

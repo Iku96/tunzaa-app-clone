@@ -4,13 +4,13 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
 import { useUpdatePassword } from '@/src/services/auth';
-import { useAuth } from '@/context/auth';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { useI18n } from '@/hooks/useI18n';
 import * as Burnt from 'burnt';
 
 export default function PasswordManagerScreen() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
     const { t } = useI18n();
     
     const [currentPassword, setCurrentPassword] = useState('');

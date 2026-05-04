@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Stack, Redirect, useSegments, useRouter } from "expo-router";
 import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
-import { useRouting } from "@/hooks/useRouting";
 
 export default function AuthLayout() {
   const { user, isAuthenticated } = useTunzaaAuth();

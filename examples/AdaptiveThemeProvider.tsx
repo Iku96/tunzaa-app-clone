@@ -6,10 +6,10 @@ import {
   Appearance,
   Text,
 } from "react-native";
-import { useTenant } from "@/services/tenant";
+import { useTenant } from "@/src/services/tenant";
 import { useTenantStore } from "@/stores/tenant";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { STORAGE_KEYS } from "@/services/config";
+import { STORAGE_KEYS } from "@/src/services/config";
 import { useColorScheme } from "@/lib/useColorScheme";
 
 interface ThemeProviderProps {

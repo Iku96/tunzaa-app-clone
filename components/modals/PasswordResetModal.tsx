@@ -7,7 +7,7 @@ import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { Terminal } from "@/lib/icons/Terminal";
-import { useRequestPasswordReset, useConfirmPasswordReset } from "@/services/auth";
+import { useRequestPasswordReset, useConfirmPasswordReset } from "@/src/services/auth";
 
 interface PasswordResetModalProps {
   isOpen: boolean;

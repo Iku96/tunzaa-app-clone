@@ -12,15 +12,15 @@ import {
   useUpdateProductInventory,
   useUpdateProductStatus,
   type ProductResponse,
-} from "@/services/product-management";
+} from "@/src/services/product-management";
 import { ProductModal } from "@/components/modals/ProductModal";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ImageSlider } from "@/components/ui/image-slider";
-import { useAuth } from "@/context/auth";
-import { useGetVendor } from "@/services/vendors";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
+import { useGetVendor } from "@/src/services/vendors";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { getImageUrl } from "@/utils/images";
@@ -32,7 +32,7 @@ const ProductDetailsScreen = () => {
   const { height: screenHeight } = Dimensions.get("window");
   
   // Get auth user and find vendor profile
-  const { user } = useAuth();
+  const { user } = useTunzaaAuth();
   const vendorProfile = user?.profiles?.find(
     (profile) => profile.role === "vendor"
   );

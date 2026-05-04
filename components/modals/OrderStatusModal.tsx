@@ -7,7 +7,7 @@ import { Text } from "@/components/ui/text";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import type { Order } from "@/services/types/orders";
+import type { Order } from "@/src/services/types/orders";
 import { useI18n } from "@/hooks/useI18n";
 
 interface OrderStatusModalProps {

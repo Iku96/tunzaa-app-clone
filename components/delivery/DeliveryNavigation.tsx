@@ -21,7 +21,7 @@ import {
   navigationService,
   type NavigationOptions,
   type RouteInfo,
-} from "@/services/navigation";
+} from "@/src/services/navigation";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 interface DeliveryNavigationProps {

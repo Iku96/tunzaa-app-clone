@@ -8,7 +8,7 @@ import { Text } from "@/components/ui/text";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import { useGetBatches, type UploadBatch } from "@/services/bulk-upload";
+import { useGetBatches, type UploadBatch } from "@/src/services/bulk-upload";
 import { BatchDetailsModal } from "./BatchDetailsModal";
 import { format } from "date-fns";
 

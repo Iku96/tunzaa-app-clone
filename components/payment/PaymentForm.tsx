@@ -10,9 +10,9 @@ import {
 } from "lucide-react-native";
 import { useAuth } from "@/context/auth";
 import { useReferral } from "@/context/referral";
-import { useInitiatePayment, useInitiatePaymentDirectly, useCheckPaymentStatus, paymentsApi } from "@/services/payments";
-import { useCreateOrder } from "@/services/orders";
-import { useGetOrder } from "@/services/orders";
+import { useInitiatePayment, useInitiatePaymentDirectly, useCheckPaymentStatus, paymentsApi } from "@/src/services/payments";
+import { useCreateOrder } from "@/src/services/orders";
+import { useGetOrder } from "@/src/services/orders";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,9 +20,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PaymentMethodSelector } from "@/components/payment";
 import { getPaymentMethodsForCategory, getPaymentMethodName } from "@/config/payment-methods";
-import { API_CONFIG } from "@/services/config";
-import type { CreateOrderBody } from "@/services/types/orders";
-import { ordersApi } from "@/services/orders";
+import { API_CONFIG } from "@/src/services/config";
+import type { CreateOrderBody } from "@/src/services/types/orders";
+import { ordersApi } from "@/src/services/orders";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";
 

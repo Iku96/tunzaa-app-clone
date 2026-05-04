@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
-import { useGetDeliveries } from "@/services/delivery";
+import { useGetDeliveries } from "@/src/services/delivery";
 import { useAuth } from "@/context/auth";
-import { DeliveryStage, Delivery } from "@/services/types/delivery";
+import { DeliveryStage, Delivery } from "@/src/services/types/delivery";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";
 

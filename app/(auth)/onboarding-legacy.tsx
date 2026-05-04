@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useTenantStore } from "@/stores/tenant";
-import type { Banner } from "@/services/types";
+import type { Banner } from "@/src/services/types";
 import { useMemo, useState, useRef, useEffect } from "react";
 
 import AuthHeader from "@/features/auth/components/AuthHeader";

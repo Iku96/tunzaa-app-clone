@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Platform } from "react-native";
 import pushNotificationsService, {
   PushNotificationPermissionStatus,
-} from "@/services/push-notifications";
+} from "@/src/services/push-notifications";
 
 export interface UsePushNotificationsReturn {
   // Permission status

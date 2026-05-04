@@ -2,18 +2,18 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { router } from "expo-router";
 import { Platform } from "react-native";
 import { useStorageState } from "@/hooks/useStorageState";
-import { authApi } from "@/services/auth";
+import { authApi } from "@/src/services/auth";
 import {
   getTempPhoneNumber,
   clearTempPhoneNumber,
   saveTokens,
   clearNewlyRegisteredFlag,
 } from "@/utils/storage";
-import { STORAGE_KEYS } from "@/services/config";
-import { vendorsApi } from "@/services/vendors";
-import { deliveryApi } from "@/services/delivery";
-import { affiliatesApi } from "@/services/affiliates";
-import pushNotificationsService from "@/services/push-notifications";
+import { STORAGE_KEYS } from "@/src/services/config";
+import { vendorsApi } from "@/src/services/vendors";
+import { deliveryApi } from "@/src/services/delivery";
+import { affiliatesApi } from "@/src/services/affiliates";
+import pushNotificationsService from "@/src/services/push-notifications";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from "@tanstack/react-query";
 import { Permission, ROLE_PERMISSIONS } from "@/config/permissions";
@@ -701,11 +701,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLastStoredUser(null);
 
       console.log("✅ Logout completed - all user data cleared");
-
-      // Stable navigation from root context
-      setTimeout(() => {
-        router.replace('/language');
-      }, 10);
     } catch (error) {
       console.error("❌ Logout failed:", error);
       setError("Logout failed");

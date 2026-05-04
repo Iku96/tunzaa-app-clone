@@ -27,15 +27,15 @@ import {
   useGetDelivery,
   useUpdateDeliveryStage,
   useAddDeliveryProof,
-} from "@/services/delivery";
-import { useGetOrder, useVerifyDeliveryOTP } from "@/services/order-management";
+} from "@/src/services/delivery";
+import { useGetOrder, useVerifyDeliveryOTP } from "@/src/services/order-management";
 import { useAuth } from "@/context/auth";
 import { useProductDetails } from "@/hooks/useProductDetails";
 import { ProofPhotoModal } from "@/components/modals/ProofPhotoModal";
 import { DeliveryOTPModal } from "@/components/modals/DeliveryOTPModal";
 import { RejectDeliveryModal } from "@/components/modals/RejectDeliveryModal";
-import type { DeliveryStage } from "@/services/types/delivery";
-import { useGetDeliveryPartner } from "@/services/delivery";
+import type { DeliveryStage } from "@/src/services/types/delivery";
+import { useGetDeliveryPartner } from "@/src/services/delivery";
 import { Textarea } from "@/components/ui/textarea";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";

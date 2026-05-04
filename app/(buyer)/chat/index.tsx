@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useGetCustomerConversations, Conversation } from '../../../src/services/support';
 import BottomNav from '../../../src/components/navigation/BottomNav';
+import { format, formatDistanceToNow, isToday } from 'date-fns';
 
 const { width } = Dimensions.get('window');
 
@@ -32,13 +33,10 @@ export default function ChatListScreen() {
     const formatTime = (dateString: string) => {
         try {
             const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = now.getTime() - date.getTime();
-            const diffHours = diffMs / (1000 * 60 * 60);
-
-            if (diffHours < 1) return `${Math.floor(diffMs / 60000)}m ago`;
-            if (diffHours < 24) return `${Math.floor(diffHours)}h ago`;
-            return date.toLocaleDateString();
+            if (isToday(date)) {
+                return format(date, 'h:mm a');
+            }
+            return formatDistanceToNow(date, { addSuffix: true });
         } catch {
             return '';
         }
@@ -60,15 +58,12 @@ export default function ChatListScreen() {
             </TouchableOpacity>
 
             <View style={styles.titleContainer}>
-                <Text style={styles.headerTitle}>Support Chats</Text>
+                <Text style={styles.headerTitle}>Recent Chats</Text>
                 <TouchableOpacity
                     style={styles.newMessageButton}
-                    onPress={() => {
-                        // Navigate to create new support ticket if we have that screen
-                        // For now, just show a hint
-                    }}
+                    onPress={() => router.push('/(buyer)/chat/new')}
                 >
-                    <Ionicons name="create-outline" size={20} color="#FFFFFF" />
+                    <Ionicons name="chatbubble-outline" size={22} color="#FFFFFF" />
                 </TouchableOpacity>
             </View>
         </View>
@@ -76,7 +71,7 @@ export default function ChatListScreen() {
 
     const renderTabs = () => (
         <View style={styles.tabsContainer}>
-            {['All chats', 'Active', 'Resolved'].map((tab) => (
+            {['All chats', 'Personal', 'Business'].map((tab) => (
                 <TouchableOpacity
                     key={tab}
                     style={[styles.tab, activeTab === tab && styles.activeTab]}
@@ -104,19 +99,20 @@ export default function ChatListScreen() {
                 <View style={styles.chatHeader}>
                     <View style={styles.nameRow}>
                         <Text style={styles.name} numberOfLines={1}>{item.subject || 'Support Ticket'}</Text>
+                        {item.status === 'open' && <Ionicons name="checkmark-circle" size={16} color="#10B981" style={{ marginLeft: 4 }} />}
                     </View>
                     <Text style={styles.time}>{formatTime(item.updated_at)}</Text>
                 </View>
 
                 <View style={styles.messageRow}>
                     <Text style={styles.lastMessage} numberOfLines={1}>
-                        {item.category || 'Tap to view conversation'}
+                        <Ionicons name="checkmark-done" size={14} color="#9CA3AF" /> {item.category || 'Tap to view conversation'}
                     </Text>
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-                        <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                            {item.status}
-                        </Text>
-                    </View>
+                    {item.status === 'open' && (
+                        <View style={styles.unreadBadge}>
+                            <Text style={styles.unreadText}>1</Text>
+                        </View>
+                    )}
                 </View>
             </View>
         </TouchableOpacity>
@@ -124,12 +120,11 @@ export default function ChatListScreen() {
 
     const renderEmptyState = () => (
         <View style={styles.emptyState}>
-            <View style={styles.emptyIconContainer}>
-                <Ionicons name="chatbubble-ellipses-outline" size={32} color="#425BA4" />
+            <View style={styles.emptyIconBox}>
+                <Ionicons name="chatbubble-ellipses-outline" size={40} color="#3B5998" />
             </View>
-            <Text style={styles.emptyTitle}>No conversations</Text>
             <Text style={styles.emptyText}>
-                Your support chats will appear here once you contact a vendor or our support team.
+                Chat will appear here after you have sent or received a message
             </Text>
         </View>
     );
@@ -167,24 +162,28 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#FFFFFF' },
     header: {
         flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20,
-        paddingTop: 10, marginBottom: 20,
+        paddingTop: 10, marginBottom: 10,
     },
     backButton: { padding: 4, marginRight: 16 },
     titleContainer: {
         flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     },
-    headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#1F2937' },
+    headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#1F2937', fontFamily: 'Ubuntu_700Bold' },
     newMessageButton: {
-        width: 36, height: 36, borderRadius: 18, backgroundColor: '#1E3A8A',
+        width: 50, height: 50, borderRadius: 25, backgroundColor: '#2D3E7B',
         justifyContent: 'center', alignItems: 'center',
+        elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4,
     },
+    fabIconContainer: { position: 'relative' },
+    fabPlus: { position: 'absolute', top: -2, right: -4, fontWeight: 'bold' },
     tabsContainer: {
-        flexDirection: 'row', paddingHorizontal: 20, marginBottom: 16, gap: 12,
+        flexDirection: 'row', paddingHorizontal: 20, marginBottom: 20, gap: 10,
     },
     tab: {
-        paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, backgroundColor: '#F3F4F6',
+        paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#FFFFFF',
+        borderWidth: 1, borderColor: '#F3F4F6',
     },
-    activeTab: { backgroundColor: '#1E3A8A' },
+    activeTab: { backgroundColor: '#2D3E7B', borderColor: '#2D3E7B' },
     tabText: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
     activeTabText: { color: '#FFFFFF' },
 
@@ -193,41 +192,40 @@ const styles = StyleSheet.create({
 
     listContent: { flexGrow: 1 },
     chatItem: {
-        flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 14, alignItems: 'center',
-        borderBottomWidth: 1, borderBottomColor: '#F9FAFB',
+        flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 16, alignItems: 'center',
     },
     avatarContainer: { position: 'relative', marginRight: 14 },
     avatarPlaceholder: {
-        width: 48, height: 48, borderRadius: 24, backgroundColor: '#EFF6FF',
+        width: 60, height: 60, borderRadius: 30, backgroundColor: '#F3F4F6',
         justifyContent: 'center', alignItems: 'center',
     },
     onlineIndicator: {
         width: 12, height: 12, borderRadius: 6, position: 'absolute',
-        bottom: 1, right: 1, borderWidth: 2, borderColor: '#FFFFFF',
+        bottom: 2, right: 2, borderWidth: 2, borderColor: '#FFFFFF',
     },
     chatContent: { flex: 1, justifyContent: 'center' },
     chatHeader: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4,
     },
     nameRow: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 },
-    name: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
+    name: { fontSize: 16, fontWeight: '700', color: '#1F2937' },
     time: { fontSize: 12, color: '#9CA3AF' },
     messageRow: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     },
-    lastMessage: { fontSize: 13, color: '#6B7280', flex: 1, marginRight: 8 },
-    statusBadge: {
-        paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8,
+    lastMessage: { fontSize: 14, color: '#6B7280', flex: 1, marginRight: 8 },
+    unreadBadge: {
+        width: 22, height: 22, borderRadius: 11, backgroundColor: '#1E3A8A',
+        justifyContent: 'center', alignItems: 'center',
     },
-    statusText: { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
+    unreadText: { color: '#FFFFFF', fontSize: 11, fontWeight: 'bold' },
 
     emptyState: {
         flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40,
     },
-    emptyIconContainer: {
-        width: 80, height: 80, borderRadius: 24, backgroundColor: '#F3F4F6',
-        justifyContent: 'center', alignItems: 'center', marginBottom: 20,
+    emptyIconBox: {
+        width: 120, height: 120, borderRadius: 30, backgroundColor: '#F3F4F6',
+        justifyContent: 'center', alignItems: 'center', marginBottom: 24,
     },
-    emptyTitle: { fontSize: 18, fontWeight: '700', color: '#374151', marginBottom: 6 },
-    emptyText: { fontSize: 14, color: '#6B7280', textAlign: 'center', lineHeight: 20 },
+    emptyText: { fontSize: 16, color: '#374151', textAlign: 'center', lineHeight: 24, fontWeight: '500' },
 });

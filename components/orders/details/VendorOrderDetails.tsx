@@ -10,11 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { OrderStatusUpdateDialog } from "@/components/dialogs/OrderStatusUpdateDialog";
 import { OrderStatus } from "../OrderStatus";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
-import { useUpdateOrderStatus, useVendorResponse } from "@/services/order-management";
+import { useUpdateOrderStatus, useVendorResponse } from "@/src/services/order-management";
 import { useAuth } from "@/context/auth";
 import { useProductDetails } from "@/hooks/useProductDetails";
 import { useResponsive } from "@/hooks/useResponsive";
-import type { Order } from "@/services/types/orders";
+import type { Order } from "@/src/services/types/orders";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 interface VendorOrderDetailsProps {

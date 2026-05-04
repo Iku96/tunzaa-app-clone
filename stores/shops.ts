@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Store, getStores, getStoreById } from "../services/shops";
+import { Store, getStores, getStoreById } from "@/src/services/shops";
 
 export interface Shop {
   id: string;

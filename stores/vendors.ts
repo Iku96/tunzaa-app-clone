@@ -4,7 +4,7 @@ import {
   VendorResponse,
   VendorsResponse,
   VendorsParams,
-} from "@/services/vendors";
+} from "@/src/services/vendors";
 
 // Query keys for better cache management
 const vendorsKeys = {

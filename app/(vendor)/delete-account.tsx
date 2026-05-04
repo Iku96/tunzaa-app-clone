@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Modal, 
 import { useRouter, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, AlertTriangle, Eye, EyeOff } from 'lucide-react-native';
-import { useAuth } from '@/context/auth';
-import { authApi } from '@/services/auth';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
+import { authApi } from '@/src/services/auth';
 import { useI18n } from '@/hooks/useI18n';
 import * as Burnt from 'burnt';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -23,7 +23,7 @@ const BUSINESS_EXTRAS_KEY = "@tunzaa_business_extras";
 
 export default function DeleteAccountScreen() {
     const localRouter = useRouter(); // renamed to avoid conflict
-    const { user, logout } = useAuth();
+    const { user, logout } = useTunzaaAuth();
     const { t } = useI18n();
     
     const [selectedReason, setSelectedReason] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function DeleteAccountScreen() {
     const [isDeleting, setIsDeleting] = useState(false);
 
     // Profile Data Loading
-    const currentProfile = user?.profiles?.find(p => p.role === user.activeProfileRole);
+    const currentProfile = user?.profiles?.find((p: any) => p.role === user.activeProfileRole);
     const metadata = (currentProfile as any)?.metadata || {};
     const branding = (currentProfile as any)?.branding || {};
     const [profileData, setProfileData] = useState({

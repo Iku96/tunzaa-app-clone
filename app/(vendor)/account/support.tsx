@@ -13,7 +13,7 @@ import ChatwootWidget from "@/components/ChatwootWidget";
 import SafeChatwootWrapper from "@/components/ChatwootWidget/SafeChatwootWrapper";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTenantStore } from "@/stores/tenant";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 export default function SupportScreen() {
@@ -22,7 +22,7 @@ export default function SupportScreen() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth();
+  const { user } = useTunzaaAuth();
   const [isChatVisible, setIsChatVisible] = useState(false);
   const { tenant } = useTenantStore();
   const resolvedColors = useResolvedThemeColors();

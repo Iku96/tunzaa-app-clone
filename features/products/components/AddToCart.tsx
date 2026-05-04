@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/context/auth";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { Product } from "@/services/products";
+import { Product } from "@/src/services/products";
 import { useCartCombined } from "@/stores/cart";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useResponsive } from "@/hooks/useResponsive";

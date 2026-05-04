@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { recommendationsApi } from "@/services/recommendations";
+import { recommendationsApi } from "@/src/services/recommendations";
 import type {
   PersonalizedRecommendationResponse,
   SimilarItemsResponse,
@@ -10,7 +10,7 @@ import type {
   RecommendationScenario,
   InteractionTrackingRequest,
   PersonalizedSearchRequest,
-} from "@/services/types/recommendations";
+} from "@/src/services/types/recommendations";
 
 // Query Keys
 const RECOMMENDATION_QUERY_KEYS = {

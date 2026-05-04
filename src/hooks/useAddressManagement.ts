@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/auth";
-import { useGetBuyerProfile, useUpdateBuyerProfile } from "@/services/buyers";
-import type { DeliveryAddress } from "@/services/types/buyers";
+import { useGetBuyerProfile, useUpdateBuyerProfile } from "@/src/services/buyers";
+import type { DeliveryAddress } from "@/src/services/types/buyers";
 
 interface AddressSubmissionOptions {
   onSuccess?: (address: DeliveryAddress) => void;

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
-import { useApplyReferralCode } from "@/services/rewards";
+import { useApplyReferralCode } from "@/src/services/rewards";
 import { useAuth } from "@/context/auth";
 import { useI18n } from "@/hooks/useI18n";
 

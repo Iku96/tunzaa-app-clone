@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useI18n } from "@/hooks/useI18n";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import type { Conversation } from "@/services/support";
+import type { Conversation } from "@/src/services/support";
 
 interface TicketDetailsModalProps {
   visible: boolean;

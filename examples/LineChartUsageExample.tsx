@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LineChart, convertDailyGMVToChartData, convertWeeklyGMVToChartData, convertMonthlyGMVToChartData, formatLargeNumber, formatCurrency } from '@/components/charts/LineChart';
-import { useGetDailyGMVPerformance, useGetWeeklyGMVPerformance, useGetMonthlyGMVPerformance } from '@/services/reports';
+import { useGetDailyGMVPerformance, useGetWeeklyGMVPerformance, useGetMonthlyGMVPerformance } from '@/src/services/reports';
 import { colors, typography, spacing } from '@/styles/theme';
 
 interface LineChartUsageExampleProps {

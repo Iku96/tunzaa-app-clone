@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useGetProduct } from "@/services/product-management";
+import { useGetProduct } from "@/src/services/product-management";
 import { useMemo } from "react";
 
 // Hook to fetch multiple product details efficiently
@@ -25,7 +25,7 @@ export const useProductDetails = (productIds: string[] = []) => {
       const promises = stableProductIds.map(async (productId) => {
         try {
           // We need to import the product management service directly
-          const { productManagementApi } = await import('@/services/product-management');
+          const { productManagementApi } = await import('@/src/services/product-management');
           const product = await productManagementApi.getProduct(productId);
           return [productId, product];
         } catch (error) {

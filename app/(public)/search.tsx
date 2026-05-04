@@ -10,7 +10,7 @@ import { TrendingItems } from "@/components/recommendations";
 import { ProductTileSkeleton, CategoryTileSkeleton } from "@/components/ui/skeleton";
 import { useLocalSearchParams } from "expo-router";
 import { useI18n } from "@/hooks/useI18n";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 import { CategoryTile } from "@/components/categories/CategoryTile";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { useResponsive } from "@/hooks/useResponsive";

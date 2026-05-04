@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useCategories } from "@/stores/categories";
 import { CategoryTileSkeleton } from "@/components/ui/skeleton";
 import { useI18n } from "@/hooks/useI18n";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 import { Image } from "expo-image";
 
 interface CategoriesSidebarProps {

@@ -5,7 +5,7 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, ShoppingCart, Edit3 } from "lucide-react-native";
-import { WishlistItem as WishlistItemType } from "@/services/types/wishlist";
+import { WishlistItem as WishlistItemType } from "@/src/services/types/wishlist";
 import { getImageUrl } from "@/utils/images";
 import { useRouter } from "expo-router";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";

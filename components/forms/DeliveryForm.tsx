@@ -10,8 +10,8 @@ import {
   LocationPicker,
   type LocationData,
 } from "@/components/ui/location-picker";
-import { useGetVehicleTypes } from "@/services/configuration";
-import { API_CONFIG } from "@/services/config";
+import { useGetVehicleTypes } from "@/src/services/configuration";
+import { API_CONFIG } from "@/src/services/config";
 import { Textarea } from "../ui/textarea";
 
 export interface Driver {

@@ -185,7 +185,7 @@ export const useCheckoutCart = () => {
 
     try {
       // Import cart API dynamically to avoid circular dependencies
-      const { cartApi } = await import("@/services/cart");
+      const { cartApi } = await import("@/src/services/cart");
 
       // Get or create cart first
       const serverCart = await cartApi.getOrCreateCart(userId);

@@ -31,7 +31,7 @@ import {
   useGetRatingSummary, 
   useCreateRating,
   useGetEntityReviews 
-} from '@/services/ratings';
+} from '@/src/services/ratings';
 ```
 
 ### 2. Create a Rating
@@ -287,7 +287,7 @@ try {
 
 ```typescript
 import React from 'react';
-import { useGetRatingSummary, useCreateRating } from '@/services/ratings';
+import { useGetRatingSummary, useCreateRating } from '@/src/services/ratings';
 import ProductRatingsExample from '@/examples/ProductRatingsExample';
 
 const ProductDetailsScreen = ({ productId }) => {
@@ -391,7 +391,7 @@ const handleMarkVerified = (ratingId) => {
 ### Caching for Performance
 
 ```typescript
-import { ratingsCache } from '@/services/ratings';
+import { ratingsCache } from '@/src/services/ratings';
 
 // Get cached summary
 const summary = await ratingsCache.getSummaryWithCache('product-123');
@@ -427,7 +427,7 @@ The service expects these endpoints to be available:
 
 ## TypeScript Types
 
-All types are exported from `@/services/types/ratings`:
+All types are exported from `@/src/services/types/ratings`:
 
 ```typescript
 import {
@@ -440,7 +440,7 @@ import {
   GetEntityRatingsParams,
   GetEntityReviewsParams,
   EntityType
-} from '@/services/types/ratings';
+} from '@/src/services/types/ratings';
 ```
 
 ## Contributing

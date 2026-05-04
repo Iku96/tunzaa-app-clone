@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useResponsive } from "@/hooks/useResponsive";
 import ChatwootWidget from "../ChatwootWidget";
 import { useAuth } from "@/context/auth";
-import { useGetCustomerConversations } from "@/services/support";
+import { useGetCustomerConversations } from "@/src/services/support";
 import { useI18n } from "@/hooks/useI18n";
 import { useTenantStore } from "@/stores/tenant";
 

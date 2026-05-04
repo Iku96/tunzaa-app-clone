@@ -3,6 +3,7 @@ import { Stack, useRouter, Redirect } from "expo-router";
 import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { KycModal } from "@/components/modals/KycModal";
 import { View } from "react-native";
+import SidebarMenu from "@/src/components/merchant/SidebarMenu";
 
 // Error boundary for KycModal
 class KycModalErrorBoundary extends React.Component<
@@ -32,7 +33,7 @@ class KycModalErrorBoundary extends React.Component<
   }
 }
 
-import SidebarMenu from "@/src/components/merchant/SidebarMenu";
+import { AuthGuard } from "@/src/components/auth/AuthGuard";
 
 const VendorLayout = () => {
   const { user, refreshProfile, switchRole, isSidebarOpen, setIsSidebarOpen } = useTunzaaAuth();
@@ -128,9 +129,10 @@ const VendorLayout = () => {
 
   // Note: Unauthenticated access is now handled by the root AuthGate in app/_layout.tsx
   // which replaces the Slot with a Redirect before this component is even evaluated.
+  // As a secondary fail-safe, we wrap the content with AuthGuard.
 
   return (
-    <>
+    <AuthGuard>
       <SidebarMenu 
         isVisible={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
@@ -150,6 +152,8 @@ const VendorLayout = () => {
         <Stack.Screen name="edit-business" />
         <Stack.Screen name="view-post" />
         <Stack.Screen name="product-insight" />
+        <Stack.Screen name="inbox" />
+        <Stack.Screen name="chat/[id]" />
     </Stack>
 
       <KycModalErrorBoundary>
@@ -161,7 +165,7 @@ const VendorLayout = () => {
           userRole={user?.activeProfileRole}
         />
       </KycModalErrorBoundary>
-    </>
+    </AuthGuard>
   );
 };
 

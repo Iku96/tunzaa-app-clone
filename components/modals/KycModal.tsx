@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
 import { FileUploader } from "@/components/ui/file-uploader";
-import { useEntities } from "@/services/configuration";
-import { useSubmitVendorKyc, useSubmitDeliveryKyc } from "@/services/kyc";
-import type { EntityDocumentType } from "@/services/configuration";
-import type { VendorKycDocument, DeliveryKycDocument } from "@/services/kyc";
-import { API_CONFIG } from "@/services/config";
+import { useEntities } from "@/src/services/configuration";
+import { useSubmitVendorKyc, useSubmitDeliveryKyc } from "@/src/services/kyc";
+import type { EntityDocumentType } from "@/src/services/configuration";
+import type { VendorKycDocument, DeliveryKycDocument } from "@/src/services/kyc";
+import { API_CONFIG } from "@/src/services/config";
 import * as Burnt from "burnt";
 
 interface KycModalProps {

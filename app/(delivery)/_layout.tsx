@@ -18,7 +18,6 @@ import { KycModal } from "@/components/modals/KycModal";
 
 import { cn } from "@/lib/utils";
 import { Text } from "@/components/ui/text";
-import { useRouting } from "@/hooks/useRouting";
 import { useThemeColors, useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";
 

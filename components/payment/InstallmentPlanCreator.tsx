@@ -5,9 +5,9 @@ import { ArrowLeft, Calendar, ChevronRight, Phone, Clock, Check, CheckCircle2, X
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format, addDays, isBefore, parseISO, isToday, differenceInDays } from "date-fns";
 import { useAuth } from "@/context/auth";
-import { useCreateInstallmentPlan, useUpdateInstallmentPlan } from "@/services/payments";
-import { useCreateOrder } from "@/services/orders";
-import { useGetBuyerProfile } from "@/services/buyers";
+import { useCreateInstallmentPlan, useUpdateInstallmentPlan } from "@/src/services/payments";
+import { useCreateOrder } from "@/src/services/orders";
+import { useGetBuyerProfile } from "@/src/services/buyers";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

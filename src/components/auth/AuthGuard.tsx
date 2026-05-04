@@ -31,12 +31,12 @@ const TOP_LEVEL_AUTH_SCREENS = [
 // Auth screens that live inside protected groups but should be accessible pre-login
 const NESTED_AUTH_SCREENS: Record<string, string[]> = {
     '(delivery)': ['delivery-login', 'delivery-register', 'delivery-otp'],
-    '(affiliate)': ['login', 'register'],
+    '(winga)': ['login', 'register'],
     '(vendor)': ['onboarding'],
 };
 
 // Protected portal groups - Note: (buyer) is intentionally omitted to allow guest browsing
-const PROTECTED_PORTALS = ['(vendor)', '(delivery)', '(affiliate)'];
+const PROTECTED_PORTALS = ['(vendor)', '(delivery)', '(winga)'];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, user, isLoading } = useTunzaaAuth();

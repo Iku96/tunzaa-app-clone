@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
-import type { Order } from "@/services/types/orders";
+import type { Order } from "@/src/services/types/orders";
 import { useI18n } from "@/hooks/useI18n";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 

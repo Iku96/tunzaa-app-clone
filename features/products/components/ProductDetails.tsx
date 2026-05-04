@@ -28,17 +28,17 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ImageSlider } from "@/components/ui/image-slider";
 import { ShareButton } from "@/components/ui/share-button";
-import { Product } from "@/services/products";
+import { Product } from "@/src/services/products";
 import { getImageUrl } from "@/utils/images";
 import { useAuth } from "@/context/auth";
-import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from "@/services/wishlist";
+import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from "@/src/services/wishlist";
 import { useWishlistStore } from "@/stores/wishlist";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import AddToCart from "@/features/products/components/AddToCart";
 import { useResponsive } from "@/hooks/useResponsive";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 import { useI18n } from "@/hooks/useI18n";
-import { useGetRatingSummary, useGetEntityReviews, formatRating, getRatingColor } from "@/services/ratings";
+import { useGetRatingSummary, useGetEntityReviews, formatRating, getRatingColor } from "@/src/services/ratings";
 import { Star, ThumbsUp, User } from "lucide-react-native";
 
 interface ProductVariant {

@@ -6,7 +6,7 @@ import { useProducts } from "@/stores/products";
 import { useTrackInteraction } from "@/hooks/useRecommendations";
 import { useAuth } from "@/context/auth";
 import { useThemeColors } from "@/hooks/useThemeColors";
-import type { Product } from "@/services/products";
+import type { Product } from "@/src/services/products";
 import { ProductTileSkeleton } from "../ui/skeleton";
 
 interface WebCategoryPopularProps {

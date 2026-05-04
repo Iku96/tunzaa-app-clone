@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { QRCodeIcon, CashOnDeliveryIcon } from "@/components/icons/payment";
 import { useI18n } from "@/hooks/useI18n";
-import type { DeliveryType } from "@/services/types/delivery";
+import type { DeliveryType } from "@/src/services/types/delivery";
 
 interface DeliveryAddress {
   address_id?: string;

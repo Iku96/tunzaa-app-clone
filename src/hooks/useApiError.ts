@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { ErrorResponse, isAuthError, isValidationError, isRetryableError } from '@/services/error-handler';
+import { ErrorResponse, isAuthError, isValidationError, isRetryableError } from '@/src/services/error-handler';
 
 export interface UseApiErrorReturn {
   handleError: (error: any) => void;

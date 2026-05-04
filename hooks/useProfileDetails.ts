@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { useGetVendor } from "@/services/vendors";
-import { useGetDeliveryPartner } from "@/services/delivery";
-import { useGetAffiliate } from "@/services/affiliates";
+import { useGetVendor } from "@/src/services/vendors";
+import { useGetDeliveryPartner } from "@/src/services/delivery";
+import { useGetAffiliate } from "@/src/services/affiliates";
 import { useAuth } from "@/context/auth";
 
 interface ProfileDetails {

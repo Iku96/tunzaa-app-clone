@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import type { ProductResponse } from "@/services/product-management";
+import type { ProductResponse } from "@/src/services/product-management";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 interface InventoryModalProps {

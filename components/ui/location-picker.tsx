@@ -38,7 +38,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/hooks/useI18n";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 
 export interface LocationData {
   latitude: number;

@@ -22,8 +22,8 @@ import {
   Image as ImageIcon,
 } from "lucide-react-native";
 import { useAuth } from "@/context/auth";
-import { useGetAffiliateLinks } from "@/services/affiliates";
-import { useGetVendor } from "@/services/vendors";
+import { useGetAffiliateLinks } from "@/src/services/affiliates";
+import { useGetVendor } from "@/src/services/vendors";
 import { useProductDetail } from "@/hooks/useProductDetails";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { TenantResponse } from "@/services/types";
+import { TenantResponse } from "@/src/services/types";
 
 interface TenantState {
   tenant: TenantResponse | null;

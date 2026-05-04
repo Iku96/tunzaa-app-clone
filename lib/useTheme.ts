@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Platform, DeviceEventEmitter } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { STORAGE_KEYS } from "@/services/config";
+import { STORAGE_KEYS } from "@/src/services/config";
 import { THEME_UPDATE_EVENT } from "@/providers/ThemeProvider";
 import { useColorScheme } from "./useColorScheme";
 

@@ -27,14 +27,14 @@ import {
   useRegister,
   useCreateVendor,
   useCreateDeliveryPartner,
-} from "@/services/auth";
-import { useCreateAffiliate } from "@/services/affiliates";
+} from "@/src/services/auth";
+import { useCreateAffiliate } from "@/src/services/affiliates";
 import { useAuthStore } from "@/stores/auth";
 import { navigateToRoleHome } from "@/utils/navigation";
 import { getTempPhoneNumber, clearTempPhoneNumber, setNewlyRegisteredFlag } from "@/utils/storage";
 import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTenantModules } from "@/hooks/useTenantModules";
 

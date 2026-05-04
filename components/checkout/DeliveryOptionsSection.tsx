@@ -3,7 +3,7 @@ import { View, TouchableOpacity } from "react-native";
 import { Truck, Clock } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import type { DeliveryType } from "@/services/types/delivery";
+import type { DeliveryType } from "@/src/services/types/delivery";
 
 interface DeliveryOptionsSectionProps {
   availableDeliveryTypes: DeliveryType[];

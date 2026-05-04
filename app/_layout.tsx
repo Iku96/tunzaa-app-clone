@@ -18,7 +18,6 @@ import {
 } from "@gorhom/bottom-sheet";
 import { AuthProvider, useAuth } from "@/context/auth";
 import { ReferralProvider } from "@/context/referral";
-import { useRouting } from "@/hooks/useRouting";
 import { useAppStateRefresh } from "@/hooks/useAppStateRefresh";
 import { useTimeTracker } from "@/src/hooks/useTimeTracker";
 import { queryClient } from "@/lib/react-query";
@@ -149,20 +148,41 @@ const linking = {
 //   return <>{children}</>;
 // }
 
-// Centralized routing component to handle global state-based navigation
-function AppWithRouting() {
-  const { user, isLoading } = useTunzaaAuth();
+  // Centralized routing component to handle global state-based navigation
+  function AppWithRouting() {
+  const { user, isLoading, isLoggingOut } = useTunzaaAuth();
   const segments = useSegments();
+  const router = useRouter();
   useTimeTracker(); // Hooks MUST be called unconditionally before any early returns
 
+  // Segment Analysis
+  const protectedSegments = ['(vendor)', '(delivery)', '(winga)', '(buyer)', '(payment)'];
+  const currentSegment = segments[0];
+  const isProtected = protectedSegments.includes(currentSegment);
+  const isEntryScreen = currentSegment === 'language' || currentSegment === 'role' || currentSegment === '(auth)';
+
+  console.log(`📡 [AppWithRouting] Render: user=${!!user}, isLoading=${isLoading}, isLoggingOut=${isLoggingOut}, isProtected=${isProtected}, segments=${JSON.stringify(segments)}`);
+
+  // Global Auth Gate: Log state changes and provide debug trace
+  React.useEffect(() => {
+    console.log(`🛡️ [AuthGate] State Check: user=${!!user}, isLoading=${isLoading}, isLoggingOut=${isLoggingOut}, isProtected=${isProtected}, isEntryScreen=${isEntryScreen}`);
+    if (isLoading || isLoggingOut) return;
+
+    if (!user) {
+      console.log(`ℹ️ [AuthGate] Unauthenticated user at "${currentSegment}". Protected: ${isProtected}, Entry: ${isEntryScreen}`);
+    } else {
+      console.log(`✅ [AuthGate] Authenticated user at "${currentSegment}". Role: ${user.activeProfileRole}`);
+    }
+  }, [user, isLoading, isLoggingOut, segments, isProtected, isEntryScreen]);
+
   // Guard: Don't perform routing checks until session restoration is complete
-  if (isLoading) return <Slot />;
+  if (isLoading) {
+    console.log('⏳ [AppWithRouting] Auth is loading - blocking Slot render');
+    return null;
+  }
 
-  const inProtectedRoute = segments[0] === '(vendor)' || segments[0] === '(buyer)' || segments[0] === '(delivery)';
-
-  // Global Auth Gate: If no user session is found in a protected portal, force redirect to entry
-  if (!user && inProtectedRoute) {
-    console.log('🔒 [AuthGate] Redirecting unauthenticated user from protected segment:', segments[0]);
+  if (!user && isProtected && !isEntryScreen) {
+    console.log('🛑 [AuthGate] Redirecting unauthenticated user from protected portal to /language');
     return <Redirect href="/language" />;
   }
 

@@ -1,6 +1,6 @@
 import { View, ScrollView, TouchableOpacity } from "react-native";
 import { Text } from "@/components/ui/text";
-import { Category } from "@/services/categories";
+import { Category } from "@/src/services/categories";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/hooks/useI18n";
 

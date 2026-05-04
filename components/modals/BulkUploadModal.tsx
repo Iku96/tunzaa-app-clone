@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import { useGetTemplate, useUploadFile } from "@/services/bulk-upload";
+import { useGetTemplate, useUploadFile } from "@/src/services/bulk-upload";
 import { useI18n } from "@/hooks/useI18n";
 
 interface BulkUploadModalProps {

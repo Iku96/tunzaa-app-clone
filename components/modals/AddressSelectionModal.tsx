@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { DeliveryAddress } from "@/services/types/buyers";
+import type { DeliveryAddress } from "@/src/services/types/buyers";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 interface AddressSelectionModalProps {

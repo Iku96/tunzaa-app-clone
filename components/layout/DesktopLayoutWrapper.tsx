@@ -6,7 +6,7 @@ import { CategoriesSidebar } from "./CategoriesSidebar";
 import { DesktopBreadcrumbNav } from "../Drawer/DesktopBreadcrumbNav";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { usePathname, useLocalSearchParams } from "expo-router";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 
 // Web-optimized scrollable container
 const WebScrollView = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {

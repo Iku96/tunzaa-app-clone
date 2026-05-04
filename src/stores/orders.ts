@@ -5,7 +5,7 @@ import {
   ordersApi,
   Order as ApiOrder,
   OrdersResponse,
-} from "@/services/orders";
+} from "@/src/services/orders";
 import { useAuth } from "@/context/auth";
 
 export type OrderStatus = "pending" | "processing" | "completed" | "cancelled";

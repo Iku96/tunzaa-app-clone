@@ -18,7 +18,7 @@ import {
   useUpdateProductInventory,
   useUpdateProductStatus,
   type ProductResponse,
-} from "@/services/product-management";
+} from "@/src/services/product-management";
 import { ProductModal } from "@/components/modals/ProductModal";
 import { InventoryModal } from "@/components/modals/InventoryModal";
 import { BulkUploadModal } from "@/components/modals/BulkUploadModal";

@@ -12,9 +12,9 @@ import {
   DeliveryForm,
   type DeliveryFormData,
 } from "@/components/forms/DeliveryForm";
-import { useCreateDeliveryPartner } from "@/services/auth";
-import { affiliatesApi } from "@/services/affiliates";
-import { CreateAffiliateBody } from "@/services/types/affiliates";
+import { useCreateDeliveryPartner } from "@/src/services/auth";
+import { affiliatesApi } from "@/src/services/affiliates";
+import { CreateAffiliateBody } from "@/src/services/types/affiliates";
 
 interface ProfileCreationModalProps {
   isOpen: boolean;

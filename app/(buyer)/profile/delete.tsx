@@ -41,7 +41,6 @@ export default function DeleteAccountScreen() {
     const finalDelete = async () => {
         // Mock final delete logic
         await logout();
-        router.replace('/language');
     };
 
     return (

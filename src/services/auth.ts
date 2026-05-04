@@ -72,6 +72,10 @@ export const authApi = {
 
     saveTokens: async (accessToken: string, refreshToken: string) => await saveTokens(accessToken, refreshToken),
     clearTokens: async () => await clearTokens(),
+    disableUser: async (): Promise<any> => {
+        console.log(`🌐 [API] PUT /users/me (deactivate)`);
+        return (await apiClient.put(`/users/me`, { is_active: false })).data;
+    },
 };
 
 // React Query Hooks
@@ -89,3 +93,7 @@ export const useCreateVendor = () => useMutation({ mutationFn: ({ userId, data }
 export const useUpdateVendor = () => useMutation({ mutationFn: ({ vendorId, data }: any) => authApi.updateVendor(vendorId, data) });
 export const useCreateDeliveryPartner = () => useMutation({ mutationFn: ({ userId, data }: any) => authApi.createDeliveryPartner(userId, data) });
 export const useUpdateDeliveryPartner = () => useMutation({ mutationFn: ({ partnerId, data }: any) => authApi.updateDeliveryPartner(partnerId, data) });
+
+// ---- Utility Hooks ----
+export const useRequestPasswordReset = () => useMutation({ mutationFn: authApi.requestPasswordReset });
+export const useConfirmPasswordReset = () => useMutation({ mutationFn: authApi.confirmPasswordReset });

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Text } from "@/components/ui/text";
 import { ProductTile } from "@/components/products/ProductTile";
-import { Product, ProductsParams } from "@/services/products";
+import { Product, ProductsParams } from "@/src/services/products";
 import { useProducts } from "@/stores/products";
 import { ProductTileSkeleton } from "@/components/ui/skeleton";
 import { useI18n } from "@/hooks/useI18n";

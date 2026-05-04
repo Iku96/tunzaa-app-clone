@@ -82,6 +82,30 @@ export interface GetCustomerConversationsResponse {
 export const supportApi = {
   // Create Support Ticket (Conversation)
   createTicket: async (data: CreateTicketBody): Promise<Conversation> => {
+    // Normalization Map: Ensures UI labels are converted to API-compliant enums
+    const categoryMap: Record<string, string> = {
+      'General Support': 'general',
+      'Order Inquiry': 'order',
+      'Product Question': 'product',
+      'Payment Issue': 'payment',
+      'Account Support': 'account',
+      'Technical Issue': 'technical'
+    };
+
+    // Apply normalization if a matching label is found
+    if (data.category) {
+      const normalizedInput = data.category.trim();
+      const match = Object.entries(categoryMap).find(
+        ([label]) => label.toLowerCase() === normalizedInput.toLowerCase() || 
+                    label.toLowerCase() === normalizedInput.toLowerCase().replace(/_/g, ' ')
+      );
+
+      if (match) {
+        console.log(`📝 [SupportService] Normalizing category: "${data.category}" -> "${match[1]}"`);
+        data.category = match[1];
+      }
+    }
+
     const response = await apiClient.post<Conversation>(
       "/support/conversations",
       data

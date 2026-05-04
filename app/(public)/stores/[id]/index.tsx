@@ -8,7 +8,7 @@ import { useProducts } from "@/stores/products";
 import { Text } from "@/components/ui/text";
 import { ProductTileSkeleton } from "@/components/ui/skeleton";
 import { useLocalSearchParams } from "expo-router";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { useResponsive } from "@/hooks/useResponsive";
 import { usePageTitle } from "@/hooks/usePageTitle";

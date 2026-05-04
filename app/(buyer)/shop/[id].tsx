@@ -371,6 +371,7 @@ export default function ShopProfileScreen() {
                 onClose={() => setContactVisible(false)} 
                 shopName={shop.store_name}
                 shopPhone={shop.metadata?.contact_phone || '+255700000000'}
+                vendorId={shop.store_id || (id as string)}
             />
             <ShareSheet 
                 visible={shareVisible} 

@@ -4,7 +4,7 @@ import {
   Product,
   ProductsResponse,
   ProductsParams,
-} from "@/services/products";
+} from "@/src/services/products";
 
 // Query keys for better cache management
 const productsKeys = {

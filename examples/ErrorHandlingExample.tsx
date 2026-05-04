@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Button, Alert } from 'react-native';
-import { useAddToWishlist, useRemoveFromWishlist } from '@/services/wishlist';
+import { useAddToWishlist, useRemoveFromWishlist } from '@/src/services/wishlist';
 import { useMutationError } from '@/hooks/useApiError';
 
 export const ErrorHandlingExample: React.FC = () => {

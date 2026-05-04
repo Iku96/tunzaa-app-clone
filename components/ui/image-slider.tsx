@@ -10,7 +10,7 @@ import {
 import { Image as ImageIcon } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { getImageUrl } from "@/utils/images";
-import { ProductImage } from "@/services/products";
+import { ProductImage } from "@/src/services/products";
 
 // Union type to handle both product service types
 type ImageType =

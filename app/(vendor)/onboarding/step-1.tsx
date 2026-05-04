@@ -53,7 +53,7 @@ export default function Step1Details() {
         setLoading(true);
         try {
             // Persist shop details for late creation
-            const { STORAGE_KEYS } = require('@/services/config');
+            const { STORAGE_KEYS } = require('@/src/services/config');
             const AsyncStorage = require('@react-native-async-storage/async-storage').default;
             
             await Promise.all([

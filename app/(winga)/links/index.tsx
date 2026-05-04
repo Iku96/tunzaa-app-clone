@@ -23,12 +23,12 @@ import {
   XCircle,
   MessageSquare,
 } from "lucide-react-native";
-import { useGetAffiliateLinks, useGetAffiliateRequests } from "@/services/affiliates";
+import { useGetAffiliateLinks, useGetAffiliateRequests } from "@/src/services/affiliates";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { ReferralLinkResponse, AffiliateRequestResponse } from "@/services/types/affiliates";
+import type { ReferralLinkResponse, AffiliateRequestResponse } from "@/src/services/types/affiliates";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import {
   useThemeColors,

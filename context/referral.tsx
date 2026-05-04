@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { affiliatesApi } from '@/services/affiliates';
+import { affiliatesApi } from '@/src/services/affiliates';
 import { useAuth } from './auth';
 
 // Types

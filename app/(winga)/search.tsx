@@ -10,7 +10,7 @@ import { TrendingItems } from "@/components/recommendations";
 import { ProductTileSkeleton, CategoryTileSkeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams } from "expo-router";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 import { CategoryTile } from "@/components/categories/CategoryTile";
 
 export default function SearchScreen() {

@@ -4,15 +4,15 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Check } from 'lucide-react-native';
 import { useI18n } from '@/hooks/useI18n';
-import { useAuth } from '@/context/auth';
-import { useUpdateUser } from '@/services/auth';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
+import { useUpdateUser } from '@/src/services/auth';
 import { languages } from '@/stores/preferences';
 import * as Burnt from 'burnt';
 
 export default function LanguageScreen() {
     const router = useRouter();
     const { t, language, changeLanguage } = useI18n();
-    const { user } = useAuth();
+    const { user } = useTunzaaAuth();
     const updateUserMutation = useUpdateUser();
     const [isUpdating, setIsUpdating] = useState(false);
 

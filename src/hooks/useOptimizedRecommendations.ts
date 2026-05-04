@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { recommendationsApi } from "@/services/recommendations";
+import { recommendationsApi } from "@/src/services/recommendations";
 import { useProducts } from "@/stores/products";
 import { useAuth } from "@/context/auth";
 import React from "react";

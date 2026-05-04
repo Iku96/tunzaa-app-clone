@@ -5,7 +5,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { toast } from "sonner-native";
 
-import { useConfirmPasswordReset } from "@/services/auth";
+import { useConfirmPasswordReset } from "@/src/services/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";

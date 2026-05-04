@@ -16,11 +16,11 @@ import {
 import {
   useGetVendorOrders,
   useUpdateOrderStatus,
-} from "@/services/order-management";
+} from "@/src/services/order-management";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { OrderCard } from "./OrderCard";
 import { OrderDetails } from "@/components/orders/VendorOrderDetails";
-import type { Order } from "@/services/types/orders";
+import type { Order } from "@/src/services/types/orders";
 import { useAuth } from "@/context/auth";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";

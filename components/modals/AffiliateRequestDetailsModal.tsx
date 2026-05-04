@@ -24,9 +24,9 @@ import {
   Twitter,
   Facebook
 } from "lucide-react-native";
-import { AffiliateRequestResponse } from "@/services/types/affiliates";
-import { useApproveRequest, useRejectRequest, useGetAffiliate } from "@/services/affiliates";
-import { useGetProduct, ProductResponse } from "@/services/product-management";
+import { AffiliateRequestResponse } from "@/src/services/types/affiliates";
+import { useApproveRequest, useRejectRequest, useGetAffiliate } from "@/src/services/affiliates";
+import { useGetProduct, ProductResponse } from "@/src/services/product-management";
 
 interface AffiliateRequestDetailsModalProps {
   isOpen: boolean;
@@ -388,7 +388,7 @@ export function AffiliateRequestDetailsModal({
 
 // Affiliate Details Section Component
 interface AffiliateDetailsSectionProps {
-  affiliate: import("@/services/types/affiliates").AffiliateResponse;
+  affiliate: import("@/src/services/types/affiliates").AffiliateResponse;
 }
 
 function AffiliateDetailsSection({ affiliate }: AffiliateDetailsSectionProps) {

@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table } from "@/components/ui/Table";
-import { useGetVendorRequests } from "@/services/affiliates";
-import { AffiliateRequestResponse } from "@/services/types/affiliates";
+import { useGetVendorRequests } from "@/src/services/affiliates";
+import { AffiliateRequestResponse } from "@/src/services/types/affiliates";
 import { AffiliateRequestDetailsModal } from "@/components/modals/AffiliateRequestDetailsModal";
 import { 
   CheckCircle, 

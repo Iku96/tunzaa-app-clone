@@ -8,13 +8,13 @@ import {
 import { useRouter } from "expo-router";
 import { Heart } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
-import { Product, ProductImage } from "@/services/products";
+import { Product, ProductImage } from "@/src/services/products";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/utils/images";
 import { useAuth } from "@/context/auth";
-import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from "@/services/wishlist";
+import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from "@/src/services/wishlist";
 import { useWishlistStore } from "@/stores/wishlist";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useResponsive } from "@/hooks/useResponsive";

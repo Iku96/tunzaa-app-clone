@@ -25,7 +25,7 @@ import { useAuth } from "@/context/auth";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Terminal } from "@/lib/icons/Terminal";
-import type { CartItem } from "@/services/cart";
+import type { CartItem } from "@/src/services/cart";
 import type { LocalCartItem } from "@/stores/cart";
 import { getImageUrl } from "@/utils/images";
 import { useI18n } from "@/hooks/useI18n";

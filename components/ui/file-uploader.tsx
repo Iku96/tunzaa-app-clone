@@ -6,7 +6,7 @@ import { Camera, FileText, Trash2, Upload } from "lucide-react-native";
 import { Button } from "./button";
 import { Text } from "./text";
 import { cn } from "@/lib/utils";
-import { useUploadFile } from "@/services/upload";
+import { useUploadFile } from "@/src/services/upload";
 import { useI18n } from "@/hooks/useI18n";
 
 interface FileUploaderProps {

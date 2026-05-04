@@ -11,7 +11,7 @@ import {
   AddToCartRequest,
   UpdateCartItemRequest,
   RemoveCartItemRequest,
-} from "@/services/cart";
+} from "@/src/services/cart";
 
 // Custom storage adapter for cross-platform compatibility
 export const createCrossPlatformStorage = () => ({

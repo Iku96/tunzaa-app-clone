@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ShareButton } from "@/components/ui/share-button";
 import { useShopById } from "@/stores/shops";
 import StoreDetailsView from "@/features/store/components/StoreDetails";
-import { useCreateVendorRequest } from "@/services/affiliates";
+import { useCreateVendorRequest } from "@/src/services/affiliates";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 
 
 

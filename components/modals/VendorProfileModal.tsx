@@ -17,8 +17,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { useAuth } from "@/context/auth";
-import { useUpdateVendor } from "@/services/vendors";
-import { UpdateVendorBody } from "@/services/vendors";
+import { useUpdateVendor } from "@/src/services/vendors";
+import { UpdateVendorBody } from "@/src/services/vendors";
 import * as Location from "expo-location";
 import { useI18n } from "@/hooks/useI18n";
 

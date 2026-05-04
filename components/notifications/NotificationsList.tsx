@@ -14,9 +14,9 @@ import {
   useGetNotifications,
   useMarkAsRead,
   useMarkAllAsRead,
-} from "@/services/notifications";
+} from "@/src/services/notifications";
 import { format } from "date-fns";
-import type { Notification } from "@/services/types/notifications";
+import type { Notification } from "@/src/services/types/notifications";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

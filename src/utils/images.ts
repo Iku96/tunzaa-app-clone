@@ -1,4 +1,4 @@
-import { ProductImage } from "@/services/products";
+import { ProductImage } from "@/src/services/products";
 import { API_CONFIG } from "@/src/services/config";
 
 /**

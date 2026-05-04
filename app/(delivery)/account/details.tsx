@@ -21,7 +21,7 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { DesktopLayoutWrapper } from "@/components/layout";
 import { useResponsive } from "@/hooks/useResponsive";
-import { useGetUserDetails } from "@/services/auth";
+import { useGetUserDetails } from "@/src/services/auth";
 import DeleteAccount from "@/components/account/DeleteAccount";
 
 export default function AccountDetailsScreen() {

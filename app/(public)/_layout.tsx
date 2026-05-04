@@ -4,7 +4,6 @@ import { Platform } from "react-native";
 import { Home, Store, Search, User } from "lucide-react-native";
 import { cn } from "@/lib/utils";
 import { Text } from "@/components/ui/text";
-import { useRouting } from "@/hooks/useRouting";
 import { useThemeColors, useResolvedThemeColors, useBrandStyles } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";
 

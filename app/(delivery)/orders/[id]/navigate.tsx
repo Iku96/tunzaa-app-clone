@@ -4,9 +4,9 @@ import { useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { DeliveryNavigation } from "@/components/delivery/DeliveryNavigation";
-import { useGetDelivery } from "@/services/delivery";
-import { useGetOrder } from "@/services/order-management";
-import { useGetVendor } from "@/services/vendors";
+import { useGetDelivery } from "@/src/services/delivery";
+import { useGetOrder } from "@/src/services/order-management";
+import { useGetVendor } from "@/src/services/vendors";
 import type { DeliveryLocation } from "@/components/delivery/DeliveryMap";
 import { useI18n } from "@/hooks/useI18n";
 

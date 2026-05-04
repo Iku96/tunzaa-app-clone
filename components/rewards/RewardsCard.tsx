@@ -25,9 +25,9 @@ import {
   useRedeemPoints,
   useApplyReferralCode,
   rewardsUtils,
-} from "@/services/rewards";
+} from "@/src/services/rewards";
 import { useAuth } from "@/context/auth";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 
 export function RewardsCard() {
   const [pointsToRedeem, setPointsToRedeem] = useState("");

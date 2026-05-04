@@ -4,7 +4,7 @@ import { Heart } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/context/auth";
-import { useGetWishlistCount } from "@/services/wishlist";
+import { useGetWishlistCount } from "@/src/services/wishlist";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 interface WishlistIconProps {

@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ProductTile } from "@/components/products/ProductTile";
 import { useProducts, useFilteredProducts } from "@/stores/products";
-import { Store } from "@/services/shops";
+import { Store } from "@/src/services/shops";
 import {
   StoreDetailsSkeleton,
   ProductTileSkeleton,

@@ -8,7 +8,7 @@ import {
   useApplyReferralCode,
   useUserReferralCodes,
   rewardsUtils,
-} from '@/services/rewards';
+} from '@/src/services/rewards';
 import { useAuth } from '@/context/auth';
 
 export const RewardsServiceExample = () => {

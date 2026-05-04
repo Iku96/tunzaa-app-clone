@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 
 interface MapComponents {
   MapView: any;

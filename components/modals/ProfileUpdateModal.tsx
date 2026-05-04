@@ -8,7 +8,7 @@ import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { Terminal } from "@/lib/icons/Terminal";
-import { useUpdateUser, useUpdateVendor, useUpdateDeliveryPartner } from "@/services/auth";
+import { useUpdateUser, useUpdateVendor, useUpdateDeliveryPartner } from "@/src/services/auth";
 
 export type UserRole = "buyer" | "vendor" | "delivery" | "winga" | "super";
 

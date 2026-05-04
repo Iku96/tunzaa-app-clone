@@ -15,7 +15,7 @@ export default function LoanApplyScreen() {
     const { t } = useTranslation();
     const router = useRouter();
     const { id, providerId } = useLocalSearchParams<{ id: string; providerId: string }>();
-    const { user } = useTunzaaAuth();
+    const { user, activeProfile } = useTunzaaAuth();
     
     // Fetch Data
     const { data: providers } = useGetLoanProviders(id as string);
@@ -24,7 +24,7 @@ export default function LoanApplyScreen() {
     [providers, providerId]);
 
     const { data: vendorOrders } = useGetVendorOrders({ 
-        vendor_id: user?.profileId || '',
+        vendor_id: activeProfile?.profileId || '',
         limit: 20
     });
 
@@ -143,7 +143,7 @@ export default function LoanApplyScreen() {
                                 <Text style={styles.label}>Order</Text>
                                 <Info size={16} color="#6B7280" />
                             </View>
-                            <Select onValueChange={setSelectedOrderId}>
+                            <Select onValueChange={(opt) => setSelectedOrderId(opt?.value || '')}>
                                 <SelectTrigger style={styles.selectTrigger}>
                                     <SelectValue placeholder="Select order" />
                                 </SelectTrigger>

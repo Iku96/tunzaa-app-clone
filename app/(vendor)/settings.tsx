@@ -76,7 +76,7 @@ export default function VendorSettingsScreen() {
             id: 'language',
             title: t('settings.language'),
             icon: <Languages size={24} color="#1F2937" strokeWidth={1.5} />,
-            onPress: () => router.push('/(vendor)/language')
+            onPress: () => router.push('/(vendor)/vendor-language')
         },
         {
             id: 'account',

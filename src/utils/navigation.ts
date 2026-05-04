@@ -1,4 +1,4 @@
-import { UserRole } from "@/services/types";
+import { UserRole } from "@/src/services/types";
 
 export const navigateToRoleHome = (router: any, role: UserRole) => {
   switch (role) {

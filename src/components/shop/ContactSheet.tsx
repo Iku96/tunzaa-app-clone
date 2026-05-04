@@ -1,22 +1,33 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Dimensions, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 interface ContactSheetProps {
     visible: boolean;
     onClose: () => void;
     shopName: string;
     shopPhone: string;
+    vendorId: string;
 }
 
 const { height } = Dimensions.get('window');
 
-export default function ContactSheet({ visible, onClose, shopName, shopPhone }: ContactSheetProps) {
+export default function ContactSheet({ visible, onClose, shopName, shopPhone, vendorId }: ContactSheetProps) {
+    const router = useRouter();
     if (!visible) return null;
 
     const handleCall = () => {
         Linking.openURL(`tel:${shopPhone}`);
         onClose();
+    };
+
+    const handleChat = () => {
+        onClose();
+        router.push({
+            pathname: '/(buyer)/chat/new',
+            params: { vendorId }
+        });
     };
 
     return (
@@ -32,7 +43,7 @@ export default function ContactSheet({ visible, onClose, shopName, shopPhone }: 
 
                     <Text style={styles.sheetTitle}>Contact</Text>
 
-                    <TouchableOpacity style={styles.menuItem} onPress={onClose}>
+                    <TouchableOpacity style={styles.menuItem} onPress={handleChat}>
                         <View style={styles.iconContainer}>
                             <Ionicons name="chatbubble-ellipses-outline" size={24} color="#4B5563" />
                         </View>

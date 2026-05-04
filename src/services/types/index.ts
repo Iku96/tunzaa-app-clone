@@ -156,6 +156,15 @@ export interface AuthResponse {
             privacy_policy?: string;
             [key: string]: any;
         };
+        storeDetails?: {
+            storeName: string;
+            storeAddress: string;
+            registrationNumber: string;
+        };
+        kyc?: {
+            verified: boolean;
+            documents: any[];
+        };
     }>;
     created_at: string;
     updated_at: string;
@@ -163,6 +172,8 @@ export interface AuthResponse {
     refresh_token: string;
     token_type: string;
     firebase_uid: string | null;
+    vendorDetails?: any;
+    deliveryDetails?: any;
     roles: { role: string; description: string }[];
     permissions?: string[];
     tenant_id: string;

@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useGetMessages, useSendMessage, useGetConversation, Message } from '../../../src/services/support';
+import { format } from 'date-fns';
 
 export default function ChatDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -55,8 +56,7 @@ export default function ChatDetailScreen() {
 
     const formatTime = (dateString: string) => {
         try {
-            const date = new Date(dateString);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return format(new Date(dateString), 'h:mm a');
         } catch {
             return '';
         }
@@ -98,24 +98,33 @@ export default function ChatDetailScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
-                <View style={{ flex: 1 }}>
-                    <Text style={styles.headerTitle} numberOfLines={1}>
-                        {conversation?.subject || 'Chat Support'}
-                    </Text>
-                    <Text style={styles.headerSubtitle}>
-                        {conversation?.status === 'resolved' ? 'Resolved' : 'Active'}
-                    </Text>
+                <View style={styles.headerProfile}>
+                    <View style={styles.headerAvatarContainer}>
+                        <View style={styles.headerAvatarPlaceholder}>
+                            <Ionicons name="business" size={20} color="#3B5998" />
+                        </View>
+                    </View>
+                    <View style={styles.headerTextContainer}>
+                        <View style={styles.headerNameRow}>
+                            <Text style={styles.headerTitle} numberOfLines={1}>
+                                {conversation?.subject || 'Tunzaa shop'}
+                            </Text>
+                            <Ionicons name="checkmark-circle" size={16} color="#10B981" style={{ marginLeft: 4 }} />
+                        </View>
+                        <View style={styles.headerLocationRow}>
+                            <Ionicons name="location-outline" size={12} color="#6B7280" />
+                            <Text style={styles.headerSubtitle}>
+                                {conversation?.category || 'Kinondoni, Dar es salaam'}
+                            </Text>
+                        </View>
+                    </View>
                 </View>
-                <View style={[
-                    styles.statusDot,
-                    { backgroundColor: conversation?.status === 'resolved' ? '#9CA3AF' : '#22C55E' }
-                ]} />
             </View>
 
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={0}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
                 {/* Messages */}
                 {messagesLoading ? (
@@ -134,6 +143,13 @@ export default function ChatDetailScreen() {
                             (!messages || messages.length === 0) && { flex: 1 }
                         ]}
                         ListEmptyComponent={renderEmpty}
+                        ListHeaderComponent={messages && messages.length > 0 ? (
+                            <View style={styles.dateSeparator}>
+                                <View style={styles.datePill}>
+                                    <Text style={styles.dateText}>Today, 2:35 PM</Text>
+                                </View>
+                            </View>
+                        ) : null}
                         onContentSizeChange={() => {
                             if (messages && messages.length > 0) {
                                 flatListRef.current?.scrollToEnd({ animated: false });
@@ -142,29 +158,48 @@ export default function ChatDetailScreen() {
                     />
                 )}
 
-                {/* Input Bar */}
-                <View style={styles.inputBar}>
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder="Type a message..."
-                        placeholderTextColor="#9CA3AF"
-                        value={messageText}
-                        onChangeText={setMessageText}
-                        multiline
-                        maxLength={1000}
-                        editable={conversation?.status !== 'resolved'}
-                    />
-                    <TouchableOpacity
-                        style={[styles.sendButton, (!messageText.trim() || sendMutation.isPending) && styles.sendButtonDisabled]}
-                        onPress={handleSend}
-                        disabled={!messageText.trim() || sendMutation.isPending}
+                {/* Input Bar & Quick Replies */}
+                <View style={styles.bottomContainer}>
+                    <ScrollView 
+                        horizontal 
+                        showsHorizontalScrollIndicator={false} 
+                        style={styles.quickRepliesContainer}
+                        contentContainerStyle={styles.quickRepliesContent}
                     >
-                        {sendMutation.isPending ? (
-                            <ActivityIndicator size="small" color="#FFFFFF" />
-                        ) : (
-                            <Ionicons name="send" size={18} color="#FFFFFF" />
-                        )}
-                    </TouchableOpacity>
+                        {['Thank you!', 'When will it ship?', 'Can I modify my order?'].map((reply) => (
+                            <TouchableOpacity 
+                                key={reply} 
+                                style={styles.quickReplyPill}
+                                onPress={() => setMessageText(reply)}
+                            >
+                                <Text style={styles.quickReplyText}>{reply}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+
+                    <View style={styles.inputBar}>
+                        <TextInput
+                            style={styles.textInput}
+                            placeholder="Write a message..."
+                            placeholderTextColor="#9CA3AF"
+                            value={messageText}
+                            onChangeText={setMessageText}
+                            multiline
+                            maxLength={1000}
+                            editable={conversation?.status !== 'resolved'}
+                        />
+                        <TouchableOpacity
+                            style={[styles.sendButton, (!messageText.trim() || sendMutation.isPending) && styles.sendButtonDisabled]}
+                            onPress={handleSend}
+                            disabled={!messageText.trim() || sendMutation.isPending}
+                        >
+                            {sendMutation.isPending ? (
+                                <ActivityIndicator size="small" color="#FFFFFF" />
+                            ) : (
+                                <Ionicons name="send" size={18} color="#FFFFFF" />
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -172,37 +207,49 @@ export default function ChatDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F3F4F6' },
+    container: { flex: 1, backgroundColor: '#FFFFFF' },
     header: {
         flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12,
-        backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
+        backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
     },
-    backButton: { padding: 4, marginRight: 12 },
-    headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
-    headerSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 1 },
-    statusDot: { width: 10, height: 10, borderRadius: 5, marginLeft: 8 },
+    backButton: { padding: 4, marginRight: 8 },
+    headerProfile: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+    headerAvatarContainer: { marginRight: 12 },
+    headerAvatarPlaceholder: {
+        width: 40, height: 40, borderRadius: 20, backgroundColor: '#F3F4F6',
+        justifyContent: 'center', alignItems: 'center',
+    },
+    headerTextContainer: { flex: 1 },
+    headerNameRow: { flexDirection: 'row', alignItems: 'center' },
+    headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827', fontFamily: 'Ubuntu_700Bold' },
+    headerLocationRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+    headerSubtitle: { fontSize: 12, color: '#6B7280', marginLeft: 2 },
 
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     loadingText: { fontSize: 14, color: '#6B7280', marginTop: 12 },
 
     messagesList: { paddingHorizontal: 16, paddingVertical: 12 },
 
-    messageBubbleRow: { flexDirection: 'row', marginBottom: 8, justifyContent: 'flex-start' },
+    dateSeparator: { alignItems: 'center', marginVertical: 20 },
+    datePill: { backgroundColor: '#F3F4F6', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20 },
+    dateText: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
+
+    messageBubbleRow: { flexDirection: 'row', marginBottom: 16, justifyContent: 'flex-start' },
     messageBubbleRowRight: { justifyContent: 'flex-end' },
 
-    messageBubble: { maxWidth: '78%', padding: 12, borderRadius: 16 },
+    messageBubble: { maxWidth: '80%', padding: 14, borderRadius: 20 },
     myBubble: {
-        backgroundColor: '#3B5998', borderBottomRightRadius: 4,
+        backgroundColor: '#2D3E7B', borderBottomRightRadius: 4,
     },
     theirBubble: {
-        backgroundColor: '#FFFFFF', borderBottomLeftRadius: 4,
-        borderWidth: 1, borderColor: '#E5E7EB',
+        backgroundColor: '#F9FAFB', borderBottomLeftRadius: 4,
+        borderWidth: 1, borderColor: '#F3F4F6',
     },
 
     senderLabel: { fontSize: 11, color: '#6B7280', marginBottom: 4, fontWeight: '600' },
-    messageText: { fontSize: 15, color: '#1F2937', lineHeight: 20 },
+    messageText: { fontSize: 15, color: '#1F2937', lineHeight: 22 },
     myMessageText: { color: '#FFFFFF' },
-    messageTime: { fontSize: 10, color: '#9CA3AF', marginTop: 4, textAlign: 'right' },
+    messageTime: { fontSize: 10, color: '#9CA3AF', marginTop: 6, textAlign: 'right' },
     myMessageTime: { color: 'rgba(255,255,255,0.7)' },
 
     emptyState: {
@@ -211,17 +258,23 @@ const styles = StyleSheet.create({
     emptyTitle: { fontSize: 18, fontWeight: '700', color: '#374151', marginTop: 16 },
     emptySubtitle: { fontSize: 14, color: '#9CA3AF', marginTop: 4, textAlign: 'center' },
 
+    bottomContainer: { backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingVertical: 12 },
+    quickRepliesContainer: { marginBottom: 12 },
+    quickRepliesContent: { paddingHorizontal: 16, gap: 8 },
+    quickReplyPill: { backgroundColor: '#F3F4F6', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+    quickReplyText: { fontSize: 13, color: '#4B5563', fontWeight: '500' },
+
     inputBar: {
-        flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 12, paddingVertical: 8,
-        backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E5E7EB',
+        flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16,
     },
     textInput: {
-        flex: 1, backgroundColor: '#F3F4F6', borderRadius: 20, paddingHorizontal: 16,
+        flex: 1, backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 16,
         paddingVertical: 10, fontSize: 15, color: '#111827', maxHeight: 100, marginRight: 8,
+        borderWidth: 1, borderColor: '#F3F4F6',
     },
     sendButton: {
-        width: 40, height: 40, borderRadius: 20, backgroundColor: '#3B5998',
+        width: 44, height: 44, borderRadius: 22, backgroundColor: '#3B82F6',
         justifyContent: 'center', alignItems: 'center',
     },
-    sendButtonDisabled: { backgroundColor: '#93A5CF' },
+    sendButtonDisabled: { backgroundColor: '#BFDBFE' },
 });

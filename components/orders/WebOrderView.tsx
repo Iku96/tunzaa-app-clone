@@ -14,8 +14,8 @@ import {
   Share2,
 } from "lucide-react-native";
 import { useAuth } from "@/context/auth";
-import { useGetOrder, useGetOrderByNumber } from "@/services/orders";
-import { useGetDeliveryByOrderId } from "@/services/delivery";
+import { useGetOrder, useGetOrderByNumber } from "@/src/services/orders";
+import { useGetDeliveryByOrderId } from "@/src/services/delivery";
 import { useProductDetails } from "@/hooks/useProductDetails";
 import * as Sharing from 'expo-sharing';
 import { Text } from "@/components/ui/text";

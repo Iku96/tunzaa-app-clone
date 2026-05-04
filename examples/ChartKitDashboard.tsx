@@ -13,7 +13,7 @@ import {
   useGetOrderStatusDistribution, 
   useGetTopPerformingProducts,
   useGetVendorGMV 
-} from '@/services/reports';
+} from '@/src/services/reports';
 import { colors, typography, spacing } from '@/styles/theme';
 
 const { width: screenWidth } = Dimensions.get('window');

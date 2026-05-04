@@ -20,7 +20,7 @@ import {
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
-import { useAuth } from "@/context/auth";
+
 import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { getAvatarUrl, getVendorLogoUrl } from "@/src/utils/images";
 import { PERMISSIONS } from "@/config/permissions";
@@ -36,7 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
-import { useGetUserDetails } from "@/services/auth";
+import { useGetUserDetails } from "@/src/services/auth";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import DeleteAccount from "@/components/account/DeleteAccount";
 
@@ -44,7 +44,7 @@ const BUSINESS_EXTRAS_KEY = "@tunzaa_business_extras";
 
 export default function AccountDetailsScreen() {
   const router = useRouter();
-  const { user, hasPermission } = useAuth();
+  const { user, hasPermission } = useTunzaaAuth();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showVendorModal, setShowVendorModal] = useState(false);
@@ -56,7 +56,7 @@ export default function AccountDetailsScreen() {
   const { refetch: refetchUserDetails } = useGetUserDetails(user?.user_id || "");
 
   const currentProfile = user?.profiles.find(
-    (p) => p.role === user.activeProfileRole
+    (p: any) => p.role === user.activeProfileRole
   );
 
   const metadata = (currentProfile as any)?.metadata || {};
@@ -293,7 +293,7 @@ export default function AccountDetailsScreen() {
         <ProfileUpdateModal
           isOpen={showProfileModal}
           onClose={() => setShowProfileModal(false)}
-          profile={user}
+          profile={user as any}
           onSuccess={handleProfileUpdateSuccess}
         />
 

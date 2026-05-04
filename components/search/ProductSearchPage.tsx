@@ -14,7 +14,7 @@ import {
   CategoryTileSkeleton,
 } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 
 interface ProductSearchPageProps {
   store_id?: string;

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '@/services/config';
+import { STORAGE_KEYS } from '@/src/services/config';
 
 /**
  * Hook to refresh React Query data when app comes to foreground

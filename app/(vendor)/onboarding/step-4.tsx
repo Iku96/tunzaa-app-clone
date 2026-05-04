@@ -5,7 +5,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { useLanguage } from '@/src/contexts/LanguageContext';
-import { uploadApi } from '@/services/upload';
+import { uploadApi } from '@/src/services/upload';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');

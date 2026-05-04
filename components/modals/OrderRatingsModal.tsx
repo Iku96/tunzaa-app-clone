@@ -21,7 +21,7 @@ import {
   createProductRating,
   createStoreRating,
   createDeliveryRating,
-} from '@/services/ratings';
+} from '@/src/services/ratings';
 import { useAuth } from '@/context/auth';
 
 interface OrderRatingsModalProps {

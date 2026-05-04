@@ -1,6 +1,6 @@
 import { setStorageItemAsync } from "@/hooks/useStorageState";
 import { Platform } from "react-native";
-import { STORAGE_KEYS } from "@/services/config";
+import { STORAGE_KEYS } from "@/src/services/config";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 

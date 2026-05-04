@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Platform, Alert } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { socialAuth } from "@/services/social-auth";
+import { socialAuth } from "@/src/services/social-auth";
 import { useI18n } from "@/hooks/useI18n";
 import Svg, { Path } from "react-native-svg";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";

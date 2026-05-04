@@ -7,7 +7,7 @@ import { useTrackInteraction } from "@/hooks/useRecommendations";
 import { useAuth } from "@/context/auth";
 import { ProductTileSkeleton } from "@/components/ui/skeleton";
 import { useProducts } from "@/stores/products";
-import { Product } from "@/services/products";
+import { Product } from "@/src/services/products";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useI18n } from "@/hooks/useI18n";
 

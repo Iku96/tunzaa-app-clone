@@ -11,7 +11,7 @@ import {
   ForegroundNotificationBanner,
   ForegroundNotificationData,
 } from "@/components/notifications/ForegroundNotificationBanner";
-import pushNotificationsService, { NotificationData } from "@/services/push-notifications";
+import pushNotificationsService, { NotificationData } from "@/src/services/push-notifications";
 
 interface ForegroundNotificationContextValue {
   showNotification: (notification: ForegroundNotificationData & { data?: any }) => void;

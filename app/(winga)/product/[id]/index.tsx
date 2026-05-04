@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, CheckCircle2, UserCheck } from "lucide-react-native";
 import { useProductById, useProducts } from "@/stores/products";
-import { useCreateProductRequest } from "@/services/affiliates";
+import { useCreateProductRequest } from "@/src/services/affiliates";
 import { useAuth } from "@/context/auth";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { Button } from "@/components/ui/button";

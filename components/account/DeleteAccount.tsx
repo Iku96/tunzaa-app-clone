@@ -15,7 +15,7 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { authApi } from "@/services/auth";
+import { authApi } from "@/src/services/auth";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 export default function DeleteAccount() {

@@ -9,7 +9,31 @@ import { setStorageItemAsync } from '../../hooks/useStorageState';
 import { STORAGE_KEYS, API_CONFIG } from '../services/config';
 import type { AuthResponse as TunzaaUser, RegisterBody, LoginBody } from '../services/types';
 
-const TunzaaAuthContext = createContext<any>(null);
+export interface TunzaaAuthContextType {
+    user: TunzaaUser | null;
+    activeProfile: any;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    requestOTP: (phone: string) => Promise<any>;
+    verifyOTP: (phone: string, otp: string) => Promise<any>;
+    register: (data: RegisterBody, targetPortal?: string) => Promise<TunzaaUser>;
+    login: (id: string, pass: string, isPhone?: boolean, targetPortal?: string) => Promise<TunzaaUser>;
+    logout: () => Promise<void>;
+    updateUser: (data: any) => Promise<void>;
+    refreshProfile: () => Promise<void>;
+    updateVendor: (vendorId: string, profileId: string, vendorData: any) => Promise<boolean>;
+    saveAuthResponse: (incomingData: any, profileDetails?: any) => Promise<TunzaaUser>;
+    createVendor: (vendorData: any) => Promise<any>;
+    submitVendorKyc: (documents: any[]) => Promise<any>;
+    submitDeliveryKyc: (documents: any[]) => Promise<any>;
+    switchRole: (role: string) => Promise<void>;
+    hasPermission: (permission: string) => boolean;
+    isSidebarOpen: boolean;
+    setIsSidebarOpen: (open: boolean) => void;
+    isLoggingOut: boolean;
+}
+
+const TunzaaAuthContext = createContext<TunzaaAuthContextType | null>(null);
 
 const IS_MERCHANT = (role: string) => ['vendor', 'merchant', 'business'].includes(role.toLowerCase());
 const IS_DELIVERY = (role: string) => ['delivery', 'driver', 'delivery_partner'].includes(role.toLowerCase());
@@ -17,7 +41,11 @@ const IS_DELIVERY = (role: string) => ['delivery', 'driver', 'delivery_partner']
 export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<TunzaaUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    useEffect(() => {
+        console.log(`⏳ [AuthContext] isLoading: ${isLoading}`);
+    }, [isLoading]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const userRef = useRef<TunzaaUser | null>(null);
 
     useEffect(() => { userRef.current = user; }, [user]);
@@ -27,7 +55,6 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         let raw = incomingData.user || incomingData;
         if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch (e) { } }
 
-        console.log('📦 [AuthContext] Storing User Data. ID:', raw.id, 'UserID:', raw.user_id);
 
         const incomingProfiles = incomingData.profiles || raw.profiles || [];
         
@@ -45,10 +72,6 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             };
         }) : (userRef.current?.profiles || []);
 
-        console.log('📝 [AuthContext] Hydrated Profiles Metadata:');
-        finalProfiles.forEach((p: any) => {
-            console.log(`   - Role ${p.role}: pic="${p.metadata?.profile_picture || 'N/A'}", keys=[${Object.keys(p.metadata || {}).join(', ')}]`);
-        });
 
         const normalizedProfiles = finalProfiles.map((p: any) => {
             const meta = p.metadata || {};
@@ -69,8 +92,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                    (p.name && p.name !== personalName ? p.name : '') ||
                    p.display_name || p.displayName || '')
                 : (p.display_name || p.displayName || '');
-            
-            console.log(`👤 [AuthContext] Profile ${p.role} rawName: "${rawName}" (meta keys: ${Object.keys(meta).join(', ')})`);
+
             
             // Aggressive filtering for generic placeholders
             const cleanName = (val: string) => {
@@ -90,23 +112,26 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                                    meta.is_verified === true || meta.is_verified === 'true' ||
                                    meta.verified === true || meta.verified === 'true';
 
+            const store = p.storeDetails || meta.store || meta.stores?.[0];
+            const storeDetails = store ? {
+                storeName: store.store_name || store.storeName || name,
+                storeAddress: store.store_address || store.storeAddress || meta.address_line1 || meta.city || '',
+                registrationNumber: store.registration_number || store.registrationNumber || meta.tax_id || ''
+            } : p.storeDetails;
+
             return { 
                 ...p, 
                 profile_id: p.profile_id || p.profileId, 
                 profileId: p.profileId || p.profile_id, 
                 display_name: name, 
                 displayName: name,
+                storeDetails,
                 kyc: p.kyc || { verified: isVerifiedByMeta, documents: [] }
             };
         });
 
         const activeRole = raw.activeProfileRole || raw.active_profile_role || userRef.current?.activeProfileRole || 'buyer';
         const activeProfile = normalizedProfiles.find((p: any) => p.role.toLowerCase() === activeRole.toLowerCase()) || normalizedProfiles[0];
-
-        console.log('✅ [AuthContext] Normalized profiles count:', normalizedProfiles.length);
-        normalizedProfiles.forEach(p => {
-            console.log(`   - Profile ${p.role}: name="${p.display_name}", metaKeys=[${Object.keys(p.metadata || {}).join(', ')}]`);
-        });
 
         const updatedUser: TunzaaUser = {
             ...userRef.current, ...raw,
@@ -216,7 +241,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     
                         // 2. Background Hydration (Reconciliation)
                     const idToFetch = parsedUser.id || parsedUser.user_id;
-                    console.log('🔄 [AuthContext] FULL CACHED USER:', JSON.stringify(parsedUser));
+
                     if (idToFetch) {
                             // Parallel fetch for user details and potentially merchant profile
                             const promises: [Promise<any>, Promise<any>] = [
@@ -247,13 +272,9 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
                         Promise.all(promises)
                             .then(([freshData, merchantData]) => {
-                                console.log('🔄 [AuthContext] Background hydration results:', { 
-                                    hasFreshData: !!freshData, 
-                                    hasMerchantData: !!merchantData,
-                                    merchantName: merchantData?.business_name || merchantData?.company_name || merchantData?.name 
-                                });
 
                                 if (freshData) {
+
                                     // Merge merchant profile data into the profile metadata if found
                                     if (merchantData && freshData.profiles) {
                                         const mIndex = freshData.profiles.findIndex((p: any) => IS_MERCHANT(p.role));
@@ -326,6 +347,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         },
         logout: async () => { 
             console.log('🔒 [AuthContext] Logout initiated — clearing all session data');
+            setIsLoggingOut(true);
             try {
                 await clearTokens(); 
                 await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
@@ -342,11 +364,9 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 console.error("⚠️ [AuthContext] Error during logout cleanup:", error);
             } finally {
                 setUser(null); 
-                // Immediate navigation from the root provider ensures stability
-                // even if the calling screen unmounts during state clearance.
-                setTimeout(() => {
-                    router.replace('/language');
-                }, 10);
+                setIsLoggingOut(false);
+                console.log('✅ [AuthContext] Logout complete — state cleared');
+                // Redirection is handled by the global AuthGate in _layout.tsx
             }
         },
         updateUser: async (data: any) => {
@@ -634,9 +654,14 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }
             }
         },
+        hasPermission: (permission: string): boolean => {
+            if (!user || !user.permissions) return false;
+            return user.permissions.includes(permission);
+        },
         isSidebarOpen,
-        setIsSidebarOpen
-    }), [user, isLoading, activeProfile, isSidebarOpen]);
+        setIsSidebarOpen,
+        isLoggingOut
+    }), [user, isLoading, activeProfile, isSidebarOpen, isLoggingOut]);
 
     return <TunzaaAuthContext.Provider value={value}>{children}</TunzaaAuthContext.Provider>;
 }

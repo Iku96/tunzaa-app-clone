@@ -11,8 +11,8 @@ import {
   getRatingColor,
   getStarDistributionPercentages,
   ratingsApi,
-} from '../services/ratings';
-import { Rating, RatingsSummary } from '../services/types/ratings';
+} from '../src/services/ratings';
+import { Rating, RatingsSummary } from '../src/services/types/ratings';
 import { useAuth } from '../context/auth';
 
 interface ProductRatingsExampleProps {

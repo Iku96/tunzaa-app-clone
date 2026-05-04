@@ -28,7 +28,7 @@ All recommendation APIs use the same base configuration from `services/client.ts
 ### 1. Get Available Scenarios
 
 ```typescript
-import { recommendationsApi } from "@/services/recommendations";
+import { recommendationsApi } from "@/src/services/recommendations";
 
 const scenarios = await recommendationsApi.getScenarios();
 ```

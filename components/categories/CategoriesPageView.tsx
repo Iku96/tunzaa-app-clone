@@ -11,7 +11,7 @@ import CategoryDetails from "@/features/categories/components/CategoryDetails";
 import { CategoriesPageSkeleton, ProductTileSkeleton } from "@/components/ui/skeleton";
 import SearchWithFilters from "@/components/search/SearchWithFilters";
 import { ProductTile } from "@/components/products/ProductTile";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { useI18n } from "@/hooks/useI18n";
 

@@ -14,7 +14,7 @@ import {
   useApproveBatch,
   useRejectBatch,
   type BatchProduct,
-} from "@/services/bulk-upload";
+} from "@/src/services/bulk-upload";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 
 interface BatchDetailsModalProps {

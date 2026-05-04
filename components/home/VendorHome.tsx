@@ -13,7 +13,7 @@ import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { useI18n } from "@/hooks/useI18n";
 const { width: screenWidth } = Dimensions.get("window");
 import { LineChart } from "@/components/charts/LineChart";
-import { useGetVendorOrders } from "@/services/order-management";
+import { useGetVendorOrders } from "@/src/services/order-management";
 import { OrderCard } from "@/components/orders/OrderCard";
 import { Text } from "@/components/ui/text";
 import { Card } from "@/components/ui/card";
@@ -28,7 +28,7 @@ import {
   useGetDailyGMVPerformance,
   useGetWeeklyGMVPerformance,
   useGetMonthlyGMVPerformance,
-} from "@/services/reports";
+} from "@/src/services/reports";
 import { useBrandStyles, useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useResponsive } from "@/hooks/useResponsive";
 import { NotificationIcon } from "../NotificationIcon";

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { PhoneInput } from "@/components/PhoneInput";
 import AuthHeader from "@/features/auth/components/AuthHeader";
-import { useRequestPasswordReset } from "@/services/auth";
+import { useRequestPasswordReset } from "@/src/services/auth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function ForgotPasswordScreen() {

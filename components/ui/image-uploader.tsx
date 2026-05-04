@@ -10,7 +10,7 @@ import {
 import { Button } from "./button";
 import { Text } from "./text";
 import { cn } from "@/lib/utils";
-import { useUploadFile } from "@/services/upload";
+import { useUploadFile } from "@/src/services/upload";
 import { useI18n } from "@/hooks/useI18n";
 
 export interface ProductImage {

@@ -35,7 +35,7 @@ import {
   useGetAffiliateRequests,
   useCreateVendorRequest,
   useCreateProductRequest,
-} from "@/services/affiliates";
+} from "@/src/services/affiliates";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 export function AffiliateHome() {

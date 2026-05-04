@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Image, Text } from "react-native";
 import { useRouter } from "expo-router";
-import { Product, ProductImage } from '@/services/products';
+import { Product, ProductImage } from '@/src/services/products';
 import { Heart } from 'lucide-react-native'; // Or any heart icon you prefer
 import { Card } from "../ui/card";
 

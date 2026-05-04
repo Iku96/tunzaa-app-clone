@@ -7,7 +7,7 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Filter } from "lucide-react-native";
-import { ProductsParams } from "@/services/products";
+import { ProductsParams } from "@/src/services/products";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useRouter, usePathname } from "expo-router";

@@ -9,7 +9,7 @@ import { ShopTile } from "@/components/shop/ShopTile";
 import { ShopTileSkeleton } from "@/components/ui/skeleton";
 import { useShops } from "@/stores/shops";
 import { useI18n } from "@/hooks/useI18n";
-import { useCreateVendorRequest } from "@/services/affiliates";
+import { useCreateVendorRequest } from "@/src/services/affiliates";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 

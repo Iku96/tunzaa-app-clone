@@ -1,7 +1,7 @@
 import React from "react";
 import { View, ScrollView, TouchableOpacity } from "react-native";
 import { Text } from "@/components/ui/text";
-import { type Category } from "@/services/categories";
+import { type Category } from "@/src/services/categories";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
 // Category Selector Component

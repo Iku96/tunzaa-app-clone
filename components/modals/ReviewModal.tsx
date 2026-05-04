@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth";
-import { useCreateRating } from "@/services/ratings";
+import { useCreateRating } from "@/src/services/ratings";
 import type { Order } from "@/stores/orders";
 
 interface ReviewModalProps {

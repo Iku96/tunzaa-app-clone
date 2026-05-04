@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { ResponsiveModal } from "@/components/responsive-modal";
 import { useI18n } from "@/hooks/useI18n";
-import { useUpdateUser } from "@/services/auth";
+import { useUpdateUser } from "@/src/services/auth";
 import { useAuth } from "@/context/auth";
 
 import { languages } from "@/stores/preferences";

@@ -1,4 +1,4 @@
-import { ProductImage } from "@/services/products";
+import { ProductImage } from "@/src/services/products";
 
 /**
  * Helper function to get image URL from either a string or ProductImage object

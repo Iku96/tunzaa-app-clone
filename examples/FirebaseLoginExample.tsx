@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Button, Alert } from 'react-native';
-import { socialAuth } from '@/services/social-auth';
+import { socialAuth } from '@/src/services/social-auth';
 import { useApiError } from '@/hooks/useApiError';
 
 export const FirebaseLoginExample: React.FC = () => {

@@ -13,14 +13,14 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useUploadFile } from "@/services/upload";
+import { useUploadFile } from "@/src/services/upload";
 import { cn } from "@/lib/utils";
 import type {
   ProductResponse,
   CreateProductRequest,
   ProductVariant,
-} from "@/services/product-management";
-import { categoriesApi, type Category } from "@/services/categories";
+} from "@/src/services/product-management";
+import { categoriesApi, type Category } from "@/src/services/categories";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useResponsive } from "@/hooks/useResponsive";
 import { CategorySelector } from "../vendor/CategorySelector";

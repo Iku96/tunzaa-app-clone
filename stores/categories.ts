@@ -4,7 +4,7 @@ import {
   categoriesApi,
   Category,
   CategoriesResponse,
-} from "@/services/categories";
+} from "@/src/services/categories";
 
 interface CategoriesState {
   categories: Category[];

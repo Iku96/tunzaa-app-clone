@@ -20,8 +20,8 @@ import { useAddressManagement } from "@/hooks/useAddressManagement";
 import {
   useDeliveryTypesWithFallback,
   useGetDeliveryPartners,
-} from "@/services/delivery";
-import { useGetVehicleTypes } from "@/services/configuration";
+} from "@/src/services/delivery";
+import { useGetVehicleTypes } from "@/src/services/configuration";
 import { useProductById } from "@/stores/products";
 import { AddressModal } from "@/components/modals/AddressModal";
 import { Text } from "@/components/ui/text";
@@ -37,9 +37,9 @@ import { SimilarItems } from "@/components/recommendations";
 import type {
   DeliveryAddress,
   UpdateBuyerProfileBody,
-} from "@/services/types/buyers";
-import type { DeliveryPartner, VehicleType } from "@/services/types";
-import { API_CONFIG } from "@/services/config";
+} from "@/src/services/types/buyers";
+import type { DeliveryPartner, VehicleType } from "@/src/services/types";
+import { API_CONFIG } from "@/src/services/config";
 import {
   CheckoutStepHeader,
   CheckoutStep,

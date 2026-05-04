@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { ProductTile } from "@/components/products/ProductTile";
-import { Product } from "@/services/products";
+import { Product } from "@/src/services/products";
 import { Text } from "@/components/ui/text";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useI18n } from "@/hooks/useI18n";

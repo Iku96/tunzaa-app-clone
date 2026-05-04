@@ -1,4 +1,4 @@
-import type { DeliveryType } from "@/services/types/delivery";
+import type { DeliveryType } from "@/src/services/types/delivery";
 
 // Fallback delivery types to use when API fails or is unavailable
 export const FALLBACK_DELIVERY_TYPES: DeliveryType[] = [

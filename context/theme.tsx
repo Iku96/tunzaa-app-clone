@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { STORAGE_KEYS } from "@/services/config";
+import { STORAGE_KEYS } from "@/src/services/config";
 import { DeviceEventEmitter, Platform } from "react-native";
 import { THEME_UPDATE_EVENT } from "@/providers/ThemeProvider";
 

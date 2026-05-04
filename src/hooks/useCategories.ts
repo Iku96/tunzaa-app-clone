@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { categoriesApi, type Category } from "@/services/categories";
+import { categoriesApi, type Category } from "@/src/services/categories";
 
 export interface UseCategoriesResult {
   categories: Category[];

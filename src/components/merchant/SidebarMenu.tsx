@@ -36,7 +36,7 @@ interface SidebarMenuProps {
 
 export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
     const { t } = useTranslation();
-    const { user, logout } = useTunzaaAuth();
+    const { user } = useTunzaaAuth();
     const localRouter = useRouter(); // renamed to avoid conflict
     const pathname = usePathname();
     const slideAnim = useRef(new Animated.Value(-width)).current; 
@@ -136,10 +136,7 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
         localRouter.replace(`/${portal}` as any);
     };
 
-    const handleLogout = async () => {
-        onClose();
-        await logout();
-    };
+
 
     const navigateTo = (route: string) => {
         onClose();
@@ -253,6 +250,8 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                                 </TouchableOpacity>
                             </View>
                         )}
+
+
                     </View>
                 </Animated.View>
             </View>

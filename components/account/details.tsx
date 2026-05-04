@@ -29,7 +29,7 @@ import { FileText } from "@/lib/icons/FileText";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
-import { authApi, useGetUserDetails } from "@/services/auth";
+import { authApi, useGetUserDetails } from "@/src/services/auth";
 import { useI18n } from "@/hooks/useI18n";
 import * as Burnt from "burnt";
 

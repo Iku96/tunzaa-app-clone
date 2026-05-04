@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useAuth } from "@/context/auth";
-import { useGetOrder } from "@/services/order-management";
+import { useGetOrder } from "@/src/services/order-management";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { VendorOrderDetails } from "@/components/orders/details/VendorOrderDetails";

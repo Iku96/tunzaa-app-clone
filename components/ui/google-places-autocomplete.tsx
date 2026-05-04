@@ -18,7 +18,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import { API_CONFIG } from "@/services/config";
+import { API_CONFIG } from "@/src/services/config";
 import { cn } from "@/lib/utils";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
