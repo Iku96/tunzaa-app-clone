@@ -84,7 +84,8 @@
     "created": "Created",
     "information": "Information",
     "delete": "Delete",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "joined": "Joined"
   },
   "home": {
     "search_placeholder": "Search products",
@@ -910,6 +911,18 @@
     }
   },
   "vendor": {
+    "loans": {
+      "title": "Loans",
+      "product": "Product",
+      "loans_request": "Loans Request",
+      "repayments_track": "Repayments Track"
+    },
+    "navigation": {
+      "dashboard": "Dashboard",
+      "inventory": "Inventory",
+      "orders_sales": "Orders and sales",
+      "customer_profile": "Customer Profile"
+    },
     "home": {
       "total_revenue": "Total Revenue",
       "total_orders": "Total Orders",
@@ -1242,5 +1255,63 @@
     "link_analytics": "Link Analytics",
     "commissions": "Commissions",
     "partner_stores": "Partner Stores"
+  },
+  "settings": {
+    "settings": "Settings",
+    "your_activities": "Your Activities",
+    "in_app_notifications": "In-App Notifications",
+    "business_tools": "Business tools and control",
+    "reminders": "Reminders",
+    "delivery_orders": "Delivery Orders",
+    "policies": "Policies",
+    "language": "Language",
+    "account_manager": "Account Manager",
+    "log_out": "Log out",
+    "password": "Password",
+    "delete_account": "Delete Account",
+    "help_faq": "Help & FAQ",
+    "password_manager": "Password Manager",
+    "current_password": "Current Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password",
+    "save_password": "Save password",
+    "delete_your_account": "Delete Your Account",
+    "delete_reason_prompt": "If you choose to delete your account, please select a reason below. Your feedback helps us improve.",
+    "delete_confirm_title": "Are you sure you want to delete your account permanently?",
+    "delete_confirm_subtitle": "We're sorry to see you go. Deleting your account will remove all your information, payment records from our system. This action cannot be undone.",
+    "enter_password_to_continue": "Enter password to continue",
+    "help_center": "Help Center",
+    "faq": "FAQ",
+    "contact_us": "Contact Us",
+    "contact_intro": "Contact us for any enquiries. We'll be happy to help you.",
+    "live_chat": "Live chat",
+    "live_chat_title": "Live Chat",
+    "live_chat_subtitle": "Get response within 2 mins.",
+    "live_chat_intro": "We are sorry for any inconveniences you may be experiencing, and we're here to help. Please describe your issue below so we can have all the details.",
+    "description": "Description",
+    "describe_issues": "Describe your issues.",
+    "send_message": "Send message",
+    "or_divider": "Or",
+    "version": "Tunzaa Version 2.0",
+    "at_least_8_chars": "At least 8 characters",
+    "saving_dots": "Saving...",
+    "delete_reasons": {
+      "not_using": "No longer using the service/platform",
+      "better_alternative": "Found a better alternative",
+      "difficulty": "Difficulty navigating the platform",
+      "personal": "Personal reasons",
+      "security": "Account security concerns",
+      "others": "Others"
+    },
+    "faq_items": {
+      "q1": "How do I add a new product to my store?",
+      "a1": "Navigate to the Products tab in your dashboard and click the '+' or 'Add Product' button. Fill in the product details, upload high-quality images, set your price, and save to publish it to your store.",
+      "q2": "How do I track my delivery orders?",
+      "a2": "Go to Settings > Delivery Orders. There you will find three tabs categorizing your orders into Pending, Completed, and Returns. You can view full details by expanding any order card.",
+      "q3": "When do I get paid for a sale?",
+      "a3": "Payments are settled to your registered bank account or mobile wallet automatically within 24 to 48 hours after an order is successfully delivered and marked as 'Completed'.",
+      "q4": "Can I manage multiple business branches?",
+      "a4": "Yes, you can manage multiple branches. Go to Settings > Business tools and controls, where you can add new business branches and switch between different account types."
+    }
   }
 }

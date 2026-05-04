@@ -84,7 +84,8 @@
     "created": "Imeundwa",
     "information": "Maelezo",
     "delete": "Futa",
-    "deleting": "Inafuta..."
+    "deleting": "Inafuta...",
+    "joined": "Amejiunga"
   },
   "home": {
     "search_placeholder": "Tafuta bidhaa...",
@@ -1150,6 +1151,18 @@
     "customer_messages": "Ujumbe wa Wateja"
   },
   "vendor": {
+    "loans": {
+      "title": "Mikopo",
+      "product": "Bidhaa",
+      "loans_request": "Ombi la Mikopo",
+      "repayments_track": "Ufuatiliaji wa Malipo"
+    },
+    "navigation": {
+      "dashboard": "Dashibodi",
+      "inventory": "Hesabu ya Bidhaa",
+      "orders_sales": "Oda na Mauzo",
+      "customer_profile": "Wasifu wa Mteja"
+    },
     "vendor_notifications": "Arifa za Muuzaji",
     "my_products": "Bidhaa Zangu",
     "add_product": "Ongeza Bidhaa",
@@ -1308,5 +1321,63 @@
     "link_analytics": "Uchambuzi wa Kiungo",
     "commissions": "Tume",
     "partner_stores": "Maduka ya Washirika"
+  },
+  "settings": {
+    "settings": "Mipangilio",
+    "your_activities": "Shughuli Zako",
+    "in_app_notifications": "Arifa za Programu",
+    "business_tools": "Zana na udhibiti wa biashara",
+    "reminders": "Vikumbusho",
+    "delivery_orders": "Agizo za Utoaji",
+    "policies": "Sera",
+    "language": "Lugha",
+    "account_manager": "Meneja wa Akaunti",
+    "log_out": "Toka",
+    "password": "Nywila",
+    "delete_account": "Futa Akaunti",
+    "help_faq": "Msaada na Maswali",
+    "password_manager": "Meneja wa Nywila",
+    "current_password": "Nywila ya Sasa",
+    "new_password": "Nywila Mpya",
+    "confirm_password": "Thibitisha Nywila",
+    "save_password": "Hifadhi nywila",
+    "delete_your_account": "Futa Akaunti Yako",
+    "delete_reason_prompt": "Ukichagua kufuta akaunti yako, tafadhali chagua sababu hapa chini. Maoni yako yatatusaidia kuboresha.",
+    "delete_confirm_title": "Je, una uhakika unataka kufuta akaunti yako kabisa?",
+    "delete_confirm_subtitle": "Tunasikitika kukuona ukiondoka. Kufuta akaunti yako kutaondoa taarifa zako zote, rekodi za malipo kutoka kwenye mfumo wetu. Kitendo hiki hakiwezi kutenduliwa.",
+    "enter_password_to_continue": "Weka nywila kuendelea",
+    "help_center": "Kituo cha Msaada",
+    "faq": "Maswali Yanayoulizwa Mara kwa Mara",
+    "contact_us": "Wasiliana Nasi",
+    "contact_intro": "Wasiliana nasi kwa maswali yoyote. Tutafurahi kukusaidia.",
+    "live_chat": "Mazungumzo ya Moja kwa Moja",
+    "live_chat_title": "Mazungumzo ya Moja kwa Moja",
+    "live_chat_subtitle": "Pata jibu ndani ya dakika 2.",
+    "live_chat_intro": "Tunasikitika kwa usumbufu wowote unaoupitia, na tuko hapa kukusaidia. Tafadhali eleza tatizo lako hapa chini ili tupate maelezo yote.",
+    "description": "Maelezo",
+    "describe_issues": "Eleza matatizo yako.",
+    "send_message": "Tuma ujumbe",
+    "or_divider": "Au",
+    "version": "Tunzaa Toleo 2.0",
+    "at_least_8_chars": "Angalau herufi 8",
+    "saving_dots": "Inahifadhi...",
+    "delete_reasons": {
+      "not_using": "Sihutumii tena huduma/jukwaa",
+      "better_alternative": "Nimepata mbadala bora",
+      "difficulty": "Ugumu wa kutumia jukwaa",
+      "personal": "Sababu za kibinafsi",
+      "security": "Wasiwasi wa usalama wa akaunti",
+      "others": "Nyingine"
+    },
+    "faq_items": {
+      "q1": "Ninawezaje kuongeza bidhaa mpya kwenye duka langu?",
+      "a1": "Nenda kwenye kichupo cha Bidhaa kwenye dashibodi yako na ubofye kitufe cha '+' au 'Ongeza Bidhaa'. Jaza maelezo ya bidhaa, pakia picha za ubora wa juu, weka bei yako, na uhifadhi ili kuichapisha kwenye duka lako.",
+      "q2": "Ninawezaje kufuatilia agizo zangu za utoaji?",
+      "a2": "Nenda Mipangilio > Agizo za Utoaji. Huko utapata vichupo vitatu vinavyoainisha agizo zako kuwa Zinazosubiri, Zilizokamilika, na Kurejesha.",
+      "q3": "Nitalipwa lini kwa mauzo?",
+      "a3": "Malipo yanasawazishwa kwenye akaunti yako ya benki au pochi ya simu ndani ya masaa 24 hadi 48 baada ya agizo kuwasilishwa na kuwekwa alama ya 'Kukamilika'.",
+      "q4": "Je, ninaweza kudhibiti matawi mengi ya biashara?",
+      "a4": "Ndio, unaweza kudhibiti matawi mengi. Nenda Mipangilio > Zana na udhibiti wa biashara, ambapo unaweza kuongeza matawi mapya ya biashara."
+    }
   }
 }

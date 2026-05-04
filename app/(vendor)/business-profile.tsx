@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
     ArrowLeft, 
@@ -13,27 +12,58 @@ import {
     Share2,
     Play,
     UserCircle2,
-    ChevronDown
+    ChevronDown,
+    PlusSquare
 } from 'lucide-react-native';
 import { Share } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
 import { useGetProducts } from '../../src/services/products';
 import { useGetVendor } from '../../src/services/vendors';
+import AddProductModal from '@/src/components/merchant/AddProductModal';
+import { getAvatarUrl, getVendorLogoUrl } from '../../src/utils/images';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width / 3;
+
+const BUSINESS_EXTRAS_KEY = '@tunzaa_business_extras';
 
 export default function BusinessProfileScreen() {
     const router = useRouter();
     const { user, setIsSidebarOpen } = useTunzaaAuth() as any;
     const [activeTab, setActiveTab] = useState('grid');
+    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     
     // Vendor/Business profile data
     const vendorProfile = user?.profiles?.find((p: any) => p.role === 'vendor' || p.role === 'business') || {} as any;
-    const vendorId = vendorProfile?.metadata?.vendor_id || vendorProfile?.profile_id;
     
-    const metadata = vendorProfile?.metadata || {};
-    const branding = vendorProfile?.branding || {};
+    // Parse metadata safely
+    const metadata = typeof vendorProfile?.metadata === 'string' ? JSON.parse(vendorProfile.metadata) : (vendorProfile?.metadata || {});
+    const branding = typeof vendorProfile?.branding === 'string' ? JSON.parse(vendorProfile.branding) : (vendorProfile?.branding || {});
+    const vendorId = metadata?.vendor_id || vendorProfile?.profile_id;
+
+    const [localExtras, setLocalExtras] = useState<any>({});
+
+    // Load profile metadata from local storage as a fallback
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadProfileData = async () => {
+                try {
+                    const userId = user?.user_id || user?.id;
+                    if (!userId) return;
+                    const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
+                    if (storedExtras) {
+                        setLocalExtras(JSON.parse(storedExtras));
+                    }
+                } catch (e) {
+                    console.warn('[BusinessProfile] Failed to load extras:', e);
+                }
+            };
+            loadProfileData();
+        }, [user])
+    );
     
     // Fetch real products for this vendor
     const { data: productsData, isLoading: isLoadingProducts } = useGetProducts({ 
@@ -45,16 +75,26 @@ export default function BusinessProfileScreen() {
     const { data: vendorData } = useGetVendor(vendorId, !!vendorId);
     const storeBanners = vendorData?.stores?.[0]?.banners || vendorData?.store?.banners || [];
 
-    const displayName = metadata?.business_name || vendorProfile?.display_name || vendorProfile?.displayName || user?.first_name || '';
-    const logoUrl = metadata?.logo_url || metadata?.image_url || branding?.logo_url;
+    // Prioritize: API vendor data > Profile metadata > vendorDetails from auth context > Local Cache > Display Name > First Name
+    const displayName = vendorData?.business_name || vendorData?.display_name || vendorData?.name ||
+                         metadata?.business_name || metadata?.store_name || metadata?.company_name || 
+                         user?.vendorDetails?.business_name || user?.vendorDetails?.name ||
+                         localExtras.business_name || vendorProfile?.display_name || vendorProfile?.displayName || user?.first_name || '';
+    const logoUrl = getVendorLogoUrl({
+        vendorData,
+        metadata,
+        branding,
+        vendorDetails: user?.vendorDetails,
+        localExtras,
+    }) || '';
     
     // KYC Status logic matching VendorLayout
-    const kycMetadataStatus = vendorProfile?.metadata?.verification_status || vendorProfile?.metadata?.kyc_status;
-    const isVerified = vendorProfile?.kyc?.verified === true || 
-                      kycMetadataStatus === 'approved' || 
-                      kycMetadataStatus === 'verified' ||
-                      vendorProfile?.metadata?.is_verified === true ||
-                      vendorProfile?.metadata?.is_verified === 'true';
+    const kycMeta = (metadata?.verification_status || metadata?.kyc_status || metadata?.status || '').toLowerCase();
+    const isVerified = 
+        vendorProfile?.kyc?.verified === true || 
+        ['approved', 'verified', 'active', 'completed'].includes(kycMeta) ||
+        metadata?.is_verified === true ||
+        metadata?.is_verified === 'true';
 
     // Joined date
     const joinedDate = user?.created_at 
@@ -129,7 +169,7 @@ export default function BusinessProfileScreen() {
                     <TouchableOpacity onPress={() => setIsSidebarOpen(true)} style={styles.headerBtn}>
                         <LayoutGrid size={24} color="#111827" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.headerBtn}>
+                    <TouchableOpacity onPress={() => router.push('/(vendor)/settings')} style={styles.headerBtn}>
                         <MoreHorizontal size={24} color="#111827" />
                     </TouchableOpacity>
                 </View>
@@ -140,13 +180,12 @@ export default function BusinessProfileScreen() {
     const renderStats = () => (
         <View style={styles.statsContainer}>
             <View style={styles.avatarContainer}>
-                {logoUrl ? (
-                    <Image source={{ uri: logoUrl }} style={styles.avatar} />
-                ) : (
-                    <View style={styles.avatarPlaceholder}>
-                        <UserCircle2 size={60} color="#E5E7EB" />
-                    </View>
-                )}
+                <Avatar alt={displayName} className="w-20 h-20 border border-gray-100">
+                    <AvatarImage source={{ uri: getAvatarUrl(logoUrl, displayName) }} />
+                    <AvatarFallback className="bg-gray-50">
+                        <UserCircle2 size={40} color="#E5E7EB" />
+                    </AvatarFallback>
+                </Avatar>
             </View>
             
             <View style={styles.statsRow}>
@@ -321,6 +360,14 @@ export default function BusinessProfileScreen() {
                     )
                 )}
             </ScrollView>
+
+            <AddProductModal 
+                visible={isAddModalVisible}
+                onClose={() => setIsAddModalVisible(false)}
+                onSuccess={() => {
+                    setIsAddModalVisible(false);
+                }}
+            />
         </SafeAreaView>
     );
 }
@@ -377,19 +424,6 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
-        padding: 2,
-    },
-    avatar: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 38,
-    },
-    avatarPlaceholder: {
-        flex: 1,
-        backgroundColor: '#F9FAFB',
-        borderRadius: 38,
         alignItems: 'center',
         justifyContent: 'center',
     },

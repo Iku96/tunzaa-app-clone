@@ -170,11 +170,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   // Auto-refresh tenant config when app comes to foreground
   useAppStateRefresh();
 
-  // Refetch tenant settings on mount to ensure latest settings
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
   // Load cached tenant data on mount
   useEffect(() => {
     const loadCachedTenant = async () => {
@@ -314,10 +309,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           "--ring": hexToHsl(brandColors.primary),
         };
 
-        setThemeStyles(dynamicStyles);
-
-        // Apply CSS variables to document root on web
-        applyCSSVariablesToDocument(dynamicStyles);
+        // Only update if styles actually changed to prevent render loops
+        if (JSON.stringify(dynamicStyles) !== JSON.stringify(themeStyles)) {
+          setThemeStyles(dynamicStyles);
+          // Apply CSS variables to document root on web
+          applyCSSVariablesToDocument(dynamicStyles);
+        }
 
         // Store adaptive theme colors for React Native direct access
         if (Platform.OS !== "web") {
@@ -499,8 +496,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           "--warning-foreground": "0 0% 98%",
         };
 
-        setThemeStyles(defaultStyles);
-        applyCSSVariablesToDocument(defaultStyles);
+        // Only update if styles actually changed to prevent render loops
+        if (JSON.stringify(defaultStyles) !== JSON.stringify(themeStyles)) {
+          setThemeStyles(defaultStyles);
+          applyCSSVariablesToDocument(defaultStyles);
+        }
 
         // Store default theme colors for React Native
         if (Platform.OS !== "web") {

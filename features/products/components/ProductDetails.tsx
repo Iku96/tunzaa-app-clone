@@ -191,8 +191,22 @@ const ReviewCard = ({ review }: { review: any }) => {
             </View>
           )}
 
+          {/* Vendor Reply Display */}
+          {review.metadata?.vendor_reply && (
+            <View className="mt-3 p-3 bg-muted/50 rounded-lg border-l-2 border-primary">
+              <View className="flex-row items-center gap-2 mb-1">
+                <Text className="text-xs font-bold text-primary uppercase tracking-wider">
+                  Response from Seller
+                </Text>
+              </View>
+              <Text className="text-sm text-foreground italic leading-5">
+                {review.metadata.vendor_reply}
+              </Text>
+            </View>
+          )}
+
           {/* Like Button (placeholder) */}
-          <View className="flex-row items-center mt-1">
+          <View className="flex-row items-center mt-3">
             <TouchableOpacity className="flex-row items-center mr-4">
               <ThumbsUp size={14} className="text-muted-foreground mr-1" />
               <Text className="text-xs text-muted-foreground">Helpful</Text>

@@ -84,7 +84,8 @@
     "created": "Créé",
     "information": "Informations",
     "delete": "Supprimer",
-    "deleting": "Suppression..."
+    "deleting": "Suppression...",
+    "joined": "Inscrit"
   },
   "home": {
     "search_placeholder": "Rechercher des produits...",
@@ -1062,6 +1063,18 @@
     "customer_messages": "Messages clients"
   },
   "vendor": {
+    "loans": {
+      "title": "Prêts",
+      "product": "Produit",
+      "loans_request": "Demande de prêts",
+      "repayments_track": "Suivi des remboursements"
+    },
+    "navigation": {
+      "dashboard": "Tableau de bord",
+      "inventory": "Inventaire",
+      "orders_sales": "Commandes et ventes",
+      "customer_profile": "Profil client"
+    },
     "vendor_notifications": "Notifications du vendeur",
     "my_products": "Mes produits",
     "add_product": "Ajouter un produit",
@@ -1182,5 +1195,63 @@
     "link_analytics": "Analyses de liens",
     "commissions": "Commissions",
     "partner_stores": "Magasins partenaires"
+  },
+  "settings": {
+    "settings": "Paramètres",
+    "your_activities": "Vos Activités",
+    "in_app_notifications": "Notifications dans l'application",
+    "business_tools": "Outils et contrôle commercial",
+    "reminders": "Rappels",
+    "delivery_orders": "Commandes de Livraison",
+    "policies": "Politiques",
+    "language": "Langue",
+    "account_manager": "Gestionnaire de Compte",
+    "log_out": "Déconnexion",
+    "password": "Mot de passe",
+    "delete_account": "Supprimer le Compte",
+    "help_faq": "Aide et FAQ",
+    "password_manager": "Gestionnaire de Mot de Passe",
+    "current_password": "Mot de passe actuel",
+    "new_password": "Nouveau mot de passe",
+    "confirm_password": "Confirmer le mot de passe",
+    "save_password": "Enregistrer le mot de passe",
+    "delete_your_account": "Supprimer Votre Compte",
+    "delete_reason_prompt": "Si vous choisissez de supprimer votre compte, veuillez sélectionner une raison ci-dessous. Vos commentaires nous aident à nous améliorer.",
+    "delete_confirm_title": "Êtes-vous sûr de vouloir supprimer définitivement votre compte ?",
+    "delete_confirm_subtitle": "Nous sommes désolés de vous voir partir. La suppression de votre compte supprimera toutes vos informations et enregistrements de paiement de notre système. Cette action ne peut pas être annulée.",
+    "enter_password_to_continue": "Entrez le mot de passe pour continuer",
+    "help_center": "Centre d'Aide",
+    "faq": "FAQ",
+    "contact_us": "Contactez-nous",
+    "contact_intro": "Contactez-nous pour toute question. Nous serons ravis de vous aider.",
+    "live_chat": "Chat en direct",
+    "live_chat_title": "Chat en Direct",
+    "live_chat_subtitle": "Obtenez une réponse en 2 minutes.",
+    "live_chat_intro": "Nous sommes désolés pour les inconvénients que vous pourriez rencontrer, et nous sommes là pour vous aider. Veuillez décrire votre problème ci-dessous afin que nous puissions avoir tous les détails.",
+    "description": "Description",
+    "describe_issues": "Décrivez vos problèmes.",
+    "send_message": "Envoyer le message",
+    "or_divider": "Ou",
+    "version": "Tunzaa Version 2.0",
+    "at_least_8_chars": "Au moins 8 caractères",
+    "saving_dots": "Enregistrement...",
+    "delete_reasons": {
+      "not_using": "Je n'utilise plus le service/la plateforme",
+      "better_alternative": "J'ai trouvé une meilleure alternative",
+      "difficulty": "Difficulté à naviguer sur la plateforme",
+      "personal": "Raisons personnelles",
+      "security": "Problèmes de sécurité du compte",
+      "others": "Autres"
+    },
+    "faq_items": {
+      "q1": "Comment ajouter un nouveau produit à ma boutique ?",
+      "a1": "Accédez à l'onglet Produits dans votre tableau de bord et cliquez sur le bouton '+' ou 'Ajouter un produit'. Remplissez les détails, téléchargez des images de haute qualité, définissez votre prix et enregistrez pour le publier.",
+      "q2": "Comment suivre mes commandes de livraison ?",
+      "a2": "Allez dans Paramètres > Commandes de livraison. Vous y trouverez trois onglets catégorisant vos commandes en En attente, Terminées et Retours.",
+      "q3": "Quand suis-je payé pour une vente ?",
+      "a3": "Les paiements sont réglés sur votre compte bancaire ou portefeuille mobile dans les 24 à 48 heures après qu'une commande est livrée et marquée comme 'Terminée'.",
+      "q4": "Puis-je gérer plusieurs succursales ?",
+      "a4": "Oui, vous pouvez gérer plusieurs succursales. Allez dans Paramètres > Outils et contrôle commercial, où vous pouvez ajouter de nouvelles succursales."
+    }
   }
 }

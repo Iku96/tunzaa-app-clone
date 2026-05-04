@@ -1,19 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSearchHistory } from '../../../../src/stores/searchHistory';
 
 export default function RecentSearchScreen() {
     const router = useRouter();
+    const { history, removeItem, clearAll } = useSearchHistory();
 
-    const mockSearches = [
-        { id: '1', name: 'Julia Mneno', joined: '', verified: false, image: 'https://i.pravatar.cc/150?u=1' },
-        { id: '2', name: 'Vodacom Shop', joined: 'Joined November 2021', verified: true, image: 'https://1000logos.net/wp-content/uploads/2021/04/Vodacom-logo.png' },
-        { id: '3', name: 'Julia Mwema', joined: 'Joined November 2021', verified: true, image: 'https://i.pravatar.cc/150?u=3' },
-        { id: '4', name: 'Julia Mwema', joined: 'Joined November 2021', verified: true, image: 'https://i.pravatar.cc/150?u=4' },
-        { id: '5', name: 'Julia Mwema', joined: 'Joined November 2021', verified: true, image: 'https://i.pravatar.cc/150?u=5' },
-    ];
+    const handlePress = (item: any) => {
+        if (item.type === 'shop') {
+            router.push(`/(buyer)/shop/${item.id}` as any);
+        } else if (item.type === 'product') {
+            router.push(`/(buyer)/product/${item.id}` as any);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -27,32 +29,53 @@ export default function RecentSearchScreen() {
             </View>
 
             <View style={styles.clearAllRow}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={clearAll}>
                     <Text style={styles.clearAllText}>Clear all</Text>
                 </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {mockSearches.map((search) => (
-                    <View key={search.id} style={styles.searchItem}>
-                        <Image source={{ uri: search.image }} style={styles.avatar} />
+            <FlatList
+                data={history}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => (
+                    <TouchableOpacity style={styles.searchItem} onPress={() => handlePress(item)}>
+                        {item.avatar ? (
+                            <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                        ) : (
+                            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                                <Ionicons name={item.type === 'shop' ? 'storefront' : 'cube'} size={24} color="#9CA3AF" />
+                            </View>
+                        )}
                         <View style={styles.infoContainer}>
                             <View style={styles.nameRow}>
-                                <Text style={styles.name}>{search.name}</Text>
-                                {search.verified && (
+                                <Text style={styles.name}>{item.name}</Text>
+                                {item.isVerified && (
                                     <View style={styles.verifiedBadge}>
                                         <Ionicons name="checkmark-circle" size={14} color="#3B82F6" />
                                         <Text style={styles.verifiedText}>Verified</Text>
                                     </View>
                                 )}
                             </View>
-                            {search.joined !== '' && (
-                                <Text style={styles.joinedText}>{search.joined}</Text>
+                            {(item.joinedDate || item.location) && (
+                                <Text style={styles.joinedText}>
+                                    {[item.location, item.joinedDate ? `Joined ${item.joinedDate}` : null].filter(Boolean).join(' • ')}
+                                </Text>
                             )}
                         </View>
+                        <TouchableOpacity onPress={() => removeItem(item.id)} style={styles.removeBtn}>
+                            <Ionicons name="close" size={20} color="#9CA3AF" />
+                        </TouchableOpacity>
+                    </TouchableOpacity>
+                )}
+                ListEmptyComponent={() => (
+                    <View style={styles.emptyContainer}>
+                        <Ionicons name="search-outline" size={48} color="#E5E7EB" />
+                        <Text style={styles.emptyText}>No recent searches</Text>
                     </View>
-                ))}
-            </ScrollView>
+                )}
+            />
         </SafeAreaView>
     );
 }
@@ -94,6 +117,7 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 20,
         paddingTop: 8,
+        paddingBottom: 40,
     },
     searchItem: {
         flexDirection: 'row',
@@ -105,6 +129,10 @@ const styles = StyleSheet.create({
         height: 48,
         borderRadius: 24,
         backgroundColor: '#F3F4F6',
+    },
+    avatarPlaceholder: {
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     infoContainer: {
         marginLeft: 16,
@@ -140,5 +168,18 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#9CA3AF',
         marginTop: 2,
+    },
+    removeBtn: {
+        padding: 4,
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 100,
+    },
+    emptyText: {
+        marginTop: 16,
+        fontSize: 14,
+        color: '#9CA3AF',
     },
 });

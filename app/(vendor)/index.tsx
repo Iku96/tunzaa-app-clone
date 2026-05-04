@@ -12,6 +12,7 @@ import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { orderApi } from '@/src/services/orders';
 import { getAccessToken } from '@/src/utils/storage';
 import { API_CONFIG } from '@/src/services/config';
+import AddProductModal from '@/src/components/merchant/AddProductModal';
 import { 
     useGetVendorGMV, 
     useGetTopPerformingProducts,
@@ -24,6 +25,7 @@ export default function MerchantDashboardScreen() {
     const [showDebug, setShowDebug] = useState(false);
     const [apiTestResult, setApiTestResult] = useState<string | null>(null);
     const [apiTestLoading, setApiTestLoading] = useState(false);
+    const [isAddModalVisible, setIsAddModalVisible] = useState(false);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -124,7 +126,7 @@ export default function MerchantDashboardScreen() {
                     <View style={styles.headerRightRow}>
                         <TouchableOpacity 
                             style={styles.headerBtn}
-                            onPress={() => router.push('/(vendor)/add-product')}
+                            onPress={() => setIsAddModalVisible(true)}
                         >
                             <PlusSquare size={24} color="#111827" />
                         </TouchableOpacity>
@@ -319,6 +321,18 @@ export default function MerchantDashboardScreen() {
                 </View>
 
             </ScrollView>
+
+            <AddProductModal 
+                visible={isAddModalVisible} 
+                onClose={() => setIsAddModalVisible(false)}
+                onSuccess={() => {
+                    setIsAddModalVisible(false);
+                    refetchGMV();
+                    refetchProducts();
+                    refetchStatus();
+                    refetchPulse();
+                }}
+            />
         </SafeAreaView>
     );
 }

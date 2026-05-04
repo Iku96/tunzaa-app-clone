@@ -36,7 +36,8 @@ export function KycModal({ isOpen, onClose, onSuccess, user: propUser, userRole:
   const user = propUser || authContext.user;
   const userRole = propUserRole || user?.activeProfileRole;
   
-  if (!isOpen) return null;
+  // ALL hooks must be called unconditionally (React Rules of Hooks).
+  // The early return guard is moved BELOW all hook calls.
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -46,9 +47,6 @@ export function KycModal({ isOpen, onClose, onSuccess, user: propUser, userRole:
 
   // Validate tenant ID
   const tenantId = API_CONFIG.TENANT_ID;
-  if (!tenantId) {
-    console.error("KycModal: Missing tenant ID");
-  }
 
   // Fetch entities based on tenant - only when needed
   const {
@@ -128,6 +126,9 @@ export function KycModal({ isOpen, onClose, onSuccess, user: propUser, userRole:
       }
     }
   }, [entitiesData, userRole, user]);
+
+  // Early return AFTER all hooks — safe per React Rules of Hooks
+  if (!isOpen) return null;
 
   const updateDocument = (
     document_type_id: string,

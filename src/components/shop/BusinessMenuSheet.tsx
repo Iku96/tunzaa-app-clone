@@ -5,12 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 interface BusinessMenuSheetProps {
     visible: boolean;
     onClose: () => void;
-    onViewCertificate: (type: 'LICENSE' | 'TIN' | 'BRELA') => void;
+    onViewCertificate: (type: 'LICENSE' | 'TIN' | 'BRELA' | string) => void;
+    documents?: any[];
 }
 
 const { height } = Dimensions.get('window');
 
-export default function BusinessMenuSheet({ visible, onClose, onViewCertificate }: BusinessMenuSheetProps) {
+export default function BusinessMenuSheet({ visible, onClose, onViewCertificate, documents }: BusinessMenuSheetProps) {
     if (!visible) return null;
 
     return (
@@ -26,47 +27,43 @@ export default function BusinessMenuSheet({ visible, onClose, onViewCertificate 
 
                     <Text style={styles.sectionTitle}>Documents</Text>
 
-                    <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); onViewCertificate('TIN'); }}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="document-text-outline" size={24} color="#4B5563" />
-                        </View>
-                        <Text style={styles.menuText}>Taxpayer Identification Number (TIN)</Text>
-                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                    </TouchableOpacity>
+                    {documents && documents.length > 0 ? (
+                        documents.map((doc, index) => (
+                            <TouchableOpacity key={index} style={styles.menuItem} onPress={() => { onClose(); onViewCertificate(doc.type || 'TIN'); }}>
+                                <View style={styles.iconContainer}>
+                                    <Ionicons name="document-text-outline" size={24} color="#4B5563" />
+                                </View>
+                                <Text style={styles.menuText}>{doc.title || doc.type || `Document ${index + 1}`}</Text>
+                                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        ))
+                    ) : (
+                        <>
+                            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); onViewCertificate('TIN'); }}>
+                                <View style={styles.iconContainer}>
+                                    <Ionicons name="document-text-outline" size={24} color="#4B5563" />
+                                </View>
+                                <Text style={styles.menuText}>Taxpayer Identification Number (TIN)</Text>
+                                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); onViewCertificate('BRELA'); }}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="business-outline" size={24} color="#4B5563" />
-                        </View>
-                        <Text style={styles.menuText}>Registration Certificate</Text>
-                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                    </TouchableOpacity>
+                            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); onViewCertificate('BRELA'); }}>
+                                <View style={styles.iconContainer}>
+                                    <Ionicons name="business-outline" size={24} color="#4B5563" />
+                                </View>
+                                <Text style={styles.menuText}>Registration Certificate</Text>
+                                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); onViewCertificate('LICENSE'); }}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="ribbon-outline" size={24} color="#4B5563" />
-                        </View>
-                        <Text style={styles.menuText}>Business License</Text>
-                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                    </TouchableOpacity>
-
-                    <View style={styles.divider} />
-
-                    <Text style={styles.sectionTitle}>Contact</Text>
-
-                    <TouchableOpacity style={styles.menuItem}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="chatbubble-ellipses-outline" size={24} color="#4B5563" />
-                        </View>
-                        <Text style={styles.menuText}>Chat on Tunzaa</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.menuItem}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="call-outline" size={24} color="#4B5563" />
-                        </View>
-                        <Text style={styles.menuText}>Call Seller</Text>
-                    </TouchableOpacity>
+                            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); onViewCertificate('LICENSE'); }}>
+                                <View style={styles.iconContainer}>
+                                    <Ionicons name="ribbon-outline" size={24} color="#4B5563" />
+                                </View>
+                                <Text style={styles.menuText}>Business License</Text>
+                                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                            </TouchableOpacity>
+                        </>
+                    )}
 
                 </View>
             </TouchableOpacity>

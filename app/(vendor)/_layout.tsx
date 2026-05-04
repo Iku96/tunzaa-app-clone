@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, Redirect } from "expo-router";
 import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { KycModal } from "@/components/modals/KycModal";
 import { View } from "react-native";
@@ -41,22 +41,11 @@ const VendorLayout = () => {
 
   // Ensure we are on a merchant profile when in this portal
   useEffect(() => {
-    if (user && user.activeProfileRole === 'buyer') {
+    if (user && user.activeProfileRole === 'buyer' && typeof switchRole === 'function') {
       console.log('🔄 [VendorLayout] Switching to merchant profile...');
       switchRole('vendor');
     }
   }, [user?.activeProfileRole]);
-
-  // Auth guard: redirect to root when user logs out
-  useEffect(() => {
-    let mounted = true;
-    if (!user && mounted) {
-      console.log('🔒 [VendorLayout] No user — redirecting to language selection');
-      // Use an explicit top-level route to ensure we break out of the current stack
-      router.replace('/language');
-    }
-    return () => { mounted = false; };
-  }, [user]);
 
   const handleKycSuccess = async () => {
     console.log('KYC submitted successfully from vendor layout, refreshing profile...');
@@ -73,46 +62,72 @@ const VendorLayout = () => {
       return;
     }
 
-    // Find vendor profile
+    // Find vendor profile (supporting multiple merchant role aliases)
     const vendorProfile = user.profiles?.find(
-        (profile: any) => profile.role === 'vendor' || profile.role === 'merchant'
+        (profile: any) => 
+            profile.role?.toLowerCase() === 'vendor' || 
+            profile.role?.toLowerCase() === 'merchant' ||
+            profile.role?.toLowerCase() === 'business'
     );
 
     if (!vendorProfile) {
+      console.log('🛡️ [VendorLayout] No vendor profile found in profiles:', user.profiles?.map((p: any) => p.role));
       setShowKycModal(false);
       return;
     }
 
-    // Check KYC status from multiple possible locations
-    const kycMetadataStatus = vendorProfile.metadata?.verification_status || vendorProfile.metadata?.kyc_status;
+    // Check KYC status from multiple possible locations (API returns vary by role/version)
+    const metadata = typeof vendorProfile?.metadata === 'string' ? JSON.parse(vendorProfile.metadata) : (vendorProfile?.metadata || {});
+    const kycMetadataStatus = (metadata?.verification_status || metadata?.kyc_status || '').toLowerCase();
     const kycVerified = vendorProfile.kyc?.verified;
+    const generalStatus = (metadata?.status || '').toLowerCase();
     
+    // The login API returns profiles with EMPTY metadata {}.
+    // Business name, KYC, etc. arrive later via background hydration.
+    // Check if metadata has been hydrated yet (has any meaningful keys).
+    const metadataKeys = Object.keys(metadata);
+    const isMetadataHydrated = metadataKeys.length > 0;
+
     // Account is considered verified if:
-    // 1. kyc.verified is true (boolean)
-    // 2. metadata.verification_status or kyc_status is 'approved' or 'verified' (string)
+    // 1. kyc.verified is true (boolean) — set during profile normalization
+    // 2. metadata.verification_status or kyc_status is an approved variant
+    // 3. TOP-LEVEL user.is_verified is true (present in JWT from login)
     const isVerified = 
         kycVerified === true || 
-        kycMetadataStatus === 'approved' || 
-        kycMetadataStatus === 'verified' ||
-        vendorProfile.metadata?.is_verified === true ||
-        vendorProfile.metadata?.is_verified === 'true';
+        ['approved', 'verified', 'active', 'completed'].includes(kycMetadataStatus) ||
+        ['approved', 'verified', 'active', 'completed'].includes(generalStatus) ||
+        metadata?.is_verified === true ||
+        metadata?.is_verified === 'true' ||
+        user.is_verified === true;
 
-    console.log('🛡️ [VendorLayout] KYC Check:', { 
+    console.log('🛡️ [VendorLayout] KYC Check Details:', { 
         isVerified, 
         kycVerified, 
         kycMetadataStatus,
-        profileId: vendorProfile.profile_id 
+        generalStatus,
+        isVerifiedFlag: metadata?.is_verified,
+        userLevelIsVerified: user.is_verified,
+        isMetadataHydrated,
+        profileId: vendorProfile.profile_id,
+        role: vendorProfile.role
     });
     
-    if (!isVerified) {
-        setShowKycModal(true);
-    } else {
+    if (isVerified) {
+        // Definitely verified — don't show KYC modal
         setShowKycModal(false);
+    } else if (!isMetadataHydrated) {
+        // Metadata is still empty (login just happened, hydration in progress).
+        // DON'T show the KYC modal yet — wait for hydration to fill metadata.
+        console.log('🛡️ [VendorLayout] Metadata not hydrated yet, deferring KYC check');
+        setShowKycModal(false);
+    } else {
+        // Metadata IS hydrated but account is NOT verified — show KYC modal
+        setShowKycModal(true);
     }
-  }, [user?.activeProfileRole, user?.profiles]);
+  }, [user?.activeProfileRole, user?.profiles, user?.is_verified, user?.vendorDetails]);
 
-  // Don't render vendor content if no user (logout in progress)
-  if (!user) return null;
+  // Note: Unauthenticated access is now handled by the root AuthGate in app/_layout.tsx
+  // which replaces the Slot with a Redirect before this component is even evaluated.
 
   return (
     <>
@@ -133,6 +148,8 @@ const VendorLayout = () => {
         <Stack.Screen name="add-product" />
         <Stack.Screen name="settings" />
         <Stack.Screen name="edit-business" />
+        <Stack.Screen name="view-post" />
+        <Stack.Screen name="product-insight" />
     </Stack>
 
       <KycModalErrorBoundary>

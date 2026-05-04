@@ -12,6 +12,7 @@ import { useGetRatingSummary } from '../../../src/services/ratings';
 import { recommendationsApi } from '../../../src/services/recommendations';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
 import ShareSheet from '../../../src/components/shop/ShareSheet';
+import { useSearchHistory } from '../../../src/stores/searchHistory';
 
 const { width, height } = Dimensions.get('window');
 
@@ -112,6 +113,21 @@ export default function ProductDetailScreen() {
                 image: product.image,
                 imageCount: product.images.length
             }));
+        }
+    }, [product]);
+    
+    const { addItem: addToHistory } = useSearchHistory();
+
+    // Save to history when product is loaded
+    useEffect(() => {
+        if (product) {
+            addToHistory({
+                id: product.id,
+                name: product.name,
+                avatar: product.image,
+                location: product.vendor?.location || '',
+                type: 'product'
+            });
         }
     }, [product]);
 

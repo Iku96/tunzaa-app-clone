@@ -30,11 +30,16 @@ import {
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { CategorySelector } from '@/components/vendor/CategorySelector';
 import { uploadApi } from '@/src/services/upload';
+import { getAvatarUrl, getVendorLogoUrl } from '@/src/utils/images';
 
 const { width, height } = Dimensions.get('window');
+
+// AsyncStorage key for business extras (logo_url, etc.)
+const BUSINESS_EXTRAS_KEY = '@tunzaa_business_extras';
 
 // Business industry categories — these describe what kind of business you run,
 // NOT what products you sell. The /categories/ API is for product catalog only.
@@ -76,7 +81,7 @@ export default function EditBusinessScreen() {
     const [businessName, setBusinessName] = useState(metadata?.business_name || '');
     const [email, setEmail] = useState(getInitialEmail());
     const [phone, setPhone] = useState(metadata?.contact_phone || user?.phone_number || '');
-    const [logo, setLogo] = useState(metadata?.logo_url || metadata?.image_url || null);
+    const [logo, setLogo] = useState(getVendorLogoUrl({ metadata, vendorDetails: user?.vendorDetails }) || null);
     const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
     const [tin, setTin] = useState(metadata?.tax_id || '');
     
@@ -90,6 +95,39 @@ export default function EditBusinessScreen() {
 
     // Documents from metadata - normalize if needed
     const verificationDocs = metadata?.verification_documents || [];
+
+    // Load profile data — AsyncStorage first (instant), then API metadata as merge
+    useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                const userId = user?.user_id || user?.id;
+                if (!userId) return;
+
+                // 1. Load from AsyncStorage (instant, always works)
+                const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
+                const localData = storedExtras ? JSON.parse(storedExtras) : {};
+
+                // 2. Load from API metadata (may be empty if backend hasn't been updated)
+                let apiMeta: Record<string, any> = metadata;
+                
+                // 3. Merge: API takes priority if non-empty, otherwise use local
+                const merged = {
+                    business_name: apiMeta.business_name || localData.business_name || '',
+                    contact_email: apiMeta.contact_email || localData.contact_email || '',
+                    contact_phone: apiMeta.contact_phone || localData.contact_phone || '',
+                    logo_url: getVendorLogoUrl({ metadata: apiMeta, vendorDetails: user?.vendorDetails }) || localData.logo_url || '',
+                };
+
+                if (merged.business_name) setBusinessName(merged.business_name);
+                if (merged.contact_email) setEmail(merged.contact_email);
+                if (merged.contact_phone) setPhone(merged.contact_phone);
+                if (merged.logo_url) setLogo(merged.logo_url);
+            } catch (e) {
+                console.warn('[EditBusiness] Failed to load profile:', e);
+            }
+        };
+        loadProfile();
+    }, [user]);
 
     useEffect(() => {
         // Restore previously saved business category from metadata
@@ -117,7 +155,17 @@ export default function EditBusinessScreen() {
         });
 
         if (!result.canceled) {
-            setLogo(result.assets[0].uri);
+            const uri = result.assets[0].uri;
+            setLogo(uri);
+
+            // Save locally immediately
+            const userId = user?.user_id || user?.id;
+            if (userId) {
+                const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
+                const localData = storedExtras ? JSON.parse(storedExtras) : {};
+                localData.logo_url = uri;
+                await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${userId}`, JSON.stringify(localData));
+            }
         }
     };
 
@@ -217,6 +265,7 @@ export default function EditBusinessScreen() {
 
         setIsSubmitting(true);
         try {
+            const targetUserId = user?.user_id || user?.id;
             const vendorId = metadata?.vendor_id || vendorProfile?.profile_id;
             const profileId = vendorProfile?.profile_id;
 
@@ -233,6 +282,14 @@ export default function EditBusinessScreen() {
                     // Backend returns fileCDNUrl (permanent) or fileUrl (signed), NOT url
                     finalLogoUrl = uploadRes.fileCDNUrl || uploadRes.fileUrl || uploadRes.url;
                     console.log('📸 [Logo] Uploaded successfully:', finalLogoUrl);
+
+                    // Update local storage immediately with the final remote URL
+                    if (targetUserId) {
+                        const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`);
+                        const localData = storedExtras ? JSON.parse(storedExtras) : {};
+                        localData.logo_url = finalLogoUrl;
+                        await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`, JSON.stringify(localData));
+                    }
                 } catch (e) {
                     console.error('Logo upload failed:', e);
                 }
@@ -263,6 +320,18 @@ export default function EditBusinessScreen() {
             };
 
             await updateVendor(vendorId, profileId, updateData);
+
+            // Sync extras to AsyncStorage one last time
+            if (targetUserId) {
+                const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`);
+                const localData = storedExtras ? JSON.parse(storedExtras) : {};
+                localData.business_name = businessName;
+                localData.contact_email = email;
+                localData.contact_phone = phone;
+                localData.logo_url = finalLogoUrl;
+                await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`, JSON.stringify(localData));
+            }
+
             await refreshProfile();
             
             Alert.alert('Success', 'Business profile updated successfully', [

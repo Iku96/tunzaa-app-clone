@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { router } from "expo-router";
 import { Platform } from "react-native";
 import { useStorageState } from "@/hooks/useStorageState";
 import { authApi } from "@/services/auth";
@@ -700,6 +701,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLastStoredUser(null);
 
       console.log("✅ Logout completed - all user data cleared");
+
+      // Stable navigation from root context
+      setTimeout(() => {
+        router.replace('/language');
+      }, 10);
     } catch (error) {
       console.error("❌ Logout failed:", error);
       setError("Logout failed");

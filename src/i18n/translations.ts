@@ -253,6 +253,9 @@ export interface TranslationKeys {
     deliveryCallDriver: string;
     deliveryCost: string;
     deliveryConfirm: string;
+    // --- Loans ---
+    "vendor.loans.loans_request": string;
+    "vendor.loans.repayments_track": string;
 }
 
 /** English (default). */
@@ -481,6 +484,9 @@ const en: TranslationKeys = {
     deliveryCallDriver: "Call Driver",
     deliveryCost: "Delivery Cost",
     deliveryConfirm: "Confirm",
+    // --- Loans ---
+    "vendor.loans.loans_request": "Loans Request",
+    "vendor.loans.repayments_track": "Repayments Track",
 };
 
 /** Swahili. */
@@ -710,6 +716,9 @@ const sw: TranslationKeys = {
     deliveryCallDriver: "Mpige Dereva",
     deliveryCost: "Gharama ya Usafirishaji",
     deliveryConfirm: "Thibitisha",
+    // --- Loans ---
+    "vendor.loans.loans_request": "Ombi la Mkopo",
+    "vendor.loans.repayments_track": "Fuatilia Marejesho",
 };
 
 /** French. */
@@ -717,14 +726,6 @@ const fr: TranslationKeys = {
     languageScreenTitle: 'Choisissez votre langue',
     languageScreenChoosePreferred: 'Choisir la langue préférée',
     languageScreenSkip: 'Passer',
-    affiliateRegisterTitle: "Create an account",
-    affiliateLoginTitle: "Welcome back",
-    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
-    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
-    affiliateRegisterButton: "Create Account",
-    affiliateNoAccount: "Don't have an account?",
-    affiliateLoginLink: "Log in",
-    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: 'Choisissez ce qui vous décrit le mieux',
     roleScreenDescription:
@@ -936,6 +937,9 @@ const fr: TranslationKeys = {
     deliveryCallDriver: "Appeler le chauffeur",
     deliveryCost: "Frais de livraison",
     deliveryConfirm: "Confirmer",
+    // --- Loans ---
+    "vendor.loans.loans_request": "Demande de prêt",
+    "vendor.loans.repayments_track": "Suivi des remboursements",
 };
 
 /** Arabic. */
@@ -1127,7 +1131,7 @@ const ar: TranslationKeys = {
     roleScreenAlreadyAccount: "لديك حساب بالفعل؟ تسجيل الدخول",
     commonNext: "متابعة",
     commonBack: "رجوع",
-    commonSaving: "جاري الحفظ...",
+    commonSaving: "جari الحفظ...",
     commonSuccess: "تم بنجاح!",
     commonError: "خطأ",
     commonTryAgain: "يرجى المحاولة مرة أخرى",
@@ -1162,6 +1166,9 @@ const ar: TranslationKeys = {
     deliveryCallDriver: "اتصل بالسائق",
     deliveryCost: "تكلفة التوصيل",
     deliveryConfirm: "تأكيد",
+    // --- Loans ---
+    "vendor.loans.loans_request": "طلب قرض",
+    "vendor.loans.repayments_track": "تتبع السداد",
 };
 
 /** Spanish. */
@@ -1169,14 +1176,6 @@ const es: TranslationKeys = {
     languageScreenTitle: 'Elige tu idioma',
     languageScreenChoosePreferred: 'Elegir idioma preferido',
     languageScreenSkip: 'Saltar',
-    affiliateRegisterTitle: "Create an account",
-    affiliateLoginTitle: "Welcome back",
-    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
-    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
-    affiliateRegisterButton: "Create Account",
-    affiliateNoAccount: "Don't have an account?",
-    affiliateLoginLink: "Log in",
-    affiliateAlreadyAccount: "Already have an account?",
 
     roleScreenTitle: 'Elige lo que mejor te describe',
     roleScreenDescription:
@@ -1352,29 +1351,29 @@ const es: TranslationKeys = {
     roleScreenOptionAffiliate: "Unirse como comercializador afiliado",
     roleScreenAlreadyAccount: "¿Ya tiene una cuenta? Iniciar sesión",
     // Common
-    commonNext: "Next",
-    commonBack: "Back",
-    commonSaving: "Saving...",
-    commonSuccess: "Success",
+    commonNext: "Siguiente",
+    commonBack: "Volver",
+    commonSaving: "Guardando...",
+    commonSuccess: "Éxito",
     commonError: "Error",
-    commonTryAgain: "Please try again",
-    commonLoading: "Loading...",
+    commonTryAgain: "Por favor, inténtelo de nuevo",
+    commonLoading: "Cargando...",
     // Auth Alerts
-    authTermsRequired: "Terms Required",
-    authTermsRequiredMsg: "Please agree to Terms and Conditions",
-    authMissingFields: "Missing Fields",
-    authMissingFieldsMsg: "Please fill in all fields",
-    authLoginFailed: "Login Failed",
-    authLoginFailedMsg: "Error signing in. Please check your credentials.",
-    authRegistrationError: "Registration Error",
-    authRegistrationErrorMsg: "Error creating account. Please try again.",
-    authEmailRequired: "Phone Number Required",
-    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
-    authSocialLoginError: "Login Error",
+    authTermsRequired: "Términos requeridos",
+    authTermsRequiredMsg: "Por favor, acepte los términos y condiciones",
+    authMissingFields: "Campos faltantes",
+    authMissingFieldsMsg: "Por favor, complete todos los campos",
+    authLoginFailed: "Error al iniciar sesión",
+    authLoginFailedMsg: "Error al iniciar sesión. Por favor, compruebe sus credenciales.",
+    authRegistrationError: "Error de registro",
+    authRegistrationErrorMsg: "Error al crear la cuenta. Por favor, inténtelo de nuevo.",
+    authEmailRequired: "Número de teléfono requerido",
+    authEmailRequiredMsg: "Por favor, use un número de teléfono para registrarse. El registro por correo electrónico requiere un número de teléfono para la verificación OTP.",
+    authSocialLoginError: "Error de inicio de sesión",
     // Delivery Register
-    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNameLabel: "Nombre completo",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
-    deliveryRegisterNameError: "Please enter at least two names.",
+    deliveryRegisterNameError: "Por favor, ingrese al menos dos nombres.",
     orderShipped: "Enviado",
     orderReceived: "Recibido",
     orderReturn: "Devolver",
@@ -1389,6 +1388,9 @@ const es: TranslationKeys = {
     deliveryCallDriver: "Llamar al conductor",
     deliveryCost: "Costo de envío",
     deliveryConfirm: "Confirmar",
+    // --- Loans ---
+    "vendor.loans.loans_request": "Solicitud de préstamo",
+    "vendor.loans.repayments_track": "Seguimiento de pagos",
 };
 
 /** Portuguese. */
@@ -1579,29 +1581,29 @@ const pt: TranslationKeys = {
     roleScreenOptionAffiliate: "Junte-se como profissional de marketing afiliado",
     roleScreenAlreadyAccount: "Já tem uma conta? Entrar",
     // Common
-    commonNext: "Next",
-    commonBack: "Back",
-    commonSaving: "Saving...",
-    commonSuccess: "Success",
-    commonError: "Error",
-    commonTryAgain: "Please try again",
-    commonLoading: "Loading...",
+    commonNext: "Próximo",
+    commonBack: "Voltar",
+    commonSaving: "Salvando...",
+    commonSuccess: "Sucesso",
+    commonError: "Erro",
+    commonTryAgain: "Por favor, tente novamente",
+    commonLoading: "Carregando...",
     // Auth Alerts
-    authTermsRequired: "Terms Required",
-    authTermsRequiredMsg: "Please agree to Terms and Conditions",
-    authMissingFields: "Missing Fields",
-    authMissingFieldsMsg: "Please fill in all fields",
-    authLoginFailed: "Login Failed",
-    authLoginFailedMsg: "Error signing in. Please check your credentials.",
-    authRegistrationError: "Registration Error",
-    authRegistrationErrorMsg: "Error creating account. Please try again.",
-    authEmailRequired: "Phone Number Required",
-    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
-    authSocialLoginError: "Login Error",
+    authTermsRequired: "Termos obrigatórios",
+    authTermsRequiredMsg: "Por favor, concorde com os termos e condições",
+    authMissingFields: "Campos em falta",
+    authMissingFieldsMsg: "Por favor, preencha todos os campos",
+    authLoginFailed: "Falha no login",
+    authLoginFailedMsg: "Erro ao iniciar sessão. Por favor, verifique as suas credenciais.",
+    authRegistrationError: "Erro de registro",
+    authRegistrationErrorMsg: "Erro ao criar conta. Por favor, tente novamente.",
+    authEmailRequired: "Número de telefone obrigatório",
+    authEmailRequiredMsg: "Por favor, use um número de telefone para se registrar. O registro por e-mail requer um número de telefone para a verificação OTP.",
+    authSocialLoginError: "Erro de login",
     // Delivery Register
-    deliveryRegisterFullNameLabel: "Full Name",
+    deliveryRegisterFullNameLabel: "Nome completo",
     deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
-    deliveryRegisterNameError: "Please enter at least two names.",
+    deliveryRegisterNameError: "Por favor, insira pelo menos dois nomes.",
     orderShipped: "Enviado",
     orderReceived: "Recebido",
     orderReturn: "Devolver",
@@ -1616,6 +1618,9 @@ const pt: TranslationKeys = {
     deliveryCallDriver: "Ligar para o motorista",
     deliveryCost: "Custo de entrega",
     deliveryConfirm: "Confirmar",
+    // --- Loans ---
+    "vendor.loans.loans_request": "Pedido de empréstimo",
+    "vendor.loans.repayments_track": "Rastreio de pagamentos",
 };
 
 /** Chinese (Simplified). */
@@ -1687,7 +1692,7 @@ const zh: TranslationKeys = {
     onboardingStep2CharLimit: '不应超过 240 个单词',
     onboardingStep2Required: '必填部分',
     onboardingStep2PermissionError: '抱歉，我们需要访问您照片的权限。',
-    onboardingStep2ValidationShopName: '请输入您的公司或商店名称。',
+    onboardingStep2ValidationShopName: '请输入您的公司 or 商店名称。',
 
     onboardingStep3Title: '商店位置',
     onboardingStep3Subtitle: '通过设置商店位置，让客户轻松关注产品。',
@@ -1806,263 +1811,67 @@ const zh: TranslationKeys = {
     roleScreenOptionAffiliate: "加入作为联盟营销人员",
     roleScreenAlreadyAccount: "已有账号？登录",
     // Common
-    commonNext: "Next",
-    commonBack: "Back",
-    commonSaving: "Saving...",
-    commonSuccess: "Success",
-    commonError: "Error",
-    commonTryAgain: "Please try again",
-    commonLoading: "Loading...",
+    commonNext: "继续",
+    commonBack: "返回",
+    commonSaving: "保存中...",
+    commonSuccess: "成功",
+    commonError: "错误",
+    commonTryAgain: "请重试",
+    commonLoading: "加载中...",
     // Auth Alerts
-    authTermsRequired: "Terms Required",
-    authTermsRequiredMsg: "Please agree to Terms and Conditions",
-    authMissingFields: "Missing Fields",
-    authMissingFieldsMsg: "Please fill in all fields",
-    authLoginFailed: "Login Failed",
-    authLoginFailedMsg: "Error signing in. Please check your credentials.",
-    authRegistrationError: "Registration Error",
-    authRegistrationErrorMsg: "Error creating account. Please try again.",
-    authEmailRequired: "Phone Number Number Required",
-    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
-    authSocialLoginError: "Login Error",
+    authTermsRequired: "需要同意条款",
+    authTermsRequiredMsg: "请同意条款和条件",
+    authMissingFields: "缺少字段",
+    authMissingFieldsMsg: "请填写所有字段",
+    authLoginFailed: "登录失败",
+    authLoginFailedMsg: "登录出错。请检查您的凭据。",
+    authRegistrationError: "注册错误",
+    authRegistrationErrorMsg: "创建帐户出错。请重试。",
+    authEmailRequired: "需要电话号码",
+    authEmailRequiredMsg: "请使用电话号码注册。基于电子邮件的注册需要电话号码进行 OTP 验证。",
+    authSocialLoginError: "登录错误",
     // Delivery Register
-    deliveryRegisterFullNameLabel: "Full Name",
-    deliveryRegisterFullNamePlaceholder: "Jeremiah Charles",
-    deliveryRegisterNameError: "Please enter at least two names.",
-};
-
-/** German. */
-const de: TranslationKeys = {
-    languageScreenTitle: 'Wählen Sie Ihre Sprache',
-    languageScreenChoosePreferred: 'Bevorzugte Sprache wählen',
-    languageScreenSkip: 'Überspringen',
-    affiliateRegisterTitle: "Create an account",
-    affiliateLoginTitle: "Welcome back",
-    affiliatePhonePlaceholder: "Enter +255xxx xxx xxx",
-    affiliateTermsAgreement: "I have read agree to Tunzaa Terms and Conditions of use, privacy policy, and return policy",
-    affiliateRegisterButton: "Create Account",
-    affiliateNoAccount: "Don't have an account?",
-    affiliateLoginLink: "Log in",
-    affiliateAlreadyAccount: "Already have an account?",
-
-    roleScreenTitle: 'Wählen Sie, was Sie am besten beschreibt',
-    roleScreenDescription:
-        'Erreichen Sie Ihre finanziellen Ziele durch ein Sparen-zum-Kaufen-Modell.\nUnternehmen verkaufen, liefern und bieten Finanzdienstleistungen an.',
-    roleScreenBuyer: 'Ich bin Käufer',
-    roleScreenBusiness: 'Ich bin ein Unternehmen',
-    roleScreenOr: 'ODER',
-    roleScreenSkip: 'Überspringen',
-    roleScreenBack: 'Zurück',
-
-    homeWelcome: 'Willkommen bei Tunzaa!',
-    homeComingSoon: 'Marktplatz kommt bald...',
-
-    settingsTitle: 'Einstellungen',
-    settingsActivities: 'Ihre Aktivitäten',
-    settingsNotifications: 'In-App-Benachrichtigungen',
-    settingsReminders: 'Erinnerungen',
-    settingsDelivery: 'Lieferaufträge',
-    settingsPolicies: 'Richtlinien',
-    settingsAccount: 'Konto verwalten',
-    settingsInvite: 'Freunde einladen',
-    settingsLanguage: 'Sprache',
-    settingsLogout: 'Abmelden',
-    settingsLogoutConfirmTitle: 'Abmelden',
-    settingsLogoutConfirmMessage: 'Sind Sie sicher, dass Sie sich abmelden möchten?',
-    settingsVersion: 'Tunzaa Version 2.0',
-
-    onboardingStep1Title: 'Geschäftsdokumente',
-    onboardingStep1Subtitle: 'Es ist wichtig, Geschäftsdokumente für eine bessere Sicherheit Ihres Kontos beizufügen.',
-    onboardingStep1UploadInfo: 'Laden Sie die folgenden Informationen hoch',
-    onboardingStep1License: 'Gewerbeschein',
-    onboardingStep1LicensePlaceholder: 'Lizenznummer eingeben',
-    onboardingStep1LicenseUpload: 'Gewerbeschein hochladen (PDF/Bild)',
-    onboardingStep1TIN: 'Geschäfts-TIN',
-    onboardingStep1TINPlaceholder: 'TIN-Nummer eingeben',
-    onboardingStep1TINUpload: 'TIN hochladen (PDF/Bild)',
-    onboardingStep1BRELA: 'BRELA-Registrierungszertifikat',
-    onboardingStep1BRELAPlaceholder: 'Registrierungsnummer eingeben',
-    onboardingStep1BRELAUpload: 'Zertifikat hochladen (PDF/Bild)',
-    onboardingStep1Skip: 'Später einrichten',
-    onboardingStep1Back: 'Zurück',
-    onboardingStep1Next: 'Weiter',
-    onboardingStep1Saving: 'Speichern...',
-
-    onboardingStep2Title: 'Shop-Details',
-    onboardingStep2Subtitle: 'Logo, Shopname und Shopbeschreibung sind wichtig für die Erstellung Ihres Shops bei Tunzaa.',
-    onboardingStep2AddLogo: 'Logo hinzufügen*',
-    onboardingStep2CompanyName: 'Unternehmensname',
-    onboardingStep2CompanyNamePlaceholder: 'Unternehmensname eingeben',
-    onboardingStep2Phone: 'Shop-Telefonnummer',
-    onboardingStep2PhonePlaceholder: 'Beispiel: +255 700 000 000',
-    onboardingStep2Description: 'Weitere Details hinzufügen',
-    onboardingStep2DescriptionPlaceholder: 'Beschreibung hier eingeben',
-    onboardingStep2CharLimit: 'Sollte 240 Wörter nicht überschreiten',
-    onboardingStep2Required: 'Erforderlicher Bereich',
-    onboardingStep2PermissionError: 'Entschuldigung, wir benötigen die Erlaubnis, auf Ihre Fotos zuzugreifen.',
-    onboardingStep2ValidationShopName: 'Bitte geben Sie den Namen Ihres Unternehmens oder Shops ein.',
-
-    onboardingStep3Title: 'Shop-Standort',
-    onboardingStep3Subtitle: 'Ermöglichen Sie es Kunden, Produkten einfach zu folgen, indem Sie Ihren Shop-Standort festlegen.',
-    onboardingStep3CardTitle: 'Shop-Standort festlegen',
-    onboardingStep3ManualButton: 'Per Text eingeben',
-    onboardingStep3Or: 'Oder',
-    onboardingStep3GPSButton: 'Auf Karte auswählen',
-    onboardingStep3RegionLabel: 'Region',
-    onboardingStep3MunicipalLabel: 'Gemeinde',
-    onboardingStep3WardLabel: 'Ortsteil',
-    onboardingStep3RegionPlaceholder: 'Beispiel: Dar es Salaam',
-    onboardingStep3MunicipalPlaceholder: 'Beispiel: Kinondoni',
-    onboardingStep3WardPlaceholder: 'Beispiel: Kijitonyama',
-    onboardingStep3NotesLabel: 'Zusätzliche Details',
-    onboardingStep3NotesPlaceholder: 'Beispiel: Straße 7, in der Nähe der Apotheke...',
-    onboardingStep3ValidationLocation: 'Bitte wählen Sie Region, Gemeinde und Ortsteil aus.',
-    onboardingStep3Save: 'Speichern',
-    onboardingStep3ManualSubtitle: 'Füllen Sie Ihre Standortinformationen genau aus, damit Kunden Sie leicht finden können.',
-    onboardingStep3MapSubtitle: 'Ziehen Sie die Nadel auf der Karte, um den richtigen Standort für Ihren Shop auszuwählen.',
-    onboardingStep3MapMarker: 'Ihr Shop',
-
-    onboardingStep4Title: 'Informationen überprüfen',
-    onboardingStep4Subtitle: 'Überprüfen Sie Ihre Shop-Details, bevor Sie fortfahren.',
-    onboardingStep4Edit: 'Bearbeiten',
-    onboardingStep4NotesLabel: 'Zusätzliche Details',
-    onboardingStep4MultiLocationQuestion: 'Haben Sie mehr als einen Shop-Standort?',
-    onboardingStep4AddShop: 'Shop hinzufügen',
-
-    onboardingStep5Title: 'Geschäftsdokumente',
-    onboardingStep5Subtitle: 'Es ist wichtig, Geschäftsdokumente für die zusätzliche Sicherheit Ihres Kontos beizufügen.',
-    onboardingStep5CardHeader: 'Laden Sie die folgenden Informationen hoch',
-    onboardingStep5License: 'Gewerbelizenz',
-    onboardingStep5TIN: 'Geschäftliche TIN',
-    onboardingStep5BRELA: 'BRELA-Registrierungszertifikat',
-    onboardingStep5UploadPrimary: 'Hier klicken zum Hochladen',
-    onboardingStep5UploadSecondary: 'PDF, PNG oder JPG (Max. 5MB)',
-    onboardingStep5UploadSuccess: 'Dokument erfolgreich hochgeladen',
-    onboardingStep5SkipLater: 'Später hinzufügen',
-    onboardingStep5Wait: 'Warten...',
-    onboardingStep5Uploading: 'Wird hochgeladen...',
-    onboardingStep5SuccessModalTitle: 'Herzlichen Glückwunsch!',
-    onboardingStep5SuccessModalDescription: 'Wir haben Ihre Dokumente erhalten. Bitte warten Sie ein wenig, während wir die Details in den nächsten 24 bis 48 Stunden prüfen.',
-    onboardingStep5SuccessModalButton: 'Okay',
-
-    // Login Screen
-    loginTitle: "Willkommen zurück",
-    loginSubtitle: "Geben Sie Ihre Daten ein, um sich anzumelden",
-    loginInputPlaceholder: "Telefonnummer oder E-Mail",
-    loginPasswordPlaceholder: "Passwort eingeben",
-    loginForgotPassword: "Passwort vergessen?",
-    loginAgreedTerms: "Ich stimme den Geschäftsbedingungen zu",
-    loginButton: "Anmelden",
-    loginOrContinue: "oder fortfahren mit",
-    loginNoAccount: "Noch kein Konto? Registrieren",
-    loginSkip: "Überspringen",
-    otpTitle: "Passwort verifizieren & erstellen",
-    otpInstruction: "Geben Sie den 6-stelligen Code ein, der an Ihre Telefonnummer oder E-Mail gesendet wurde",
-    otpNoCode: "Code nicht erhalten?",
-    otpResend: "Erneut senden",
-    otpTimer: "Code erneut senden in",
-    otpContinue: "Weiter",
-    otpInvalidCode: "Ungültiger Code",
-    otpEnterAllDigits: "Bitte geben Sie alle 6 Ziffern ein",
-    otpVerifyFailed: "Verifizierung fehlgeschlagen",
-    forgotPasswordTitle: "Passwort vergessen",
-    forgotPasswordSubtitle: "Die Funktion zur Passwortwiederherstellung wird in Kürze verfügbar sein.",
-    mauzoHeader: "Mauzo von Tunzaa",
-    mauzoSlide1Title: "Produktmanagement",
-    mauzoSlide1Desc: "Wir vereinfachen den Produktmanagementprozess mit unseren einfachen Tools, mit denen Sie Produkte einfach hinzufügen, bearbeiten und löschen können.",
-    mauzoSlide2Title: "Bestellmanagement",
-    mauzoSlide2Desc: "Verwalten Sie Ihren Lagerbestand, Ihre Verkäufe und Kundeninformationen an einem Ort, damit Sie überall und jederzeit problemlos auf diese Daten zugreifen können.",
-    mauzoSlide3Title: "Wallet-Management",
-    mauzoSlide3Desc: "Nutzen Sie unser Finanzmanagement-Tool, um die Aufsicht zu gewährleisten und den Cashflow des Finanzinstituts zu steuern.",
-    mauzoSlide4Title: "Liefermanagement",
-    mauzoSlide4Desc: "Angetrieben von digitalen Tools, um sicherzustellen, dass Produkte sicher und effizient bewegt werden, bis sie beim Endkunden ankommen.",
-    mauzoCreateAccount: "Ein Konto erstellen",
-    mauzoAlreadyAccount: "Hast du schon ein Konto?",
-    mauzoSignIn: "Anmelden",
-    deliveryLoginTitle: "Anmelden",
-    deliveryPhoneLabel: "Telefonnummer",
-    deliveryPasswordLabel: "Passwort",
-    deliverySaveInfo: "Info speichern",
-    deliveryForgotPassword: "Passwort vergessen?",
-    deliveryCreateAccount: "Konto erstellen",
-    deliverySigningIn: "Anmeldung läuft...",
-    deliveryContinue: "Weiter",
-    deliveryBack: "Zurück",
-    deliveryOtpTitle: "Code verifizieren",
-    deliveryOtpSubtitle: "Geben Sie den an die Nummer gesendeten Verifizierungscode ein",
-    deliveryWrongNumber: "Falsche Nummer?",
-    deliveryNoOtp: "Verifizierungscode nicht erhalten?",
-    deliveryRequestAgain: "Erneut anfordern",
-    deliveryVerifying: "Verifizierung läuft...",
-    deliveryVerify: "Verifizieren",
-    deliverySuccessLogin: "Erfolgreich angemeldet!",
-    deliverySuccessVerify: "Verifizierung abgeschlossen! Bitte melden Sie sich an.",
-    deliveryErrorLogin: "Telefonnummer oder Passwort ist falsch",
-    deliveryErrorOtp: "Falscher Code",
-    // Register Screen
-    registerTitleBuyer: "Konto erstellen",
-    registerTitleMerchant: "Geschäftskonto erstellen",
-    registerSubtitlePreFilled: "Bestätigen Sie Ihre Daten und erstellen Sie ein Passwort",
-    registerSubtitleEmpty: "Bitte füllen Sie Ihre Daten aus, um zu beginnen",
-    registerFirstNamePlaceholder: "Vornamen eingeben",
-    registerLastNamePlaceholder: "Nachnamen eingeben",
-    registerPhoneEmailPlaceholder: "Telefonnummer",
-    registerPasswordPlaceholder: "Passwort erstellen",
-    registerButton: "Konto erstellen",
-    registerAlreadyAccount: "Haben Sie bereits ein Konto? Anmelden",
-    registerTermsLink: "Geschäftsbedingungen",
-
-    // Role Screen (additional)
-    roleScreenOptionSell: "Produkte / Dienstleistungen verkaufen",
-    roleScreenOptionDelivery: "Lieferdienst anbieten",
-    roleScreenOptionFinancial: "Kredite und Finanzdienstleistungen anbieten",
-    roleScreenOptionAffiliate: "Als Affiliate-Marketer beitreten",
-    roleScreenAlreadyAccount: "Haben Sie bereits ein Konto? Anmelden",
-    // Common
-    commonNext: "Next",
-    commonBack: "Back",
-    commonSaving: "Saving...",
-    commonSuccess: "Success",
-    commonError: "Error",
-    commonTryAgain: "Please try again",
-    commonLoading: "Loading...",
-    // Auth Alerts
-    authTermsRequired: "Terms Required",
-    authTermsRequiredMsg: "Please agree to Terms and Conditions",
-    authMissingFields: "Missing Fields",
-    authMissingFieldsMsg: "Please fill in all fields",
-    authLoginFailed: "Login Failed",
-    authLoginFailedMsg: "Error signing in. Please check your credentials.",
-    authRegistrationError: "Registration Error",
-    authRegistrationErrorMsg: "Error creating account. Please try again.",
-    authEmailRequired: "Phone Number Required",
-    authEmailRequiredMsg: "Please use a phone number to register. Email-based registration requires a phone number for OTP verification.",
-    authSocialLoginError: "Login Error",
-    // Delivery Register
-    deliveryRegisterFullNameLabel: "Full Name",
-    deliveryRegisterFullNamePlaceholder: "Example: Jeremiah Charles",
-    deliveryRegisterNameError: "Please enter at least two names.",
+    deliveryRegisterFullNameLabel: "全名",
+    deliveryRegisterFullNamePlaceholder: "杰里迈亚·查尔斯",
+    deliveryRegisterNameError: "请输入至少两个名字。",
+    orderShipped: "已发货",
+    orderReceived: "已收货",
+    orderReturn: "退货",
+    deliveryReviewOrder: "送货前核对您的订单",
+    deliveryDropOffLocation: "送货地点",
+    deliveryNoActive: "没有进行中的送货",
+    deliveryEstimatedTime: "预计送达时间",
+    deliveryStandard: "标准",
+    deliveryExpress: "快递",
+    deliveryPostalAddress: "邮寄地址",
+    deliveryDropOffAddress: "送货地址",
+    deliveryCallDriver: "致电司机",
+    deliveryCost: "送货费用",
+    deliveryConfirm: "确认",
+    // --- Loans ---
+    "vendor.loans.loans_request": "贷款申请",
+    "vendor.loans.repayments_track": "还款追踪",
 };
 
 /**
- * All supported translation bundles keyed by ISO 639-1 code.
- * When adding a language, add its code to SupportedLanguage and a new entry here.
+ * Hook or function to get translations for a given language.
+ * Currently uses flat objects.
  */
-export const translations: Record<LanguageCode, TranslationKeys> = {
-    en,
-    sw,
-    fr,
-    ar,
-    es,
-    pt,
-    zh,
-    de,
+export const getTranslations = (lang: LanguageCode): TranslationKeys => {
+    switch (lang) {
+        case 'sw':
+            return sw;
+        case 'fr':
+            return fr;
+        case 'ar':
+            return ar;
+        case 'es':
+            return es;
+        case 'pt':
+            return pt;
+        case 'zh':
+            return zh;
+        default:
+            return en;
+    }
 };
-
-/**
- * Returns the translation object for a given locale.
- * Falls back to English if the locale is missing (e.g. during development).
- */
-export function getTranslations(locale: LanguageCode): TranslationKeys {
-    return translations[locale] ?? translations.en;
-}

@@ -64,11 +64,16 @@ const AccountScreen = () => {
     const vendorProfile = user?.profiles?.find((p: any) => p.role === 'vendor');
     if (!vendorProfile) return;
 
-    const kyc = vendorProfile.kyc;
-    if (kyc && !kyc.verified) {
+    const metadata = vendorProfile.metadata || {};
+    const kycMeta = (metadata.verification_status || metadata.kyc_status || metadata.status || '').toLowerCase();
+    const isVerified = 
+        vendorProfile.kyc?.verified === true || 
+        ['approved', 'verified', 'active', 'completed'].includes(kycMeta) ||
+        metadata.is_verified === true ||
+        metadata.is_verified === 'true';
+    
+    if (!isVerified) {
       setShowKycModal(true);
-    } else {
-      setShowDocumentStatusModal(true);
     }
   };
 

@@ -1,7 +1,7 @@
 import "@/global.css";
 import "@/config/i18n"; // Initialize i18n
 
-import { SplashScreen, Stack, Slot } from "expo-router";
+import { SplashScreen, Stack, Slot, useSegments, useRouter, Redirect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { Platform, Appearance, View } from "react-native";
@@ -26,7 +26,7 @@ import { ThemeProvider as AppThemeProvider } from "@/providers/ThemeProvider";
 import { PushNotificationsProvider } from "@/components/notifications";
 import { ForegroundNotificationProvider } from "@/context/foreground-notifications";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
-import { TunzaaAuthProvider } from "@/src/contexts/TunzaaAuthContext";
+import { TunzaaAuthProvider, useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import { Toaster } from "burnt/web";
 import {
@@ -149,11 +149,23 @@ const linking = {
 //   return <>{children}</>;
 // }
 
-// Centralized routing component to prevent multiple useRouting calls
+// Centralized routing component to handle global state-based navigation
 function AppWithRouting() {
-  // useRouting(); // Disabled to allow app/index.tsx to control Tunzaa 2.0 flow
-  useAppStateRefresh();
-  useTimeTracker();
+  const { user, isLoading } = useTunzaaAuth();
+  const segments = useSegments();
+  useTimeTracker(); // Hooks MUST be called unconditionally before any early returns
+
+  // Guard: Don't perform routing checks until session restoration is complete
+  if (isLoading) return <Slot />;
+
+  const inProtectedRoute = segments[0] === '(vendor)' || segments[0] === '(buyer)' || segments[0] === '(delivery)';
+
+  // Global Auth Gate: If no user session is found in a protected portal, force redirect to entry
+  if (!user && inProtectedRoute) {
+    console.log('🔒 [AuthGate] Redirecting unauthenticated user from protected segment:', segments[0]);
+    return <Redirect href="/language" />;
+  }
+
   return <Slot />;
 }
 
@@ -198,7 +210,9 @@ export default function RootLayout() {
             );
             const handleWebThemeChange = (e: MediaQueryListEvent) => {
               const webSystemTheme = e.matches ? "dark" : "light";
-              setColorScheme(webSystemTheme);
+              if (colorScheme !== webSystemTheme) {
+                setColorScheme(webSystemTheme);
+              }
             };
             mediaQuery.addEventListener("change", handleWebThemeChange);
           }
@@ -233,13 +247,12 @@ export default function RootLayout() {
       preferences: Appearance.AppearancePreferences
     ) => {
       const systemTheme = preferences.colorScheme;
-      // console.log("Native system theme changed:", systemTheme);
-
       // Always follow system theme changes
       if (systemTheme) {
         const newTheme = systemTheme === "dark" ? "dark" : "light";
-        // console.log("Updating to new native system theme:", newTheme);
-        setColorScheme(newTheme);
+        if (colorScheme !== newTheme) {
+          setColorScheme(newTheme);
+        }
       }
     };
 
@@ -249,7 +262,7 @@ export default function RootLayout() {
       );
       return () => subscription?.remove();
     }
-  }, [setColorScheme]);
+  }, [setColorScheme, colorScheme]);
 
   if (!appIsReady) {
     return null;

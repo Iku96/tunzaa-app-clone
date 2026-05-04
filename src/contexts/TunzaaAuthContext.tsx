@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../services/auth';
 import { vendorsApi as marketplaceVendorsApi } from '../services/vendors';
@@ -83,13 +84,19 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             const name = cleanName(rawName) || raw.name || personalName;
             
+            // Hydrate KYC status from metadata if available to ensure truthful analytics/guards
+            const kycMeta = (meta.verification_status || meta.kyc_status || meta.status || '').toLowerCase();
+            const isVerifiedByMeta = ['approved', 'verified', 'active', 'completed'].includes(kycMeta) || 
+                                   meta.is_verified === true || meta.is_verified === 'true' ||
+                                   meta.verified === true || meta.verified === 'true';
+
             return { 
                 ...p, 
                 profile_id: p.profile_id || p.profileId, 
                 profileId: p.profileId || p.profile_id, 
                 display_name: name, 
                 displayName: name,
-                kyc: p.kyc || { verified: false, documents: [] }
+                kyc: p.kyc || { verified: isVerifiedByMeta, documents: [] }
             };
         });
 
@@ -319,24 +326,36 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         },
         logout: async () => { 
             console.log('🔒 [AuthContext] Logout initiated — clearing all session data');
-            await clearTokens(); 
-            await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
-            await setStorageItemAsync("user", null);
-            // Clear ALL navigation/onboarding flags to prevent stale routing
-            await AsyncStorage.multiRemove([
-                'HAS_PENDING_MERCHANT_ONBOARDING',
-                'TEMP_ONBOARDING_SHOP_NAME',
-                'IS_FIRST_TIME_BUYER',
-                'LAST_PORTAL',
-            ]);
-            await socialAuth.signOutGoogle(); 
-            setUser(null); 
+            try {
+                await clearTokens(); 
+                await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
+                await setStorageItemAsync("user", null);
+                // Clear ALL navigation/onboarding flags to prevent stale routing
+                await AsyncStorage.multiRemove([
+                    'HAS_PENDING_MERCHANT_ONBOARDING',
+                    'TEMP_ONBOARDING_SHOP_NAME',
+                    'IS_FIRST_TIME_BUYER',
+                    'LAST_PORTAL',
+                ]);
+                await socialAuth.signOutGoogle(); 
+            } catch (error) {
+                console.error("⚠️ [AuthContext] Error during logout cleanup:", error);
+            } finally {
+                setUser(null); 
+                // Immediate navigation from the root provider ensures stability
+                // even if the calling screen unmounts during state clearance.
+                setTimeout(() => {
+                    router.replace('/language');
+                }, 10);
+            }
         },
         updateUser: async (data: any) => {
             const previousState = userRef.current;
             try {
                 // 1. Optimistic Local Update
-                setUser({ ...previousState, ...data } as TunzaaUser);
+                const updated = { ...previousState, ...data } as TunzaaUser;
+                setUser(updated);
+                await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updated));
                 
                 // 2. Persist to API
                 if (previousState?.user_id) {
@@ -452,6 +471,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         finalUser.profiles[pIndex].display_name = vendorData.display_name || vendorData.business_name || finalUser.profiles[pIndex].display_name;
                     }
                     setUser(finalUser);
+                    await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(finalUser));
                 }
 
                 // Wait for all writes to finish
@@ -574,6 +594,45 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             await storeUserData(updated);
             const portal = IS_MERCHANT(role) ? 'merchant' : (IS_DELIVERY(role) ? 'delivery' : 'buyer');
             await AsyncStorage.setItem('LAST_PORTAL', portal);
+
+            // When switching to a merchant/vendor role, trigger background hydration
+            // to fetch vendor details (business name, logo, KYC status) that are NOT
+            // included in the initial login response.
+            if (IS_MERCHANT(role)) {
+                const vProfile = userRef.current.profiles?.find((p: any) => IS_MERCHANT(p.role));
+                const vendorId = vProfile?.profile_id || vProfile?.profileId || vProfile?.id;
+                const metaKeys = Object.keys(vProfile?.metadata || {});
+                
+                // Only hydrate if metadata is empty (hasn't been fetched yet)
+                if (vendorId && metaKeys.length === 0) {
+                    console.log('🔄 [AuthContext] switchRole: Hydrating vendor profile for:', vendorId);
+                    try {
+                        const [freshData, merchantData] = await Promise.all([
+                            authApi.getUserDetails(userRef.current.user_id || userRef.current.id).catch(() => null),
+                            marketplaceVendorsApi.getVendor(vendorId).catch(() => null)
+                        ]);
+                        
+                        if (freshData) {
+                            if (merchantData && freshData.profiles) {
+                                const mIndex = freshData.profiles.findIndex((p: any) => IS_MERCHANT(p.role));
+                                if (mIndex > -1) {
+                                    freshData.profiles[mIndex].metadata = {
+                                        ...(freshData.profiles[mIndex].metadata || {}),
+                                        ...merchantData,
+                                        merchant_profile_synced: true,
+                                        business_name: merchantData.business_name || merchantData.company_name || merchantData.name
+                                    };
+                                }
+                            }
+                            // Preserve the role we just switched to
+                            freshData.activeProfileRole = role;
+                            await storeUserData(freshData, merchantData ? { vendorDetails: merchantData } : undefined);
+                        }
+                    } catch (err) {
+                        console.log('⚠️ [AuthContext] switchRole hydration failed:', (err as any)?.message);
+                    }
+                }
+            }
         },
         isSidebarOpen,
         setIsSidebarOpen

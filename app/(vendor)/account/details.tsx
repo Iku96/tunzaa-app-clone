@@ -18,8 +18,11 @@ import {
   Store,
   Edit2,
 } from "lucide-react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "expo-router";
 import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
+import { getAvatarUrl, getVendorLogoUrl } from "@/src/utils/images";
 import { PERMISSIONS } from "@/config/permissions";
 import { PasswordResetModal } from "@/components/modals/PasswordResetModal";
 import { ProfileUpdateModal } from "@/components/modals/ProfileUpdateModal";
@@ -29,13 +32,15 @@ import { FileText } from "@/lib/icons/FileText";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { useGetUserDetails } from "@/services/auth";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import DeleteAccount from "@/components/account/DeleteAccount";
+
+const BUSINESS_EXTRAS_KEY = "@tunzaa_business_extras";
 
 export default function AccountDetailsScreen() {
   const router = useRouter();
@@ -52,6 +57,39 @@ export default function AccountDetailsScreen() {
 
   const currentProfile = user?.profiles.find(
     (p) => p.role === user.activeProfileRole
+  );
+
+  const metadata = (currentProfile as any)?.metadata || {};
+  const branding = (currentProfile as any)?.branding || {};
+
+  const [profileData, setProfileData] = useState({
+    displayName: currentProfile?.displayName || "",
+    logo_url: getVendorLogoUrl({ metadata, branding }) || ""
+  });
+
+  // Load profile metadata from local storage and merge with API data
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadProfileData = async () => {
+        try {
+          const userId = user?.user_id || user?.id;
+          if (!userId) return;
+
+          // 1. Local data
+          const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
+          const localData = storedExtras ? JSON.parse(storedExtras) : {};
+
+          // 2. Merge with current metadata
+          setProfileData({
+            displayName: currentProfile?.displayName || localData.business_name || "",
+            logo_url: getVendorLogoUrl({ metadata: metadata, branding }) || localData.logo_url || ""
+          });
+        } catch (e) {
+          console.warn("[AccountDetails] Failed to load extras:", e);
+        }
+      };
+      loadProfileData();
+    }, [user, currentProfile, metadata, branding])
   );
 
   if (!currentProfile) return null;
@@ -106,15 +144,18 @@ export default function AccountDetailsScreen() {
           <View className="items-center mb-6 w-full max-w-2xl">
             {/* Avatar with Initials */}
             <Avatar
-              alt={currentProfile.displayName}
+              alt={profileData.displayName}
               className="w-32 h-32 mb-4 border-4 border-muted"
             >
+              <AvatarImage 
+                source={{ uri: getAvatarUrl(profileData.logo_url, profileData.displayName) }} 
+              />
               <AvatarFallback
                 className="bg-primary"
                 style={{ backgroundColor: resolvedColors?.primary || "#3B82F6" }}
               >
                 <Text className="text-5xl font-bold text-primary-foreground">
-                  {getInitials(currentProfile.displayName)}
+                  {getInitials(profileData.displayName)}
                 </Text>
               </AvatarFallback>
             </Avatar>
@@ -122,7 +163,7 @@ export default function AccountDetailsScreen() {
             {/* Name and Role */}
             <View className="items-center max-w-full px-4">
               <Text className="text-2xl font-bold text-center text-foreground mb-2" numberOfLines={2}>
-                {currentProfile.displayName}
+                {profileData.displayName}
               </Text>
 
               <Badge variant="outline" className="mb-3">

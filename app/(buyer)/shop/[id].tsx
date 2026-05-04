@@ -2,15 +2,17 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useShop } from '../../../src/hooks/useShop';
 import { mapApiProductToUI } from '../../../src/hooks/useMarketplace';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
 import CertificateModal from '../../../src/components/shop/CertificateModal';
 import BusinessMenuSheet from '../../../src/components/shop/BusinessMenuSheet';
 import ShareSheet from '../../../src/components/shop/ShareSheet';
+import ContactSheet from '../../../src/components/shop/ContactSheet';
 import { useWishlistStore } from '../../../src/stores/wishlist';
 import { useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
+import { useSearchHistory } from '../../../src/stores/searchHistory';
 
 const { width } = Dimensions.get('window');
 
@@ -23,7 +25,24 @@ export default function ShopProfileScreen() {
     const [certModalVisible, setCertModalVisible] = useState(false);
     const [certType, setCertType] = useState<'LICENSE' | 'TIN' | 'BRELA' | null>(null);
     const [menuVisible, setMenuVisible] = useState(false);
+    const [contactVisible, setContactVisible] = useState(false);
     const [shareVisible, setShareVisible] = useState(false);
+    const { addItem: addToHistory } = useSearchHistory();
+
+    // Save to history when shop is loaded
+    useEffect(() => {
+        if (shop) {
+            addToHistory({
+                id: shop.store_id || (id as string),
+                name: shop.store_name,
+                avatar: shop.branding?.logo_url,
+                location: shop.metadata?.location || '',
+                joinedDate: shop.created_at ? new Date(shop.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
+                isVerified: shop.is_active,
+                type: 'shop'
+            });
+        }
+    }, [shop, id]);
 
     // Wishlist Logic for Stories
     const { isInWishlist, addItem, removeItem } = useWishlistStore();
@@ -83,6 +102,14 @@ export default function ShopProfileScreen() {
         );
     }
 
+    const logoUri = shop.branding?.logo_url || shop.metadata?.logo_url || shop.metadata?.avatar;
+    const validLogoUri = logoUri && logoUri.trim() !== '' ? logoUri : 'https://via.placeholder.com/100x100?text=Shop';
+
+    const certs = shop.metadata?.verification_documents || [];
+    const certCount = Array.isArray(certs) ? certs.length : Object.keys(certs).length;
+    const displayCertCount = Math.max(0, certCount - 1);
+    const firstCertType = Array.isArray(certs) && certs.length > 0 ? (certs[0].type || 'TIN') : 'TIN';
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.header}>
@@ -104,7 +131,7 @@ export default function ShopProfileScreen() {
                 <View style={styles.profileTopRow}>
                     <View style={styles.logoContainer}>
                         <Image 
-                            source={{ uri: shop.branding?.logo_url || 'https://via.placeholder.com/100x100?text=Shop' }} 
+                            source={{ uri: validLogoUri }} 
                             style={styles.logo} 
                         />
                     </View>
@@ -153,10 +180,17 @@ export default function ShopProfileScreen() {
                                             Est. Delivery Fees: Tsh. {shop.metadata?.delivery_fee?.toLocaleString() || '0'}
                                         </Text>
                                     </View>
-                                    <TouchableOpacity style={styles.metaItem} onPress={() => handleOpenCert('TIN')}>
+                                    <TouchableOpacity style={styles.metaItem} onPress={() => {
+                                        // Pass the first cert type to the modal, or just open menu if multiple
+                                        if (certCount > 1) {
+                                            setMenuVisible(true);
+                                        } else {
+                                            handleOpenCert(firstCertType);
+                                        }
+                                    }}>
                                         <Ionicons name="images-outline" size={14} color="#6B7280" />
                                         <Text style={styles.metaText}>
-                                            TIN Certificate and {Math.max(0, (shop.metadata?.certificates_count || 1) - 1)} more
+                                            {firstCertType} Certificate {displayCertCount > 0 ? `and ${displayCertCount} more` : ''}
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
@@ -187,10 +221,10 @@ export default function ShopProfileScreen() {
 
                 {/* Primary Action Buttons */}
                 <View style={styles.actionRow}>
-                    <TouchableOpacity style={styles.primaryActionBtn}>
+                    <TouchableOpacity style={styles.primaryActionBtn} onPress={() => setContactVisible(true)}>
                         <Text style={styles.primaryActionText}>Contact</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.secondaryActionBtn}>
+                    <TouchableOpacity style={styles.secondaryActionBtn} onPress={() => router.push({ pathname: '/(buyer)/shop/policy', params: { id: shop.store_id || id } })}>
                         <Text style={styles.secondaryActionText}>Refund & Policy</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.shareCircleBtn} onPress={() => setShareVisible(true)}>
@@ -323,11 +357,20 @@ export default function ShopProfileScreen() {
             <CertificateModal 
                 visible={certModalVisible} 
                 onClose={() => setCertModalVisible(false)} 
-                type={certType} 
+                type={certType as any} 
+                imageUri={shop.metadata?.verification_documents?.find((d: any) => d.type === certType)?.url}
             />
             <BusinessMenuSheet 
                 visible={menuVisible} 
                 onClose={() => setMenuVisible(false)} 
+                onViewCertificate={handleOpenCert}
+                documents={shop.metadata?.verification_documents}
+            />
+            <ContactSheet 
+                visible={contactVisible} 
+                onClose={() => setContactVisible(false)} 
+                shopName={shop.store_name}
+                shopPhone={shop.metadata?.contact_phone || '+255700000000'}
             />
             <ShareSheet 
                 visible={shareVisible} 

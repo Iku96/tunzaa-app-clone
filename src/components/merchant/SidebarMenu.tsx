@@ -19,9 +19,13 @@ import {
     ChevronDown
 } from 'lucide-react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, usePathname } from 'expo-router';
+import { useRouter, usePathname, router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTunzaaAuth } from '../../contexts/TunzaaAuthContext';
 import { setLastPortal } from '../../utils/storage';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarUrl, getVendorLogoUrl } from '../../utils/images';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,17 +35,41 @@ interface SidebarMenuProps {
 }
 
 export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
+    const { t } = useTranslation();
     const { user, logout } = useTunzaaAuth();
-    const router = useRouter();
+    const localRouter = useRouter(); // renamed to avoid conflict
     const pathname = usePathname();
     const slideAnim = useRef(new Animated.Value(-width)).current; 
     const [isLoansExpanded, setIsLoansExpanded] = useState(false);
 
     useEffect(() => {
-        if (pathname === '/(vendor)/loan-services' || pathname === '/(vendor)/loans/requests') {
+        if (
+            pathname === '/(vendor)/loan-services' || 
+            pathname === '/(vendor)/loans/requests' ||
+            pathname === '/(vendor)/loans/repayments'
+        ) {
             setIsLoansExpanded(true);
         }
     }, [pathname]);
+
+    const [localExtras, setLocalExtras] = useState<any>({});
+
+    useEffect(() => {
+        const loadLocalExtras = async () => {
+            try {
+                const userId = user?.user_id || user?.id;
+                if (!userId) return;
+                const BUSINESS_EXTRAS_KEY = '@tunzaa_business_extras';
+                const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
+                if (storedExtras) {
+                    setLocalExtras(JSON.parse(storedExtras));
+                }
+            } catch (e) {
+                console.log('Error loading localExtras in SidebarMenu:', e);
+            }
+        };
+        loadLocalExtras();
+    }, [user]);
 
     // Find vendor profile and extract details
     const vendorProfile = user?.profiles?.find((p: any) => 
@@ -49,16 +77,27 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
     );
     
     // Check metadata for branding if not directly on profile
-    const metadata = vendorProfile?.metadata || {};
-    const logoUrl = metadata.logo_url || metadata.image_url || vendorProfile?.branding?.logo_url;
+    const metadata = typeof vendorProfile?.metadata === 'string' ? JSON.parse(vendorProfile.metadata) : (vendorProfile?.metadata || {});
+    const branding = typeof vendorProfile?.branding === 'string' ? JSON.parse(vendorProfile.branding) : (vendorProfile?.branding || {});
+    const logoUrl = getVendorLogoUrl({
+        metadata,
+        branding,
+        vendorDetails: user?.vendorDetails,
+        localExtras,
+    });
     
-    const displayName = metadata.business_name || 
+    const displayName = metadata?.business_name || 
+                        metadata?.store_name || 
+                        metadata?.company_name || 
+                        user?.vendorDetails?.business_name || 
+                        user?.vendorDetails?.name ||
                         vendorProfile?.display_name || 
                         vendorProfile?.displayName || 
-                        metadata.display_name || 
+                        metadata?.display_name || 
                         vendorProfile?.business_name || 
                         user?.display_name || 
                         user?.name || 
+                        user?.first_name ||
                         'Merchant';
     
     // Calculate initials
@@ -94,19 +133,18 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
     const switchPortal = async (portal: 'buyer' | 'delivery' | 'merchant') => {
         onClose();
         await setLastPortal(portal);
-        router.replace(`/${portal}` as any);
+        localRouter.replace(`/${portal}` as any);
     };
 
     const handleLogout = async () => {
         onClose();
         await logout();
-        // Note: Redirection to /language is handled by the Auth Guard in VendorLayout
     };
 
     const navigateTo = (route: string) => {
         onClose();
         if (pathname === route) return;
-        router.push(route as any);
+        localRouter.push(route as any);
     };
 
     const isActive = (route: string) => pathname === route;
@@ -131,39 +169,37 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                         { transform: [{ translateX: slideAnim }] }
                     ]}
                 >
-                    <TouchableOpacity style={styles.header} onPress={() => navigateTo('/(vendor)/business-profile')}>
-                        <View style={styles.userInfoRow}>
-                            <View style={styles.avatarContainer}>
-                                {logoUrl ? (
-                                    <Image 
-                                        source={{ uri: logoUrl }} 
-                                        style={styles.avatarImage} 
-                                        resizeMode="cover"
-                                    />
-                                ) : (
-                                    <View style={styles.logoPlaceholder}>
-                                        <Text style={styles.avatarInitials}>{initials}</Text>
-                                    </View>
-                                )}
-                            </View>
+                    <View style={styles.header}>
+                        <TouchableOpacity 
+                            style={styles.userInfoRow}
+                            onPress={() => {
+                                onClose();
+                                localRouter.push('/(vendor)/business-profile');
+                            }}
+                        >
+                            <Avatar alt={displayName} style={styles.avatarContainer}>
+                                <AvatarImage source={{ uri: getAvatarUrl(logoUrl, displayName) }} />
+                                <AvatarFallback style={styles.avatarFallback}>
+                                    <Text style={styles.avatarInitials}>{initials}</Text>
+                                </AvatarFallback>
+                            </Avatar>
                             <View style={styles.userDetails}>
                                 <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
                                 <View style={styles.joinedRow}>
-                                    <Briefcase size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                                    <Text style={styles.joinedText}>Joined {joinedDate}</Text>
+                                    <Briefcase size={12} color="#6B7280" style={{ marginRight: 6 }} />
+                                    <Text style={styles.joinedText}>{t('common.joined')} {joinedDate}</Text>
                                 </View>
                             </View>
-                        </View>
-                        <ChevronRight size={20} color="#9CA3AF" />
-                    </TouchableOpacity>
+                        </TouchableOpacity>
+                    </View>
 
                     <View style={styles.navContainer}>
                         <TouchableOpacity 
                             style={[styles.navItem, isActive('/(vendor)') && styles.activeNavItem]}
                             onPress={() => navigateTo('/(vendor)')}
                         >
-                            <Briefcase size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)') && styles.activeNavText]}>Dashboard</Text>
+                            <LayoutGrid size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(vendor)') && styles.activeNavText]}>{t('vendor.navigation.dashboard')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
@@ -171,15 +207,15 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             onPress={() => navigateTo('/(vendor)/inventory')}
                         >
                             <Box size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)/inventory') && styles.activeNavText]}>Inventory</Text>
+                            <Text style={[styles.navText, isActive('/(vendor)/inventory') && styles.activeNavText]}>{t('vendor.navigation.inventory')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
                             style={[styles.navItem, isActive('/(vendor)/live-orders') && styles.activeNavItem]}
                             onPress={() => navigateTo('/(vendor)/live-orders')}
                         >
-                            <TrendingUp size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)/live-orders') && styles.activeNavText]}>Orders and sales</Text>
+                            <Box size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                            <Text style={[styles.navText, isActive('/(vendor)/live-orders') && styles.activeNavText]}>{t('vendor.navigation.orders_sales')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
@@ -187,21 +223,36 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             onPress={() => navigateTo('/(vendor)/business-profile')}
                         >
                             <User size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)/business-profile') && styles.activeNavText]}>Business Profile</Text>
+                            <Text style={[styles.navText, isActive('/(vendor)/business-profile') && styles.activeNavText]}>{t('vendor.navigation.customer_profile')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(vendor)/settings') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(vendor)/settings')}
+                            style={[styles.navItemRow, (isActive('/(vendor)/loan-services') || isLoansExpanded) && styles.activeNavItem]}
+                            onPress={() => setIsLoansExpanded(!isLoansExpanded)}
                         >
-                            <Settings size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)/settings') && styles.activeNavText]}>Settings</Text>
+                            <View style={styles.navItemLeft}>
+                                <Wallet size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                                <Text style={[styles.navText, (isActive('/(vendor)/loan-services') || isLoansExpanded) && styles.activeNavText]}>{t('vendor.loans.title')}</Text>
+                            </View>
+                            <ChevronDown size={20} color="#111827" style={{ transform: [{ rotate: isLoansExpanded ? '180deg' : '0deg' }] }} />
                         </TouchableOpacity>
-
-                        <TouchableOpacity style={[styles.navItem, { marginTop: 20 }]} onPress={handleLogout}>
-                            <LogOut size={22} color="#EF4444" style={styles.navIcon} />
-                            <Text style={[styles.navText, { color: '#EF4444' }]}>Logout</Text>
-                        </TouchableOpacity>
+                        
+                        {isLoansExpanded && (
+                            <View style={styles.submenuContainer}>
+                                <TouchableOpacity 
+                                    style={[styles.submenuItem, isActive('/(vendor)/loan-services') && styles.activeSubmenuItem]}
+                                    onPress={() => navigateTo('/(vendor)/loan-services')}
+                                >
+                                    <Text style={[styles.submenuText, isActive('/(vendor)/loan-services') && styles.activeSubmenuText]}>{t('vendor.loans.loans_request')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={[styles.submenuItem, isActive('/(vendor)/loan-repayments') && styles.activeSubmenuItem]}
+                                    onPress={() => navigateTo('/(vendor)/loan-repayments')}
+                                >
+                                    <Text style={[styles.submenuText, isActive('/(vendor)/loan-repayments') && styles.activeSubmenuText]}>{t('vendor.loans.repayments_track')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
                     </View>
                 </Animated.View>
             </View>
@@ -247,20 +298,19 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
+        marginRight: 12,
+    },
+    avatarFallback: {
+        width: '100%',
+        height: '100%',
         backgroundColor: '#3A5BA9',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
     },
     avatarInitials: {
         color: '#FFFFFF',
         fontSize: 20,
         fontWeight: 'bold',
-    },
-    avatarImage: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 22,
     },
     divider: {
         height: 1,
@@ -320,13 +370,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         borderRadius: 8,
         marginBottom: 8,
-    },
-    logoPlaceholder: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 22,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     navItemLeft: {
         flexDirection: 'row',

@@ -1,96 +1,135 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Share, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
     ArrowLeft, 
-    ShieldCheck, 
     ChevronRight,
-    Store,
-    Lock,
-    LogOut
+    Activity,
+    Bell,
+    BarChart3,
+    Clock,
+    Truck,
+    FileText,
+    Languages,
+    LogOut,
+    User
 } from 'lucide-react-native';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
+import { useI18n } from '@/hooks/useI18n';
 
 export default function VendorSettingsScreen() {
     const router = useRouter();
-    const { logout } = useTunzaaAuth();
+    const { logout, user } = useTunzaaAuth();
+    const { t } = useI18n();
+
+    const handleInviteFriends = async () => {
+        try {
+            const result = await Share.share({
+                message: 'Join me on Tunzaa Marketplace! Buy and sell products with ease.',
+                url: 'https://tunzaa.co.tz',
+                title: 'Invite to Tunzaa'
+            });
+        } catch (error: any) {
+            Alert.alert('Error', error.message);
+        }
+    };
 
     const menuItems = [
         {
-            id: 'profile',
-            title: 'Business Profile',
-            subtitle: 'Edit business name, logo, and categories',
-            icon: <Store size={24} color="#3A5BA9" />,
-            iconBg: '#EEF2FF',
-            onPress: () => router.push('/(vendor)/edit-business')
+            id: 'activities',
+            title: t('settings.your_activities'),
+            icon: <Activity size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/activities')
         },
         {
-            id: 'verification',
-            title: 'Business Verification',
-            subtitle: 'Manage your documents and KYC status',
-            icon: <ShieldCheck size={24} color="#10B981" />,
-            iconBg: '#F0FDF4',
-            onPress: () => router.push('/(vendor)/edit-business') // Direct to documents section
+            id: 'notifications',
+            title: t('settings.in_app_notifications'),
+            icon: <Bell size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/notification-settings')
         },
         {
-            id: 'security',
-            title: 'Security',
-            subtitle: 'Password and account security',
-            icon: <Lock size={24} color="#F59E0B" />,
-            iconBg: '#FFFBEB',
-            onPress: () => router.push('/(vendor)/account/details')
+            id: 'business_tools',
+            title: t('settings.business_tools'),
+            icon: <BarChart3 size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/business-tools') 
+        },
+        {
+            id: 'reminders',
+            title: t('settings.reminders'),
+            icon: <Clock size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/reminders')
+        },
+        {
+            id: 'delivery',
+            title: t('settings.delivery_orders'),
+            icon: <Truck size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/delivery-orders')
+        },
+        {
+            id: 'policies',
+            title: t('settings.policies'),
+            icon: <FileText size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/policies')
+        },
+        {
+            id: 'language',
+            title: t('settings.language'),
+            icon: <Languages size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/language')
+        },
+        {
+            id: 'account',
+            title: t('settings.account_manager'),
+            icon: <FileText size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => router.push('/(vendor)/account-manager')
+        },
+        {
+            id: 'logout',
+            title: t('settings.log_out'),
+            icon: <LogOut size={24} color="#1F2937" strokeWidth={1.5} />,
+            onPress: () => logout()
         }
     ];
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                     <ArrowLeft size={24} color="#111827" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Settings</Text>
+                <Text style={styles.headerTitle}>{t('settings.settings')}</Text>
                 <View style={{ width: 40 }} />
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                <View style={styles.section}>
-                    <Text style={styles.sectionHeader}>BUSINESS MANAGEMENT</Text>
+            <ScrollView 
+                style={styles.content} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                <View style={styles.menuList}>
                     {menuItems.map((item) => (
                         <TouchableOpacity 
                             key={item.id} 
                             style={styles.menuItem}
                             onPress={item.onPress}
+                            activeOpacity={0.7}
                         >
-                            <View style={[styles.menuIconContainer, { backgroundColor: item.iconBg }]}>
+                            <View style={styles.iconWrapper}>
                                 {item.icon}
                             </View>
-                            <View style={styles.menuTextContainer}>
-                                <Text style={styles.menuTitle}>{item.title}</Text>
-                                <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-                            </View>
-                            <ChevronRight size={20} color="#9CA3AF" />
+                            <Text style={styles.menuTitle}>{item.title}</Text>
+                            <ChevronRight size={20} color="#1F2937" strokeWidth={1} />
                         </TouchableOpacity>
                     ))}
                 </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionHeader}>ACCOUNT</Text>
-                    <TouchableOpacity 
-                        style={styles.menuItem}
-                        onPress={() => logout()}
-                    >
-                        <View style={[styles.menuIconContainer, { backgroundColor: '#FEF2F2' }]}>
-                            <LogOut size={24} color="#EF4444" />
-                        </View>
-                        <View style={styles.menuTextContainer}>
-                            <Text style={[styles.menuTitle, { color: '#EF4444' }]}>Logout</Text>
-                            <Text style={styles.menuSubtitle}>Sign out of your account</Text>
-                        </View>
-                        <ChevronRight size={20} color="#9CA3AF" />
-                    </TouchableOpacity>
-                </View>
             </ScrollView>
+
+            {/* Version Footer */}
+            <View style={styles.footer}>
+                <Text style={styles.versionText}>{t('settings.version')}</Text>
+            </View>
         </SafeAreaView>
     );
 }
@@ -104,63 +143,55 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F9FAFB',
+        paddingHorizontal: 8,
+        paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
     },
     backBtn: {
-        width: 40,
-        height: 40,
+        width: 44,
+        height: 44,
         alignItems: 'center',
         justifyContent: 'center',
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 20,
+        fontWeight: '600',
         color: '#111827',
+        textAlign: 'center',
     },
     content: {
         flex: 1,
     },
-    section: {
-        paddingTop: 32,
-        paddingHorizontal: 20,
+    scrollContent: {
+        paddingTop: 10,
+        paddingBottom: 40,
     },
-    sectionHeader: {
-        fontSize: 12,
-        fontWeight: '700',
-        color: '#9CA3AF',
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-        marginBottom: 20,
+    menuList: {
+        paddingHorizontal: 20,
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
-        marginBottom: 16,
+        paddingVertical: 18,
     },
-    menuIconContainer: {
-        width: 56,
-        height: 56,
-        borderRadius: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
+    iconWrapper: {
         marginRight: 16,
-    },
-    menuTextContainer: {
-        flex: 1,
+        width: 32,
+        alignItems: 'center',
     },
     menuTitle: {
+        flex: 1,
         fontSize: 16,
-        fontWeight: '700',
-        color: '#111827',
-        marginBottom: 2,
+        color: '#1F2937',
+        fontWeight: '400',
     },
-    menuSubtitle: {
-        fontSize: 13,
+    footer: {
+        paddingVertical: 20,
+        alignItems: 'center',
+    },
+    versionText: {
+        fontSize: 12,
         color: '#9CA3AF',
-    },
+        fontWeight: '400',
+    }
 });
-
