@@ -65,10 +65,11 @@ export default function LoginScreen() {
         setLoading(true);
         try {
             // Determine if input is a phone number or email to format it correctly for the backend
-            const isPhone = !usernameOrEmail.includes('@');
-            const identifier = isPhone && !usernameOrEmail.startsWith('+')
-                ? `+255${usernameOrEmail.replace(/^0/, '')}`
-                : usernameOrEmail;
+            const trimmedInput = usernameOrEmail.trim();
+            const isPhone = !trimmedInput.includes('@');
+            const identifier = isPhone && !trimmedInput.startsWith('+')
+                ? `+255${trimmedInput.replace(/^0/, '')}`
+                : trimmedInput;
 
             const portalTarget = targetRole === 'merchant' ? 'merchant'
                                : targetRole === 'delivery' ? 'delivery'
