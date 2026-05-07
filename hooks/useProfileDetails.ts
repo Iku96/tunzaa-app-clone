@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useGetVendor } from "@/src/services/vendors";
-import { useGetDeliveryPartner } from "@/src/services/delivery";
+import { usePartner } from "@/src/services/delivery";
 import { useGetAffiliate } from "@/src/services/affiliates";
 import { useAuth } from "@/context/auth";
 
@@ -58,7 +58,7 @@ export const useProfileDetails = (): ProfileDetails => {
     data: deliveryData,
     isLoading: isDeliveryLoading,
     error: deliveryError,
-  } = useGetDeliveryPartner(
+  } = usePartner(
     deliveryProfile?.profile_id || "",
     // Only fetch if we don't have context data and have a profile ID
     !contextDeliveryDetails && !!deliveryProfile?.profile_id

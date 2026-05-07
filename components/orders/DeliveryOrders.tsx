@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
-import { useGetDeliveries } from "@/src/services/delivery";
+import { useDeliveries } from "@/src/services/delivery";
+import type { Delivery } from "@/src/services/delivery";
 import { useAuth } from "@/context/auth";
-import { DeliveryStage, Delivery } from "@/src/services/types/delivery";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";
 
@@ -17,7 +17,7 @@ export const DeliveryOrders = () => {
   const resolvedThemeColors = useResolvedThemeColors();
   const router = useRouter();
   const { t } = useI18n();
-  const [selectedFilter, setSelectedFilter] = useState<DeliveryStage | "ongoing">("ongoing");
+  const [selectedFilter, setSelectedFilter] = useState<string | "ongoing">("ongoing");
   const [showCamera, setShowCamera] = useState(false);
   const [skip, setSkip] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,10 +29,10 @@ export const DeliveryOrders = () => {
   const PARTNER_ID = deliveryData?.partner_id;
 
   // Determine the stage filter for API call
-  const getStageFilter = (filter: DeliveryStage | "ongoing"): DeliveryStage | undefined => {
+  const getStageFilter = (filter: string | "ongoing"): string | undefined => {
     switch (filter) {
       case "ongoing":
-        return undefined; // We'll handle ongoing filter client-side since it's multiple stages
+        return undefined;
       case "assigned":
       case "picked_up":
       case "in_transit":
@@ -50,12 +50,12 @@ export const DeliveryOrders = () => {
     error,
     refetch,
     isFetching,
-  } = useGetDeliveries(
+  } = useDeliveries(
     {
       partner_id: PARTNER_ID || "",
-      stage: getStageFilter(selectedFilter),
+      status: getStageFilter(selectedFilter),
       include_order_numbers: true,
-      include_partner_names: true,
+      include_partner_details: true,
       skip,
       limit,
     },
@@ -74,7 +74,7 @@ export const DeliveryOrders = () => {
   // Filter deliveries for ongoing status (client-side for this specific case)
   const filteredDeliveries = selectedFilter === "ongoing"
     ? deliveries.filter((delivery) =>
-      ["assigned", "picked_up", "in_transit"].includes(delivery.current_stage)
+      ["assigned", "picked_up", "in_transit"].includes(delivery.status)
     )
     : deliveries;
 
@@ -261,8 +261,8 @@ export const DeliveryOrders = () => {
 
             return (
               <Pressable
-                key={delivery.id}
-                onPress={() => router.push(`/orders/${delivery.id}`)}
+                key={delivery.delivery_id}
+                onPress={() => router.push(`/orders/${delivery.delivery_id}`)}
               >
                 <Card className="p-4 gap-4 mt-2">
                   <View className="flex-row justify-between items-start">
@@ -276,17 +276,17 @@ export const DeliveryOrders = () => {
                     </View>
                     <View className="gap-2 items-end">
                       <Badge
-                        variant={getStatusColor(delivery.current_stage)}
+                        variant={getStatusColor(delivery.status)}
                         className="text-xs"
                       >
                         <Text
                           className={
-                            delivery.current_stage === "in_transit"
+                            delivery.status === "in_transit"
                               ? "text-xs text-white"
                               : "text-xs text-muted-foreground"
                           }
                         >
-                          {getStatusText(delivery.current_stage)}
+                          {getStatusText(delivery.status)}
                         </Text>
                       </Badge>
 
@@ -341,7 +341,7 @@ export const DeliveryOrders = () => {
                     <View className="flex-row items-center gap-x-2">
                       <Hash size={16} className="text-muted-foreground" color={resolvedThemeColors?.foreground || "#000000"} />
                       <Text className="text-sm text-muted-foreground">
-                        {t("delivery_home.id")} {delivery.id.slice(-8)}
+                        {t("delivery_home.id")} {delivery.delivery_id.slice(-8)}
                       </Text>
                     </View>
                   </View>
@@ -355,7 +355,7 @@ export const DeliveryOrders = () => {
                     </View>
                   )}
 
-                  {delivery.current_stage !== "delivered" && !partnerRejected && (
+                  {delivery.status !== "delivered" && !partnerRejected && (
                     <View className="flex-row gap-x-4 mt-4">
                       <Button
                         variant="outline"

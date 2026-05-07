@@ -1,277 +1,239 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useGetOrder } from '../../../src/services/orders';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Dimensions,
+  ActivityIndicator,
+  Platform,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ArrowLeft, Phone } from "lucide-react-native";
+import { Text } from "@/components/ui/text";
+import { useGetOrder } from "@/src/services/order-management";
+import { orderManagementApi } from "@/src/services/order-management";
+import { useQuery } from "@tanstack/react-query";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
+
+const STATUS_STEPS = [
+  { key: "placed", label: "Placed", icon: "📋" },
+  { key: "in_transit", label: "InTransit", icon: "🚚" },
+  { key: "delivered", label: "Delivered", icon: "🏠" },
+];
 
 export default function TrackingScreen() {
-    const router = useRouter();
-    const { orderId } = useLocalSearchParams();
+  const router = useRouter();
+  const { orderId } = useLocalSearchParams();
 
-    // Use useGetOrder with refetchInterval to poll for updates
-    const { data: orderResponse, isLoading } = useGetOrder(orderId as string, !!orderId);
+  // Poll for order updates every 10 seconds
+  const { data: orderResponse, isLoading } = useQuery({
+    queryKey: ["order", orderId, "tracking"],
+    queryFn: () => orderManagementApi.getOrder(orderId as string),
+    enabled: !!orderId,
+    refetchInterval: 10000,
+  });
 
-    // Map order status to steps
-    // Status can be: 'pending', 'processing', 'shipped', 'delivered', etc.
-    let statusStep = 0;
-    const status = orderResponse?.status?.toLowerCase();
-    
-    if (status === 'shipped' || status === 'in_transit' || status === 'processing') {
-        statusStep = 1;
-    } else if (status === 'delivered' || status === 'completed') {
-        statusStep = 2;
+  // Map order status to step index
+  let statusStep = 0;
+  const status = orderResponse?.status?.toLowerCase();
+  if (status === "shipped" || status === "in_transit" || status === "processing") {
+    statusStep = 1;
+  } else if (status === "delivered" || status === "completed") {
+    statusStep = 2;
+  }
+
+  // Auto-navigate to rate screen when delivered
+  useEffect(() => {
+    if (statusStep === 2) {
+      const timer = setTimeout(() => {
+        router.push({ pathname: "/(buyer)/orders/rate", params: { orderId } });
+      }, 3000);
+      return () => clearTimeout(timer);
     }
+  }, [statusStep, orderId, router]);
 
-    // When delivered, route to rate screen
-    useEffect(() => {
-        if (statusStep === 2) {
-            const timer = setTimeout(() => {
-                router.push({ pathname: '/(buyer)/orders/rate', params: { orderId } });
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [statusStep, orderId, router]);
+  // Map region — defaults to Dar es Salaam
+  const mapRegion = {
+    latitude: parseFloat(orderResponse?.shipping_address?.latitude || "-6.7924"),
+    longitude: parseFloat(orderResponse?.shipping_address?.longitude || "39.2083"),
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+  };
 
-    return (
-        <View style={styles.container}>
-            {/* Map Placeholder - Blocked by Backend */}
-            <View style={styles.mapBlockedContainer}>
-                <Ionicons name="map-outline" size={48} color="#9CA3AF" />
-                <Text style={styles.mapBlockedTitle}>Map Tracking Blocked</Text>
-                <Text style={styles.mapBlockedText}>
-                    Missing backend endpoint for live delivery coordinate polling. (Task marked as blocked).
-                </Text>
-            </View>
+  // Driver data (from delivery partner if available)
+  const driverName = "Delivery Partner";
+  const driverPhone = orderResponse?.shipping_address?.phone;
 
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#1F2937" />
-                    </TouchableOpacity>
+  const handleCall = () => {
+    if (driverPhone) Linking.openURL(`tel:${driverPhone}`);
+  };
 
-                    <View style={styles.etaBubble}>
-                        <Text style={styles.etaTitle}>Live Status Polling</Text>
-                        <Text style={styles.etaSubtitle}>Connected to API</Text>
-                    </View>
-                </View>
-            </SafeAreaView>
+  return (
+    <View className="flex-1 bg-background">
+      {/* Map */}
+      <MapView
+        style={{ width, height: height * 0.55 }}
+        initialRegion={mapRegion}
+        provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
+        showsUserLocation
+      >
+        {orderResponse?.shipping_address && (
+          // @ts-expect-error - react-native-maps Marker type mismatch
+          <Marker
+            coordinate={{
+              latitude: parseFloat(orderResponse.shipping_address.latitude || "-6.7924"),
+              longitude: parseFloat(orderResponse.shipping_address.longitude || "39.2083"),
+            }}
+            title="Delivery Location"
+            description={orderResponse.shipping_address.address_line1}
+          />
+        )}
+      </MapView>
 
-            {/* Bottom Sheet Card */}
-            <View style={styles.bottomSheet}>
-                {isLoading ? (
-                    <ActivityIndicator size="large" color="#425BA4" />
-                ) : (
-                    <>
-                        <Text style={styles.statusTitle}>
-                            {statusStep === 0 ? 'Order Placed' : statusStep === 1 ? 'Your order is being prepared' : 'Order Delivered'}
-                        </Text>
-                        <Text style={styles.statusSubtitle}>
-                            {statusStep === 0 ? 'Checking availability' : statusStep === 1 ? 'Driver is assigned' : 'Enjoy your product!'}
-                        </Text>
+      {/* Back Button + ETA Overlay */}
+      <SafeAreaView className="absolute top-0 left-0 right-0" edges={["top"]}>
+        <View className="px-4 pt-2">
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-white items-center justify-center"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={20} color="#1F2937" />
+          </TouchableOpacity>
 
-                        {/* Status Steps */}
-                        <View style={styles.stepsContainer}>
-                            <View style={styles.stepItem}>
-                                <View style={[styles.stepIcon, statusStep >= 0 && styles.activeStepIcon]}>
-                                    <Ionicons name="receipt-outline" size={16} color={statusStep >= 0 ? '#FFFFFF' : '#9CA3AF'} />
-                                </View>
-                                <Text style={[styles.stepLabel, statusStep >= 0 && styles.activeStepLabel]}>Placed</Text>
-                            </View>
-                            <View style={[styles.stepLine, statusStep >= 1 && styles.activeStepLine]} />
-                            <View style={styles.stepItem}>
-                                <View style={[styles.stepIcon, statusStep >= 1 && styles.activeStepIcon]}>
-                                    <Ionicons name="bicycle-outline" size={16} color={statusStep >= 1 ? '#FFFFFF' : '#9CA3AF'} />
-                                </View>
-                                <Text style={[styles.stepLabel, statusStep >= 1 && styles.activeStepLabel]}>InTransit</Text>
-                            </View>
-                            <View style={[styles.stepLine, statusStep >= 2 && styles.activeStepLine]} />
-                            <View style={styles.stepItem}>
-                                <View style={[styles.stepIcon, statusStep >= 2 && styles.activeStepIcon]}>
-                                    <Ionicons name="home-outline" size={16} color={statusStep >= 2 ? '#FFFFFF' : '#9CA3AF'} />
-                                </View>
-                                <Text style={[styles.stepLabel, statusStep >= 2 && styles.activeStepLabel]}>Delivered</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.divider} />
-
-                        <View style={styles.driverInfo}>
-                            {/* Generic driver icon since we don't have driver data attached to order endpoint yet */}
-                            <View style={[styles.driverImage, { backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center' }]}>
-                                <Ionicons name="person" size={24} color="#9CA3AF" />
-                            </View>
-                            <View style={styles.driverDetails}>
-                                <Text style={styles.driverName}>Pending Assignment</Text>
-                                <Text style={styles.driverRole}>Live driver data missing in API</Text>
-                            </View>
-                        </View>
-                    </>
-                )}
-            </View>
+          {/* ETA Bubble */}
+          <View
+            className="self-start mt-4 ml-10 px-4 py-2 rounded-xl"
+            style={{ backgroundColor: "#425BA4" }}
+          >
+            <Text className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
+              {statusStep === 0
+                ? "Order Placed"
+                : statusStep === 1
+                ? "On the way"
+                : "Delivered! 🎉"}
+            </Text>
+            <Text className="text-xs" style={{ color: "#E0E7FF" }}>
+              {statusStep === 0
+                ? "Waiting for pickup"
+                : statusStep === 1
+                ? "Driver is heading to you"
+                : "Enjoy your product!"}
+            </Text>
+          </View>
         </View>
-    );
-}
+      </SafeAreaView>
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F3F4F6',
-    },
-    mapBlockedContainer: {
-         width: width,
-         height: height * 0.6,
-         position: 'absolute',
-         top: 0,
-         backgroundColor: '#E5E7EB',
-         justifyContent: 'center',
-         alignItems: 'center',
-         padding: 20,
-    },
-    mapBlockedTitle: {
-         fontSize: 16,
-         fontWeight: 'bold',
-         color: '#4B5563',
-         marginTop: 10,
-    },
-    mapBlockedText: {
-         fontSize: 12,
-         color: '#6B7280',
-         textAlign: 'center',
-         marginTop: 5,
-    },
-    safeArea: {
-        flex: 1,
-    },
-    header: {
-        paddingHorizontal: 20,
-        paddingTop: 10,
-    },
-    backButton: {
-        width: 40,
-        height: 40,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-        marginBottom: 20,
-    },
-    etaBubble: {
-        backgroundColor: '#425BA4',
-        padding: 12,
-        borderRadius: 12,
-        alignSelf: 'flex-start',
-        marginLeft: 40,
-    },
-    etaTitle: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    etaSubtitle: {
-        color: '#E0E7FF',
-        fontSize: 12,
-    },
-    bottomSheet: {
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
-        padding: 24,
-        paddingBottom: 40,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 10,
-    },
-    statusTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1F2937',
-        marginBottom: 4,
-    },
-    statusSubtitle: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginBottom: 24,
-    },
-    stepsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-    },
-    stepItem: {
-        alignItems: 'center',
-        width: 60,
-    },
-    stepIcon: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: '#F3F4F6',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    activeStepIcon: {
-        backgroundColor: '#425BA4',
-    },
-    stepLabel: {
-        fontSize: 10,
-        color: '#9CA3AF',
-    },
-    activeStepLabel: {
-        color: '#425BA4',
-        fontWeight: '600',
-    },
-    stepLine: {
-        flex: 1,
-        height: 2,
-        backgroundColor: '#F3F4F6',
-        marginBottom: 14, // align with icon center
-        marginHorizontal: -10,
-        zIndex: -1,
-    },
-    activeStepLine: {
-        backgroundColor: '#425BA4',
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#F3F4F6',
-        marginBottom: 20,
-    },
-    driverInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    driverImage: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        marginRight: 12,
-    },
-    driverDetails: {
-        flex: 1,
-    },
-    driverName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1F2937',
-    },
-    driverRole: {
-        fontSize: 12,
-        color: '#6B7280',
-    },
-});
+      {/* Bottom Sheet */}
+      <View
+        className="absolute bottom-0 left-0 right-0 bg-white px-6 pt-6 pb-10"
+        style={{
+          borderTopLeftRadius: 32,
+          borderTopRightRadius: 32,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 10,
+        }}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#425BA4" />
+        ) : (
+          <>
+            {/* Status Title */}
+            <Text className="text-lg font-bold text-foreground mb-1">
+              {statusStep === 0
+                ? "Order Placed"
+                : statusStep === 1
+                ? "Your order is on the way"
+                : "Order Delivered"}
+            </Text>
+            <Text className="text-sm text-muted-foreground mb-6">
+              {statusStep === 0
+                ? "Checking availability"
+                : statusStep === 1
+                ? "Driver is assigned and heading to you"
+                : "Enjoy your product!"}
+            </Text>
+
+            {/* Status Steps */}
+            <View className="flex-row items-center justify-between mb-6">
+              {STATUS_STEPS.map((step, index) => {
+                const isActive = statusStep >= index;
+                return (
+                  <React.Fragment key={step.key}>
+                    {index > 0 && (
+                      <View
+                        className="flex-1 h-0.5 mx-1"
+                        style={{
+                          backgroundColor: statusStep >= index ? "#425BA4" : "#E5E7EB",
+                        }}
+                      />
+                    )}
+                    <View className="items-center" style={{ width: 60 }}>
+                      <View
+                        className="w-9 h-9 rounded-full items-center justify-center mb-1"
+                        style={{
+                          backgroundColor: isActive ? "#425BA4" : "#F3F4F6",
+                        }}
+                      >
+                        <Text style={{ fontSize: 14 }}>{step.icon}</Text>
+                      </View>
+                      <Text
+                        className="text-xs font-medium"
+                        style={{ color: isActive ? "#425BA4" : "#9CA3AF" }}
+                      >
+                        {step.label}
+                      </Text>
+                    </View>
+                  </React.Fragment>
+                );
+              })}
+            </View>
+
+            {/* Divider */}
+            <View className="h-px bg-border mb-5" />
+
+            {/* Driver Info */}
+            <View className="flex-row items-center">
+              <View className="w-12 h-12 rounded-full bg-muted items-center justify-center">
+                <Text className="text-lg">🧑‍✈️</Text>
+              </View>
+              <View className="flex-1 ml-3">
+                <Text className="text-base font-semibold text-foreground">
+                  {driverName}
+                </Text>
+                <Text className="text-xs text-muted-foreground">
+                  {statusStep === 0
+                    ? "Pending assignment"
+                    : statusStep === 1
+                    ? "Delivering your order"
+                    : "Delivery completed"}
+                </Text>
+              </View>
+              {driverPhone && statusStep === 1 && (
+                <TouchableOpacity
+                  className="w-10 h-10 rounded-full items-center justify-center"
+                  style={{ backgroundColor: "#EFF6FF" }}
+                  onPress={handleCall}
+                >
+                  <Phone size={18} color="#425BA4" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </>
+        )}
+      </View>
+    </View>
+  );
+}

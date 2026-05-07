@@ -36,7 +36,7 @@ export default function OrderSummaryScreen() {
         } else {
             // Full Payment
             router.push({
-                pathname: '/(buyer)/checkout/payment-method',
+                pathname: '/(buyer)/payment',
                 params: { cartId: cart.cart_id }
             });
         }

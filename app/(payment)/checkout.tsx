@@ -38,7 +38,8 @@ import type {
   DeliveryAddress,
   UpdateBuyerProfileBody,
 } from "@/src/services/types/buyers";
-import type { DeliveryPartner, VehicleType } from "@/src/services/types";
+import type { DeliveryPartner } from "@/src/services/types/delivery";
+import type { VehicleType } from "@/src/services/types/configuration";
 import { API_CONFIG } from "@/src/services/config";
 import {
   CheckoutStepHeader,

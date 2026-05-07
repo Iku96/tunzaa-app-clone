@@ -1,396 +1,70 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
-import { useGetBuyerProfile } from '../../../src/services/buyers';
-import { useGetUserOrders } from '../../../src/services/orders';
-import { ActivityIndicator } from 'react-native';
+import React from "react";
+import { View, TouchableOpacity } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ArrowLeft, MapPin, Package, ChevronRight } from "lucide-react-native";
+import { Text } from "@/components/ui/text";
+import { useI18n } from "@/hooks/useI18n";
 
-import { useLanguage } from '../../../src/contexts/LanguageContext';
+/**
+ * Delivery Method screen — matches Figma "01 - Setting Screen"
+ * Simple option list: Add delivery address / Pick up/comes round
+ */
+export default function DeliveryMethodScreen() {
+  const router = useRouter();
+  const { t } = useI18n();
+  const { cartId, orderId } = useLocalSearchParams();
 
-const { width, height } = Dimensions.get('window');
+  const handleDeliveryAddress = () => {
+    router.push({
+      pathname: "/(buyer)/orders/choose-courier",
+      params: { cartId, orderId, method: "courier" },
+    });
+  };
 
-// Mock Map Image (Replace with actual MapView later)
-const MAP_IMAGE = 'https://media.wired.com/photos/59269cd37034dc5f91bec0f1/master/pass/GoogleMapTA.jpg';
+  const handleSelfPickup = () => {
+    router.push({
+      pathname: "/(buyer)/orders/choose-courier",
+      params: { cartId, orderId, method: "pickup" },
+    });
+  };
 
-export default function DeliverySetupScreen() {
-    const router = useRouter();
-    const { user } = useTunzaaAuth();
-    const { t } = useLanguage();
-    const userId = user?.user_id || user?.id || '';
+  return (
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "right", "left"]}>
+      {/* Header */}
+      <View className="flex-row items-center px-4 py-3 border-b border-border">
+        <TouchableOpacity onPress={() => router.back()} className="p-1">
+          <ArrowLeft size={24} color="#1F2937" />
+        </TouchableOpacity>
+        <Text className="text-lg font-semibold text-foreground ml-3">Delivery Method</Text>
+      </View>
 
-    const { data: profile, isLoading: profileLoading } = useGetBuyerProfile(userId);
-    const { data: ordersData, isLoading: ordersLoading } = useGetUserOrders(userId, { limit: 10 }, !!userId);
+      {/* Options */}
+      <View className="px-4 pt-6 gap-4">
+        {/* Add delivery address */}
+        <TouchableOpacity
+          className="flex-row items-center py-4 px-4 bg-background rounded-xl border border-border"
+          onPress={handleDeliveryAddress}
+        >
+          <MapPin size={20} color="#9CA3AF" />
+          <Text className="flex-1 text-base font-medium text-foreground ml-3">
+            Add delivery address
+          </Text>
+          <ChevronRight size={20} color="#9CA3AF" />
+        </TouchableOpacity>
 
-    const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
-
-    const defaultAddress = profile?.default_delivery_address || (profile?.delivery_address?.[0]?.address_line1) || 'No address set';
-    const city = profile?.delivery_address?.[0]?.city || 'Tanzania';
-
-    const shippedOrder = React.useMemo(() => {
-        if (!ordersData) return null;
-        const items = Array.isArray(ordersData) ? ordersData : (ordersData as any).items || [];
-        return items.find((o: any) => o.status?.toLowerCase() === 'shipped' || o.status?.toLowerCase() === 'transit' || o.status?.toLowerCase() === 'pending') || items[0];
-    }, [ordersData]);
-
-    if (profileLoading || ordersLoading) {
-        return (
-            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color="#425BA4" />
-            </View>
-        );
-    }
-
-    return (
-        <View style={styles.container}>
-            {/* Map Placeholder */}
-            <Image source={{ uri: MAP_IMAGE }} style={styles.mapImage} resizeMode="cover" />
-
-            {/* Content Overlay */}
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#1F2937" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>{t.deliveryReviewOrder}</Text>
-                    <View style={{ width: 40 }} />
-                </View>
-
-                {/* Drop-off Location Bubble on Map */}
-                <View style={styles.mapBubble}>
-                    <View style={styles.bubbleContent}>
-                        <Text style={styles.bubbleTitle}>{t.deliveryDropOffLocation}</Text>
-                        <Text style={styles.bubbleSubtitle}>
-                            {shippedOrder ? `Order #${shippedOrder.order_number}` : t.deliveryNoActive}
-                        </Text>
-                    </View>
-                    <View style={styles.bubbleArrow} />
-                </View>
-            </SafeAreaView>
-
-            {/* Bottom Sheet Card */}
-            <View style={styles.bottomSheet}>
-                <View style={styles.sheetHandle} />
-
-                <View style={styles.timeInfo}>
-                    <Ionicons name="time-outline" size={20} color="#6B7280" />
-                    <Text style={styles.timeText}>{t.deliveryEstimatedTime}</Text>
-                    <Text style={styles.timeValue}>30 - 40 min</Text>
-                </View>
-
-                <View style={styles.divider} />
-
-                {/* Delivery Type Selection */}
-                <View style={styles.deliveryTypes}>
-                    <TouchableOpacity
-                        style={[styles.typeOption, deliveryType === 'standard' && styles.activeType]}
-                        onPress={() => setDeliveryType('standard')}
-                    >
-                        <View style={styles.radioCircle}>
-                            {deliveryType === 'standard' && <View style={styles.radioInner} />}
-                        </View>
-                        <View>
-                            <Text style={styles.typeTitle}>{t.deliveryStandard}</Text>
-                            <Text style={styles.typeTime}>30 - 40 min</Text>
-                        </View>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.typeOption, deliveryType === 'express' && styles.activeType]}
-                        onPress={() => setDeliveryType('express')}
-                    >
-                        <View style={styles.radioCircle}>
-                            {deliveryType === 'express' && <View style={styles.radioInner} />}
-                        </View>
-                        <View>
-                            <Text style={styles.typeTitle}>{t.deliveryExpress}</Text>
-                            <Text style={styles.typeTime}>20 - 30 min</Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Address Section */}
-                <View style={styles.addressSection}>
-                    <View style={styles.addressRow}>
-                        <View style={styles.addressIcon}>
-                            <Ionicons name="location-outline" size={20} color="#425BA4" />
-                        </View>
-                        <View style={styles.addressDetails}>
-                            <Text style={styles.addressLabel}>{t.deliveryPostalAddress}</Text>
-                            <Text style={styles.addressValue} numberOfLines={1}>{city}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                    </View>
-
-                    <View style={styles.addressRow}>
-                        <View style={styles.addressIcon}>
-                            <Ionicons name="navigate-outline" size={20} color="#425BA4" />
-                        </View>
-                        <View style={styles.addressDetails}>
-                            <Text style={styles.addressLabel}>{t.deliveryDropOffAddress}</Text>
-                            <Text style={styles.addressValue} numberOfLines={1}>{defaultAddress}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                    </View>
-                </View>
-
-                {/* Driver Call Section */}
-                <TouchableOpacity style={styles.callDriver}>
-                    <Ionicons name="call-outline" size={20} color="#4B5563" />
-                    <Text style={styles.callText}>{t.deliveryCallDriver}</Text>
-                </TouchableOpacity>
-
-                <View style={styles.costRow}>
-                    <Text style={styles.costLabel}>{t.deliveryCost}</Text>
-                    <Text style={styles.costValue}>
-                        Tsh {shippedOrder?.totals?.shipping?.toLocaleString() || '0'}
-                    </Text>
-                </View>
-
-                <TouchableOpacity
-                    style={styles.confirmButton}
-                    onPress={() => router.push('/(buyer)/orders/success')}
-                >
-                    <Text style={styles.confirmButtonText}>{t.deliveryConfirm}</Text>
-                </TouchableOpacity>
-
-            </View>
-        </View>
-    );
+        {/* Pick up / comes round */}
+        <TouchableOpacity
+          className="flex-row items-center py-4 px-4 bg-background rounded-xl border border-border"
+          onPress={handleSelfPickup}
+        >
+          <Package size={20} color="#9CA3AF" />
+          <Text className="flex-1 text-base font-medium text-foreground ml-3">
+            Pick up/comes round
+          </Text>
+          <ChevronRight size={20} color="#9CA3AF" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F3F4F6',
-    },
-    mapImage: {
-        width: width,
-        height: height * 0.5, // Occupy top half
-        position: 'absolute',
-        top: 0,
-    },
-    safeArea: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingTop: 10,
-    },
-    backButton: {
-        width: 40,
-        height: 40,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    headerTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#1F2937',
-        backgroundColor: 'rgba(255,255,255,0.8)', // Semitransparent bg for visibility
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-        overflow: 'hidden',
-    },
-    mapBubble: {
-        position: 'absolute',
-        top: 150,
-        left: width * 0.4,
-        alignItems: 'center',
-    },
-    bubbleContent: {
-        backgroundColor: '#425BA4',
-        padding: 12,
-        borderRadius: 12,
-        marginBottom: -2,
-    },
-    bubbleTitle: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    bubbleSubtitle: {
-        color: '#E0E7FF',
-        fontSize: 10,
-    },
-    bubbleArrow: {
-        width: 0,
-        height: 0,
-        backgroundColor: 'transparent',
-        borderStyle: 'solid',
-        borderLeftWidth: 8,
-        borderRightWidth: 8,
-        borderTopWidth: 12,
-        borderLeftColor: 'transparent',
-        borderRightColor: 'transparent',
-        borderTopColor: '#425BA4',
-    },
-    bottomSheet: {
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
-        padding: 24,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 10,
-        paddingBottom: 40,
-    },
-    sheetHandle: {
-        width: 40,
-        height: 4,
-        backgroundColor: '#E5E7EB',
-        borderRadius: 2,
-        alignSelf: 'center',
-        marginBottom: 20,
-    },
-    timeInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 16,
-    },
-    timeText: {
-        flex: 1,
-        marginLeft: 8,
-        color: '#6B7280',
-        fontSize: 14,
-    },
-    timeValue: {
-        fontWeight: 'bold',
-        color: '#1F2937',
-        fontSize: 14,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#F3F4F6',
-        marginVertical: 12,
-    },
-    deliveryTypes: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-        gap: 12,
-    },
-    typeOption: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        gap: 8,
-    },
-    activeType: {
-        borderColor: '#425BA4',
-        backgroundColor: '#EFF6FF',
-    },
-    radioCircle: {
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        borderWidth: 2,
-        borderColor: '#425BA4',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    radioInner: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: '#425BA4',
-    },
-    typeTitle: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#1F2937',
-    },
-    typeTime: {
-        fontSize: 12,
-        color: '#6B7280',
-    },
-    addressSection: {
-        gap: 16,
-        marginBottom: 24,
-    },
-    addressRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    addressIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: '#F3F4F6',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    addressDetails: {
-        flex: 1,
-    },
-    addressLabel: {
-        fontSize: 12,
-        color: '#6B7280',
-    },
-    addressValue: {
-        fontSize: 14,
-        color: '#1F2937',
-        fontWeight: '500',
-    },
-    callDriver: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 20,
-    },
-    callText: {
-        color: '#4B5563',
-        fontWeight: '500',
-    },
-    costRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-        alignItems: 'center',
-    },
-    costLabel: {
-        fontSize: 14,
-        color: '#6B7280',
-        fontWeight: '500',
-    },
-    costValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1F2937',
-    },
-    confirmButton: {
-        backgroundColor: '#425BA4',
-        paddingVertical: 16,
-        borderRadius: 30,
-        alignItems: 'center',
-    },
-    confirmButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-});

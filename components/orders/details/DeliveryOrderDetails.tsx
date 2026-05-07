@@ -1,77 +1,63 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { View, ScrollView, Alert, Image } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, ScrollView, Alert, Linking, TouchableOpacity } from "react-native";
 import * as Burnt from "burnt";
 import * as Location from "expo-location";
 import {
-  Package,
-  Clock,
   MapPin,
-  Camera,
-  Check,
+  Package,
+  Phone,
   Navigation,
-  MapIcon,
-  MapPinIcon,
-  Upload,
-  XCircle,
+  Check,
+  Store,
+  User,
+  CircleDollarSign,
+  CheckCircle,
+  Circle,
 } from "lucide-react-native";
 import { format } from "date-fns";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { ImageUploader } from "@/components/ui/image-uploader";
+import { Button } from "@/components/ui/button";
 import {
-  useGetDelivery,
-  useUpdateDeliveryStage,
+  useDelivery,
+  useAddDeliveryStage,
   useAddDeliveryProof,
+  usePartner,
 } from "@/src/services/delivery";
 import { useGetOrder, useVerifyDeliveryOTP } from "@/src/services/order-management";
 import { useAuth } from "@/context/auth";
-import { useProductDetails } from "@/hooks/useProductDetails";
 import { ProofPhotoModal } from "@/components/modals/ProofPhotoModal";
 import { DeliveryOTPModal } from "@/components/modals/DeliveryOTPModal";
-import { RejectDeliveryModal } from "@/components/modals/RejectDeliveryModal";
 import type { DeliveryStage } from "@/src/services/types/delivery";
-import { useGetDeliveryPartner } from "@/src/services/delivery";
-import { Textarea } from "@/components/ui/textarea";
-import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";
+
 interface DeliveryOrderDetailsProps {
   deliveryId: string;
 }
 
-export const DeliveryOrderDetails = ({
-  deliveryId,
-}: DeliveryOrderDetailsProps) => {
-  const resolvedThemeColors = useResolvedThemeColors();
+export const DeliveryOrderDetails = ({ deliveryId }: DeliveryOrderDetailsProps) => {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [signatureText, setSignatureText] = useState("");
-  const [proofPhoto, setProofPhoto] = useState("");
-  const [isSubmittingProof, setIsSubmittingProof] = useState(false);
   const [showProofModal, setShowProofModal] = useState(false);
   const [pendingStage, setPendingStage] = useState<DeliveryStage | null>(null);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  // Get delivery details from auth context
+  // Auth
   const { getDeliveryDetails, user } = useAuth();
   const deliveryData = getDeliveryDetails();
   const PARTNER_ID = deliveryData?.partner_id;
 
-  // Fetch delivery details
+  // Data fetching
   const {
     data: delivery,
     isLoading: deliveryLoading,
     error: deliveryError,
     refetch: refetchDelivery,
-  } = useGetDelivery(deliveryId);
+  } = useDelivery(deliveryId);
 
-  // Fetch order details using the order_id from delivery
   const {
     data: order,
     isLoading: orderLoading,
@@ -79,302 +65,166 @@ export const DeliveryOrderDetails = ({
     refetch: refetchOrder,
   } = useGetOrder(delivery?.order_id || "", !!delivery?.order_id && !!deliveryId);
 
-  // Extract partner_id from delivery stages to fetch delivery partner type
   const partnerId = React.useMemo(() => {
-    if (!delivery?.stages || delivery.stages.length === 0) return null;
-    // Get partner_id from the first stage (all stages should have the same partner_id)
-    return delivery.stages[0].partner_id;
-  }, [delivery?.stages]);
+    return delivery?.partner_id || null;
+  }, [delivery?.partner_id]);
 
-  // Fetch delivery partner details to get the partner type
   const {
     data: deliveryPartner,
-    isLoading: partnerLoading,
     refetch: refetchPartner,
-  } = useGetDeliveryPartner(partnerId || '', !!partnerId);
+  } = usePartner(partnerId || "", !!partnerId);
 
-  // Mutations for updating delivery stage and adding proof
-  const updateDeliveryStage = useUpdateDeliveryStage();
+  // Mutations
+  const updateDeliveryStage = useAddDeliveryStage();
   const addDeliveryProof = useAddDeliveryProof();
   const verifyDeliveryOTP = useVerifyDeliveryOTP();
 
-  // Simple product image getter without dynamic hooks
-  const getProductImage = useCallback((productId: string) => {
-    // For now, return null since we can't safely use the dynamic hook
-    // This can be enhanced later with a different approach
-    return null;
-  }, []);
-
-  // Refetch data when screen comes into focus
+  // Refetch on focus
   useFocusEffect(
     useCallback(() => {
-      if (deliveryId) {
-        refetchDelivery();
-      }
-      if (partnerId) {
-        refetchPartner();
-      }
+      if (deliveryId) refetchDelivery();
+      if (partnerId) refetchPartner();
     }, [deliveryId, refetchDelivery, partnerId, refetchPartner])
   );
 
-  // Refetch order when delivery data is available
   useFocusEffect(
     useCallback(() => {
-      if (delivery?.order_id) {
-        refetchOrder();
-      }
+      if (delivery?.order_id) refetchOrder();
     }, [delivery?.order_id, refetchOrder])
   );
 
-  const getStatusColor = (stage: DeliveryStage) => {
-    switch (stage) {
-      case "assigned":
-        return "outline";
-      case "picked_up":
-        return "outline";
-      case "in_transit":
-        return "primary";
-      case "delivered":
-        return "success";
-      default:
-        return "secondary";
-    }
-  };
+  // --- Business Logic (preserved from original) ---
 
-  const getStatusText = (stage: DeliveryStage) => {
-    switch (stage) {
-      case "assigned":
-        return t("orders.assigned") || "Assigned";
-      case "picked_up":
-        return t("orders.picked_up") || "Picked Up";
-      case "in_transit":
-        return t("orders.in_transit") || "In Transit";
-      case "delivered":
-        return t("orders.delivered") || "Delivered";
-      case "rejected":
-        return t("orders.rejected") || "Rejected";
-      default:
-        return stage;
-    }
-  };
-
-  const getNextStage = (currentStage: DeliveryStage): DeliveryStage | null => {
-    const partnerType = deliveryPartner?.type || 'individual';
-
-    if (partnerType === 'pickup_point') {
-      // For pickup points: assigned → in_transit → delivered
-      switch (currentStage) {
-        case "assigned":
-          return "in_transit";
-        case "in_transit":
-          return "delivered";
-        case "delivered":
-          return null;
-        default:
-          return null;
+  const getNextStage = (currentStatus: string): string | null => {
+    const partnerType = deliveryPartner?.type || "individual";
+    if (partnerType === "pickup_point") {
+      switch (currentStatus) {
+        case "assigned": return "in_transit";
+        case "in_transit": return "delivered";
+        default: return null;
       }
     } else {
-      // For individual/business: assigned → picked_up → in_transit → delivered
-      switch (currentStage) {
-        case "assigned":
-          return "picked_up";
-        case "picked_up":
-          return "in_transit";
-        case "in_transit":
-          return "delivered";
-        case "delivered":
-          return null;
-        default:
-          return null;
+      switch (currentStatus) {
+        case "assigned": return "picked_up";
+        case "picked_up": return "in_transit";
+        case "in_transit": return "delivered";
+        default: return null;
       }
     }
   };
 
-  const handleUpdateStatus = async () => {
-    if (!delivery) return;
-    if (!PARTNER_ID) {
-      Alert.alert("Error", "Delivery partner information is missing");
-      return;
-    }
-
-    const nextStage = getNextStage(delivery.current_stage);
-    if (!nextStage) return;
-
-    // Set loading state immediately
-    setIsUpdatingStatus(true);
-
-    try {
-      const partnerType = deliveryPartner?.type || 'individual';
-
-      // Show proof modal for stages that require photo proof
-      if (partnerType === 'pickup_point') {
-        // For pickup points: require photo proof for in_transit and delivered
-        if (nextStage === "in_transit" || nextStage === "delivered") {
-          setPendingStage(nextStage);
-          setShowProofModal(true);
-          return;
-        }
-      } else {
-        // For individual/business: require photo proof for picked_up and delivered
-        if (nextStage === "picked_up" || nextStage === "delivered") {
-          setPendingStage(nextStage);
-          setShowProofModal(true);
-          return;
-        }
-      }
-
-      // For other stages, proceed normally
-      await updateDeliveryStageWithProof(nextStage);
-    } finally {
-      // Reset loading state
-      setIsUpdatingStatus(false);
+  const getStatusText = (stage: string) => {
+    switch (stage) {
+      case "assigned": return "Assigned";
+      case "picked_up": return "Picked Up";
+      case "in_transit": return "In Transit";
+      case "delivered": return "Delivered";
+      case "rejected": return "Rejected";
+      default: return stage;
     }
   };
 
-  // Helper function to get current location
+  const getActionButtonText = (nextStage: string | null) => {
+    switch (nextStage) {
+      case "picked_up": return "Start delivery";
+      case "in_transit": return "Mark picked up";
+      case "delivered": return "Complete delivery";
+      default: return "Update status";
+    }
+  };
+
   const getCurrentLocation = async (): Promise<{ lat: number; lng: number } | null> => {
     try {
-      // Check permissions
-      const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
-
-      if (foregroundStatus !== "granted") {
-        Alert.alert(
-          "Location Permission Required",
-          "Please enable location permissions in your device settings to update delivery status.",
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Open Settings",
-              onPress: () => Location.enableNetworkProviderAsync()
-            }
-          ]
-        );
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Location Required", "Please enable location to update delivery status.");
         return null;
       }
-
-      // Get current location
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
-        timeInterval: 5000,
-        distanceInterval: 0,
       });
-
-      return {
-        lat: location.coords.latitude,
-        lng: location.coords.longitude,
-      };
+      return { lat: location.coords.latitude, lng: location.coords.longitude };
     } catch (error) {
-      console.error("Error getting location:", error);
-      Alert.alert(
-        t("common.error") || "Error",
-        t("delivery_navigation.location_error") || "Failed to get your current location. Please make sure location services are enabled.",
-        [{ text: "OK" }]
-      );
+      console.error("Location error:", error);
+      Alert.alert("Error", "Failed to get location. Please ensure location services are enabled.");
       return null;
     }
   };
 
-  const handleRejectDelivery = () => {
-    if (!delivery) return;
-    if (!PARTNER_ID) {
-      Alert.alert("Error", "Delivery partner information is missing");
-      return;
-    }
-    // The modal will handle the rejection flow
-  };
-
-  const handleConfirmReject = async (reason: string) => {
-    if (!delivery) return;
-
-    try {
-      // For rejection, we don't need location or proof, just the reason
-      await updateDeliveryStage.mutateAsync({
-        deliveryId: delivery.id,
-        data: {
-          partner_id: PARTNER_ID!,
-          stage: "rejected",
-          reason: reason,
-          // location and proof are optional and not included for rejection
-        },
-      });
-
-      Burnt.toast({
-        title: "Delivery Rejected",
-        message: "The delivery has been rejected successfully",
-        preset: "done",
-        haptic: "success",
-        duration: 3,
-        from: "top",
-      });
-
-      refetchDelivery();
-    } catch (error) {
-      console.error("Error rejecting delivery:", error);
-      Burnt.toast({
-        title: "Error",
-        message: "Failed to reject delivery. Please try again.",
-        preset: "error",
-        haptic: "error",
-        duration: 4,
-        from: "top",
-      });
-    }
-  };
-
   const updateDeliveryStageWithProof = async (
-    stage: DeliveryStage,
+    stage: string,
     imageUrl?: string,
     message?: string
   ) => {
     if (!delivery || !PARTNER_ID) return;
 
-    // Get current location for all stages except rejected
     let currentLocation: { lat: number; lng: number } | null = null;
-
     if (stage !== "rejected") {
       currentLocation = await getCurrentLocation();
-
-      if (!currentLocation) {
-        // Location is required for non-rejected stages
-        throw new Error("Location is required to update delivery status");
-      }
+      if (!currentLocation) throw new Error("Location required");
     }
 
     try {
       await updateDeliveryStage.mutateAsync({
-        deliveryId: delivery.id,
+        deliveryId: delivery.delivery_id,
         data: {
           partner_id: PARTNER_ID,
           stage,
-          location: currentLocation || undefined, // Only include location if available
-          proof: imageUrl ? {
-            photo_url: imageUrl,
-            message: message || "",
-          } : undefined,
+          location: currentLocation || undefined,
+          notes: imageUrl ? message : undefined,
         },
       });
 
-      // Invalidate and refetch relevant queries after successful update
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["delivery", deliveryId] }),
         queryClient.invalidateQueries({ queryKey: ["deliveries"] }),
         refetchDelivery(),
         delivery.order_id && refetchOrder(),
-        partnerId && refetchPartner(),
       ]);
 
-      Alert.alert(t("common.success") || "Success", `${t("orders.status_updated_to")} ${getStatusText(stage)}`);
+      Burnt.toast({
+        title: "Status updated",
+        message: `Marked as ${getStatusText(stage)}`,
+        preset: "done",
+        haptic: "success",
+        duration: 2,
+        from: "top",
+      });
     } catch (error) {
-      Alert.alert(t("common.error") || "Error", t("orders.failed_to_update_status") || "Failed to update status. Please try again.");
+      Alert.alert("Error", "Failed to update status. Please try again.");
     } finally {
-      // Reset loading state
       setIsUpdatingStatus(false);
     }
   };
 
+  const handleUpdateStatus = async () => {
+    if (!delivery || !PARTNER_ID) return;
+    const nextStage = getNextStage(delivery.status);
+    if (!nextStage) return;
+
+    setIsUpdatingStatus(true);
+    const partnerType = deliveryPartner?.type || "individual";
+
+    // Determine if proof is needed
+    if (partnerType === "pickup_point") {
+      if (nextStage === "in_transit" || nextStage === "delivered") {
+        setPendingStage(nextStage);
+        setShowProofModal(true);
+        return;
+      }
+    } else {
+      if (nextStage === "picked_up" || nextStage === "delivered") {
+        setPendingStage(nextStage);
+        setShowProofModal(true);
+        return;
+      }
+    }
+
+    await updateDeliveryStageWithProof(nextStage);
+  };
+
   const handleProofSubmit = async (imageUrl: string, message: string) => {
     if (!pendingStage) return;
-
     setShowProofModal(false);
     setIsUpdatingStatus(true);
     try {
@@ -384,17 +234,8 @@ export const DeliveryOrderDetails = ({
     }
   };
 
-  const handleProofCancel = () => {
-    setShowProofModal(false);
-    setPendingStage(null);
-  };
-
   const handleOTPVerification = async (otp: string) => {
-    if (!delivery || !user?.id) {
-      Alert.alert("Error", "Missing delivery or user information");
-      return;
-    }
-
+    if (!delivery || !user?.id) return;
     try {
       const result = await verifyDeliveryOTP.mutateAsync({
         user_id: order?.user_id || user.id,
@@ -406,80 +247,41 @@ export const DeliveryOrderDetails = ({
           type: "delivery_confirmation",
         },
       });
-
       if (result.success) {
         setShowOTPModal(false);
-        // Invalidate and refetch relevant queries after successful verification
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ["delivery", deliveryId] }),
           queryClient.invalidateQueries({ queryKey: ["deliveries"] }),
           refetchDelivery(),
-          delivery.order_id && refetchOrder(),
         ]);
-
-        Alert.alert("Success", "Delivery confirmed successfully!");
+        Alert.alert("Success", "Delivery confirmed!");
       } else {
-        Alert.alert(t("common.error") || "Error", result.message || t("orders.otp_verification_failed") || "OTP verification failed");
+        Alert.alert("Error", result.message || "OTP verification failed");
       }
     } catch (error) {
-      console.error("OTP verification error:", error);
-      Alert.alert(t("common.error") || "Error", t("orders.failed_to_verify_otp") || "Failed to verify OTP. Please try again.");
+      Alert.alert("Error", "Failed to verify OTP");
     }
   };
 
-  const handleOTPCancel = () => {
-    setShowOTPModal(false);
-  };
-
-  const handleSubmitProof = async () => {
-    if (!delivery) return;
-    if (!PARTNER_ID) {
-      Alert.alert("Error", "Delivery partner information is missing");
+  const handleCall = (phoneNumber: string | undefined) => {
+    if (!phoneNumber) {
+      Burnt.toast({ title: "No phone number", preset: "error", haptic: "error", duration: 2, from: "top" });
       return;
     }
-    if (!proofPhoto && !signatureText) {
-      Alert.alert(
-        "Error",
-        "Please provide either a photo or signature as proof of delivery."
-      );
-      return;
-    }
-
-    setIsSubmittingProof(true);
-    try {
-      await addDeliveryProof.mutateAsync({
-        deliveryId: delivery.id,
-        data: {
-          partner_id: PARTNER_ID,
-          proof: {
-            photo_url: proofPhoto || undefined,
-            signature: signatureText || undefined,
-          },
-        },
-      });
-
-      // Invalidate and refetch relevant queries after successful proof submission
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["delivery", deliveryId] }),
-        queryClient.invalidateQueries({ queryKey: ["deliveries"] }),
-        refetchDelivery(),
-      ]);
-
-      Alert.alert("Success", "Proof of delivery submitted successfully!");
-      setProofPhoto("");
-      setSignatureText("");
-    } catch (error) {
-      Alert.alert("Error", "Failed to submit proof. Please try again.");
-    } finally {
-      setIsSubmittingProof(false);
-    }
+    Linking.openURL(`tel:${phoneNumber}`);
   };
+
+  const handleViewMap = () => {
+    router.push(`/(delivery)/orders/${deliveryId}/navigate`);
+  };
+
+  // --- Loading / Error states ---
 
   if (!deliveryData) {
     return (
       <View className="flex-1 bg-background justify-center items-center p-4">
         <Text className="text-muted-foreground text-center">
-          {t("delivery_home.no_profile_message")}
+          Delivery partner profile not found.
         </Text>
       </View>
     );
@@ -487,10 +289,8 @@ export const DeliveryOrderDetails = ({
 
   if (deliveryLoading || orderLoading) {
     return (
-      <View className="flex-1 bg-background justify-center items-center p-4">
-        <Text className="text-muted-foreground">
-          {t("common.loading")}
-        </Text>
+      <View className="flex-1 bg-background justify-center items-center">
+        <Text className="text-muted-foreground">Loading...</Text>
       </View>
     );
   }
@@ -498,559 +298,282 @@ export const DeliveryOrderDetails = ({
   if (deliveryError || orderError || !delivery) {
     return (
       <View className="flex-1 bg-background justify-center items-center p-4">
-        <Text className="text-destructive text-center">
-          {t("delivery_navigation.failed_to_load")}
-        </Text>
+        <Text className="text-destructive text-center">Failed to load delivery details.</Text>
       </View>
     );
   }
 
-  const canUpdateStatus = delivery.current_stage !== "delivered";
-  const canSubmitProof = delivery.current_stage === "delivered";
-  const nextStage = getNextStage(delivery.current_stage);
+  const nextStage = getNextStage(delivery.status);
+  const canUpdateStatus = delivery.status !== "delivered";
 
-  // Navigation functionality
-  const canNavigate =
-    delivery.current_stage === "assigned" ||
-    delivery.current_stage === "picked_up" ||
-    delivery.current_stage === "in_transit";
+  // Extract data for the Figma UI
+  const pickupLocation = delivery.pickup_location?.address
+    || order?.shipping_address?.city
+    || "Pickup location";
+  const deliveryLocation = delivery.dropoff_location?.address
+    || (order?.shipping_address
+      ? `${order.shipping_address.address_line1 || ""}, ${order.shipping_address.city || ""}`
+      : "Delivery location");
+  const customerName = order?.shipping_address
+    ? `${order.shipping_address.first_name || ""} ${order.shipping_address.last_name || ""}`.trim()
+    : "Customer";
+  const customerPhone = order?.shipping_address?.phone;
+  const shippingCost = order?.totals?.total || 0;
+  const currency = order?.currency || "Tshs";
 
-  const handleNavigate = () => {
-    router.push(`/(delivery)/orders/${deliveryId}/navigate`);
-  };
+  // Product list
+  const products = order?.items?.map((item) => item.name).join(", ") || "Products";
+
+  // Vendor/Shop names from order items
+  const shopNames = order?.items
+    ?.map((item) => (item as any).store?.store_name)
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i) || [];
+  const shopName = shopNames.join(", ") || "Shop";
+
+  // Is this an order details view (with multiple items) or active delivery view?
+  const hasMultipleItems = (order?.items?.length || 0) > 1;
 
   return (
     <ScrollView className="flex-1 bg-background">
-      <View className="gap-6 p-4">
-        {/* Delivery Information */}
-        <Card className="p-4">
-          <Text className="text-lg font-semibold mb-4">
-            {t("delivery.title")}
+      {/* --- View Map Button --- */}
+      <View className="px-4 pt-4 pb-2">
+        <TouchableOpacity
+          className="flex-row items-center self-start px-4 py-2 rounded-full border border-border"
+          onPress={handleViewMap}
+        >
+          <MapPin size={16} color="#425BA4" />
+          <Text className="text-sm font-medium ml-2" style={{ color: "#425BA4" }}>
+            View map
           </Text>
+        </TouchableOpacity>
+      </View>
 
-          <View className="gap-4">
-            <View className="flex-row justify-between items-center">
-              <Text className="text-sm text-muted-foreground">Delivery ID</Text>
-              <Text className="text-base font-semibold">
-                {delivery.id.slice(-8)}
-              </Text>
-            </View>
+      {/* --- Pickup Points Section (Order details screen) --- */}
+      {hasMultipleItems && (
+        <View className="px-4 py-3">
+          <View className="flex-row items-center mb-3">
+            <MapPin size={16} color="#425BA4" />
+            <Text className="text-sm font-semibold text-foreground ml-2">
+              {pickupLocation}
+            </Text>
+            <Text className="text-sm text-muted-foreground ml-2">Pickup points</Text>
+          </View>
 
-            <View className="flex-row justify-between items-center">
-              <Text className="text-sm text-muted-foreground">{t("orders.order")} ID</Text>
-              <Text className="text-base font-semibold">
-                {delivery.order_id.slice(-8)}
-              </Text>
-            </View>
+          {/* Items grouped by vendor */}
+          {order?.items?.map((item, index) => {
+            const vendorName = (item as any).store?.store_name || "Vendor";
+            const isPickedUp = delivery.status !== "assigned";
 
-            <View className="flex-row justify-between items-center">
-              <Text className="text-sm text-muted-foreground">
-                {t("orders.current_status")}
-              </Text>
-              <Badge variant={getStatusColor(delivery.current_stage)}>
-                <Text className="text-xs font-semibold">
-                  {getStatusText(delivery.current_stage)}
-                </Text>
-              </Badge>
-            </View>
-
-            {delivery.estimated_delivery_time && (
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted-foreground">
-                  {t("delivery_home.estimated_delivery")}
-                </Text>
-                <Text className="text-sm text-foreground">
-                  {format(
-                    new Date(delivery.estimated_delivery_time),
-                    "MMM d, yyyy 'at' h:mm a"
+            return (
+              <View
+                key={item.item_id || index}
+                className="flex-row items-center justify-between py-3 border-b border-border"
+              >
+                <View className="flex-row items-center flex-1">
+                  {isPickedUp ? (
+                    <CheckCircle size={18} color="#22C55E" />
+                  ) : (
+                    <Circle size={18} color="#D1D5DB" />
                   )}
-                </Text>
+                  <View className="ml-3 flex-1">
+                    <Text className="text-xs text-muted-foreground">{vendorName}</Text>
+                    <Text className="text-sm font-medium text-foreground" numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => handleCall(customerPhone)}
+                  className="p-2"
+                >
+                  <Phone size={18} color="#1F2937" />
+                </TouchableOpacity>
               </View>
-            )}
+            );
+          })}
+        </View>
+      )}
 
-            <View className="flex-row justify-between items-center">
-              <Text className="text-sm text-muted-foreground">{t("common.created")}</Text>
-              <Text className="text-sm text-foreground">
-                {format(
-                  new Date(delivery.created_at),
-                  "MMM d, yyyy 'at' h:mm a"
-                )}
+      {/* --- Pickup Details (From) --- */}
+      <View className="px-4 py-4">
+        <View className="flex-row items-center mb-4">
+          <View className="w-3 h-3 rounded-full bg-green-500 mr-3" />
+          <Text className="text-base font-semibold text-foreground">
+            Pickup details (From)
+          </Text>
+        </View>
+
+        <View className="pl-6 gap-3">
+          {/* Location */}
+          <View className="flex-row items-start">
+            <MapPin size={16} color="#9CA3AF" className="mt-0.5" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs text-muted-foreground">Location</Text>
+              <Text className="text-sm font-medium text-foreground">{pickupLocation}</Text>
+            </View>
+          </View>
+
+          {/* Products */}
+          <View className="flex-row items-start">
+            <Package size={16} color="#9CA3AF" className="mt-0.5" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs text-muted-foreground">Products</Text>
+              <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
+                {products}
               </Text>
             </View>
           </View>
-        </Card>
 
-        {/* Delivery Stages */}
-        <Card className="p-4">
-          <Text className="text-lg font-semibold mb-4">{t("orders.delivery_stages")}</Text>
-
-          <View className="gap-3">
-            {delivery.stages.map((stage, index) => (
-              <View key={index} className="flex-row items-start gap-x-3">
-                <View className="w-3 h-3 bg-primary rounded-full mt-1.5" />
-                <View className="flex-1">
-                  <View className="flex-row justify-between items-center mb-1">
-                    <Text className="text-base font-semibold">
-                      {getStatusText(stage.stage)}
-                    </Text>
-                    <Text className="text-sm text-muted-foreground">
-                      {format(new Date(stage.timestamp), "MMM d, h:mm a")}
-                    </Text>
-                  </View>
-                  {stage.location && (
-                    <View className="flex-row items-center gap-x-2">
-                      <MapPin size={14} className="text-muted-foreground" />
-                      <Text className="text-sm text-muted-foreground">
-                        {stage.location.lat.toFixed(4)},{" "}
-                        {stage.location.lng.toFixed(4)}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            ))}
+          {/* Shop Name */}
+          <View className="flex-row items-start">
+            <Store size={16} color="#9CA3AF" className="mt-0.5" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs text-muted-foreground">Shop Name</Text>
+              <Text className="text-sm font-medium text-foreground">{shopName}</Text>
+            </View>
           </View>
-        </Card>
+        </View>
 
-
-
-        {/* Order Information */}
-        {order && (
-          <Card className="p-4">
-            <Text className="text-lg font-semibold mb-4">
-              {t("orders.order")} {t("common.information")}
+        {/* Call Shop button */}
+        {shopNames.length > 0 && (
+          <TouchableOpacity
+            className="flex-row items-center justify-center mt-4 ml-6 py-2.5 px-4 rounded-xl border border-border self-start"
+            onPress={() => handleCall(customerPhone)}
+          >
+            <Phone size={14} color="#425BA4" />
+            <Text className="text-sm font-medium ml-2" style={{ color: "#425BA4" }}>
+              Call shop
             </Text>
-
-            <View className="gap-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted-foreground">
-                  {t("orders.order_number")}
-                </Text>
-                <Text className="text-base font-semibold">
-                  {order.order_number}
-                </Text>
-              </View>
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted-foreground">
-                  {t("orders.order_status")}
-                </Text>
-                <Badge variant="outline">
-                  <Text className="text-xs font-semibold">{order.status}</Text>
-                </Badge>
-              </View>
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted-foreground">
-                  {t("orders.payment_status")}
-                </Text>
-                <Badge
-                  variant={
-                    order.payment_status === "paid" ? "primary" : "outline"
-                  }
-                >
-                  <Text className="text-xs font-semibold">
-                    {order.payment_status}
-                  </Text>
-                </Badge>
-              </View>
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted-foreground">
-                  {t("orders.payment_method")}
-                </Text>
-                <Text className="text-sm text-foreground">
-                  {/* {order.payment_details.method} */}
-                  AFRIZON
-                </Text>
-              </View>
-
-              <View className="flex-row justify-between items-center">
-                <Text className="text-sm text-muted-foreground">
-                  {t("orders.total_amount")}
-                </Text>
-                <Text className="text-lg font-bold text-primary">
-                  {order.currency} {order.totals.total.toLocaleString()}
-                </Text>
-              </View>
-
-              {order.shipping_address && (
-                <View>
-                  <Text className="text-sm text-muted-foreground mb-2">
-                    {t("delivery_navigation.delivery_address")}
-                  </Text>
-                  <View className="bg-muted p-3 rounded-lg">
-                    <Text className="text-sm font-semibold text-foreground mb-1">
-                      {order.shipping_address.first_name}{" "}
-                      {order.shipping_address.last_name}
-                    </Text>
-                    <Text className="text-sm text-foreground">
-                      {order.shipping_address.address_line1}
-                      {order.shipping_address.address_line2 &&
-                        `, ${order.shipping_address.address_line2}`}
-                    </Text>
-                    <Text className="text-sm text-foreground">
-                      {order.shipping_address.city},{" "}
-                      {order.shipping_address.state_province}{" "}
-                      {order.shipping_address.postal_code}
-                    </Text>
-                    <Text className="text-sm text-foreground">
-                      {order.shipping_address.country}
-                    </Text>
-                    {order.shipping_address.phone && (
-                      <Text className="text-sm text-foreground mt-1">
-                        📞 {order.shipping_address.phone}
-                      </Text>
-                    )}
-                    {order.shipping_address.email && (
-                      <Text className="text-sm text-foreground">
-                        ✉️ {order.shipping_address.email}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-              )}
-
-              {/* Order Items */}
-              <View>
-                <Text className="text-sm text-muted-foreground mb-2">
-                  {t("orders.items")} ({order.items?.length || 0})
-                </Text>
-                <View className="gap-2">
-                  {order.items?.map((item) => {
-                    const productImage = item?.product_id ? getProductImage(item.product_id) : null;
-
-                    return (
-                      <View
-                        key={item.item_id}
-                        className="bg-muted p-3 rounded-lg"
-                      >
-                        <View className="flex-row items-start mb-2">
-                          {/* Product Image */}
-                          <View className="w-12 h-12 rounded-lg bg-background mr-3 overflow-hidden">
-                            {productImage ? (
-                              <Image
-                                source={{ uri: productImage }}
-                                className="w-full h-full"
-                                style={{ resizeMode: 'cover' }}
-                              />
-                            ) : (
-                              <View className="w-full h-full flex items-center justify-center">
-                                <Package size={16} className="text-muted-foreground" />
-                              </View>
-                            )}
-                          </View>
-
-                          {/* Product Details */}
-                          <View className="flex-1">
-                            <Text className="text-sm font-semibold">
-                              {item.name}
-                            </Text>
-                            <Text className="text-xs text-muted-foreground">
-                              SKU: {item.sku}
-                            </Text>
-                          </View>
-
-                          {/* Price */}
-                          <Text className="text-sm font-semibold">
-                            {order.currency} {item.unit_price.toLocaleString()}
-                          </Text>
-                        </View>
-
-                        <View className="flex-row justify-between items-center">
-                          <View className="flex-1">
-                            <Text className="text-xs text-muted-foreground">
-                              {t("common.store")}: {item.store?.store_name || "N/A"}
-                            </Text>
-                            <Text className="text-xs text-muted-foreground">
-                              {t("common.qty")}: {item.quantity} × {order.currency}{" "}
-                              {item.unit_price.toLocaleString()}
-                            </Text>
-                          </View>
-                          <Text className="text-sm font-bold text-primary">
-                            {order.currency} {item.total.toLocaleString()}
-                          </Text>
-                        </View>
-
-                        {item.categories && item.categories.length > 0 && (
-                          <View className="flex-row flex-wrap gap-1 mt-2">
-                            {item.categories.map((category) => (
-                              <Badge key={category.category_id} variant="outline">
-                                <Text className="text-xs">{category.name}</Text>
-                              </Badge>
-                            ))}
-                          </View>
-                        )}
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* Order Summary */}
-              <View className="bg-muted p-3 rounded-lg">
-                <Text className="text-sm font-semibold mb-2">
-                  {t("payment.order_summary")}
-                </Text>
-                <View className="gap-1">
-                  <View className="flex-row justify-between">
-                    <Text className="text-xs text-muted-foreground">
-                      {t("orders.subtotal")}
-                    </Text>
-                    <Text className="text-xs">
-                      {order.currency} {order.totals.subtotal.toLocaleString()}
-                    </Text>
-                  </View>
-                  {order.totals.discount > 0 && (
-                    <View className="flex-row justify-between">
-                      <Text className="text-xs text-muted-foreground">
-                        {t("orders.discount")}
-                      </Text>
-                      <Text className="text-xs text-destructive">
-                        -{order.currency}{" "}
-                        {order.totals.discount.toLocaleString()}
-                      </Text>
-                    </View>
-                  )}
-                  {order.totals.tax > 0 && (
-                    <View className="flex-row justify-between">
-                      <Text className="text-xs text-muted-foreground">{t("orders.tax")}</Text>
-                      <Text className="text-xs">
-                        {order.currency} {order.totals.tax.toLocaleString()}
-                      </Text>
-                    </View>
-                  )}
-                  {order.totals.shipping && order.totals.shipping > 0 && (
-                    <View className="flex-row justify-between">
-                      <Text className="text-xs text-muted-foreground">
-                        {t("orders.shipping")}
-                      </Text>
-                      <Text className="text-xs">
-                        {order.currency}{" "}
-                        {order.totals.shipping.toLocaleString()}
-                      </Text>
-                    </View>
-                  )}
-                  <View className="border-t border-border pt-1 mt-1">
-                    <View className="flex-row justify-between">
-                      <Text className="text-sm font-semibold">{t("orders.total")}</Text>
-                      <Text className="text-sm font-bold text-primary">
-                        {order.currency} {order.totals.total.toLocaleString()}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-
-              {order.notes && (
-                <View>
-                  <Text className="text-sm text-muted-foreground mb-2">
-                    {t("orders.order_notes")}
-                  </Text>
-                  <View className="bg-muted p-3 rounded-lg">
-                    <Text className="text-sm text-foreground">
-                      {order.notes}
-                    </Text>
-                  </View>
-                </View>
-              )}
-            </View>
-          </Card>
-        )}
-
-        {/* Navigation Button */}
-        {canNavigate && (
-          <Card className="p-4">
-            <Text className="text-lg font-semibold mb-4">{t("orders.navigation")}</Text>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full flex-row items-center justify-center gap-x-3"
-              onPress={handleNavigate}
-            >
-              <MapPinIcon size={20} color={resolvedThemeColors?.foreground || "#000000"} />
-              <Text className="text-foreground font-semibold text-lg">
-                {t("orders.navigate_to_delivery")}
-              </Text>
-            </Button>
-
-            <Text className="text-xs text-center text-muted-foreground mt-2">
-              {t("orders.get_directions")}
-            </Text>
-          </Card>
-        )}
-
-        {/* Status Update Actions */}
-        {canUpdateStatus && nextStage && (
-          <Card className="p-4">
-            <Text className="text-lg font-semibold mb-4">{t("orders.update_status")}</Text>
-
-            <View className="gap-3">
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full flex-row items-center justify-center gap-x-2"
-                onPress={handleUpdateStatus}
-                disabled={isUpdatingStatus || updateDeliveryStage.isPending}
-              >
-                <Navigation size={20} color={resolvedThemeColors?.foreground || "#000000"} />
-                <Text className="text-foreground font-semibold">
-                  {isUpdatingStatus || updateDeliveryStage.isPending
-                    ? t("common.updating")
-                    : `${t("common.mark_as")} ${getStatusText(nextStage)}`}
-                </Text>
-              </Button>
-
-              {/* Reject Button - Only show when delivery is in assigned stage */}
-              {/* {delivery.current_stage === "assigned" && (
-                <RejectDeliveryModal
-                  onConfirm={handleConfirmReject}
-                  triggerText={isUpdatingStatus || updateDeliveryStage.isPending ? t("common.rejecting") : t("modals.reject_delivery.title")}
-                  triggerVariant="destructive"
-                  triggerSize="lg"
-                  disabled={isUpdatingStatus || updateDeliveryStage.isPending}
-                  canReject={!!delivery && !!PARTNER_ID}
-                />
-              )} */}
-            </View>
-          </Card>
-        )}
-
-        {/* Proof of Delivery */}
-        {/* {canSubmitProof && (
-          <Card className="p-4">
-            <Text className="text-lg font-semibold mb-4">
-              Proof of Delivery
-            </Text>
-
-            <View className="gap-4">
-              <View>
-                <Text className="text-sm font-medium mb-2">Photo Proof</Text>
-                <ImageUploader
-                  value={proofPhoto}
-                  onImageSelected={setProofPhoto}
-                  onImageRemoved={() => setProofPhoto("")}
-                  placeholder="Take Photo as Proof"
-                  disabled={isSubmittingProof}
-                  aspectRatio={[4, 3]}
-                />
-              </View>
-
-              <View>
-                <Text className="text-sm font-medium mb-2">
-                  Signature/Notes
-                </Text>
-                <Textarea
-                  value={signatureText}
-                  onChangeText={setSignatureText}
-                  placeholder="Customer signature or delivery notes"
-                  multiline
-                  numberOfLines={3}
-                  className="min-h-[80px] py-2"
-                  textAlignVertical="top"
-                  editable={!isSubmittingProof}
-                />
-              </View>
-
-              <Button
-                variant="default"
-                size="lg"
-                className="w-full flex-row items-center justify-center gap-x-2"
-                onPress={handleSubmitProof}
-                disabled={isSubmittingProof || (!proofPhoto && !signatureText)}
-              >
-                <Upload size={20} className="text-white" />
-                <Text className="text-white font-semibold">
-                  {isSubmittingProof ? "Submitting..." : "Submit Proof"}
-                </Text>
-              </Button>
-            </View>
-          </Card>
-        )} */}
-
-        {/* OTP Delivery Confirmation */}
-        {delivery.current_stage === "delivered" &&
-          order &&
-          order.status.toLowerCase() !== "completed" &&
-          order.status.toLowerCase() !== "complete" && (
-            <Card className="p-4">
-              <Text className="text-lg font-semibold mb-4">
-                {t("orders.final_delivery_confirmation")}
-              </Text>
-
-              <View className="gap-4">
-                <View className="bg-muted p-4 rounded-lg">
-                  <Text className="text-sm text-muted-foreground mb-2">
-                    {t("orders.ask_customer_otp")}
-                  </Text>
-                  <Text className="text-sm font-medium text-foreground">
-                    {t("orders.otp_ensures_package")}
-                  </Text>
-                </View>
-
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full flex-row items-center justify-center gap-x-2"
-                  onPress={() => setShowOTPModal(true)}
-                  disabled={verifyDeliveryOTP.isPending}
-                >
-                  <Check size={20} color={resolvedThemeColors?.foreground || "#000000"} />
-                  <Text className="text-foreground font-semibold">
-                    {verifyDeliveryOTP.isPending ? t("orders.processing_action") : t("orders.complete_order")}
-                  </Text>
-                </Button>
-              </View>
-            </Card>
-          )}
-
-        {/* Pickup Points Information */}
-        {delivery.pickup_points && delivery.pickup_points.length > 0 && (
-          <Card className="p-4">
-            <Text className="text-lg font-semibold mb-4">{t("orders.pickup_points")}</Text>
-
-            <View className="gap-3">
-              {delivery.pickup_points.map((pickup, index) => (
-                <View
-                  key={index}
-                  className="flex-row justify-between items-center bg-muted p-3 rounded-lg"
-                >
-                  <Text className="text-sm text-muted-foreground">
-                    {t("orders.partner_id")}
-                  </Text>
-                  <Text className="text-sm font-semibold">
-                    {pickup.partner_id.slice(-8)}
-                  </Text>
-                  <Text className="text-sm text-muted-foreground">
-                    {format(new Date(pickup.timestamp), "MMM d, h:mm a")}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </Card>
+          </TouchableOpacity>
         )}
       </View>
 
-      {/* Proof Photo Modal */}
+      {/* Divider */}
+      <View className="h-px bg-border mx-4" />
+
+      {/* --- Delivery Details (To) --- */}
+      <View className="px-4 py-4">
+        <View className="flex-row items-center mb-4">
+          <View className="w-3 h-3 rounded-full" style={{ backgroundColor: "#425BA4" }} />
+          <Text className="text-base font-semibold text-foreground ml-3">
+            Delivery details (To)
+          </Text>
+        </View>
+
+        <View className="pl-6 gap-3">
+          {/* Location */}
+          <View className="flex-row items-start">
+            <MapPin size={16} color="#9CA3AF" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs text-muted-foreground">Location</Text>
+              <Text className="text-sm font-medium text-foreground">{deliveryLocation}</Text>
+            </View>
+          </View>
+
+          {/* Customer Name */}
+          <View className="flex-row items-start">
+            <User size={16} color="#9CA3AF" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs text-muted-foreground">Customer Name</Text>
+              <Text className="text-sm font-medium text-foreground">{customerName}</Text>
+            </View>
+          </View>
+
+          {/* Amount */}
+          <View className="flex-row items-start">
+            <CircleDollarSign size={16} color="#9CA3AF" />
+            <View className="ml-3 flex-1">
+              <Text className="text-xs text-muted-foreground">Amount customer pays</Text>
+              <Text className="text-sm font-medium text-foreground">
+                {currency} {shippingCost.toLocaleString()}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Call Customer button */}
+        {customerPhone && (
+          <TouchableOpacity
+            className="flex-row items-center justify-center mt-4 ml-6 py-2.5 px-4 rounded-xl border border-border self-start"
+            onPress={() => handleCall(customerPhone)}
+          >
+            <Phone size={14} color="#425BA4" />
+            <Text className="text-sm font-medium ml-2" style={{ color: "#425BA4" }}>
+              Call customer
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* --- Action Button --- */}
+      {canUpdateStatus && nextStage && (
+        <View className="px-4 py-6">
+          <TouchableOpacity
+            className="py-4 rounded-2xl items-center justify-center"
+            style={{
+              backgroundColor: "#425BA4",
+              opacity: isUpdatingStatus ? 0.6 : 1,
+            }}
+            onPress={handleUpdateStatus}
+            disabled={isUpdatingStatus || updateDeliveryStage.isPending}
+          >
+            <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>
+              {isUpdatingStatus ? "Updating..." : getActionButtonText(nextStage)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* --- OTP Confirmation (after delivered) --- */}
+      {delivery.status === "delivered" &&
+        order &&
+        order.status.toLowerCase() !== "completed" &&
+        order.status.toLowerCase() !== "complete" && (
+          <View className="px-4 pb-6">
+            <View className="bg-muted p-4 rounded-xl mb-4">
+              <Text className="text-sm text-muted-foreground mb-1">
+                Ask the customer for their delivery OTP code to confirm handover.
+              </Text>
+              <Text className="text-sm font-medium text-foreground">
+                This ensures the package was delivered to the right person.
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              className="py-4 rounded-2xl items-center justify-center"
+              style={{ backgroundColor: "#425BA4" }}
+              onPress={() => setShowOTPModal(true)}
+              disabled={verifyDeliveryOTP.isPending}
+            >
+              <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>
+                {verifyDeliveryOTP.isPending ? "Processing..." : "Complete order"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+      {/* Modals */}
       <ProofPhotoModal
         visible={showProofModal}
-        onClose={handleProofCancel}
+        onClose={() => {
+          setShowProofModal(false);
+          setPendingStage(null);
+          setIsUpdatingStatus(false);
+        }}
         onSubmit={handleProofSubmit}
         isLoading={isUpdatingStatus || updateDeliveryStage.isPending}
         stage={pendingStage === "in_transit" ? "picked_up" : "delivered"}
       />
 
-      {/* OTP Verification Modal */}
       <DeliveryOTPModal
         visible={showOTPModal}
-        onClose={handleOTPCancel}
+        onClose={() => setShowOTPModal(false)}
         onSubmit={handleOTPVerification}
         isLoading={verifyDeliveryOTP.isPending}
         orderId={delivery?.order_id || ""}
         deliveryId={delivery?.id || ""}
       />
-
     </ScrollView>
   );
 };

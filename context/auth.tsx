@@ -271,7 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const vendorDetails = await vendorsApi.getVendor(profile.profile_id);
           updatedUserData.vendorDetails = vendorDetails;
         } else if (profile.role === "delivery") {
-          const deliveryDetails = await deliveryApi.getDeliveryPartner(
+          const deliveryDetails = await deliveryApi.getPartner(
             profile.profile_id
           );
           updatedUserData.deliveryDetails = deliveryDetails;

@@ -56,7 +56,7 @@ export default function MauzoIntro() {
 
     const handleCreateAccount = async () => {
         if (flow === 'delivery') {
-            router.push('/delivery-register');
+            router.push({ pathname: '/register', params: { role: 'delivery' } });
         } else {
             if (isAuthenticated) {
                 // If already logged in as a buyer, create a shell vendor profile
@@ -86,7 +86,7 @@ export default function MauzoIntro() {
 
     const handleSkip = () => {
         if (flow === 'delivery') {
-            router.push('/delivery-login');
+            router.push({ pathname: '/login', params: { role: 'delivery' } });
         } else {
             if (isAuthenticated) {
                 // Already authenticated, just treat as "Create Account"
@@ -207,7 +207,7 @@ export default function MauzoIntro() {
                     <View style={styles.divider} />
 
                     <TouchableOpacity
-                        onPress={() => flow === 'delivery' ? router.push('/delivery-login') : router.push({ pathname: '/login', params: { role: 'merchant' } })}
+                        onPress={() => flow === 'delivery' ? router.push({ pathname: '/login', params: { role: 'delivery' } }) : router.push({ pathname: '/login', params: { role: 'merchant' } })}
                         style={styles.loginLink}
                     >
                         <Text style={styles.loginText}>{t.mauzoAlreadyAccount} <Text style={styles.loginTextBold}>{t.mauzoSignIn}</Text></Text>

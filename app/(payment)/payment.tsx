@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { DesktopLayoutWrapper } from "@/components/layout/DesktopLayoutWrapper";
 import { useAuth } from "@/context/auth";
 import { useInitiatePayment, paymentsApi } from "@/src/services/payments";
-import { useGetOrder, useCreateOrder } from "@/src/services/orders";
+import { useGetOrders, useCreateOrder } from "@/src/services/orders";
 import { cartApi } from "@/src/services/cart";
 import { useCartTotals } from "@/stores/cart";
 import { buyersApi } from "@/src/services/buyers";
@@ -166,10 +166,11 @@ const PaymentScreen = () => {
 
 
   // API hooks - fetch data needed to create order
-  const { data: order, isLoading: orderLoading } = useGetOrder(
-    orderId as string,
+  const { data: ordersResponse, isLoading: orderLoading } = useGetOrders(
+    { order_id: orderId as string },
     !!orderId
   );
+  const order = ordersResponse && 'items' in ordersResponse ? ordersResponse.items[0] : (Array.isArray(ordersResponse) ? ordersResponse[0] : undefined);
   
   // Fetch cart data if no orderId provided
   const { data: cart, isLoading: cartLoading } = useQuery({

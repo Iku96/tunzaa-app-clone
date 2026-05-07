@@ -31,7 +31,7 @@ export default function RegisterScreen() {
     const { t } = useLanguage();
 
     const params = useLocalSearchParams<{ 
-        role: 'buyer' | 'merchant', 
+        role: 'buyer' | 'merchant' | 'delivery', 
         pendingOnboarding: string,
         step: string,
         first_name: string,
@@ -123,7 +123,7 @@ export default function RegisterScreen() {
                 password: password,
             };
 
-            const portal = userRole === 'merchant' ? 'merchant' : 'buyer';
+            const portal = userRole === 'merchant' ? 'merchant' : userRole === 'delivery' ? 'delivery' : 'buyer';
             await register(registrationData, portal);
             
             // Set first-time buyer flag to ensure index.tsx routes correctly
@@ -133,6 +133,10 @@ export default function RegisterScreen() {
                 console.log('📝 [Register] Setting HAS_PENDING_MERCHANT_ONBOARDING for merchant flow');
                 await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
                 await AsyncStorage.setItem('LAST_PORTAL', 'merchant');
+            } else if (userRole === 'delivery') {
+                console.log('📝 [Register] Setting HAS_PENDING_DELIVERY_ONBOARDING for delivery flow');
+                await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
+                await AsyncStorage.setItem('LAST_PORTAL', 'delivery');
             }
             
             // NOTE: We don't call router.replace here anymore to avoid navigation race conditions.
@@ -146,18 +150,18 @@ export default function RegisterScreen() {
             const isAlreadyExists = errorMsg.toLowerCase().includes('already exists') || e.status === 409;
 
             if (isAlreadyExists) {
-                if (userRole === 'merchant') {
+                if (userRole === 'merchant' || userRole === 'delivery') {
                     Alert.alert(
                         'Account Found',
-                        'You already have a Tunzaa account. Please sign in to continue your merchant application.',
+                        'You already have a Tunzaa account. Please sign in to continue your application.',
                         [
                             {
                                 text: 'Sign In',
                                 onPress: () => router.replace({ 
                                     pathname: '/login', 
                                     params: { 
-                                        role: 'merchant',
-                                        phone_number: phoneOrEmail 
+                                        role: userRole,
+                                        phone_number: phone 
                                     } 
                                 })
                             }
@@ -225,7 +229,7 @@ export default function RegisterScreen() {
                                 <Text style={styles.title}>
                                     {currentStep === 'password' 
                                         ? 'Verify and Create Password' 
-                                        : (userRole === 'merchant' ? t.registerTitleMerchant : t.registerTitleBuyer)}
+                                        : (userRole === 'merchant' ? t.registerTitleMerchant : userRole === 'delivery' ? 'Register Delivery Partner' : t.registerTitleBuyer)}
                                 </Text>
                                 <Text style={styles.subtitle}>
                                     {currentStep === 'password' 

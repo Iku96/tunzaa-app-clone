@@ -15,7 +15,7 @@ import {
 } from "lucide-react-native";
 import { useAuth } from "@/context/auth";
 import { useGetOrder, useGetOrderByNumber } from "@/src/services/orders";
-import { useGetDeliveryByOrderId } from "@/src/services/delivery";
+import { useDeliveryByOrder } from "@/src/services/delivery";
 import { useProductDetails } from "@/hooks/useProductDetails";
 import * as Sharing from 'expo-sharing';
 import { Text } from "@/components/ui/text";
@@ -73,7 +73,7 @@ export default function OrderDetailsScreen({ orderId }: { orderId: string }) {
     data: delivery,
     isLoading: deliveryLoading,
     refetch: refetchDelivery,
-  } = useGetDeliveryByOrderId(orderIdForDelivery || '', !!orderIdForDelivery);
+  } = useDeliveryByOrder(orderIdForDelivery || '', !!orderIdForDelivery);
 
   // Extract product IDs from order items and fetch product details
   const productIds = React.useMemo(() => {

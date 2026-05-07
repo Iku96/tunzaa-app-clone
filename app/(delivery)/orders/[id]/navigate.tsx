@@ -4,7 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "@/components/ui/text";
 import { DeliveryNavigation } from "@/components/delivery/DeliveryNavigation";
-import { useGetDelivery } from "@/src/services/delivery";
+import { useDelivery } from "@/src/services/delivery";
 import { useGetOrder } from "@/src/services/order-management";
 import { useGetVendor } from "@/src/services/vendors";
 import type { DeliveryLocation } from "@/components/delivery/DeliveryMap";
@@ -20,7 +20,7 @@ export default function NavigateScreen() {
     data: delivery,
     isLoading: deliveryLoading,
     error: deliveryError,
-  } = useGetDelivery(deliveryId);
+  } = useDelivery(deliveryId);
 
   // Fetch order details using the order_id from delivery
   const {
@@ -115,12 +115,12 @@ export default function NavigateScreen() {
       pickupLocation={pickupLocation}
       dropoffLocation={dropoffLocation}
       orderId={order.order_id}
-      deliveryId={delivery.id}
+      deliveryId={delivery.delivery_id}
       onNavigationStart={() => {
-        console.log("Navigation started for delivery:", delivery.id);
+        console.log("Navigation started for delivery:", delivery.delivery_id);
       }}
       onNavigationComplete={() => {
-        console.log("Navigation completed for delivery:", delivery.id);
+        console.log("Navigation completed for delivery:", delivery.delivery_id);
       }}
     />
   );

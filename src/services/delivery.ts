@@ -314,6 +314,15 @@ export const useDelivery = (deliveryId: string, enabled: boolean = true) => {
     });
 };
 
+/** Fetch a delivery by order ID */
+export const useDeliveryByOrder = (orderId: string, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["delivery", "order", orderId],
+        queryFn: () => deliveryApi.getDeliveryByOrder(orderId),
+        enabled: enabled && !!orderId,
+    });
+};
+
 /** Mutation: update delivery stage */
 export const useAddDeliveryStage = () => {
     const queryClient = useQueryClient();
@@ -364,4 +373,48 @@ export const useSubmitKYC = () => {
             queryClient.invalidateQueries({ queryKey: ["partner"] });
         },
     });
+};
+
+/** Fetch delivery partners */
+export const useGetDeliveryPartners = (params?: ListPartnersParams, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["partners", params],
+        queryFn: () => deliveryApi.listPartners(params),
+        enabled,
+    });
+};
+
+/** Mock delivery types for fallback */
+const MOCK_DELIVERY_TYPES = [
+    {
+        id: "standard",
+        tenant_id: "default",
+        name: "Standard Delivery",
+        description: "Delivery within 2-3 business days",
+        is_active: true,
+        price: 5000,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    },
+    {
+        id: "express",
+        tenant_id: "default",
+        name: "Express Delivery",
+        description: "Same day delivery",
+        is_active: true,
+        price: 15000,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    }
+];
+
+/** Fetch delivery types with fallback */
+export const useDeliveryTypesWithFallback = (enabled: boolean = true) => {
+    // Return mock data for now since we don't have a delivery types endpoint
+    return {
+        data: MOCK_DELIVERY_TYPES,
+        isLoading: false,
+        error: null,
+        isUsingFallback: true,
+    };
 };

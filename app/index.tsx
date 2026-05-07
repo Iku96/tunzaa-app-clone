@@ -57,6 +57,7 @@ export default function WelcomeScreen() {
                 console.log(`🚀 [Splash] Auth found. Server Role: ${role}, Last Local Portal: ${lastPortal}`);
                 
                 const hasPendingMerchantOnboarding = await AsyncStorage.getItem('HAS_PENDING_MERCHANT_ONBOARDING');
+                const hasPendingDeliveryOnboarding = await AsyncStorage.getItem('HAS_PENDING_DELIVERY_ONBOARDING');
                 
                 // Onboarding Status Check
                 const onboardingStatus = merchantProfile?.metadata?.onboarding_status || merchantProfile?.metadata?.onboardingStatus;
@@ -67,6 +68,14 @@ export default function WelcomeScreen() {
                     if (lastPortal === 'merchant') {
                         console.log('🚀 [Splash] Pending merchant onboarding detected, directing to onboarding...');
                         router.replace('/(vendor)/onboarding/step-1');
+                        return;
+                    }
+                }
+
+                if (hasPendingDeliveryOnboarding === 'true') {
+                    if (lastPortal === 'delivery') {
+                        console.log('🚀 [Splash] Pending delivery onboarding detected, directing to onboarding...');
+                        router.replace('/(delivery)/onboarding');
                         return;
                     }
                 }
@@ -84,7 +93,12 @@ export default function WelcomeScreen() {
                 }
 
                 if (lastPortal === 'delivery' && hasDeliveryProfile) {
-                    router.replace('/(delivery)/home');
+                    router.replace('/(delivery)');
+                    return;
+                }
+
+                if (lastPortal === 'delivery' && !hasDeliveryProfile) {
+                    router.replace('/(delivery)/onboarding');
                     return;
                 }
 
@@ -104,7 +118,7 @@ export default function WelcomeScreen() {
                 const isMerchantRole = ['vendor', 'merchant', 'business'].includes(role?.toLowerCase() || '');
 
                 if (isDeliveryRole) {
-                    router.replace('/(delivery)/home');
+                    router.replace('/(delivery)');
                     return;
                 }
                 if (isMerchantRole) {

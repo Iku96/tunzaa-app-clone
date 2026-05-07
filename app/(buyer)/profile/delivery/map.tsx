@@ -222,6 +222,8 @@ export default function DeliveryTrackingScreen() {
                 initialRegion={region}
                 onRegionChangeComplete={handleRegionChangeComplete}
             >
+                {/* eslint-disable-next-line */}
+                {/* @ts-expect-error - react-native-maps Marker type mismatch */}
                 <Marker
                     coordinate={selectedLocation}
                     draggable
