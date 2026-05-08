@@ -11,9 +11,9 @@ export default function InterestsScreen() {
     const router = useRouter();
 
     const interests = [
-        'Fashion', 'Technology', 'Food & Dining', 'Travel', 'Sports',
-        'Music', 'Art & Culture', 'Fitness', 'Gaming', 'Photography',
-        'Reading', 'Cooking', 'Movies', 'Nature', 'Business'
+        'Market', 'Food', 'Tourism', 'Entertainment', 'Beauty',
+        'Technology industry', 'Mother and baby product', 'Books',
+        'Deals & Discounts', 'Automotive'
     ];
 
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -34,7 +34,7 @@ export default function InterestsScreen() {
 
     const handleContinue = async () => {
         await saveOnboardingStep('interests', selectedInterests);
-        router.push('/creators');
+        router.push('/(vendor)/onboarding/step-1');
     };
 
     return (
@@ -48,9 +48,9 @@ export default function InterestsScreen() {
                     <View style={styles.contentWrapper}>
                         {/* Header */}
                         <View style={styles.header}>
-                            <Text style={styles.title}>What are your interests?</Text>
+                            <Text style={styles.title}>Choose your meet industry</Text>
                             <Text style={styles.subtitle}>
-                                Select your interests to personalize your experience
+                                Please select the relevant sector of your mishe
                             </Text>
                         </View>
 

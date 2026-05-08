@@ -1,453 +1,411 @@
-import { useState } from "react";
-import { View, ScrollView, Alert, Share } from "react-native";
-import {
-  MapPin,
-  Search,
-  ArrowRight,
-  X,
-  Users,
-  MessageSquare,
-  ExternalLink,
-  TrendingUp,
-  Banknote,
-  Eye,
-  ShoppingCart,
-  Link,
-  CheckCircle,
-  Clock,
-  XCircle,
-} from "lucide-react-native";
+import React, { useState, useEffect } from "react";
+import { View, ScrollView, Image, TouchableOpacity, Modal, ActivityIndicator, Dimensions, StyleSheet, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import { NotificationIcon } from "@/components/NotificationIcon";
-import { ProductTile } from "@/components/products/ProductTile";
-import { CategoryTile } from "@/components/categories/CategoryTile";
-import { ShopTile } from "@/components/shop/ShopTile";
-import { useProducts } from "@/stores/products";
-import { useCategories } from "@/stores/categories";
-import { useShops } from "@/stores/shops";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { 
+  CheckCircle, 
+  Grid, 
+  Calendar as CalendarIcon,
+  TrendingUp,
+  X,
+  Home as HomeIcon,
+  Package,
+  FileSpreadsheet,
+  Users,
+  Wallet
+} from "lucide-react-native";
 import { Text } from "@/components/ui/text";
-import { Badge } from "@/components/ui/badge";
-import {
-  useGetAffiliateStats,
-  useGetAffiliateLinks,
-  useGetAffiliateRequests,
-  useCreateVendorRequest,
-  useCreateProductRequest,
-} from "@/src/services/affiliates";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
-import { useResolvedThemeColors } from "@/hooks/useThemeColors";
+import { useGetAffiliateStats, useGetAffiliateLinks } from "@/src/services/affiliates";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
+
 export function AffiliateHome() {
   const router = useRouter();
-  const [currentLocation, setCurrentLocation] = useState(
-    "Dar es Salaam, Tanzania"
-  );
-  const resolvedColors = useResolvedThemeColors();
-  // Get affiliate details
-  const { affiliateDetails } = useProfileDetails();
+  const { logout } = useTunzaaAuth();
+
+  // Navigation Drawer Sidebar state
+  const [showDrawer, setShowDrawer] = useState(false);
+
+  // DatePicker state
+  const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - 30)));
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
+  // Stored onboarding details as safe fallbacks
+  const [savedName, setSavedName] = useState("Fedelika Maxmus");
+  const [savedBio, setSavedBio] = useState("Joined November 2010");
+  const [savedLogo, setSavedLogo] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150");
+
+  useEffect(() => {
+    const loadSavedWingaData = async () => {
+      try {
+        const name = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_NAME");
+        const bio = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_BIO");
+        const logo = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_LOGO");
+        if (name) setSavedName(name);
+        if (bio) setSavedBio(bio);
+        if (logo) setSavedLogo(logo);
+      } catch (err) {
+        console.log("Error loading saved Winga data inside dashboard:", err);
+      }
+    };
+    loadSavedWingaData();
+  }, []);
+
+  // Get dynamic affiliate details and profile
+  const { affiliateDetails, isLoading: profileLoading } = useProfileDetails();
   const affiliateId = affiliateDetails?.id;
 
-  // Affiliate-specific data
+  // Use real dynamic names if available
+  const displayName = affiliateDetails?.name || savedName;
+  // We'll use the placeholder logo if the API doesn't return one
+  const displayLogo = savedLogo; 
+
+  // Fetch dynamic affiliate statistics
   const { data: affiliateStats, isLoading: statsLoading } = useGetAffiliateStats(
     affiliateId || "",
     !!affiliateId
   );
 
+  // Fetch dynamic referral links/products list
   const { data: affiliateLinks, isLoading: linksLoading } = useGetAffiliateLinks(
     affiliateId || "",
-    { limit: 5 },
+    { limit: 100 },
     !!affiliateId
   );
 
-  const { data: affiliateRequests, isLoading: requestsLoading } = useGetAffiliateRequests(
-    { affiliate_id: affiliateId || "", limit: 5 },
-    !!affiliateId
-  );
-
-  // Mutations
-  const createVendorRequest = useCreateVendorRequest();
-  const createProductRequest = useCreateProductRequest();
-
-  // Marketplace data for discovery
-  const { data: productsData, isLoading: productsLoading } = useProducts({
-    is_featured: true,
-    is_active: true,
-    verification_status: "approved",
-    is_vendor_active: true,
+  // Filter links locally by selected dates
+  const filteredLinks = affiliateLinks?.links?.filter(link => {
+    const linkDate = new Date(link.created_at);
+    // Set hours to boundaries for accurate inclusive filtering
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    return linkDate >= start && linkDate <= end;
   });
-  const { data: shopsData, isLoading: shopsLoading } = useShops();
 
-  const handleSearchPress = () => {
-    router.push({
-      pathname: "/search",
-      params: { focus: "true" },
-    });
+  const handleWithdrawPress = () => {
+    router.push("/(winga)/withdraw/status" as any);
   };
 
-  const handleVendorRequest = (vendorId: string, vendorName: string) => {
-    if (!affiliateId) {
-      Alert.alert("Error", "Please complete your affiliate profile first");
-      return;
-    }
+  const isPageLoading = profileLoading || statsLoading || linksLoading;
 
-    Alert.prompt(
-      "Request Partnership",
-      `Send a partnership request to ${vendorName}`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Send Request",
-          onPress: (message) => {
-            if (message) {
-              createVendorRequest.mutate(
-                {
-                  affiliate_id: affiliateId,
-                  vendor_id: vendorId,
-                  message: message,
-                  request_type: "vendor",
-                },
-                {
-                  onSuccess: () => {
-                    Alert.alert(
-                      "Success",
-                      "Partnership request sent successfully!"
-                    );
-                  },
-                  onError: () => {
-                    Alert.alert("Error", "Failed to send partnership request");
-                  },
-                }
-              );
-            }
-          },
-        },
-      ],
-      "plain-text",
-      "",
-      "Enter your message to the vendor"
+  if (isPageLoading) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#3B5191" />
+      </View>
     );
-  };
+  }
 
-  const handleProductRequest = (productId: string, productName: string, vendorId: string) => {
-    if (!affiliateId) {
-      Alert.alert("Error", "Please complete your affiliate profile first");
-      return;
-    }
-
-    Alert.prompt(
-      "Request Product Partnership",
-      `Send a partnership request for ${productName}`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Send Request",
-          onPress: (message) => {
-            if (message) {
-              createProductRequest.mutate(
-                {
-                  affiliate_id: affiliateId,
-                  vendor_id: vendorId,
-                  product_id: productId,
-                  message: message,
-                  request_type: "product",
-                },
-                {
-                  onSuccess: () => {
-                    Alert.alert(
-                      "Success",
-                      "Product partnership request sent successfully!"
-                    );
-                  },
-                  onError: () => {
-                    Alert.alert("Error", "Failed to send product partnership request");
-                  },
-                }
-              );
-            }
-          },
-        },
-      ],
-      "plain-text",
-      "",
-      "Enter your message about this product"
-    );
-  };
-
-  const handleShareLink = async (code: string) => {
-    try {
-      const referralUrl = `https://your-domain.com/v1/winga/link/${code}`;
-      await Share.share({
-        message: `Check out this amazing deal! ${referralUrl}`,
-        url: referralUrl,
-      });
-    } catch (error) {
-      Alert.alert("Error", "Failed to share referral link");
+  const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    setShowStartPicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setStartDate(selectedDate);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return 'bg-green-400 text-green-800';
-      case 'pending':
-        return 'bg-yellow-400 text-yellow-800';
-      case 'rejected':
-        return 'bg-red-400 text-red-800';
-      default:
-        return 'bg-gray-400 text-gray-800';
+  const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    setShowEndPicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setEndDate(selectedDate);
     }
   };
-
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return <CheckCircle size={14} className="text-green-600" color={resolvedColors?.foreground || "#000000"} />;
-      case 'pending':
-        return <Clock size={14} className="text-yellow-600" color={resolvedColors?.foreground || "#000000"} />;
-      case 'rejected':
-        return <XCircle size={14} className="text-red-600" color={resolvedColors?.foreground || "#000000"} />;
-      default:
-        return <Clock size={14} className="text-gray-600" color={resolvedColors?.foreground || "#000000"} />;
-    }
-  };
-
-  // Get data from React Query
-  const trendingProducts = productsData?.items || [];
-  const shops = shopsData?.items || [];
 
   return (
-    <View className="flex-1 bg-muted">
-      <View className="p-4 flex-row items-center justify-between">
-        <Text className="text-base text-2xl font-bold">Affiliate Dashboard</Text>
-        <NotificationIcon />
+    <View className="flex-1 bg-white">
+      {/* ========================================== */}
+      {/* 1. HEADER ROW (Clean root design without redundant back arrow) */}
+      {/* ========================================== */}
+      <View className="px-5 py-4 flex-row justify-between items-center bg-white border-b border-gray-100 mt-2">
+        {/* Company Name and Logo clickable to view the profile */}
+        <TouchableOpacity 
+          onPress={() => router.push("/(winga)/account" as any)}
+          className="flex-row items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full"
+        >
+          <View className="w-6 h-6 rounded-full overflow-hidden bg-gray-200">
+            <Image source={{ uri: displayLogo }} className="w-full h-full" />
+          </View>
+          <Text className="font-extrabold text-gray-800 text-sm">{displayName}</Text>
+          <CheckCircle size={14} color="#10B981" fill="#FFFFFF" />
+        </TouchableOpacity>
+        
+        <TouchableOpacity onPress={() => setShowDrawer(true)} className="p-1">
+          <Grid size={24} color="#1D1E1F" />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Affiliate Stats Overview */}
-        <View className="px-4 mb-6">
-          <Text className="text-lg font-bold mb-4">Your Performance</Text>
-          <View className="flex-row gap-3 mb-4">
-            <Card className="flex-1 p-3">
-              <View className="flex-row items-center gap-2 mb-1">
-                <Banknote size={16} className="text-green-600" color={resolvedColors?.primary || "#000000"} />
-                <Text className="text-sm font-medium">Earnings</Text>
-              </View>
-              <Text className="text-xl font-bold text-foreground">
-                TZS {affiliateStats?.total_earnings?.toLocaleString() || "0"}
+      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+        
+        {/* ========================================== */}
+        {/* 2. DATE SELECTOR ROW (Matches Screenshot 2) */}
+        {/* ========================================== */}
+        <View className="px-6 pt-4 flex-row justify-between items-center">
+          <TouchableOpacity 
+            onPress={() => setShowStartPicker(true)}
+            className="flex-row items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3 flex-1 mr-2.5"
+          >
+            <CalendarIcon size={18} color="#9CA3AF" />
+            <Text className="text-sm font-bold text-gray-800">{format(startDate, 'MMM dd, yyyy')}</Text>
+          </TouchableOpacity>
+          
+          <Text className="text-gray-400 font-bold text-lg">-</Text>
+          
+          <TouchableOpacity 
+            onPress={() => setShowEndPicker(true)}
+            className="flex-row items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3 flex-1 ml-2.5"
+          >
+            <CalendarIcon size={18} color="#9CA3AF" />
+            <Text className="text-sm font-bold text-gray-800">{format(endDate, 'MMM dd, yyyy')}</Text>
+          </TouchableOpacity>
+        </View>
+        <Text className="text-center text-xs text-gray-400 font-bold mt-2.5 mb-2">
+          Report : {format(startDate, 'MMM dd, yyyy')} - {format(endDate, 'MMM dd, yyyy')}
+        </Text>
+
+        {showStartPicker && (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display="default"
+            onChange={handleStartDateChange}
+            maximumDate={endDate}
+          />
+        )}
+        
+        {showEndPicker && (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display="default"
+            onChange={handleEndDateChange}
+            minimumDate={startDate}
+            maximumDate={new Date()}
+          />
+        )}
+
+        {/* ========================================== */}
+        {/* 3. COMMISSION HERO CARD (Matches Screenshot 2) */}
+        {/* ========================================== */}
+        <View className="p-6">
+          <View className="bg-[#3B5191] rounded-[24px] p-6 shadow-md">
+            <Text className="text-xs text-white/70 font-semibold mb-1">
+              Total Earning Commission
+            </Text>
+            <Text className="text-3xl font-extrabold text-white mb-2.5">
+              Tsh.{(affiliateStats?.total_earnings || 0).toLocaleString()}
+            </Text>
+            
+            <View className="flex-row items-center gap-1.5 mb-6">
+              <TrendingUp size={16} color="#84CC16" />
+              <Text className="text-xs text-[#84CC16] font-bold">
+                {(affiliateStats?.conversion_rate || 0)}% Conversion Rate
               </Text>
-            </Card>
-            <Card className="flex-1 p-3">
-              <View className="flex-row items-center gap-2 mb-1">
-                <TrendingUp size={16} className="text-green-600" color={resolvedColors?.primary || "#000000"} />
-                <Text className="text-sm font-medium">Conversion</Text>
-              </View>
-              <Text className="text-xl font-bold text-foreground">
-                {affiliateStats?.conversion_rate?.toFixed(1) || "0.0"}%
-              </Text>
-            </Card>
-          </View>
-          <View className="flex-row gap-3">
-            <Card className="flex-1 p-3">
-              <View className="flex-row items-center gap-2 mb-1">
-                <Eye size={16} className="text-green-600" color={resolvedColors?.primary || "#000000"} />
-                <Text className="text-sm font-medium">Clicks</Text>
-              </View>
-              <Text className="text-xl font-bold text-foreground">
-                {affiliateStats?.clicks || 0}
-              </Text>
-            </Card>
-            <Card className="flex-1 p-3">
-              <View className="flex-row items-center gap-2 mb-1">
-                <ShoppingCart size={16} className="text-orange-600" color={resolvedColors?.primary || "#000000"} />
-                <Text className="text-sm font-medium">Orders</Text>
-              </View>
-              <Text className="text-xl font-bold text-foreground">
-                {affiliateStats?.orders || 0}
-              </Text>
-            </Card>
+            </View>
+
+            <TouchableOpacity 
+              onPress={handleWithdrawPress}
+              className="bg-white/10 border border-white/20 rounded-2xl py-3.5 items-center justify-center"
+            >
+              <Text className="text-white text-sm font-black">Withdraw Fund</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Recent Referral Links */}
-        <View className="px-4 mb-6">
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-bold">Your Referral Links</Text>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => router.push("/(winga)/links")}
+        {/* ========================================== */}
+        {/* 4. ORDERS STATS ROW (Matches Screenshot 2) */}
+        {/* ========================================== */}
+        <View className="px-6 flex-row gap-4 mb-8">
+          <View className="flex-1 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm items-center">
+            <Text className="text-xs font-semibold text-gray-400 mb-2">Total Orders Placed</Text>
+            <Text className="text-3xl font-black text-gray-800 mb-4">
+              {affiliateStats?.clicks || 0}
+            </Text>
+            <TouchableOpacity 
+              onPress={() => router.push("/(winga)/orders/sales" as any)}
+              className="bg-[#00C620] rounded-xl py-2 px-6 items-center justify-center w-full"
             >
-              <Text className="text-sm">View All</Text>
-            </Button>
+              <Text className="text-white text-xs font-extrabold">View Details</Text>
+            </TouchableOpacity>
           </View>
-          {affiliateLinks?.links?.slice(0, 3).map((link) => (
-            <Card key={link.id} className="p-3 mb-3">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1">
-                  <Text className="font-medium mb-1">
-                    {link.product_id ? "Product Link" : "Store Link"}
-                  </Text>
-                  <Text className="text-sm text-muted-foreground mb-2">
-                    Code: {link.code}
-                  </Text>
-                  <View className="flex-row gap-4">
-                    <Text className="text-xs text-muted-foreground">
-                      {link.clicks} clicks
-                    </Text>
-                    <Text className="text-xs text-muted-foreground">
-                      {link.orders} orders
-                    </Text>
-                    <Text className="text-xs text-green-600">
-                      TZS {link.total_commission.toLocaleString()}
-                    </Text>
-                  </View>
-                </View>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onPress={() => handleShareLink(link.code)}
+
+          <View className="flex-1 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm items-center">
+            <Text className="text-xs font-semibold text-gray-400 mb-2">Total Completed Orders</Text>
+            <Text className="text-3xl font-black text-gray-800 mb-4">
+              {affiliateStats?.orders || 0}
+            </Text>
+            <TouchableOpacity 
+              onPress={() => router.push("/(winga)/orders/sales" as any)}
+              className="bg-[#00C620] rounded-xl py-2 px-6 items-center justify-center w-full"
+            >
+              <Text className="text-white text-xs font-extrabold">View Details</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ========================================== */}
+        {/* 5. TOP EARNING PRODUCTS (Matches Screenshot 2) */}
+        {/* ========================================== */}
+        <View className="px-6 pb-12">
+          <Text className="text-lg font-bold text-gray-900 mb-4">Top Earning Products</Text>
+
+          <View className="gap-4">
+            {/* Dynamic links rendering with local date filtering */}
+            {filteredLinks && filteredLinks.length > 0 ? (
+              filteredLinks.map((link) => (
+                <TouchableOpacity 
+                  key={link.id}
+                  onPress={() => router.push("/(winga)/product/performance" as any)}
+                  className="flex-row items-center gap-4 p-4 bg-white border border-gray-100 rounded-3xl shadow-sm"
                 >
-                  <ExternalLink size={16} className="text-foreground" color={resolvedColors?.primary || "#000000"} />
-                </Button>
+                  <View className="w-16 h-16 bg-blue-50 rounded-2xl items-center justify-center overflow-hidden">
+                    <Image 
+                      source={{ uri: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=150" }} 
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-base font-extrabold text-gray-800 mb-1">Product Code: {link.code}</Text>
+                    <Text className="text-xs text-gray-400 font-bold mb-0.5">Clicks: {link.clicks} • Orders: {link.orders}</Text>
+                    <Text className="text-xs text-green-600 font-black">Tsh {link.total_commission.toLocaleString()} Commission</Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View className="py-8 items-center justify-center">
+                <Text className="text-gray-400 font-medium">No products found for this date range.</Text>
               </View>
-            </Card>
-          ))}
-          {(!affiliateLinks?.links || affiliateLinks.links.length === 0) && (
-            <Card className="p-4">
-              <Text className="text-center text-muted-foreground">
-                No referral links yet. Request partnerships to start earning!
-              </Text>
-            </Card>
-          )}
-        </View>
-
-        {/* Recent Partnership Requests */}
-        <View className="px-4 mb-6">
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-bold">Recent Requests</Text>
-            <Button
-              size="sm"
-              variant="outline"
-              onPress={() => router.push("/(winga)/links")}
-            >
-              <Text className="text-sm">View All</Text>
-            </Button>
-          </View>
-          {affiliateRequests?.requests?.slice(0, 3).map((request) => (
-            <Card key={request.id} className="p-3 mb-3">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1">
-                  <Text className="font-medium mb-1">
-                    {request.request_type === "vendor" ? "Store Partnership" : "Product Partnership"}
-                  </Text>
-                  <Text className="text-sm text-muted-foreground mb-2">
-                    {request.message}
-                  </Text>
-                  <Text className="text-xs text-muted-foreground">
-                    {new Date(request.created_at).toLocaleDateString()}
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-1">
-                  {getStatusIcon(request.status)}
-                  <Badge variant="outline" className={getStatusColor(request.status)}>
-                    {request.status}
-                  </Badge>
-                </View>
-              </View>
-            </Card>
-          ))}
-          {(!affiliateRequests?.requests || affiliateRequests.requests.length === 0) && (
-            <Card className="p-4">
-              <Text className="text-center text-muted-foreground">
-                No partnership requests yet. Start requesting partnerships below!
-              </Text>
-            </Card>
-          )}
-        </View>
-
-        {/* Discover Partnerships */}
-        <View className="pl-4 mb-6">
-          <Text className="text-lg font-bold mb-4">Discover Partnerships</Text>
-
-          {/* Popular Stores */}
-          <View className="mb-6">
-            <Text className="text-base font-medium mb-3">Popular Stores</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 16 }}
-            >
-              {shops.slice(0, 10).map((shop) => (
-                <View key={shop.store_id} style={{ width: 120 }}>
-                  <ShopTile
-                    id={shop.store_id}
-                    name={shop.store_name}
-                    logo={shop.branding.logo_url}
-                    delivery="By 5:50am"
-                    badge={shop.is_featured ? "Featured" : undefined}
-                  />
-                  {/* <Button
-                    size="sm"
-                    className="mt-2 bg-primary"
-                    onPress={() =>
-                      handleVendorRequest(shop.vendor_id, shop.store_name)
-                    }
-                    disabled={createVendorRequest.isPending}
-                  >
-                    <View className="flex-row items-center gap-1">
-                      <Users size={14}  color={resolvedColors?.primary || "#000000"} />
-                      <Text className="text-primary text-xs font-semibold">
-                        {createVendorRequest.isPending ? "Sending..." : "Partner"}
-                      </Text>
-                    </View>
-                  </Button> */}
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Trending Products */}
-          <View className="mb-6">
-            <Text className="text-base font-medium mb-3">Trending Products</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 12 }}
-            >
-              {trendingProducts.slice(0, 10).map((product) => (
-                <View key={product.product_id} style={{ width: 140 }}>
-                  <ProductTile product={product} />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-2"
-                    onPress={() =>
-                      handleProductRequest(
-                        product.product_id,
-                        product.name,
-                        product.vendor_id
-                      )
-                    }
-                    disabled={createProductRequest.isPending}
-                  >
-                    <View className="flex-row items-center gap-1">
-                      <Link size={12} className="text-foreground" color={resolvedColors?.primary || "#000000"} />
-                      <Text className="text-xs font-semibold ml-2">
-                        {createProductRequest.isPending ? "Sending..." : "Request"}
-                      </Text>
-                    </View>
-                  </Button>
-                </View>
-              ))}
-            </ScrollView>
+            )}
           </View>
         </View>
       </ScrollView>
+
+      {/* ========================================================== */}
+      {/* 6. SIDEBAR MENU DRAWER MODAL (Matches Screenshot 3) */}
+      {/* ========================================================== */}
+      <Modal
+        visible={showDrawer}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowDrawer(false)}
+      >
+        <View className="flex-1 flex-row bg-black/40">
+          <View className="w-4/5 max-w-[310px] bg-white h-full p-6 shadow-2xl justify-between">
+            <View>
+              {/* Profile Card Header Clickable to Profile Page */}
+              <TouchableOpacity 
+                onPress={() => { setShowDrawer(false); router.push("/(winga)/account" as any); }}
+                className="flex-row items-center gap-3 pb-6 border-b border-gray-100 mb-6 mt-8"
+              >
+                <View className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 border-2 border-emerald-500">
+                  <Image 
+                    source={{ uri: displayLogo }} 
+                    className="w-full h-full"
+                  />
+                </View>
+                <View className="flex-1">
+                  <View className="flex-row items-center gap-1">
+                    <Text className="font-extrabold text-gray-800 text-sm" numberOfLines={1}>
+                      {displayName}
+                    </Text>
+                    <CheckCircle size={14} color="#10B981" fill="#FFFFFF" />
+                  </View>
+                  <Text className="text-[10px] text-gray-400 font-bold" numberOfLines={1}>
+                    {savedBio}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => setShowDrawer(false)} className="p-1.5 bg-gray-100 rounded-full">
+                  <X size={16} color="#4B5563" />
+                </TouchableOpacity>
+              </TouchableOpacity>
+
+              {/* Links list */}
+              <View className="gap-2">
+                <TouchableOpacity 
+                  onPress={() => { setShowDrawer(false); }}
+                  className="flex-row items-center gap-4 p-4 bg-blue-50/70 rounded-2xl border border-blue-100/50"
+                >
+                  <HomeIcon size={20} color="#1E3A8A" />
+                  <Text className="font-extrabold text-blue-900 text-base">Dashboard</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={() => { setShowDrawer(false); router.push("/(winga)/product/performance" as any); }}
+                  className="flex-row items-center gap-4 p-4 rounded-2xl"
+                >
+                  <Package size={20} color="#4B5563" />
+                  <Text className="font-bold text-gray-800 text-base">Products</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={() => { setShowDrawer(false); router.push("/(winga)/orders/sales" as any); }}
+                  className="flex-row items-center gap-4 p-4 rounded-2xl"
+                >
+                  <FileSpreadsheet size={20} color="#4B5563" />
+                  <Text className="font-bold text-gray-800 text-base">Orders and sales</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={() => { setShowDrawer(false); router.push("/(winga)/customer/profile" as any); }}
+                  className="flex-row items-center gap-4 p-4 rounded-2xl"
+                >
+                  <Users size={20} color="#4B5563" />
+                  <Text className="font-bold text-gray-800 text-base">Customer Profile</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={() => { setShowDrawer(false); router.push("/(winga)/withdraw/status" as any); }}
+                  className="flex-row items-center gap-4 p-4 rounded-2xl"
+                >
+                  <Wallet size={20} color="#4B5563" />
+                  <Text className="font-bold text-gray-800 text-base">Withdraw</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Logout and Close buttons */}
+            <View className="gap-2 mb-4">
+              <TouchableOpacity 
+                onPress={async () => {
+                  setShowDrawer(false);
+                  Alert.alert(
+                    "Log Out",
+                    "Are you sure you want to log out?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      { text: "Log Out", style: "destructive", onPress: async () => {
+                          await logout();
+                        }
+                      }
+                    ]
+                  );
+                }}
+                className="py-4 bg-red-50 border border-red-100 rounded-2xl items-center justify-center flex-row gap-2"
+              >
+                <Ionicons name="log-out-outline" size={18} color="#EF4444" />
+                <Text className="text-red-600 font-extrabold text-sm">Log Out</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                onPress={() => setShowDrawer(false)}
+                className="py-4 bg-gray-100 rounded-2xl items-center justify-center"
+              >
+                <Text className="text-gray-500 font-extrabold text-sm">Close Menu</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* Backdrop Touch Dismiss */}
+          <TouchableOpacity className="flex-1" onPress={() => setShowDrawer(false)} />
+        </View>
+      </Modal>
+
     </View>
   );
 }

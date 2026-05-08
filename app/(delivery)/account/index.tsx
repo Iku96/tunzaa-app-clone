@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, RefreshControl } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { User, Building2, Car } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { DesktopLayoutWrapper } from "@/components/layout";
@@ -17,7 +17,7 @@ type ProfileTab = "info" | "history";
 const AccountScreen = () => {
   const router = useRouter();
   const { t } = useI18n();
-  const { user, logout, refreshUserData } = useAuth();
+  const { user, logout, refreshUserData } = useTunzaaAuth();
   const { deliveryDetails } = useProfileDetails();
   const { isDesktop } = useResponsive();
 

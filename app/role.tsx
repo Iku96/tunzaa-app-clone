@@ -58,7 +58,7 @@ export default function RoleScreen() {
         } else if (value === 'affiliate') {
             await AsyncStorage.setItem('HAS_FINISHED_ONBOARDING', 'true');
             await AsyncStorage.setItem('LAST_PORTAL', 'affiliate');
-            router.push('/(affiliate)/register' as any);
+            router.push({ pathname: '/register', params: { role: 'winga' } });
         } else {
             // For "Sell products" or other business options, show intro screens first
             await AsyncStorage.setItem('HAS_FINISHED_ONBOARDING', 'true');

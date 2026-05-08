@@ -88,7 +88,7 @@ export default function Step1Details() {
                 >
                     <View style={styles.staticContent}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Text style={styles.title}>{t.onboardingStep2Title}</Text>
+                            <Text style={styles.title}>Weka Taarifa Zako Kama Winga</Text>
                             <TouchableOpacity 
                                 onPress={logout}
                                 style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 20 }}
@@ -97,7 +97,7 @@ export default function Step1Details() {
                             </TouchableOpacity>
                         </View>
                         <Text style={styles.subtitle}>
-                            {t.onboardingStep2Subtitle}
+                            Logo, jina la duka na maelezo ya duka ni muhimu katika kuunda duka lako Tunzaa.
                         </Text>
 
                         <View style={styles.card}>
@@ -113,7 +113,7 @@ export default function Step1Details() {
                                     {logoImage ? (
                                         <Image source={{ uri: logoImage }} style={styles.logoImage} />
                                     ) : (
-                                        <Text style={styles.logoText}>{t.onboardingStep2AddLogo}</Text>
+                                        <Text style={styles.logoText}>Weka logo*</Text>
                                     )}
                                     <View style={styles.plusBadge}>
                                         <Ionicons name="add" size={14} color="#3A5BA9" />
@@ -123,7 +123,7 @@ export default function Step1Details() {
 
                             <View style={styles.formContent}>
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>{t.onboardingStep2CompanyName}</Text>
+                                    <Text style={styles.label}>Add business name</Text>
                                     <TextInput
                                         style={styles.input}
                                         value={shopName}
@@ -147,18 +147,18 @@ export default function Step1Details() {
 
                                 <View style={styles.inputGroup}>
                                     <View style={{ flexDirection: 'row' }}>
-                                        <Text style={styles.label}>{t.onboardingStep2Description} <Text style={{ color: 'red' }}>*</Text></Text>
+                                        <Text style={styles.label}>Weka Maelezo zaidi *</Text>
                                     </View>
                                     <TextInput
                                         style={[styles.input, styles.textArea]}
-                                        placeholder={t.onboardingStep2DescriptionPlaceholder}
+                                        placeholder="Weka maelezo hapa"
                                         value={description}
                                         onChangeText={setDescription}
                                         placeholderTextColor="#9CA3AF"
                                         multiline
                                         textAlignVertical="top"
                                     />
-                                    <Text style={styles.charCount}>{t.onboardingStep2CharLimit}</Text>
+                                    <Text style={styles.charCount}>Isizidi maneno 240</Text>
                                 </View>
                                 <Text style={styles.requiredText}>{t.onboardingStep2Required} <Text style={{ color: 'red' }}>*</Text></Text>
                             </View>

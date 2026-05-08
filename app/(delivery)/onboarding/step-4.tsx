@@ -5,6 +5,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { CheckCircle, X, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { useLanguage } from '@/src/contexts/LanguageContext';
+import { useCreateDeliveryPartner } from '@/src/services/auth';
 import { uploadApi } from '@/src/services/upload';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -14,7 +15,8 @@ type DocType = 'license' | 'tin' | 'brela' | null;
 
 export default function Step4Documents() {
     const router = useRouter();
-    const { isAuthenticated, isLoading, createVendor, submitVendorKyc, refreshProfile, user } = useTunzaaAuth();
+    const { isAuthenticated, isLoading, submitVendorKyc, refreshProfile, user } = useTunzaaAuth();
+    const createDeliveryPartner = useCreateDeliveryPartner();
     const { t } = useLanguage();
     
     const [loading, setLoading] = useState(false);
@@ -105,112 +107,44 @@ export default function Step4Documents() {
             ]);
             
             const location = savedLocationStr ? JSON.parse(savedLocationStr) as { region: string; municipal: string; ward: string; extraInfo: string } : null;
-            const vendorUserId = user?.user_id || user?.id || '';
-            const finalShopName = savedShopName || `${user?.first_name || 'My'}'s Store`;
-            
-            // ✅ Improved slug generation: alphanumeric + hyphens only
-            const slugBase = finalShopName.toLowerCase()
-                .replace(/[^a-z0-9\s-]/g, '') // Remove special chars but keep spaces/hyphens for next step
-                .replace(/\s+/g, '-')         // Replace spaces with hyphens
-                .replace(/-+/g, '-')         // Replace multiple hyphens with one
-                .replace(/^-+|-+$/g, '');     // Trim hyphens from start/end
-            
-            const storeSlug = `${slugBase}-${Math.floor(Math.random() * 1000)}`;
+            const deliveryUserId = user?.user_id || user?.id || '';
+            const finalShopName = savedShopName || `${user?.first_name || 'My'}'s Delivery`;
 
-            console.log(`🏪 [Step5] Finalizing vendor profile for: ${vendorUserId}`);
-            console.log(`📝 [Step5] Business Name: ${finalShopName}`);
-            console.log(`📝 [Step5] Store Slug: ${storeSlug}`);
+            console.log(`🚚 [Step4] Finalizing delivery profile for: ${deliveryUserId}`);
+            console.log(`📝 [Step4] Business Name: ${finalShopName}`);
 
-            const vendorData = {
-                user: {
-                    user_id: vendorUserId,
-                    first_name: user?.first_name || '',
-                    last_name: user?.last_name || '',
-                    email: user?.email || `${user?.phone_number}@tunzaa.co.tz`,
-                    phone_number: user?.phone_number || '',
-                },
-                business_name: finalShopName,
-                display_name: finalShopName,
-                contact_email: user?.email || `${user?.phone_number}@tunzaa.co.tz`,
-                contact_phone: savedPhone || user?.phone_number || '',
-                policy: 'No policy specified',
-                website: '',
-                address_line1: location?.extraInfo || 'Street Address',
-                address_line2: '',
-                city: location?.municipal || 'City',
-                state_province: location?.region || 'Region',
-                postal_code: '0000',
-                country: 'Tanzania',
-                tax_id: '',
-                bank_account: {
-                    bank_name: 'None',
-                    account_number: '0000000000',
-                    account_name: user?.name || 'Store Owner',
-                    swift_code: '',
-                    branch_code: '',
-                },
-                verification_documents: [],
-                commission_rate: '0',
-                metadata: {
-                    business_name: finalShopName,
-                    description: savedDesc || 'No description provided',
-                    contact_phone: savedPhone || user?.phone_number || '',
-                    contact_email: user?.email || `${user?.phone_number}@tunzaa.co.tz`,
-                    logo_url: savedLogo || '',
-                    banner_url: savedCover || '',
-                    region: location?.region || '',
-                    municipal: location?.municipal || '',
-                    ward: location?.ward || '',
-                    extraInfo: location?.extraInfo || '',
-                    location: location, // Store the whole object for convenience
-                    onboarding_status: 'complete'
-                },
-                store: {
-                    store_name: finalShopName,
-                    store_slug: storeSlug,
-                    description: savedDesc || 'No description provided',
-                    branding: {
-                        logo_url: savedLogo || '',
-                        colors: {
-                            primary: '#315BA9',
-                            secondary: '#84CC16',
-                            accent: '#FBBF24',
-                            text: '#1F2937',
-                            background: '#FFFFFF',
-                        },
-                    },
-                    banners: savedCover ? [savedCover] : [],
-                },
-            };
-
+            let logoUrl = savedLogo || '';
             // 1. Upload Logo if it's a local URI
             if (savedLogo && savedLogo.startsWith('file://')) {
-                console.log('📤 [Step5] Uploading store logo...');
+                console.log('📤 [Step4] Uploading logo...');
                 try {
-                    const uploadRes = await uploadApi.uploadFile(savedLogo, `logo_${vendorUserId}.jpg`, 'image/jpeg');
-                    vendorData.store.branding.logo_url = uploadRes.url;
+                    const uploadRes = await uploadApi.uploadFile(savedLogo, `delivery_logo_${deliveryUserId}.jpg`, 'image/jpeg');
+                    logoUrl = uploadRes.url;
                 } catch (e) {
-                    console.error('❌ [Step5] Logo upload failed:', e);
+                    console.error('❌ [Step4] Logo upload failed:', e);
                 }
             }
 
-            // 2. Upload Cover if it's a local URI
-            if (savedCover && savedCover.startsWith('file://')) {
-                console.log('📤 [Step5] Uploading store banner...');
-                try {
-                    const uploadRes = await uploadApi.uploadFile(savedCover, `banner_${vendorUserId}.jpg`, 'image/jpeg');
-                    vendorData.store.banners = [uploadRes.url];
-                } catch (e) {
-                    console.error('❌ [Step5] Banner upload failed:', e);
-                }
-            }
+            const deliveryData = {
+                form_type: "individual", // Or conditionally business/wakala
+                business_name: finalShopName,
+                business_logo: logoUrl,
+                contact_details: savedPhone || user?.phone_number || '',
+                profile_picture: logoUrl, // Delivery requires a profile picture
+                vehicle_type: "motorcycle", // Default, could be asked in a separate step later
+                location: location ? JSON.stringify(location) : "",
+                location_description: savedDesc || "",
+            };
 
-            // 3. Create Vendor
-            await createVendor(vendorData);
-            console.log('✅ [Step5] Vendor profile created successfully!');
+            // 3. Create Delivery Partner
+            await createDeliveryPartner.mutateAsync({
+                userId: deliveryUserId,
+                data: deliveryData,
+            });
+            console.log('✅ [Step4] Delivery profile created successfully!');
             
-            // Explicitly refresh profile to ensure the new vendor state is propagated
-            await refreshProfile().catch(e => console.log('⚠️ [Step5] Background profile refresh failed:', e.message));
+            // Explicitly refresh profile to ensure the new delivery state is propagated
+            await refreshProfile().catch(e => console.log('⚠️ [Step4] Background profile refresh failed:', e.message));
 
             // 4. Upload Documents if any were picked
             const documentsToUpload = [
@@ -227,7 +161,7 @@ export default function Step4Documents() {
                 for (const doc of documentsToUpload) {
                     try {
                         const fileExt = doc.file.name ? doc.file.name.split('.').pop() : 'pdf';
-                        const uploadRes = await uploadApi.uploadFile(doc.file.uri, `${doc.id}_${vendorUserId}.${fileExt}`, doc.file.mimeType);
+                        const uploadRes = await uploadApi.uploadFile(doc.file.uri, `${doc.id}_${deliveryUserId}.${fileExt}`, doc.file.mimeType);
                         uploadedDocs.push({
                             document_type_id: doc.id, // Simplified ID ('tin', 'license', 'brela')
                             document_url: uploadRes.url,
@@ -250,7 +184,7 @@ export default function Step4Documents() {
                 if (uploadErrors.length > 0) {
                     Alert.alert(
                         'Partial Completion',
-                        `Your vendor profile was created, but some documents failed to upload:\n\n${uploadErrors.join('\n')}\n\nYou can upload these later from your business profile.`,
+                        `Your delivery partner profile was created, but some documents failed to upload:\n\n${uploadErrors.join('\n')}\n\nYou can upload these later from your profile.`,
                         [{ text: 'OK' }]
                     );
                 }
@@ -265,15 +199,16 @@ export default function Step4Documents() {
                 AsyncStorage.removeItem('TEMP_ONBOARDING_COVER'),
                 AsyncStorage.removeItem('TEMP_ONBOARDING_LOCATION'),
                 AsyncStorage.removeItem('HAS_PENDING_MERCHANT_ONBOARDING'),
+                AsyncStorage.removeItem('HAS_PENDING_DELIVERY_ONBOARDING'),
             ]);
 
             // Final refresh to ensure everything is in sync
             await refreshProfile().catch(() => null);
             setShowSuccessModal(true);
         } catch (error: any) {
-            console.error('❌ [Step5] Failed to finalize vendor:', error);
-            const errorMsg = error.apiError?.message || error.message || 'Please check your business information and try again.';
-            Alert.alert('Error', `Failed to create vendor: ${errorMsg}`);
+            console.error('❌ [Step4] Failed to finalize delivery profile:', error);
+            const errorMsg = error.apiError?.message || error.message || 'Please check your information and try again.';
+            Alert.alert('Error', `Failed to create delivery profile: ${errorMsg}`);
         } finally {
             setLoading(false);
         }
@@ -281,7 +216,7 @@ export default function Step4Documents() {
 
     const handleFinishOnboarding = () => {
         setShowSuccessModal(false);
-        router.replace('/(vendor)' as any);
+        router.replace('/(delivery)' as any);
     };
 
     // ACCORDION ITEM

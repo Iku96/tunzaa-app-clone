@@ -122,6 +122,97 @@ export default function OTPScreen() {
         }
     };
 
+    if (role === 'winga') {
+        return (
+            <SafeAreaView style={styles.safe} edges={['top']}>
+                <View style={styles.container}>
+                    <View style={styles.contentWrapper}>
+                        {/* Header: Back Button & Title */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 40, marginTop: 10 }}>
+                            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 16 }}>
+                                <Ionicons name="arrow-back" size={24} color="#1D1E1F" />
+                            </TouchableOpacity>
+                            <Text style={{ fontSize: 20, fontWeight: '700', color: '#1D1E1F' }}>Verify & create password</Text>
+                        </View>
+
+                        {/* Centered Logo: TUNZAA */}
+                        <View style={{ alignItems: 'center', marginBottom: 40, marginTop: 20 }}>
+                            <Image
+                                source={require('@/assets/blue-tunzaa-logo.png')}
+                                style={{ width: 180, height: 60 }}
+                                resizeMode="contain"
+                            />
+                        </View>
+
+                        {/* Centered Instruction */}
+                        <Text style={{ fontSize: 14, color: '#666666', textAlign: 'center', marginBottom: 30, lineHeight: 20, paddingHorizontal: 10 }}>
+                            Enter the 6-digit code sent to your phone number or email
+                        </Text>
+
+                        {/* 6 OTP boxes styled like soft rounded squares in mockup */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 30 }}>
+                            {otpDigits.map((digit, index) => (
+                                <TextInput
+                                    key={index}
+                                    ref={(ref) => { inputRefs.current[index] = ref; }}
+                                    style={{
+                                        width: 46,
+                                        height: 46,
+                                        backgroundColor: '#EFF3F9',
+                                        borderRadius: 12,
+                                        fontSize: 22,
+                                        fontWeight: '700',
+                                        textAlign: 'center',
+                                        color: '#1D1E1F'
+                                    }}
+                                    value={digit}
+                                    onChangeText={(text) => handleOtpChange(text, index)}
+                                    onKeyPress={(e) => handleKeyPress(e, index)}
+                                    keyboardType="number-pad"
+                                    maxLength={index === 0 ? 6 : 1}
+                                    textContentType="oneTimeCode"
+                                    autoComplete="one-time-code"
+                                />
+                            ))}
+                        </View>
+
+                        {/* Centered didn't receive code resend */}
+                        <View style={{ alignItems: 'center', marginBottom: 12 }}>
+                            <Text style={{ fontSize: 14, color: '#1D1E1F', fontWeight: '500' }}>
+                                Didn't receive code?{' '}
+                                <Text
+                                    style={[{ fontWeight: '700', color: '#3B5191' }, timer > 0 && { color: '#9CA3AF' }]}
+                                    onPress={handleResend}
+                                >
+                                    Resend
+                                </Text>
+                            </Text>
+                        </View>
+
+                        {/* Resend code timer in 30s */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 40, gap: 6 }}>
+                            <Ionicons name="time-outline" size={16} color="#666666" />
+                            <Text style={{ fontSize: 13, color: '#666666', fontWeight: '500' }}>Resend code in {timer}s</Text>
+                        </View>
+
+                        {/* Button: Continue */}
+                        <TouchableOpacity 
+                            style={{ height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center' }} 
+                            onPress={handleContinue} 
+                            disabled={isVerifying}
+                        >
+                            {isVerifying ? (
+                                <ActivityIndicator color="#FFFFFF" />
+                            ) : (
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFFFF' }}>Continue</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.safe} edges={['top']}>
             <View style={styles.container}>

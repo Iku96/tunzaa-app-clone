@@ -115,6 +115,14 @@ const TabLayout = () => {
           }}
         />
 
+        {/* Onboarding Tab — hidden, navigated to conditionally */}
+        <Tabs.Screen
+          name="onboarding"
+          options={{
+            href: null,
+          }}
+        />
+
         {/* Notifications — hidden */}
         <Tabs.Screen
           name="notifications"

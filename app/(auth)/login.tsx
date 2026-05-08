@@ -73,6 +73,7 @@ export default function LoginScreen() {
 
             const portalTarget = targetRole === 'merchant' ? 'merchant'
                                : targetRole === 'delivery' ? 'delivery'
+                               : targetRole === 'winga' ? 'affiliate'
                                : undefined;
 
             const response = await tunzaaLogin(identifier, password, isPhone, portalTarget);
@@ -129,6 +130,109 @@ export default function LoginScreen() {
     // ------------------------------------------------------------------------
     // RENDER
     // ------------------------------------------------------------------------
+    if (targetRole === 'winga') {
+        return (
+            <SafeAreaView style={styles.safe}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    style={{ flex: 1 }}
+                >
+                    <ScrollView
+                        contentContainerStyle={[styles.scrollContent, { justifyContent: 'center' }]}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={[styles.contentWrapper, { paddingHorizontal: 24, paddingVertical: 40 }]}>
+                            {/* Title: Welcome Back */}
+                            <Text style={{ fontSize: 24, fontWeight: '700', color: '#1D1E1F', textAlign: 'center', marginBottom: 6 }}>
+                                Welcome Back
+                            </Text>
+
+                            {/* Subtitle: Enter your details to sign in */}
+                            <Text style={{ fontSize: 14, color: '#666666', textAlign: 'center', marginBottom: 30 }}>
+                                Enter your details to sign in
+                            </Text>
+
+                            {/* Centered Logo: TUNZAA */}
+                            <View style={{ alignItems: 'center', marginBottom: 40 }}>
+                                <Image
+                                    source={require('@/assets/blue-tunzaa-logo.png')}
+                                    style={{ width: 180, height: 60 }}
+                                    resizeMode="contain"
+                                />
+                            </View>
+
+                            {/* Form Inputs */}
+                            <View style={{ gap: 16 }}>
+                                {/* Phone Input */}
+                                <TextInput
+                                    style={{ height: 56, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1D1E1F' }}
+                                    placeholder="Enter +255xxx xxx xxx"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={usernameOrEmail}
+                                    onChangeText={setUsernameOrEmail}
+                                    keyboardType="phone-pad"
+                                />
+
+                                {/* Password Input */}
+                                <View style={{ height: 56, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 }}>
+                                    <TextInput
+                                        style={{ flex: 1, fontSize: 16, color: '#1D1E1F' }}
+                                        placeholder="Enter password"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry={!showPassword}
+                                    />
+                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 4 }}>
+                                        <Ionicons
+                                            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                                            size={20}
+                                            color="#9CA3AF"
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Forgot Password on the right */}
+                                <TouchableOpacity
+                                    onPress={() => router.push('/forgot-password')}
+                                    style={{ alignSelf: 'flex-end', marginTop: 4 }}
+                                >
+                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#3B5191' }}>Forgot Password?</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Terms Checkbox */}
+                            <TouchableOpacity
+                                style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 24 }}
+                                onPress={() => setAgreedToTerms(!agreedToTerms)}
+                            >
+                                <View style={[{ width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#EFF3F9', marginRight: 10, alignItems: 'center', justifyContent: 'center' }, agreedToTerms && { backgroundColor: '#3B5191', borderColor: '#3B5191' }]}>
+                                    {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                </View>
+                                <Text style={{ fontSize: 13, lineHeight: 18, color: '#4B5563', flex: 1 }}>
+                                    I have read agree to Tunzaa{" "}
+                                    <Text style={{ color: '#3B5191', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Button: Log In */}
+                            <TouchableOpacity 
+                                style={{ height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 32 }} 
+                                onPress={handleLogin} 
+                                disabled={loading}
+                            >
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFFFF' }}>
+                                    {loading ? '...' : 'Log In'}
+                                </Text>
+                            </TouchableOpacity>
+
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.safe}>
             <KeyboardAvoidingView
@@ -284,7 +388,7 @@ const styles = StyleSheet.create({
     forgotPasswordContainer: { alignSelf: 'flex-end', marginTop: 8 },
     forgotPassword: { fontSize: 14, fontWeight: '600', color: '#3B5191' },
     termsContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
-    checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', marginRight: 10, alignItems: 'center', justifyCenter: 'center' },
+    checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
     checkboxChecked: { backgroundColor: '#3B5191', borderColor: '#3B5191' },
     termsText: { fontSize: 13, color: '#666666', flex: 1 },
     termsLink: { color: '#3B5191', fontWeight: '600' },

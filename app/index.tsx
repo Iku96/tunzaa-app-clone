@@ -113,6 +113,12 @@ export default function WelcomeScreen() {
                     return;
                 }
 
+                if (lastPortal === 'affiliate' || lastPortal === 'winga') {
+                    console.log('🚀 [Splash] Winga/Affiliate intent, directing to winga portal');
+                    router.replace('/(winga)');
+                    return;
+                }
+
                 // Fallback logic based on server roles if no LAST_PORTAL
                 const isDeliveryRole = ['delivery', 'driver', 'delivery_partner'].includes(role?.toLowerCase() || '');
                 const isMerchantRole = ['vendor', 'merchant', 'business'].includes(role?.toLowerCase() || '');
@@ -130,7 +136,7 @@ export default function WelcomeScreen() {
                     return;
                 }
                 if (role?.toLowerCase() === 'winga') {
-                    router.replace('/(affiliate)/profile');
+                    router.replace('/(winga)');
                     return;
                 }
 

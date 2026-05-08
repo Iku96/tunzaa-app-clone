@@ -29,6 +29,9 @@ const TabLayout = () => {
   const [showKycModal, setShowKycModal] = useState(false);
   const { t } = useI18n();
 
+  const hasWingaProfile = Array.isArray(user?.profiles) && user.profiles.some((p) => p.role === "winga");
+  const showTabBar = hasWingaProfile;
+
   const handleKycSuccess = async () => {
     console.log('KYC submitted successfully from layout, refreshing user data...');
     try {
@@ -45,9 +48,9 @@ const TabLayout = () => {
     }
 
     // For winga/affiliate, check profile-level KYC
-    const currentProfile = user.profiles.find(
-      (profile) => profile.role === user.activeProfileRole
-    );
+    const currentProfile = Array.isArray(user?.profiles)
+      ? user.profiles.find((profile) => profile?.role === user?.activeProfileRole)
+      : null;
 
     if (!currentProfile) {
       setShowKycModal(false);
@@ -55,8 +58,8 @@ const TabLayout = () => {
     }
 
     // Show modal only if not verified (winga doesn't have document-level tracking yet)
-    const shouldShowModal = !currentProfile.kyc.verified;
-    setShowKycModal(shouldShowModal);
+    const shouldShowModal = !currentProfile?.kyc?.verified;
+    setShowKycModal(!!shouldShowModal);
   }, [user?.activeProfileRole, user?.profiles]);
 
   // if (!user) {
@@ -82,11 +85,11 @@ const TabLayout = () => {
         //   headerShown: false,
         // }}
         screenOptions={{
-          tabBarStyle: Platform.OS === "web" ? { display: "none" } : {
+          tabBarStyle: showTabBar ? (Platform.OS === "web" ? { display: "none" } : {
             backgroundColor: resolvedColors?.muted || "#F5F5F5",
             borderTopWidth: 0.5,
             borderTopColor: resolvedColors?.muted || "#F5F5F5",
-          },
+          }) : { display: "none" },
           tabBarActiveTintColor: resolvedColors?.primary || colors.primary,
           tabBarInactiveTintColor: resolvedColors?.muted || "#666666",
           tabBarLabelStyle: {

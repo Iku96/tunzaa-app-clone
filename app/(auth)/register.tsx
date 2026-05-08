@@ -64,15 +64,21 @@ export default function RegisterScreen() {
             Alert.alert('Terms Required', 'Please agree to Terms and Conditions');
             return;
         }
-        if (!phone || !email || !firstName || !secondName) {
-            Alert.alert('Missing Fields', 'Please fill in all fields (Name, Phone, and Email)');
-            return;
-        }
-
-        const isEmailValid = email.includes('@') && email.includes('.');
-        if (!isEmailValid) {
-            Alert.alert('Invalid Email', 'Please enter a valid email address');
-            return;
+        if (userRole === 'winga') {
+            if (!phone) {
+                Alert.alert('Missing Field', 'Please enter your phone number');
+                return;
+            }
+        } else {
+            if (!phone || !email || !firstName || !secondName) {
+                Alert.alert('Missing Fields', 'Please fill in all fields (Name, Phone, and Email)');
+                return;
+            }
+            const isEmailValid = email.includes('@') && email.includes('.');
+            if (!isEmailValid) {
+                Alert.alert('Invalid Email', 'Please enter a valid email address');
+                return;
+            }
         }
 
         setLoading(true);
@@ -86,12 +92,12 @@ export default function RegisterScreen() {
                 pathname: '/otp',
                 params: {
                     phone_number: phoneNumber,
-                    email: email,
+                    email: email || `${phone}@tunzaa.co.tz`,
                     flow: 'register',
-                    first_name: firstName,
-                    last_name: secondName,
+                    first_name: firstName || 'Winga',
+                    last_name: secondName || 'User',
                     role: userRole,
-                    nextStep: 'password', // Tell OTP to return here for password
+                    nextStep: 'password',
                 },
             } as any);
         } catch (e: any) {
@@ -209,6 +215,86 @@ export default function RegisterScreen() {
         router.replace('/(buyer)');
     };
 
+    if (userRole === 'winga' && currentStep === '1') {
+        return (
+            <SafeAreaView style={styles.safe}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    style={{ flex: 1 }}
+                >
+                    <ScrollView
+                        contentContainerStyle={[styles.scrollContent, { justifyContent: 'center' }]}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={[styles.contentWrapper, { paddingHorizontal: 24, paddingVertical: 40 }]}>
+                            {/* Title: Create an account */}
+                            <Text style={[styles.title, { fontSize: 24, fontWeight: '700', color: '#1D1E1F', marginBottom: 24, marginTop: 20 }]}>
+                                {t.languageScreenTitle?.includes('Chagua') ? 'Weka Taarifa Zako Kama Winga' : 'Create an account'}
+                            </Text>
+
+                            {/* Centered Logo: TUNZAA */}
+                            <View style={[styles.logoContainer, { marginTop: 10, marginBottom: 40 }]}>
+                                <Image
+                                    source={require('@/assets/blue-tunzaa-logo.png')}
+                                    style={{ width: 180, height: 60 }}
+                                    resizeMode="contain"
+                                />
+                            </View>
+
+                            {/* Input: Enter +255xxx xxx xxx */}
+                            <View style={styles.formContainer}>
+                                <TextInput
+                                    style={[styles.input, { height: 56, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1F2937' }]}
+                                    placeholder="Enter +255xxx xxx xxx"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={phone}
+                                    onChangeText={setPhone}
+                                    keyboardType="phone-pad"
+                                />
+                            </View>
+
+                            {/* Checkbox: I have read agree to Tunzaa Terms and Conditions... */}
+                            <TouchableOpacity
+                                style={[styles.termsContainer, { marginTop: 24, alignItems: 'flex-start' }]}
+                                onPress={() => setAgreedToTerms(!agreedToTerms)}
+                            >
+                                <View style={[styles.checkbox, { marginTop: 2 }, agreedToTerms && styles.checkboxChecked]}>
+                                    {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
+                                </View>
+                                <Text style={[styles.termsText, { fontSize: 13, lineHeight: 18, color: '#4B5563', flex: 1 }]}>
+                                    I have read agree to Tunzaa{" "}
+                                    <Text style={{ color: '#3F51B5', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Button: Create Account */}
+                            <TouchableOpacity 
+                                style={[styles.createButton, { height: 52, borderRadius: 26, backgroundColor: '#3B5191', marginTop: 32, justifyContent: 'center', alignItems: 'center' }]} 
+                                onPress={handleCreateAccount} 
+                                disabled={loading}
+                            >
+                                <Text style={[styles.createButtonText, { fontSize: 16, fontWeight: '700', color: '#FFFFFF' }]}>
+                                    {loading ? '...' : 'Create Account'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Footer: Already have an account? Log in */}
+                            <TouchableOpacity 
+                                onPress={() => router.replace({ pathname: '/login', params: { role: 'winga' } })} 
+                                style={{ marginTop: 40, alignItems: 'center' }}
+                            >
+                                <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>
+                                    Already have an account?{" "}
+                                    <Text style={{ color: '#3F51B5', fontWeight: '700' }}>Log in</Text>
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.safe}>
             <KeyboardAvoidingView
@@ -229,7 +315,9 @@ export default function RegisterScreen() {
                                 <Text style={styles.title}>
                                     {currentStep === 'password' 
                                         ? 'Verify and Create Password' 
-                                        : (userRole === 'merchant' ? t.registerTitleMerchant : userRole === 'delivery' ? 'Register Delivery Partner' : t.registerTitleBuyer)}
+                                        : (userRole === 'winga' 
+                                            ? (t.languageScreenTitle?.includes('Chagua') ? 'Weka Taarifa Zako Kama Winga' : 'Create an account')
+                                            : (userRole === 'merchant' ? t.registerTitleMerchant : userRole === 'delivery' ? 'Register Delivery Partner' : t.registerTitleBuyer))}
                                 </Text>
                                 <Text style={styles.subtitle}>
                                     {currentStep === 'password' 
@@ -404,7 +492,7 @@ const styles = StyleSheet.create({
     passwordInput: { flex: 1, fontSize: 16, color: '#1D1E1F' },
     eyeIcon: { padding: 4 },
     termsContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 14 },
-    checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
+    checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
     checkboxChecked: { backgroundColor: '#425BA4', borderColor: '#425BA4' },
     termsText: { fontSize: 13, color: '#666666', flex: 1 },
     createButton: { height: 47, marginTop: 19, backgroundColor: '#425BA4', borderRadius: 40, alignItems: 'center', justifyContent: 'center' },

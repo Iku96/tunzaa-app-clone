@@ -15,7 +15,7 @@ export const getRouteByRole = (role: string | null) => {
       return "/(vendor)/dashboard";
     case "affiliate":
     case "winga":
-      return "/(affiliate)/index";
+      return "/(winga)";
     case "buyer":
     case "customer":
       return "/(buyer)/home";

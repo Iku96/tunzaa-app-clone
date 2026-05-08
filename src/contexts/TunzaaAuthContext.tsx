@@ -323,8 +323,10 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             let finalPortal = 'buyer';
             if (targetPortal === 'merchant') finalPortal = 'merchant';
             else if (targetPortal === 'delivery') finalPortal = 'delivery';
+            else if (targetPortal === 'affiliate' || targetPortal === 'winga') finalPortal = 'affiliate';
             else if (IS_MERCHANT(serverRole)) finalPortal = 'merchant';
             else if (IS_DELIVERY(serverRole)) finalPortal = 'delivery';
+            else if (serverRole === 'winga' || serverRole === 'affiliate') finalPortal = 'affiliate';
 
             await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
             return await storeUserData(response);
@@ -339,8 +341,10 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             let finalPortal = 'buyer';
             if (targetPortal === 'merchant') finalPortal = 'merchant';
             else if (targetPortal === 'delivery') finalPortal = 'delivery';
+            else if (targetPortal === 'affiliate' || targetPortal === 'winga') finalPortal = 'affiliate';
             else if (IS_MERCHANT(serverRole) || hasVendor) finalPortal = 'merchant';
             else if (IS_DELIVERY(serverRole) || hasDelivery) finalPortal = 'delivery';
+            else if (serverRole === 'winga' || serverRole === 'affiliate') finalPortal = 'affiliate';
             
             await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
             return await storeUserData(response);
