@@ -182,6 +182,8 @@ export default function LoginScreen() {
                                         value={password}
                                         onChangeText={setPassword}
                                         secureTextEntry={!showPassword}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
                                     />
                                     <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 4 }}>
                                         <Ionicons
