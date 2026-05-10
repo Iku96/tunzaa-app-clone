@@ -75,6 +75,7 @@ export default function LoginScreen() {
                                : targetRole === 'delivery' ? 'delivery'
                                : targetRole === 'winga' ? 'affiliate'
                                : targetRole === 'loan' ? 'loan'
+                               : targetRole === 'buyer' ? 'buyer'
                                : undefined;
 
             const response = await tunzaaLogin(identifier, password, isPhone, portalTarget);

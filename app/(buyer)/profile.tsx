@@ -45,10 +45,13 @@ export default function ProfileScreen() {
 
                     // 2. API data
                     let apiMeta: Record<string, any> = {};
+                    let userData: any = null;
+                    let profile: any = null;
+
                     try {
-                        const userData = await authApi.getUserDetails(userId);
+                        userData = await authApi.getUserDetails(userId);
                         const profiles = userData?.profiles || [];
-                        let profile = profiles.find((p: any) => p.role === 'buyer') || profiles[0];
+                        profile = profiles.find((p: any) => p.role?.toLowerCase() === 'buyer') || profiles[0];
                         apiMeta = profile?.metadata || {};
                     } catch (e) {
                         // Ignore API error, use local

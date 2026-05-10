@@ -55,7 +55,7 @@ export default function AccountScreen() {
                     try {
                         const userData = await authApi.getUserDetails(userId);
                         const profiles = userData?.profiles || [];
-                        let profile = profiles.find((p: any) => p.role === 'buyer') || profiles[0];
+                        let profile = profiles.find((p: any) => p.role?.toLowerCase() === 'buyer') || profiles[0];
                         apiMeta = profile?.metadata || {};
                     } catch (e) {
                         // Ignore

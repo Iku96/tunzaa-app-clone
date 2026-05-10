@@ -197,7 +197,10 @@ export default function EditBusinessScreen() {
                 file.mimeType || 'application/pdf'
             );
 
-            const docUrl = uploadRes.fileCDNUrl || uploadRes.fileUrl || uploadRes.url;
+            let docUrl = uploadRes.fileCDNUrl || uploadRes.fileUrl || uploadRes.url;
+            if (docUrl && docUrl.includes('?')) {
+                docUrl = docUrl.split('?')[0];
+            }
             const newDoc = {
                 document_type_id: docType,
                 document_url: docUrl,
@@ -287,7 +290,11 @@ export default function EditBusinessScreen() {
                         'image/jpeg'
                     );
                     // Backend returns fileCDNUrl (permanent) or fileUrl (signed), NOT url
-                    finalLogoUrl = uploadRes.fileCDNUrl || uploadRes.fileUrl || uploadRes.url;
+                    let rawUrl = uploadRes.fileCDNUrl || uploadRes.fileUrl || uploadRes.url;
+                    if (rawUrl && rawUrl.includes('?')) {
+                        rawUrl = rawUrl.split('?')[0];
+                    }
+                    finalLogoUrl = rawUrl;
                     console.log('📸 [Logo] Uploaded successfully:', finalLogoUrl);
 
                     // Update local storage immediately with the final remote URL

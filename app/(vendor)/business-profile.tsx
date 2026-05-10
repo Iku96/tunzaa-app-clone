@@ -144,6 +144,7 @@ export default function BusinessProfileScreen() {
     const postsCount = productsData?.total || metadata?.posts_count || 0;
     const followersCount = metadata?.followers_count || 0;
     const followingCount = metadata?.following_count || 0;
+    const visitorsCount = vendorData?.stores?.[0]?.metadata?.profile_visitors || vendorData?.stores?.[0]?.extra_metadata?.profile_visitors || metadata?.profile_visitors || 0;
 
     // Map products to posts
     const posts = (productsData?.items || []).map(p => ({
@@ -269,7 +270,7 @@ export default function BusinessProfileScreen() {
             </View>
             <View style={styles.cardContent}>
                 <TrendingUpIcon />
-                <Text style={styles.cardMetrics}>No insights available yet</Text>
+                <Text style={styles.cardMetrics}>{visitorsCount > 0 ? `${visitorsCount.toLocaleString()} visitors total` : 'No visitors recorded yet'}</Text>
             </View>
         </View>
     );

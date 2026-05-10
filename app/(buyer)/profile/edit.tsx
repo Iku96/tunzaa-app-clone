@@ -11,7 +11,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { documentClient } from '../../../src/services/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProfileCompletion } from '../../../src/hooks/useProfileCompletion';
-import { getAvatarUrl, isValidUrl } from '../../../src/utils/images';
+import { getAvatarUrl, isValidUrl, cleanseImageUrl } from '../../../src/utils/images';
 import { uploadApi } from '../../../src/services/upload';
 import { API_CONFIG } from '../../../src/services/config';
 
@@ -68,7 +68,7 @@ export default function EditProfileScreen() {
                 try {
                     const userData = await authApi.getUserDetails(userId);
                     const profiles = userData?.profiles || [];
-                    let profile = profiles.find((p: any) => p.role === 'buyer');
+                    let profile = profiles.find((p: any) => p.role?.toLowerCase() === 'buyer');
                     if (!profile && profiles.length > 0) profile = profiles[0];
                     apiMeta = profile?.metadata || {};
                 } catch (e) {
@@ -184,6 +184,8 @@ export default function EditProfileScreen() {
 
                 console.log('🔗 [EditProfile] Final Resolved URL:', uploadedUrl);
 
+                uploadedUrl = cleanseImageUrl(uploadedUrl);
+
                 if (isValidUrl(uploadedUrl)) {
                     setProfileImage(uploadedUrl!);
                     
@@ -249,13 +251,13 @@ export default function EditProfileScreen() {
         try {
             // Prepare Metadata for sync
             const profiles = user?.profiles || [];
-            let targetProfile = profiles.find((p: any) => p.role === 'buyer') || profiles[0];
+            let targetProfile = profiles.find((p: any) => p.role?.toLowerCase() === 'buyer') || profiles[0];
             const updatedMeta = {
                 ...(targetProfile?.metadata || {}),
                 username: username || undefined,
                 gender: gender || undefined,
                 date_of_birth: dob || undefined,
-                profile_picture: profileImage || targetProfile?.metadata?.profile_picture || undefined,
+                profile_picture: cleanseImageUrl(profileImage || targetProfile?.metadata?.profile_picture || undefined),
             };
 
             // 1. Update first_name / last_name on Tunzaa API

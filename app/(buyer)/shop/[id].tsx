@@ -14,6 +14,8 @@ import { useWishlistStore } from '../../../src/stores/wishlist';
 import { useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
 import { useSearchHistory } from '../../../src/stores/searchHistory';
 import { getVendorLogoUrl } from '../../../src/utils/images';
+import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useTrackInteraction } from '../../../src/hooks/useRecommendations';
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +23,8 @@ export default function ShopProfileScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { shop, products, loading, error } = useShop(id as string);
+    const { user } = useTunzaaAuth();
+    const trackInteraction = useTrackInteraction();
     
     const [activeTab, setActiveTab] = useState<'GRID' | 'STORIES'>('GRID');
     const [certModalVisible, setCertModalVisible] = useState(false);
@@ -30,7 +34,7 @@ export default function ShopProfileScreen() {
     const [shareVisible, setShareVisible] = useState(false);
     const { addItem: addToHistory } = useSearchHistory();
 
-    // Save to history when shop is loaded
+    // Save to history and track visit when shop is loaded
     useEffect(() => {
         if (shop) {
             addToHistory({
@@ -42,8 +46,21 @@ export default function ShopProfileScreen() {
                 isVerified: shop.is_active,
                 type: 'shop'
             });
+
+            // Track Actual Profile Visit (Exclude owner visits)
+            const viewerVendorProfile = user?.profiles?.find((p: any) => p.role === 'vendor' || p.role === 'business');
+            const viewerVendorId = viewerVendorProfile?.metadata?.vendor_id || viewerVendorProfile?.profile_id;
+            
+            if (user?.user_id && shop?.store_id && viewerVendorId !== shop.vendor_id) {
+                trackInteraction.mutate({
+                    user_id: user.user_id,
+                    item_id: shop.store_id,
+                    interaction_type: 'view',
+                    scenario: 'user-profile'
+                });
+            }
         }
-    }, [shop, id]);
+    }, [shop, id, user?.user_id]);
 
     // Wishlist Logic for Stories
     const { isInWishlist, addItem, removeItem } = useWishlistStore();

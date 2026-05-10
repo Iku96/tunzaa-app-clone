@@ -71,8 +71,13 @@ export default function AccountScreen() {
 
   const sanitize = (url: any) => {
     if (!url) return null;
-    const s = String(url).trim();
+    let s = String(url).trim();
     if (!s || s === "null" || s === "undefined") return null;
+    
+    // Auto-fix presigned upload URLs by removing query parameters
+    if (s.includes("linodeobjects.com") && s.includes("?")) {
+      s = s.split("?")[0];
+    }
     return s;
   };
 

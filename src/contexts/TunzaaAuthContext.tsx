@@ -323,7 +323,8 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const hasLoan = response.profiles?.some((p: any) => IS_LOAN(p.role));
 
             let finalPortal = 'buyer';
-            if (targetPortal === 'merchant') finalPortal = 'merchant';
+            if (targetPortal === 'buyer') finalPortal = 'buyer';
+            else if (targetPortal === 'merchant') finalPortal = 'merchant';
             else if (targetPortal === 'delivery') finalPortal = 'delivery';
             else if (targetPortal === 'loan') finalPortal = 'loan';
             else if (targetPortal === 'affiliate' || targetPortal === 'winga') finalPortal = 'affiliate';
@@ -344,7 +345,8 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const hasLoan = response.profiles?.some((p: any) => IS_LOAN(p.role));
 
             let finalPortal = 'buyer';
-            if (targetPortal === 'merchant') finalPortal = 'merchant';
+            if (targetPortal === 'buyer') finalPortal = 'buyer';
+            else if (targetPortal === 'merchant') finalPortal = 'merchant';
             else if (targetPortal === 'delivery') finalPortal = 'delivery';
             else if (targetPortal === 'loan') finalPortal = 'loan';
             else if (targetPortal === 'affiliate' || targetPortal === 'winga') finalPortal = 'affiliate';

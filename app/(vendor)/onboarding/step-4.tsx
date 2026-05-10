@@ -188,7 +188,10 @@ export default function Step4Documents() {
                 console.log('📤 [Step5] Uploading store logo...');
                 try {
                     const uploadRes = await uploadApi.uploadFile(savedLogo, `logo_${vendorUserId}.jpg`, 'image/jpeg');
-                    vendorData.store.branding.logo_url = uploadRes.url;
+                    let logoUrl = uploadRes.fileCDNUrl || uploadRes.url || uploadRes.fileUrl;
+                    if (logoUrl && logoUrl.includes('?')) logoUrl = logoUrl.split('?')[0];
+                    vendorData.store.branding.logo_url = logoUrl;
+                    vendorData.metadata.logo_url = logoUrl; // Also update root metadata level
                 } catch (e) {
                     console.error('❌ [Step5] Logo upload failed:', e);
                 }
@@ -199,7 +202,10 @@ export default function Step4Documents() {
                 console.log('📤 [Step5] Uploading store banner...');
                 try {
                     const uploadRes = await uploadApi.uploadFile(savedCover, `banner_${vendorUserId}.jpg`, 'image/jpeg');
-                    vendorData.store.banners = [uploadRes.url];
+                    let bannerUrl = uploadRes.fileCDNUrl || uploadRes.url || uploadRes.fileUrl;
+                    if (bannerUrl && bannerUrl.includes('?')) bannerUrl = bannerUrl.split('?')[0];
+                    vendorData.store.banners = [bannerUrl];
+                    vendorData.metadata.banner_url = bannerUrl; // Ensure meta matches banner
                 } catch (e) {
                     console.error('❌ [Step5] Banner upload failed:', e);
                 }
@@ -228,9 +234,12 @@ export default function Step4Documents() {
                     try {
                         const fileExt = doc.file.name ? doc.file.name.split('.').pop() : 'pdf';
                         const uploadRes = await uploadApi.uploadFile(doc.file.uri, `${doc.id}_${vendorUserId}.${fileExt}`, doc.file.mimeType);
+                        let kycUrl = uploadRes.fileCDNUrl || uploadRes.url || uploadRes.fileUrl;
+                        if (kycUrl && kycUrl.includes('?')) kycUrl = kycUrl.split('?')[0];
+                        
                         uploadedDocs.push({
-                            document_type_id: doc.id, // Simplified ID ('tin', 'license', 'brela')
-                            document_url: uploadRes.url,
+                            document_type_id: doc.id, 
+                            document_url: kycUrl,
                             verification_status: 'pending'
                         });
                     } catch (e: any) {

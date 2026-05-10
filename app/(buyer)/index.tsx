@@ -37,7 +37,7 @@ export default function BuyerHome() {
                 
                 // 1. Check API profiles
                 if (user?.profiles) {
-                    const buyerProfile = user.profiles.find((p: any) => p.role === 'buyer') || user.profiles[0];
+                    const buyerProfile = user.profiles.find((p: any) => p.role?.toLowerCase() === 'buyer') || user.profiles[0];
                     picUrl = buyerProfile?.metadata?.profile_picture || 
                              buyerProfile?.metadata?.avatar || 
                              buyerProfile?.metadata?.avatar_url || 

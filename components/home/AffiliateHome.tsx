@@ -78,10 +78,16 @@ export function AffiliateHome() {
   const letterAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3B5191&color=fff&size=200`;
   
   // Sanitize inputs - filter out literal strings like "null", "undefined", or empties that break fallbacks
+  // Also automatically strips query string parameters from presigned Linode upload links that throw 403 errors on GET
   const sanitize = (url: any) => {
     if (!url) return null;
-    const s = String(url).trim();
+    let s = String(url).trim();
     if (!s || s === "null" || s === "undefined" || s === "[object Object]") return null;
+    
+    // Auto-fix presigned upload URLs by removing query parameters
+    if (s.includes("linodeobjects.com") && s.includes("?")) {
+      s = s.split("?")[0];
+    }
     return s;
   };
 

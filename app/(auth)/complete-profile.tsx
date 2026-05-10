@@ -37,6 +37,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_CONFIG } from "@/src/services/config";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useTenantModules } from "@/hooks/useTenantModules";
+import { cleanseImageUrl } from "@/src/utils/images";
 
 const generateStoreSlug = (storeName: string): string => {
   return storeName
@@ -282,7 +283,7 @@ export default function CompleteProfileScreen() {
             store_slug: storeSlug,
             description: `Welcome to ${data.businessName}`,
             branding: {
-              logo_url: data.businessLogo || "",
+              logo_url: cleanseImageUrl(data.businessLogo) || "",
               colors: {
                 primary: "",
                 secondary: "",

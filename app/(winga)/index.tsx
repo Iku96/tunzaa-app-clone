@@ -252,7 +252,13 @@ export default function HomeScreen() {
             filename: `winga-logo-${user?.user_id || 'new'}.jpg`,
             mimeType: 'image/jpeg',
           });
-          const url = res.url || res.fileUrl || res.fileCDNUrl;
+          
+          // Extract best URL and immediately strip presigned query params so it functions as GET
+          let url = res.fileCDNUrl || res.url || res.fileUrl;
+          if (url && url.includes("?")) {
+             url = url.split("?")[0];
+          }
+
           if (url) {
             finalLogo = url;
             await AsyncStorage.setItem("TEMP_WINGA_PROFILE_LOGO", url);
@@ -270,7 +276,13 @@ export default function HomeScreen() {
             filename: `winga-nida-${user?.user_id || 'new'}.jpg`,
             mimeType: 'image/jpeg', // document picker might define more specific type later
           });
-          const url = res.url || res.fileUrl || res.fileCDNUrl;
+          
+          // Extract and strip query params
+          let url = res.fileCDNUrl || res.url || res.fileUrl;
+          if (url && url.includes("?")) {
+             url = url.split("?")[0];
+          }
+
           if (url) {
             finalNida = url;
             await AsyncStorage.setItem("TEMP_WINGA_PROFILE_NIDA", url);

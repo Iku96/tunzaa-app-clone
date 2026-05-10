@@ -20,12 +20,32 @@ export const isValidUrl = (url?: string): boolean => {
 };
 
 /**
+ * Safely strips presigned upload query params from Linode/S3 links
+ * which cause 403 Forbidden crashes on subsequent HTTP GET requests.
+ */
+export const cleanseImageUrl = (url?: string): string | undefined => {
+  if (!url || typeof url !== 'string') return undefined;
+  let s = url.trim();
+  const isPresigned = s.includes('linodeobjects.com') || 
+                     s.includes('X-Amz-Signature') || 
+                     s.includes('AWSAccessKeyId') || 
+                     s.includes('PutObject');
+                     
+  if (isPresigned && s.includes('?')) {
+    s = s.split('?')[0];
+  }
+  return s;
+};
+
+/**
  * Generates a consistent avatar URL with a fallback to ui-avatars.com
  * Handles relative paths by prepending the API base URL.
  */
 export const getAvatarUrl = (url?: string, name: string = 'User'): string => {
-  if (isValidUrl(url)) {
-    return url as string;
+  const cleaned = cleanseImageUrl(url);
+  
+  if (isValidUrl(cleaned)) {
+    return cleaned as string;
   }
   
   // Handle relative paths from backend
@@ -85,37 +105,37 @@ export const getVendorLogoUrl = (sources: {
   // 1. Direct vendor API response (most reliable, from useGetVendor)
   if (vendorData) {
     const fromStores = getStoreLogoUrl(vendorData.stores?.[0]) || getStoreLogoUrl(vendorData.store);
-    if (fromStores) return fromStores;
+    if (fromStores) return cleanseImageUrl(fromStores);
   }
 
   // 2. Profile metadata (after hydration, contains spread VendorResponse)
   if (metadata) {
     const fromMetaStores = getStoreLogoUrl(metadata.stores?.[0]) || getStoreLogoUrl(metadata.store);
-    if (fromMetaStores) return fromMetaStores;
+    if (fromMetaStores) return cleanseImageUrl(fromMetaStores);
     // Direct fields on metadata
-    if (isValidUrl(metadata.logo_url)) return metadata.logo_url;
-    if (isValidUrl(metadata.image_url)) return metadata.image_url;
-    if (isValidUrl(metadata.logoUrl)) return metadata.logoUrl;
-    if (isValidUrl(metadata.profile_picture)) return metadata.profile_picture;
+    if (isValidUrl(metadata.logo_url)) return cleanseImageUrl(metadata.logo_url);
+    if (isValidUrl(metadata.image_url)) return cleanseImageUrl(metadata.image_url);
+    if (isValidUrl(metadata.logoUrl)) return cleanseImageUrl(metadata.logoUrl);
+    if (isValidUrl(metadata.profile_picture)) return cleanseImageUrl(metadata.profile_picture);
   }
 
   // 3. Profile-level branding
   const parsedBranding = safeParse(branding);
   if (parsedBranding) {
-    if (isValidUrl(parsedBranding.logo_url)) return parsedBranding.logo_url;
-    if (isValidUrl(parsedBranding.logoUrl)) return parsedBranding.logoUrl;
-    if (isValidUrl(parsedBranding.image_url)) return parsedBranding.image_url;
+    if (isValidUrl(parsedBranding.logo_url)) return cleanseImageUrl(parsedBranding.logo_url);
+    if (isValidUrl(parsedBranding.logoUrl)) return cleanseImageUrl(parsedBranding.logoUrl);
+    if (isValidUrl(parsedBranding.image_url)) return cleanseImageUrl(parsedBranding.image_url);
   }
 
   // 4. vendorDetails from auth context
   if (vendorDetails) {
     const fromDetailsStores = getStoreLogoUrl(vendorDetails.stores?.[0]) || getStoreLogoUrl(vendorDetails.store);
-    if (fromDetailsStores) return fromDetailsStores;
-    if (isValidUrl(vendorDetails.logo_url)) return vendorDetails.logo_url;
+    if (fromDetailsStores) return cleanseImageUrl(fromDetailsStores);
+    if (isValidUrl(vendorDetails.logo_url)) return cleanseImageUrl(vendorDetails.logo_url);
   }
 
   // 5. Local AsyncStorage extras (last resort cache)
-  if (localExtras && isValidUrl(localExtras.logo_url)) return localExtras.logo_url;
+  if (localExtras && isValidUrl(localExtras.logo_url)) return cleanseImageUrl(localExtras.logo_url);
 
   return undefined;
 };

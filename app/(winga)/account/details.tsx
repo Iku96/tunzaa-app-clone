@@ -140,7 +140,11 @@ export default function EditBusinessProfileScreen() {
           mimeType: 'image/jpeg',
         });
         
-        const serverUrl = uploadRes.url || uploadRes.fileUrl || uploadRes.fileCDNUrl;
+        let serverUrl = uploadRes.fileCDNUrl || uploadRes.url || uploadRes.fileUrl;
+        if (serverUrl && serverUrl.includes("?")) {
+          serverUrl = serverUrl.split("?")[0];
+        }
+
         if (serverUrl) {
           setPendingLogoUrl(serverUrl);
           await AsyncStorage.setItem("TEMP_WINGA_PROFILE_LOGO", serverUrl);
