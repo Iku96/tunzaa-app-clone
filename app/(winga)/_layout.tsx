@@ -12,7 +12,7 @@ import {
   Search,
   LinkIcon,
 } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { useState, useEffect } from "react";
 import { KycModal } from "@/components/modals/KycModal";
 
@@ -22,7 +22,7 @@ import { useThemeColors, useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useI18n } from "@/hooks/useI18n";
 
 const TabLayout = () => {
-  const { user, refreshUserData } = useAuth();
+  const { user, refreshProfile: refreshUserData } = useTunzaaAuth();
   const colors = useThemeColors();
   const resolvedColors = useResolvedThemeColors();
   const currentRole = user?.activeProfileRole || "buyer";

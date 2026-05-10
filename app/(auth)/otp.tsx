@@ -84,7 +84,7 @@ export default function OTPScreen() {
             
             if (verifyResp.verified || verifyResp.is_verified || verifyResp.access_token) {
                 if (flow === 'register') {
-                    const portal = role === 'merchant' ? 'merchant' : (role === 'delivery' ? 'delivery' : 'buyer');
+                    const portal = role === 'merchant' ? 'merchant' : (role === 'delivery' ? 'delivery' : (role === 'loan' ? 'loan' : 'buyer'));
                     
                     // NEW FLOW: If we have a nextStep, go there instead of registering immediately
                     if (params.nextStep === 'password') {

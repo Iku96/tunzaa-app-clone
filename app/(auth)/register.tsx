@@ -31,7 +31,7 @@ export default function RegisterScreen() {
     const { t } = useLanguage();
 
     const params = useLocalSearchParams<{ 
-        role: 'buyer' | 'merchant' | 'delivery', 
+        role: 'buyer' | 'merchant' | 'delivery' | 'loan' | 'winga', 
         pendingOnboarding: string,
         step: string,
         first_name: string,
@@ -129,7 +129,7 @@ export default function RegisterScreen() {
                 password: password,
             };
 
-            const portal = userRole === 'merchant' ? 'merchant' : userRole === 'delivery' ? 'delivery' : 'buyer';
+            const portal = userRole === 'merchant' ? 'merchant' : userRole === 'delivery' ? 'delivery' : userRole === 'loan' ? 'loan' : 'buyer';
             await register(registrationData, portal);
             
             // Set first-time buyer flag to ensure index.tsx routes correctly
@@ -143,6 +143,10 @@ export default function RegisterScreen() {
                 console.log('📝 [Register] Setting HAS_PENDING_DELIVERY_ONBOARDING for delivery flow');
                 await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
                 await AsyncStorage.setItem('LAST_PORTAL', 'delivery');
+            } else if (userRole === 'loan') {
+                console.log('📝 [Register] Setting HAS_PENDING_LOAN_ONBOARDING for loan flow');
+                await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
+                await AsyncStorage.setItem('LAST_PORTAL', 'loan');
             }
             
             // NOTE: We don't call router.replace here anymore to avoid navigation race conditions.
@@ -156,7 +160,7 @@ export default function RegisterScreen() {
             const isAlreadyExists = errorMsg.toLowerCase().includes('already exists') || e.status === 409;
 
             if (isAlreadyExists) {
-                if (userRole === 'merchant' || userRole === 'delivery') {
+                if (userRole === 'merchant' || userRole === 'delivery' || userRole === 'loan') {
                     Alert.alert(
                         'Account Found',
                         'You already have a Tunzaa account. Please sign in to continue your application.',
@@ -183,7 +187,7 @@ export default function RegisterScreen() {
                                 onPress: () => router.replace({ 
                                     pathname: '/login', 
                                     params: { 
-                                        phone_number: phoneOrEmail 
+                                        phone_number: phone 
                                     } 
                                 })
                             }
@@ -317,7 +321,7 @@ export default function RegisterScreen() {
                                         ? 'Verify and Create Password' 
                                         : (userRole === 'winga' 
                                             ? (t.languageScreenTitle?.includes('Chagua') ? 'Weka Taarifa Zako Kama Winga' : 'Create an account')
-                                            : (userRole === 'merchant' ? t.registerTitleMerchant : userRole === 'delivery' ? 'Register Delivery Partner' : t.registerTitleBuyer))}
+                                            : (userRole === 'merchant' ? t.registerTitleMerchant : userRole === 'delivery' ? 'Register Delivery Partner' : userRole === 'loan' ? 'Register Loan Provider' : t.registerTitleBuyer))}
                                 </Text>
                                 <Text style={styles.subtitle}>
                                     {currentStep === 'password' 

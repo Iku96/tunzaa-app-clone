@@ -22,10 +22,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTunzaaAuth } from '../../contexts/TunzaaAuthContext';
-import { setLastPortal } from '../../utils/storage';
+import { setLastPortal, getAccessToken } from '../../utils/storage';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarUrl, getVendorLogoUrl } from '../../utils/images';
 import { useTranslation } from 'react-i18next';
+import { API_CONFIG } from '../../services/config';
 
 const { width, height } = Dimensions.get('window');
 
@@ -46,7 +47,9 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
         if (
             pathname === '/(vendor)/loan-services' || 
             pathname === '/(vendor)/loans/requests' ||
-            pathname === '/(vendor)/loans/repayments'
+            pathname === '/(vendor)/loans/repayments' ||
+            pathname === '/(loan)/requests' ||
+            pathname === '/(loan)/collections'
         ) {
             setIsLoansExpanded(true);
         }
@@ -71,34 +74,77 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
         loadLocalExtras();
     }, [user]);
 
-    // Find vendor profile and extract details
-    const vendorProfile = user?.profiles?.find((p: any) => 
-        ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase())
-    );
+    // Find active profile (vendor or loan provider based on current portal)
+    const activeRole = user?.activeProfileRole || '';
+    const isLoanPortal = activeRole.toLowerCase() === 'loan' || activeRole.toLowerCase() === 'loan_provider';
+
+    const [providerDetails, setProviderDetails] = useState<any>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchProvider = async () => {
+            if (!isLoanPortal) return;
+            try {
+                const userId = user?.user_id || user?.id;
+                if (!userId) return;
+                const token = await getAccessToken();
+                const response = await fetch(`${API_CONFIG.BASE_URL}/loans/providers/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (response.ok && isMounted) {
+                    const providers = await response.json();
+                    const myProvider = providers.find((p: any) => p.user_id === userId);
+                    if (myProvider) {
+                        setProviderDetails(myProvider);
+                    }
+                }
+            } catch (e) {
+                console.warn('SidebarMenu failed to fetch provider details:', e);
+            }
+        };
+        fetchProvider();
+        return () => { isMounted = false; };
+    }, [user, isLoanPortal]);
+    
+    const activeProfile = user?.profiles?.find((p: any) => {
+        if (isLoanPortal) {
+            return ['loan', 'loan_provider'].includes(p.role?.toLowerCase());
+        }
+        return ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase());
+    });
     
     // Check metadata for branding if not directly on profile
-    const metadata = typeof vendorProfile?.metadata === 'string' ? JSON.parse(vendorProfile.metadata) : (vendorProfile?.metadata || {});
-    const branding = typeof vendorProfile?.branding === 'string' ? JSON.parse(vendorProfile.branding) : (vendorProfile?.branding || {});
-    const logoUrl = getVendorLogoUrl({
+    const metadata = typeof activeProfile?.metadata === 'string' ? JSON.parse(activeProfile.metadata) : (activeProfile?.metadata || {});
+    const branding = typeof activeProfile?.branding === 'string' ? JSON.parse(activeProfile.branding) : (activeProfile?.branding || {});
+    const logoUrl = localExtras.logo_url || providerDetails?.logo_url || metadata?.logo_url || getVendorLogoUrl({
         metadata,
         branding,
         vendorDetails: user?.vendorDetails,
         localExtras,
     });
     
-    const displayName = metadata?.business_name || 
+    let displayName = localExtras.business_name || 
+                        providerDetails?.business_name || 
+                        providerDetails?.name ||
+                        metadata?.business_name || 
                         metadata?.store_name || 
                         metadata?.company_name || 
                         user?.vendorDetails?.business_name || 
                         user?.vendorDetails?.name ||
-                        vendorProfile?.display_name || 
-                        vendorProfile?.displayName || 
+                        activeProfile?.display_name || 
+                        activeProfile?.displayName || 
                         metadata?.display_name || 
-                        vendorProfile?.business_name || 
+                        activeProfile?.business_name || 
                         user?.display_name || 
                         user?.name || 
                         user?.first_name ||
-                        'Merchant';
+                        (isLoanPortal ? 'Loan Provider' : 'Merchant');
+
+    if (displayName && /fast\s*cash/i.test(displayName)) {
+        displayName = "Loan Provider";
+    }
     
     // Calculate initials
     const initials = displayName
@@ -110,8 +156,8 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
         .toUpperCase();
 
     // Format joined date
-    const joinedDate = vendorProfile?.created_at 
-        ? new Date(vendorProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    const joinedDate = activeProfile?.created_at 
+        ? new Date(activeProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
         : 'March 2026';
 
     useEffect(() => {
@@ -171,7 +217,11 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                             style={styles.userInfoRow}
                             onPress={() => {
                                 onClose();
-                                localRouter.push('/(vendor)/business-profile');
+                                if (isLoanPortal) {
+                                    localRouter.push('/(loan)/business-profile');
+                                } else {
+                                    localRouter.push('/(vendor)/business-profile');
+                                }
                             }}
                         >
                             <Avatar alt={displayName} style={styles.avatarContainer}>
@@ -192,44 +242,58 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
 
                     <View style={styles.navContainer}>
                         <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(vendor)') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(vendor)')}
+                            style={[styles.navItem, isActive(isLoanPortal ? '/(loan)' : '/(vendor)') && styles.activeNavItem]}
+                            onPress={() => navigateTo(isLoanPortal ? '/(loan)' : '/(vendor)')}
                         >
                             <LayoutGrid size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)') && styles.activeNavText]}>{t('vendor.navigation.dashboard')}</Text>
+                            <Text style={[styles.navText, isActive(isLoanPortal ? '/(loan)' : '/(vendor)') && styles.activeNavText]}>{t('vendor.navigation.dashboard')}</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(vendor)/inventory') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(vendor)/inventory')}
-                        >
-                            <Box size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)/inventory') && styles.activeNavText]}>{t('vendor.navigation.inventory')}</Text>
-                        </TouchableOpacity>
+                        {!isLoanPortal && (
+                            <>
+                                <TouchableOpacity 
+                                    style={[styles.navItem, isActive('/(vendor)/inventory') && styles.activeNavItem]}
+                                    onPress={() => navigateTo('/(vendor)/inventory')}
+                                >
+                                    <Box size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                                    <Text style={[styles.navText, isActive('/(vendor)/inventory') && styles.activeNavText]}>{t('vendor.navigation.inventory')}</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                    style={[styles.navItem, isActive('/(vendor)/live-orders') && styles.activeNavItem]}
+                                    onPress={() => navigateTo('/(vendor)/live-orders')}
+                                >
+                                    <Box size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                                    <Text style={[styles.navText, isActive('/(vendor)/live-orders') && styles.activeNavText]}>{t('vendor.navigation.orders_sales')}</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+
+                        {isLoanPortal && (
+                            <TouchableOpacity 
+                                style={[styles.navItem, isActive('/(loan)/analytics') && styles.activeNavItem]}
+                                onPress={() => navigateTo('/(loan)/analytics')}
+                            >
+                                <TrendingUp size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
+                                <Text style={[styles.navText, isActive('/(loan)/analytics') && styles.activeNavText]}>Analytics</Text>
+                            </TouchableOpacity>
+                        )}
 
                         <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(vendor)/live-orders') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(vendor)/live-orders')}
-                        >
-                            <Box size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)/live-orders') && styles.activeNavText]}>{t('vendor.navigation.orders_sales')}</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity 
-                            style={[styles.navItem, isActive('/(vendor)/business-profile') && styles.activeNavItem]}
-                            onPress={() => navigateTo('/(vendor)/business-profile')}
+                            style={[styles.navItem, isActive(isLoanPortal ? '/(loan)/business-profile' : '/(vendor)/business-profile') && styles.activeNavItem]}
+                            onPress={() => navigateTo(isLoanPortal ? '/(loan)/business-profile' : '/(vendor)/business-profile')}
                         >
                             <User size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                            <Text style={[styles.navText, isActive('/(vendor)/business-profile') && styles.activeNavText]}>{t('vendor.navigation.customer_profile')}</Text>
+                            <Text style={[styles.navText, isActive(isLoanPortal ? '/(loan)/business-profile' : '/(vendor)/business-profile') && styles.activeNavText]}>{t('vendor.navigation.customer_profile')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
-                            style={[styles.navItemRow, (isActive('/(vendor)/loan-services') || isLoansExpanded) && styles.activeNavItem]}
+                            style={[styles.navItemRow, (isActive('/(vendor)/loan-services') || isActive('/(loan)/requests') || isActive('/(loan)/collections') || isLoansExpanded) && styles.activeNavItem]}
                             onPress={() => setIsLoansExpanded(!isLoansExpanded)}
                         >
                             <View style={styles.navItemLeft}>
                                 <Wallet size={22} color="#111827" strokeWidth={1.5} style={styles.navIcon} />
-                                <Text style={[styles.navText, (isActive('/(vendor)/loan-services') || isLoansExpanded) && styles.activeNavText]}>{t('vendor.loans.title')}</Text>
+                                <Text style={[styles.navText, (isActive('/(vendor)/loan-services') || isActive('/(loan)/requests') || isActive('/(loan)/collections') || isLoansExpanded) && styles.activeNavText]}>{t('vendor.loans.title')}</Text>
                             </View>
                             <ChevronDown size={20} color="#111827" style={{ transform: [{ rotate: isLoansExpanded ? '180deg' : '0deg' }] }} />
                         </TouchableOpacity>
@@ -237,16 +301,28 @@ export default function SidebarMenu({ isVisible, onClose }: SidebarMenuProps) {
                         {isLoansExpanded && (
                             <View style={styles.submenuContainer}>
                                 <TouchableOpacity 
-                                    style={[styles.submenuItem, isActive('/(vendor)/loan-services') && styles.activeSubmenuItem]}
-                                    onPress={() => navigateTo('/(vendor)/loan-services')}
+                                    style={[
+                                        styles.submenuItem, 
+                                        isActive(isLoanPortal ? '/(loan)/requests' : '/(vendor)/loan-services') && styles.activeSubmenuItem
+                                    ]}
+                                    onPress={() => navigateTo(isLoanPortal ? '/(loan)/requests' : '/(vendor)/loan-services')}
                                 >
-                                    <Text style={[styles.submenuText, isActive('/(vendor)/loan-services') && styles.activeSubmenuText]}>{t('vendor.loans.loans_request')}</Text>
+                                    <Text style={[
+                                        styles.submenuText, 
+                                        isActive(isLoanPortal ? '/(loan)/requests' : '/(vendor)/loan-services') && styles.activeSubmenuText
+                                    ]}>{t('vendor.loans.loans_request')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity 
-                                    style={[styles.submenuItem, isActive('/(vendor)/loan-repayments') && styles.activeSubmenuItem]}
-                                    onPress={() => navigateTo('/(vendor)/loan-repayments')}
+                                    style={[
+                                        styles.submenuItem, 
+                                        isActive(isLoanPortal ? '/(loan)/collections' : '/(vendor)/loan-repayments') && styles.activeSubmenuItem
+                                    ]}
+                                    onPress={() => navigateTo(isLoanPortal ? '/(loan)/collections' : '/(vendor)/loan-repayments')}
                                 >
-                                    <Text style={[styles.submenuText, isActive('/(vendor)/loan-repayments') && styles.activeSubmenuText]}>{t('vendor.loans.repayments_track')}</Text>
+                                    <Text style={[
+                                        styles.submenuText, 
+                                        isActive(isLoanPortal ? '/(loan)/collections' : '/(vendor)/loan-repayments') && styles.activeSubmenuText
+                                    ]}>{t('vendor.loans.repayments_track')}</Text>
                                 </TouchableOpacity>
                             </View>
                         )}

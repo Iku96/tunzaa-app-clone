@@ -74,6 +74,7 @@ export default function LoginScreen() {
             const portalTarget = targetRole === 'merchant' ? 'merchant'
                                : targetRole === 'delivery' ? 'delivery'
                                : targetRole === 'winga' ? 'affiliate'
+                               : targetRole === 'loan' ? 'loan'
                                : undefined;
 
             const response = await tunzaaLogin(identifier, password, isPhone, portalTarget);
@@ -116,6 +117,7 @@ export default function LoginScreen() {
             if (response) {
                 const portalTarget = targetRole === 'merchant' ? 'merchant'
                                    : targetRole === 'delivery' ? 'delivery'
+                                   : targetRole === 'loan' ? 'loan'
                                    : 'buyer';
                 await AsyncStorage.setItem('LAST_PORTAL', portalTarget);
             }
@@ -184,6 +186,8 @@ export default function LoginScreen() {
                                         secureTextEntry={!showPassword}
                                         autoCapitalize="none"
                                         autoCorrect={false}
+                                        autoComplete="password"
+                                        textContentType="password"
                                     />
                                     <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 4 }}>
                                         <Ionicons
@@ -282,6 +286,9 @@ export default function LoginScreen() {
                                         onChangeText={setPassword}
                                         secureTextEntry={!showPassword}
                                         autoCapitalize="none"
+                                        autoCorrect={false}
+                                        autoComplete="password"
+                                        textContentType="password"
                                     />
                                     <TouchableOpacity
                                         onPress={() => setShowPassword(!showPassword)}

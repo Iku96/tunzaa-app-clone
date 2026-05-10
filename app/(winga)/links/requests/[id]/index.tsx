@@ -16,7 +16,7 @@ import {
   ShoppingBag,
   Image as ImageIcon,
 } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { useGetRequestDetails, useCreateReferralLink } from "@/src/services/affiliates";
 import { useGetVendor } from "@/src/services/vendors";
 import { useProductDetail } from "@/hooks/useProductDetails";
@@ -33,7 +33,7 @@ import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 export default function RequestDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useTunzaaAuth();
   const [refreshing, setRefreshing] = useState(false);
   const resolvedColors = useResolvedThemeColors();
   const {

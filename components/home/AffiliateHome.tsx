@@ -38,7 +38,7 @@ export function AffiliateHome() {
   // Stored onboarding details as safe fallbacks
   const [savedName, setSavedName] = useState("Fedelika Maxmus");
   const [savedBio, setSavedBio] = useState("Joined November 2010");
-  const [savedLogo, setSavedLogo] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150");
+  const [savedLogo, setSavedLogo] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSavedWingaData = async () => {
@@ -62,8 +62,12 @@ export function AffiliateHome() {
 
   // Use real dynamic names if available
   const displayName = affiliateDetails?.name || savedName;
-  // We'll use the placeholder logo if the API doesn't return one
-  const displayLogo = savedLogo; 
+  
+  // Build dynamic letter avatar fallback
+  const letterAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3B5191&color=fff&size=200`;
+  
+  // Fallback Chain: API Logo -> Local Cached Logo -> Letter Avatar
+  const displayLogo = affiliateDetails?.profile_picture || savedLogo || letterAvatar; 
 
   // Fetch dynamic affiliate statistics
   const { data: affiliateStats, isLoading: statsLoading } = useGetAffiliateStats(

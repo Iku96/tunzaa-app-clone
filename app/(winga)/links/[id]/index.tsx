@@ -21,7 +21,7 @@ import {
   ShoppingBag,
   Image as ImageIcon,
 } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { useGetAffiliateLinks } from "@/src/services/affiliates";
 import { useGetVendor } from "@/src/services/vendors";
 import { useProductDetail } from "@/hooks/useProductDetails";
@@ -38,7 +38,7 @@ import { getImageUrl } from "@/utils/images";
 export default function LinkDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useTunzaaAuth();
   const [refreshing, setRefreshing] = useState(false);
   const resolvedColors = useResolvedThemeColors();
   // Get affiliate details

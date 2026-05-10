@@ -37,6 +37,7 @@ const TunzaaAuthContext = createContext<TunzaaAuthContextType | null>(null);
 
 const IS_MERCHANT = (role: string) => ['vendor', 'merchant', 'business'].includes(role.toLowerCase());
 const IS_DELIVERY = (role: string) => ['delivery', 'driver', 'delivery_partner'].includes(role.toLowerCase());
+const IS_LOAN = (role: string) => ['loan', 'loan_provider'].includes(role.toLowerCase());
 
 export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<TunzaaUser | null>(null);
@@ -75,7 +76,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
         const normalizedProfiles = finalProfiles.map((p: any) => {
             const meta = p.metadata || {};
-            const isBusiness = IS_MERCHANT(p.role) || IS_DELIVERY(p.role);
+            const isBusiness = IS_MERCHANT(p.role) || IS_DELIVERY(p.role) || IS_LOAN(p.role);
             const personalName = raw.first_name 
                 ? `${raw.first_name} ${raw.last_name || ''}`.trim()
                 : (userRef.current?.first_name 
@@ -319,13 +320,16 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const serverRole = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
             const hasVendor = response.profiles?.some((p: any) => IS_MERCHANT(p.role));
             const hasDelivery = response.profiles?.some((p: any) => IS_DELIVERY(p.role));
+            const hasLoan = response.profiles?.some((p: any) => IS_LOAN(p.role));
 
             let finalPortal = 'buyer';
             if (targetPortal === 'merchant') finalPortal = 'merchant';
             else if (targetPortal === 'delivery') finalPortal = 'delivery';
+            else if (targetPortal === 'loan') finalPortal = 'loan';
             else if (targetPortal === 'affiliate' || targetPortal === 'winga') finalPortal = 'affiliate';
             else if (IS_MERCHANT(serverRole)) finalPortal = 'merchant';
             else if (IS_DELIVERY(serverRole)) finalPortal = 'delivery';
+            else if (IS_LOAN(serverRole) || hasLoan) finalPortal = 'loan';
             else if (serverRole === 'winga' || serverRole === 'affiliate') finalPortal = 'affiliate';
 
             await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
@@ -337,13 +341,16 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const serverRole = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
             const hasVendor = response.profiles?.some((p: any) => IS_MERCHANT(p.role));
             const hasDelivery = response.profiles?.some((p: any) => IS_DELIVERY(p.role));
+            const hasLoan = response.profiles?.some((p: any) => IS_LOAN(p.role));
 
             let finalPortal = 'buyer';
             if (targetPortal === 'merchant') finalPortal = 'merchant';
             else if (targetPortal === 'delivery') finalPortal = 'delivery';
+            else if (targetPortal === 'loan') finalPortal = 'loan';
             else if (targetPortal === 'affiliate' || targetPortal === 'winga') finalPortal = 'affiliate';
             else if (IS_MERCHANT(serverRole) || hasVendor) finalPortal = 'merchant';
             else if (IS_DELIVERY(serverRole) || hasDelivery) finalPortal = 'delivery';
+            else if (IS_LOAN(serverRole) || hasLoan) finalPortal = 'loan';
             else if (serverRole === 'winga' || serverRole === 'affiliate') finalPortal = 'affiliate';
             
             await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
@@ -432,6 +439,33 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                         }
                     }
                 }
+                
+                if (IS_LOAN(userRef.current.activeProfileRole || '')) {
+                    try {
+                        const token = await AsyncStorage.getItem('userToken');
+                        const response = await fetch(`${API_CONFIG.BASE_URL}/loans/providers/`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        if (response.ok) {
+                            const providers = await response.json();
+                            const myProvider = providers.find((p: any) => p.user_id === id);
+                            if (myProvider && freshData.profiles) {
+                                const lIndex = freshData.profiles.findIndex((p: any) => IS_LOAN(p.role));
+                                if (lIndex > -1) {
+                                    freshData.profiles[lIndex].metadata = {
+                                        ...(freshData.profiles[lIndex].metadata || {}),
+                                        ...myProvider,
+                                        business_name: myProvider.business_name || myProvider.name
+                                    };
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log('⚠️ [AuthContext] Loan provider hydration failed:', e);
+                    }
+                }
                 await storeUserData(freshData);
             } catch (err) {
                 console.error('❌ [AuthContext] refreshProfile failed:', err);
@@ -476,10 +510,10 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                             banners: banner ? [banner] : []
                         }
                     };
-                    console.log('🔄 [AuthContext] Updating Marketplace Vendor:', vendorId);
                     promise2 = authApi.updateVendor(vendorId, marketplaceData).catch(e => { 
-                        console.error('❌ [AuthContext] Marketplace update failed:', e.message);
-                        throw new Error(`Marketplace update failed: ${e.message}`); 
+                        console.warn('⚠️ [AuthContext] Marketplace update failed (expected for non-vendor accounts):', e.message);
+                        // Return null instead of throwing to prevent rolling back successful auth profile and local state updates
+                        return null; 
                     });
                 }
 
@@ -616,7 +650,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (!userRef.current) return;
             const updated = { ...userRef.current, activeProfileRole: role };
             await storeUserData(updated);
-            const portal = IS_MERCHANT(role) ? 'merchant' : (IS_DELIVERY(role) ? 'delivery' : 'buyer');
+            const portal = IS_MERCHANT(role) ? 'merchant' : (IS_DELIVERY(role) ? 'delivery' : (IS_LOAN(role) ? 'loan' : 'buyer'));
             await AsyncStorage.setItem('LAST_PORTAL', portal);
 
             // When switching to a merchant/vendor role, trigger background hydration

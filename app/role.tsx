@@ -59,6 +59,10 @@ export default function RoleScreen() {
             await AsyncStorage.setItem('HAS_FINISHED_ONBOARDING', 'true');
             await AsyncStorage.setItem('LAST_PORTAL', 'affiliate');
             router.push({ pathname: '/register', params: { role: 'winga' } });
+        } else if (value === 'financial') {
+            await AsyncStorage.setItem('HAS_FINISHED_ONBOARDING', 'true');
+            await AsyncStorage.setItem('LAST_PORTAL', 'loan');
+            router.push({ pathname: '/mauzo-intro', params: { flow: 'financial' } });
         } else {
             // For "Sell products" or other business options, show intro screens first
             await AsyncStorage.setItem('HAS_FINISHED_ONBOARDING', 'true');

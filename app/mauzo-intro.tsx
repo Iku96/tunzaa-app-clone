@@ -57,6 +57,14 @@ export default function MauzoIntro() {
     const handleCreateAccount = async () => {
         if (flow === 'delivery') {
             router.push({ pathname: '/register', params: { role: 'delivery' } });
+        } else if (flow === 'financial') {
+            if (isAuthenticated) {
+                await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
+                await AsyncStorage.setItem('LAST_PORTAL', 'loan');
+                router.replace('/(loan)/onboarding');
+            } else {
+                router.push({ pathname: '/register', params: { role: 'loan' } });
+            }
         } else {
             if (isAuthenticated) {
                 // If already logged in as a buyer, create a shell vendor profile
@@ -87,6 +95,8 @@ export default function MauzoIntro() {
     const handleSkip = () => {
         if (flow === 'delivery') {
             router.push({ pathname: '/login', params: { role: 'delivery' } });
+        } else if (flow === 'financial') {
+            router.push({ pathname: '/login', params: { role: 'loan' } });
         } else {
             if (isAuthenticated) {
                 // Already authenticated, just treat as "Create Account"
@@ -207,7 +217,7 @@ export default function MauzoIntro() {
                     <View style={styles.divider} />
 
                     <TouchableOpacity
-                        onPress={() => flow === 'delivery' ? router.push({ pathname: '/login', params: { role: 'delivery' } }) : router.push({ pathname: '/login', params: { role: 'merchant' } })}
+                        onPress={() => flow === 'delivery' ? router.push({ pathname: '/login', params: { role: 'delivery' } }) : flow === 'financial' ? router.push({ pathname: '/login', params: { role: 'loan' } }) : router.push({ pathname: '/login', params: { role: 'merchant' } })}
                         style={styles.loginLink}
                     >
                         <Text style={styles.loginText}>{t.mauzoAlreadyAccount} <Text style={styles.loginTextBold}>{t.mauzoSignIn}</Text></Text>

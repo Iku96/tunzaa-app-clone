@@ -6,6 +6,7 @@ export interface CreateAffiliateBody {
   tenant_id: string;
   bio: string;
   website: string;
+  profile_picture?: string;
   social_media?: {
     instagram?: string;
     twitter?: string;
@@ -22,6 +23,7 @@ export interface AffiliateResponse {
   phone: string;
   id: string;
   status: string;
+  profile_picture?: string;
   created_at: string;
   updated_at: string | null;
   social_media?: {
@@ -39,6 +41,7 @@ export interface UpdateAffiliateBody {
   bio?: string;
   website?: string;
   phone?: string;
+  profile_picture?: string;
   social_media?: {
     instagram?: string;
     twitter?: string;

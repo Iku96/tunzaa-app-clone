@@ -67,7 +67,7 @@ export default function AccountScreen() {
   const [displayName, setDisplayName] = useState("Loading...");
   const [displayLocation, setDisplayLocation] = useState("Dar es Salaam");
   const [displayBio, setDisplayBio] = useState("");
-  const [displayLogo, setDisplayLogo] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150");
+  const [displayLogo, setDisplayLogo] = useState("");
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -76,10 +76,13 @@ export default function AccountScreen() {
       const savedBio = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_BIO");
       const savedLocation = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_LOCATION");
 
-      if (savedLogo) setDisplayLogo(savedLogo);
+      const activeName = affiliateDetails?.name || savedName || "Winga Affiliate";
+      const letterAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=3B5191&color=fff&size=200`;
+
+      setDisplayLogo(affiliateDetails?.profile_picture || savedLogo || letterAvatar);
       
       // Fallback intelligently so we never show 'Loading...' indefinitely
-      setDisplayName(affiliateDetails?.name || savedName || "Winga Affiliate");
+      setDisplayName(activeName);
       setDisplayBio(affiliateDetails?.bio || savedBio || "");
       setDisplayLocation(savedLocation || "Dar es Salaam");
 

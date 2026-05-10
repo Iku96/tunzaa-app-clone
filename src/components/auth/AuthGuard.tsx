@@ -36,7 +36,7 @@ const NESTED_AUTH_SCREENS: Record<string, string[]> = {
 };
 
 // Protected portal groups - Note: (buyer) is intentionally omitted to allow guest browsing
-const PROTECTED_PORTALS = ['(vendor)', '(delivery)', '(winga)'];
+const PROTECTED_PORTALS = ['(vendor)', '(delivery)', '(winga)', '(loan)'];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, user, isLoading } = useTunzaaAuth();
@@ -112,8 +112,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             const hasDeliveryProfile = user?.profiles?.some((p: any) =>
                 ['delivery', 'driver', 'delivery_partner'].includes((p.role || '').toLowerCase())
             );
+            const hasLoanProfile = user?.profiles?.some((p: any) =>
+                ['loan', 'loan_provider'].includes((p.role || '').toLowerCase())
+            );
 
-            console.log(`🛡️ [AuthGuard] Authenticated on auth screen. Last: ${lastPortal}, Role: ${role}, HasDelivery: ${hasDeliveryProfile}, HasVendor: ${hasVendorProfile}`);
+            console.log(`🛡️ [AuthGuard] Authenticated on auth screen. Last: ${lastPortal}, Role: ${role}, HasDelivery: ${hasDeliveryProfile}, HasVendor: ${hasVendorProfile}, HasLoan: ${hasLoanProfile}`);
 
             // Priority 1: Explicit LAST_PORTAL preference
             if (lastPortal === 'delivery') {
@@ -128,6 +131,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                     return safeReplace('/(vendor)/dashboard');
                 } else {
                     return safeReplace('/(vendor)/onboarding/step-2');
+                }
+            }
+            if (lastPortal === 'loan') {
+                if (hasLoanProfile) {
+                    return safeReplace('/(loan)');
+                } else {
+                    return safeReplace('/(loan)/onboarding');
                 }
             }
             if (lastPortal === 'buyer') {

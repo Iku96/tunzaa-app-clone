@@ -16,11 +16,12 @@ import {
 import { Text } from "@/components/ui/text";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { useUpdateAffiliate } from "@/src/services/affiliates";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
+import { useUploadFile } from "@/src/services/upload";
 
 export default function EditBusinessProfileScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useTunzaaAuth();
   
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -28,8 +29,13 @@ export default function EditBusinessProfileScreen() {
   const { affiliateDetails, isLoading: profileLoading } = useProfileDetails();
   const affiliateId = affiliateDetails?.id;
 
-  // React Query update hook
+  // React Query hooks
   const updateAffiliate = useUpdateAffiliate();
+  const uploadFile = useUploadFile();
+
+  // State for holding newly uploaded URLs before saving
+  const [pendingLogoUrl, setPendingLogoUrl] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   // Editable Form states
   const [businessName, setBusinessName] = useState("");
@@ -49,7 +55,7 @@ export default function EditBusinessProfileScreen() {
   ];
 
   // Attachment states
-  const [displayLogo, setDisplayLogo] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200");
+  const [displayLogo, setDisplayLogo] = useState("");
   const [nidaAttachment, setNidaAttachment] = useState<string | null>(null);
 
   // Monitor keyboard dismiss to reset scroll state
@@ -81,10 +87,14 @@ export default function EditBusinessProfileScreen() {
         const savedLocation = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_LOCATION");
         const savedCategory = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_CATEGORY");
         
-        if (savedLogo) setDisplayLogo(savedLogo);
+        
+        const activeName = affiliateDetails?.name || savedName || "Winga Affiliate";
+        const letterAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=3B5191&color=fff&size=200`;
+        
+        setDisplayLogo(affiliateDetails?.profile_picture || savedLogo || letterAvatar);
         if (savedNida) setNidaAttachment(savedNida);
 
-        setBusinessName(affiliateDetails?.name || savedName || "");
+        setBusinessName(activeName);
         setEmailAddress(affiliateDetails?.email || user?.email || "");
         setPhoneNumber(affiliateDetails?.phone || user?.phone_number || "");
         setCategory(savedCategory || affiliateDetails?.website || "Electronic");
@@ -115,10 +125,33 @@ export default function EditBusinessProfileScreen() {
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      const newLogo = result.assets[0].uri;
-      setDisplayLogo(newLogo);
-      await AsyncStorage.setItem("TEMP_WINGA_PROFILE_LOGO", newLogo);
-      Alert.alert("Success", "Business logo updated successfully!");
+      const asset = result.assets[0];
+      const newLogoUri = asset.uri;
+      
+      // Update UI optimistically with local path
+      setDisplayLogo(newLogoUri);
+      setIsUploadingLogo(true);
+
+      try {
+        const filename = `winga-logo-${Date.now()}.jpg`;
+        const uploadRes = await uploadFile.mutateAsync({
+          uri: newLogoUri,
+          filename,
+          mimeType: 'image/jpeg',
+        });
+        
+        const serverUrl = uploadRes.url || uploadRes.fileUrl || uploadRes.fileCDNUrl;
+        if (serverUrl) {
+          setPendingLogoUrl(serverUrl);
+          await AsyncStorage.setItem("TEMP_WINGA_PROFILE_LOGO", serverUrl);
+          Alert.alert("Upload Success", "New logo uploaded successfully. Click 'Save' to persist changes.");
+        }
+      } catch (uploadError) {
+        console.error("Avatar upload error:", uploadError);
+        Alert.alert("Upload Failed", "We could not upload your profile picture. Please try again.");
+      } finally {
+        setIsUploadingLogo(false);
+      }
     }
   };
 
@@ -161,6 +194,7 @@ export default function EditBusinessProfileScreen() {
             name: businessName,
             phone: phoneNumber,
             website: category,
+            profile_picture: pendingLogoUrl || affiliateDetails?.profile_picture,
           }
         },
         {

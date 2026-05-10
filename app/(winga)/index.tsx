@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, Image, TouchableOpacity, TextInput, ActivityIndicator, Alert, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { AffiliateHome } from "@/components/home/AffiliateHome";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,9 +9,12 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Text } from "@/components/ui/text";
 import { useRouter } from "expo-router";
+import { useUploadFile } from "@/src/services/upload";
+import { useUpdateAffiliate } from "@/src/services/affiliates";
+import { useProfileDetails } from "@/hooks/useProfileDetails";
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user } = useTunzaaAuth();
   const { language } = useLanguage();
   const [step, setStep] = useState(3); // Onboarding Steps: 3 (Details), 4 (Industry), 5 (Documents)
   const [loading, setLoading] = useState(false);
@@ -24,6 +27,13 @@ export default function HomeScreen() {
   const [nidaImage, setNidaImage] = useState<string | null>(null);
 
   const router = useRouter();
+  
+  // Hook setup for final persist step
+  const { affiliateDetails } = useProfileDetails();
+  const updateAffiliate = useUpdateAffiliate();
+  const uploadFile = useUploadFile();
+  
+  const affiliateId = affiliateDetails?.id;
 
   const industriesList = [
     { id: "market", label: "Market" },
@@ -147,7 +157,7 @@ export default function HomeScreen() {
   if (!user || isCheckingOnboarding) {
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#3B5191" />
+        <ActivityIndicator testID="loading-spinner" size="large" color="#3B5191" />
       </View>
     );
   }
@@ -229,11 +239,64 @@ export default function HomeScreen() {
   const handleCompleteOnboarding = async () => {
     setLoading(true);
     try {
-      // Persist onboarding completeness
+      let finalLogo = logoImage;
+      let finalNida = nidaImage;
+      
+      console.log("📤 Finalizing onboarding, uploading files to CDN...");
+
+      // 1. Upload Logo if exists locally
+      if (logoImage && logoImage.startsWith('file://')) {
+        try {
+          const res = await uploadFile.mutateAsync({
+            uri: logoImage,
+            filename: `winga-logo-${user?.user_id || 'new'}.jpg`,
+            mimeType: 'image/jpeg',
+          });
+          const url = res.url || res.fileUrl || res.fileCDNUrl;
+          if (url) {
+            finalLogo = url;
+            await AsyncStorage.setItem("TEMP_WINGA_PROFILE_LOGO", url);
+          }
+        } catch (err) {
+          console.error("Failed to upload logo image during onboarding:", err);
+        }
+      }
+
+      // 2. Upload NIDA document if exists locally
+      if (nidaImage && nidaImage.startsWith('file://')) {
+        try {
+          const res = await uploadFile.mutateAsync({
+            uri: nidaImage,
+            filename: `winga-nida-${user?.user_id || 'new'}.jpg`,
+            mimeType: 'image/jpeg', // document picker might define more specific type later
+          });
+          const url = res.url || res.fileUrl || res.fileCDNUrl;
+          if (url) {
+            finalNida = url;
+            await AsyncStorage.setItem("TEMP_WINGA_PROFILE_NIDA", url);
+          }
+        } catch (err) {
+          console.error("Failed to upload NIDA document during onboarding:", err);
+        }
+      }
+
+      // 3. Persist Logo URL to backend Affiliate record if we possess an affiliateId
+      if (affiliateId && finalLogo && finalLogo.startsWith('http')) {
+        await updateAffiliate.mutateAsync({
+          affiliateId,
+          data: {
+            profile_picture: finalLogo,
+          }
+        });
+      }
+
+      // Persist onboarding completeness locally
       await AsyncStorage.setItem("WINGA_ONBOARDING_COMPLETE", "true");
       setIsOnboardingDone(true);
+      
     } catch (e) {
-      Alert.alert("Error", "Failed to complete onboarding. Please try again.");
+      console.error("Complete onboarding final error:", e);
+      Alert.alert("Error", "Failed to synchronize onboarding data with the server. Please verify connection.");
     } finally {
       setLoading(false);
     }

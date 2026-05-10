@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, CheckCircle2, UserCheck } from "lucide-react-native";
 import { useProductById, useProducts } from "@/stores/products";
 import { useCreateProductRequest } from "@/src/services/affiliates";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -30,7 +30,7 @@ export default function ProductScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showSuccessIndicator, setShowSuccessIndicator] = useState(false);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
-  const { user } = useAuth();
+  const { user } = useTunzaaAuth();
   const resolvedColors = useResolvedThemeColors();
   // Get affiliate details
   const { affiliateDetails } = useProfileDetails();

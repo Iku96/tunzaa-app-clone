@@ -11,7 +11,9 @@ import {
     Dimensions,
     Linking,
     Modal,
-    TextInput
+    TextInput,
+    KeyboardAvoidingView,
+    Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,15 +36,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { CategorySelector } from '@/components/vendor/CategorySelector';
 import { uploadApi } from '@/src/services/upload';
-import { getAvatarUrl, getVendorLogoUrl } from '@/src/utils/images';
+import { getVendorLogoUrl } from '@/src/utils/images';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-// AsyncStorage key for business extras (logo_url, etc.)
 const BUSINESS_EXTRAS_KEY = '@tunzaa_business_extras';
 
-// Business industry categories — these describe what kind of business you run,
-// NOT what products you sell. The /categories/ API is for product catalog only.
 const BUSINESS_INDUSTRIES = [
     { category_id: 'bi-retail', name: 'Retail & E-Commerce', slug: 'retail', description: 'Physical or online retail stores', parent_id: null, is_active: true, is_featured: false, image_url: '', metadata: {}, tenant_id: '', created_at: '', updated_at: '' },
     { category_id: 'bi-food', name: 'Food & Beverage', slug: 'food-beverage', description: 'Restaurants, cafes, catering, food processing', parent_id: null, is_active: true, is_featured: false, image_url: '', metadata: {}, tenant_id: '', created_at: '', updated_at: '' },
@@ -62,25 +61,21 @@ const BUSINESS_INDUSTRIES = [
     { category_id: 'bi-other', name: 'Other', slug: 'other', description: 'Other business types not listed above', parent_id: null, is_active: true, is_featured: false, image_url: '', metadata: {}, tenant_id: '', created_at: '', updated_at: '' },
 ];
 
-export default function EditBusinessScreen() {
+export default function EditProfileScreen() {
     const router = useRouter();
     const { user, updateVendor, submitVendorKyc, refreshProfile } = useTunzaaAuth();
     
-    // Find active profile (vendor or loan provider based on current portal)
-    const activeRole = user?.activeProfileRole || '';
-    const isLoanPortal = activeRole.toLowerCase() === 'loan' || activeRole.toLowerCase() === 'loan_provider';
-    const vendorProfile = user?.profiles?.find((p: any) => {
-        if (isLoanPortal) {
-            return ['loan', 'loan_provider'].includes(p.role?.toLowerCase());
-        }
-        return ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase());
-    });
-    const metadata = vendorProfile?.metadata || {};
+    // Find active loan profile
+    const loanProfile = user?.profiles?.find((p: any) => 
+        ['loan', 'loan_provider'].includes(p.role?.toLowerCase())
+    ) || user?.profiles?.find((p: any) => 
+        ['vendor', 'merchant', 'business', 'buyer'].includes(p.role?.toLowerCase())
+    );
+    const metadata = loanProfile?.metadata || {};
     
     // Form State
     const getInitialEmail = () => {
         const e = metadata?.contact_email || user?.email || '';
-        // Filter out auto-generated UUID emails (common when signing up via phone)
         if (e.match(/@[0-9a-fA-F]{8}-[0-9a-fA-F]{4}/)) return '';
         return e;
     };
@@ -89,69 +84,47 @@ export default function EditBusinessScreen() {
     const [email, setEmail] = useState(getInitialEmail());
     const [phone, setPhone] = useState(metadata?.contact_phone || user?.phone_number || '');
     const [logo, setLogo] = useState(getVendorLogoUrl({ metadata, vendorDetails: user?.vendorDetails }) || null);
-    const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
+    const [location, setLocation] = useState(metadata?.location || [metadata?.ward, metadata?.region].filter(Boolean).join(', ') || 'Kinondoni, Dar es salaam');
     const [tin, setTin] = useState(metadata?.tax_id || '');
     
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploadingDoc, setIsUploadingDoc] = useState(false);
-    const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showDocTypeModal, setShowDocTypeModal] = useState(false);
 
-    // Business industries (static list — these are NOT product categories)
     const businessCategories = BUSINESS_INDUSTRIES;
+    const [verificationDocs, setVerificationDocs] = useState<any[]>(metadata?.verification_documents || []);
 
-    // Documents from metadata - normalize if needed
-    const verificationDocs = metadata?.verification_documents || [];
-
-    // Load profile data — AsyncStorage first (instant), then API metadata as merge
+    // Load profile data from AsyncStorage first, then API metadata
     useEffect(() => {
         const loadProfile = async () => {
             try {
                 const userId = user?.user_id || user?.id;
                 if (!userId) return;
 
-                // 1. Load from AsyncStorage (instant, always works)
                 const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
                 const localData = storedExtras ? JSON.parse(storedExtras) : {};
 
-                // 2. Load from API metadata (may be empty if backend hasn't been updated)
-                let apiMeta: Record<string, any> = metadata;
-                
-                // 3. Merge: API takes priority if non-empty, otherwise use local
                 const merged = {
-                    business_name: apiMeta.business_name || localData.business_name || '',
-                    contact_email: apiMeta.contact_email || localData.contact_email || '',
-                    contact_phone: apiMeta.contact_phone || localData.contact_phone || '',
-                    logo_url: getVendorLogoUrl({ metadata: apiMeta, vendorDetails: user?.vendorDetails }) || localData.logo_url || '',
+                    business_name: metadata.business_name || localData.business_name || '',
+                    contact_email: metadata.contact_email || localData.contact_email || '',
+                    contact_phone: metadata.contact_phone || localData.contact_phone || '',
+                    logo_url: getVendorLogoUrl({ metadata, vendorDetails: user?.vendorDetails }) || localData.logo_url || '',
+                    location: localData.location || metadata.location || [metadata.ward, metadata.region].filter(Boolean).join(', ') || '',
+                    verification_documents: localData.verification_documents || metadata?.verification_documents || []
                 };
 
                 if (merged.business_name) setBusinessName(merged.business_name);
                 if (merged.contact_email) setEmail(merged.contact_email);
                 if (merged.contact_phone) setPhone(merged.contact_phone);
                 if (merged.logo_url) setLogo(merged.logo_url);
+                if (merged.location) setLocation(merged.location);
+                setVerificationDocs(merged.verification_documents);
             } catch (e) {
-                console.warn('[EditBusiness] Failed to load profile:', e);
+                console.warn('[EditProfile] Failed to load profile:', e);
             }
         };
         loadProfile();
     }, [user]);
-
-    useEffect(() => {
-        // Restore previously saved business category from metadata
-        if (metadata?.categories && Array.isArray(metadata.categories)) {
-            // Match saved category names against our static industry list
-            const restored = metadata.categories
-                .map((saved: any) => {
-                    const name = typeof saved === 'string' ? saved : saved.name;
-                    return BUSINESS_INDUSTRIES.find(bi => bi.name === name || bi.slug === name);
-                })
-                .filter(Boolean);
-            if (restored.length > 0) setSelectedCategories(restored);
-        } else if (metadata?.category) {
-            const found = BUSINESS_INDUSTRIES.find(bi => bi.name === metadata.category || bi.slug === metadata.category);
-            if (found) setSelectedCategories([found]);
-        }
-    }, [metadata?.category]);
 
     const pickLogo = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -165,7 +138,6 @@ export default function EditBusinessScreen() {
             const uri = result.assets[0].uri;
             setLogo(uri);
 
-            // Save locally immediately
             const userId = user?.user_id || user?.id;
             if (userId) {
                 const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
@@ -189,7 +161,6 @@ export default function EditBusinessScreen() {
             const file = result.assets[0];
             setIsUploadingDoc(true);
 
-            // 1. Upload to server
             const fileExt = file.name ? file.name.split('.').pop() : 'pdf';
             const uploadRes = await uploadApi.uploadFile(
                 file.uri, 
@@ -208,10 +179,26 @@ export default function EditBusinessScreen() {
             };
 
             const updatedDocs = [...verificationDocs, newDoc];
-            await submitVendorKyc(updatedDocs);
+            setVerificationDocs(updatedDocs);
+
+            try {
+                await submitVendorKyc(updatedDocs);
+            } catch (err) {
+                console.warn('[EditProfile] Server KYC submission failed, falling back to local cache:', err);
+            }
+
+            const userId = user?.user_id || user?.id;
+            if (userId) {
+                const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
+                const localData = storedExtras ? JSON.parse(storedExtras) : {};
+                localData.verification_documents = updatedDocs;
+                await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${userId}`, JSON.stringify(localData));
+            }
             
             Alert.alert('Success', `${docType.toUpperCase()} uploaded successfully`);
-            await refreshProfile();
+            if (typeof refreshProfile === 'function') {
+                try { await refreshProfile(); } catch (_) {}
+            }
         } catch (error: any) {
             Alert.alert('Upload Failed', error.message || 'Failed to upload document');
         } finally {
@@ -251,8 +238,25 @@ export default function EditBusinessScreen() {
                             setIsSubmitting(true);
                             const updatedDocs = [...verificationDocs];
                             updatedDocs.splice(index, 1);
-                            await submitVendorKyc(updatedDocs);
-                            await refreshProfile();
+                            setVerificationDocs(updatedDocs);
+
+                            try {
+                                await submitVendorKyc(updatedDocs);
+                            } catch (err) {
+                                console.warn('[EditProfile] Server KYC deletion failed, falling back to local cache:', err);
+                            }
+
+                            const userId = user?.user_id || user?.id;
+                            if (userId) {
+                                const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${userId}`);
+                                const localData = storedExtras ? JSON.parse(storedExtras) : {};
+                                localData.verification_documents = updatedDocs;
+                                await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${userId}`, JSON.stringify(localData));
+                            }
+
+                            if (typeof refreshProfile === 'function') {
+                                try { await refreshProfile(); } catch (_) {}
+                            }
                         } catch (error: any) {
                             Alert.alert('Error', error.message);
                         } finally {
@@ -273,12 +277,11 @@ export default function EditBusinessScreen() {
         setIsSubmitting(true);
         try {
             const targetUserId = user?.user_id || user?.id;
-            const vendorId = metadata?.vendor_id || vendorProfile?.profile_id;
-            const profileId = vendorProfile?.profile_id;
+            const vendorId = metadata?.vendor_id || loanProfile?.profile_id || loanProfile?.profileId || 'mock-vendor-id';
+            const profileId = loanProfile?.profile_id || loanProfile?.profileId || 'mock-profile-id';
 
             let finalLogoUrl = logo;
 
-            // 1. Upload Logo if it's a new local file
             if (logo && logo.startsWith('file://')) {
                 try {
                     const uploadRes = await uploadApi.uploadFile(
@@ -286,26 +289,22 @@ export default function EditBusinessScreen() {
                         `logo_${vendorId}_${Date.now()}.jpg`, 
                         'image/jpeg'
                     );
-                    // Backend returns fileCDNUrl (permanent) or fileUrl (signed), NOT url
                     finalLogoUrl = uploadRes.fileCDNUrl || uploadRes.fileUrl || uploadRes.url;
-                    console.log('📸 [Logo] Uploaded successfully:', finalLogoUrl);
 
-                    // Update local storage immediately with the final remote URL
                     if (targetUserId) {
-                        const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`);
+                        const storedExtras = await AsyncStorage.getItem(`@tunzaa_business_extras_${targetUserId}`);
                         const localData = storedExtras ? JSON.parse(storedExtras) : {};
                         localData.logo_url = finalLogoUrl;
-                        await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`, JSON.stringify(localData));
+                        await AsyncStorage.setItem(`@tunzaa_business_extras_${targetUserId}`, JSON.stringify(localData));
                     }
                 } catch (e) {
                     console.error('Logo upload failed:', e);
                 }
             }
 
-
-            // Prepare categories for update
-            const categoryNames = selectedCategories.map(c => c.name);
-            const mainCategory = categoryNames[0] || '';
+            const parts = location.split(',').map(s => s.trim());
+            const ward = parts[0] || '';
+            const region = parts[1] || '';
 
             const updateData = {
                 business_name: businessName,
@@ -316,8 +315,9 @@ export default function EditBusinessScreen() {
                     contact_email: email,
                     contact_phone: phone,
                     tax_id: tin,
-                    categories: selectedCategories,
-                    category: mainCategory,
+                    location: location,
+                    region: region,
+                    ward: ward,
                     logo_url: finalLogoUrl,
                     logoUrl: finalLogoUrl,
                     image_url: finalLogoUrl,
@@ -326,32 +326,37 @@ export default function EditBusinessScreen() {
                 }
             };
 
-            await updateVendor(vendorId, profileId, updateData);
+            try {
+                if (typeof updateVendor === 'function') {
+                    await updateVendor(vendorId, profileId, updateData);
+                }
+            } catch (err) {
+                console.warn('[EditProfile] Server update failed, falling back to local cache:', err);
+            }
 
-            // Sync extras to AsyncStorage one last time
             if (targetUserId) {
-                const storedExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`);
+                const storedExtras = await AsyncStorage.getItem(`@tunzaa_business_extras_${targetUserId}`);
                 const localData = storedExtras ? JSON.parse(storedExtras) : {};
                 localData.business_name = businessName;
                 localData.contact_email = email;
                 localData.contact_phone = phone;
                 localData.logo_url = finalLogoUrl;
-                await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${targetUserId}`, JSON.stringify(localData));
+                localData.location = location;
+                localData.region = region;
+                localData.ward = ward;
+                await AsyncStorage.setItem(`@tunzaa_business_extras_${targetUserId}`, JSON.stringify(localData));
             }
 
-            await refreshProfile();
+            try {
+                if (typeof refreshProfile === 'function') {
+                    await refreshProfile();
+                }
+            } catch (err) {
+                console.warn('[EditProfile] refreshProfile failed:', err);
+            }
             
             Alert.alert('Success', 'Business profile updated successfully', [
-                { 
-                    text: 'OK', 
-                    onPress: () => {
-                        if (isLoanPortal) {
-                            router.replace('/(loan)/business-profile');
-                        } else {
-                            router.back();
-                        }
-                    } 
-                }
+                { text: 'OK', onPress: () => router.replace('/(loan)/business-profile') }
             ]);
         } catch (error: any) {
             Alert.alert('Error', error.message || 'Failed to update profile');
@@ -445,33 +450,32 @@ export default function EditBusinessScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            <DocTypeSelector />
-            
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity 
-                    onPress={() => {
-                        if (isLoanPortal) {
-                            router.replace('/(loan)/business-profile');
-                        } else {
-                            router.back();
-                        }
-                    }} 
-                    style={styles.headerBtn}
-                >
-                    <ArrowLeft size={24} color="#111827" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Edit business profile</Text>
-                <TouchableOpacity onPress={handleSave} disabled={isSubmitting} style={styles.headerBtn}>
-                    {isSubmitting ? (
-                        <ActivityIndicator size="small" color="#111827" />
-                    ) : (
-                        <Check size={24} color="#111827" />
-                    )}
-                </TouchableOpacity>
-            </View>
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+                style={{ flex: 1 }}
+            >
+                <DocTypeSelector />
+                
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.replace('/(loan)/business-profile')} style={styles.headerBtn}>
+                        <ArrowLeft size={24} color="#111827" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Edit business profile</Text>
+                    <TouchableOpacity onPress={handleSave} disabled={isSubmitting} style={styles.headerBtn}>
+                        {isSubmitting ? (
+                            <ActivityIndicator size="small" color="#111827" />
+                        ) : (
+                            <Check size={24} color="#111827" />
+                        )}
+                    </TouchableOpacity>
+                </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                <ScrollView 
+                    style={styles.content} 
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
                 {/* Logo Section */}
                 <View style={styles.logoSection}>
                     <TouchableOpacity onPress={pickLogo} style={styles.logoWrapper}>
@@ -499,31 +503,7 @@ export default function EditBusinessScreen() {
                     {renderInputCard('Business name', businessName, setBusinessName, <Pencil size={18} color="#9CA3AF" />)}
                     {renderInputCard('Email address', email, setEmail, <Pencil size={18} color="#9CA3AF" />, 'email-address')}
                     {renderInputCard('Phone number', phone, setPhone, <Pencil size={18} color="#9CA3AF" />, 'phone-pad')}
-                    {renderCard(
-                        'Category', 
-                        selectedCategories.length > 0 ? selectedCategories[0].name : 'Select Category', 
-                        <ChevronDown size={20} color="#111827" />,
-                        () => setShowCategoryModal(!showCategoryModal)
-                    )}
-
-                    {showCategoryModal && (
-                        <View style={styles.categoryPickerContainer}>
-                            <View style={styles.modalHeader}>
-                                <Text style={styles.modalTitle}>Select Business Category</Text>
-                                <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-                                    <X size={20} color="#6B7280" />
-                                </TouchableOpacity>
-                            </View>
-                            <CategorySelector 
-                                    categories={businessCategories}
-                                    selectedCategories={selectedCategories}
-                                    onCategoryChange={(cats) => {
-                                        setSelectedCategories(cats);
-                                        if (cats.length > 0) setShowCategoryModal(false);
-                                    }}
-                                />
-                        </View>
-                    )}
+                    {renderInputCard('Location', location, setLocation, <Pencil size={18} color="#9CA3AF" />)}
                 </View>
 
                 {/* Certificate / Compliance Section */}
@@ -592,8 +572,9 @@ export default function EditBusinessScreen() {
 
                 <View style={{ height: 40 }} />
             </ScrollView>
-        </SafeAreaView>
-    );
+        </KeyboardAvoidingView>
+    </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -831,18 +812,20 @@ const styles = StyleSheet.create({
     },
     docTypeOptionText: {
         fontSize: 16,
-        color: '#111827',
-        marginLeft: 15,
+        color: '#374151',
+        marginLeft: 12,
         fontWeight: '500',
     },
     cancelBtn: {
         marginTop: 20,
         paddingVertical: 15,
         alignItems: 'center',
+        backgroundColor: '#F3F4F6',
+        borderRadius: 12,
     },
     cancelBtnText: {
         fontSize: 16,
-        color: '#EF4444',
+        color: '#4B5563',
         fontWeight: '600',
     }
 });

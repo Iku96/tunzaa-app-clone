@@ -119,6 +119,12 @@ export default function WelcomeScreen() {
                     return;
                 }
 
+                if (lastPortal === 'loan') {
+                    console.log('🚀 [Splash] Loan provider intent, directing to loan portal');
+                    router.replace('/(loan)');
+                    return;
+                }
+
                 // Fallback logic based on server roles if no LAST_PORTAL
                 const isDeliveryRole = ['delivery', 'driver', 'delivery_partner'].includes(role?.toLowerCase() || '');
                 const isMerchantRole = ['vendor', 'merchant', 'business'].includes(role?.toLowerCase() || '');
@@ -137,6 +143,11 @@ export default function WelcomeScreen() {
                 }
                 if (role?.toLowerCase() === 'winga') {
                     router.replace('/(winga)');
+                    return;
+                }
+                
+                if (role?.toLowerCase() === 'loan' || role?.toLowerCase() === 'loan_provider') {
+                    router.replace('/(loan)');
                     return;
                 }
 

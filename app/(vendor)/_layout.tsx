@@ -40,6 +40,11 @@ const VendorLayout = () => {
   const [showKycModal, setShowKycModal] = useState(false);
   const router = useRouter();
 
+  // Role guard: Prevent loan providers from accessing the vendor layout
+  if (user && (user.activeProfileRole === 'loan' || user.activeProfileRole === 'loan_provider')) {
+    return <Redirect href="/(loan)" />;
+  }
+
   // Ensure we are on a merchant profile when in this portal
   useEffect(() => {
     if (user && user.activeProfileRole === 'buyer' && typeof switchRole === 'function') {

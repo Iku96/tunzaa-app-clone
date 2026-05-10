@@ -1,0 +1,370 @@
+app/(auth)/_layout.tsx(12,42): error TS2345: Argument of type '"complete-profile"' is not assignable to parameter of type 'never'.
+app/(auth)/login.tsx(49,33): error TS2339: Property 'signInWithGoogle' does not exist on type 'TunzaaAuthContextType'.
+app/(auth)/login.tsx(49,51): error TS2339: Property 'signInWithApple' does not exist on type 'TunzaaAuthContextType'.
+app/(auth)/login.tsx(325,95): error TS2345: Argument of type '"/terms"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/" | `/?${string}` | `/#${string}` | "/interests" | `/interests?${string}` | `/interests#${string}` | "/language" | `/language?${string}` | ... 1189 more ... | { ...; }'.
+app/(auth)/register.tsx(56,35): error TS2339: Property 'signInWithGoogle' does not exist on type 'TunzaaAuthContextType'.
+app/(auth)/register.tsx(56,53): error TS2339: Property 'signInWithApple' does not exist on type 'TunzaaAuthContextType'.
+app/(buyer)/category/[id].tsx(134,73): error TS2339: Property 'id' does not exist on type 'Category'.
+app/(buyer)/category/[id].tsx(136,116): error TS2339: Property 'id' does not exist on type 'Category'.
+app/(buyer)/chat/[id].tsx(163,22): error TS2304: Cannot find name 'ScrollView'.
+app/(buyer)/chat/[id].tsx(178,23): error TS2304: Cannot find name 'ScrollView'.
+app/(buyer)/index.tsx(44,44): error TS2339: Property 'profile_picture' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+app/(buyer)/index.tsx(49,35): error TS2339: Property 'profile_picture' does not exist on type 'AuthResponse'.
+app/(buyer)/index.tsx(49,59): error TS2339: Property 'avatar' does not exist on type 'AuthResponse'.
+app/(buyer)/index.tsx(49,74): error TS2339: Property 'avatar_url' does not exist on type 'AuthResponse'.
+app/(buyer)/index.tsx(49,93): error TS2339: Property 'image_url' does not exist on type 'AuthResponse'.
+app/(buyer)/orders/[id].tsx(10,10): error TS2724: '"../../../src/services/orders"' has no exported member named 'useGetOrder'. Did you mean 'useGetOrders'?
+app/(buyer)/orders/[id].tsx(32,65): error TS7006: Parameter 'i' implicitly has an 'any' type.
+app/(buyer)/orders/rate.tsx(6,10): error TS2724: '"../../../src/services/orders"' has no exported member named 'useGetOrder'. Did you mean 'useGetOrders'?
+app/(buyer)/orders/receipt.tsx(5,10): error TS2724: '"../../../src/services/orders"' has no exported member named 'useGetOrder'. Did you mean 'useGetOrders'?
+app/(buyer)/product/[id].tsx(97,44): error TS2339: Property 'verification_status' does not exist on type 'Product'.
+app/(buyer)/profile.tsx(59,34): error TS2304: Cannot find name 'profile'.
+app/(buyer)/profile.tsx(60,34): error TS2304: Cannot find name 'userData'.
+app/(buyer)/profile.tsx(61,34): error TS2304: Cannot find name 'userData'.
+app/(buyer)/profile/activities/spending.tsx(65,39): error TS2339: Property 'categories' does not exist on type 'OrderItem'.
+app/(buyer)/profile/delivery/saved.tsx(85,41): error TS2339: Property 'emptyContainer' does not exist on type '{ container: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; borderBottomWidth: number; borderBottomColor: string; }; ... 21 more ...; addButtonText: { ...; }; }'.
+app/(buyer)/profile/delivery/saved.tsx(87,45): error TS2339: Property 'emptyText' does not exist on type '{ container: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; borderBottomWidth: number; borderBottomColor: string; }; ... 21 more ...; addButtonText: { ...; }; }'.
+app/(buyer)/shop/[id].tsx(261,42): error TS2339: Property 'has_variants' does not exist on type '{ id: string; name: string; price: number; originalPrice: number | undefined; image: string; rating: number; reviews: number; vendor: { id: any; name: any; location: string; verified: boolean; }; specs: string[]; description: string; category: string; }'.
+app/(buyer)/shop/[id].tsx(270,53): error TS2339: Property 'emptyText' does not exist on type '{ safeArea: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; }; ... 60 more ...; gridIconOverlay: { ...; }; }'.
+app/(buyer)/shop/[id].tsx(326,59): error TS2339: Property 'storyLikeBtn' does not exist on type '{ safeArea: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; }; ... 60 more ...; gridIconOverlay: { ...; }; }'.
+app/(buyer)/shop/[id].tsx(348,53): error TS2339: Property 'emptyText' does not exist on type '{ safeArea: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; }; ... 60 more ...; gridIconOverlay: { ...; }; }'.
+app/(buyer)/shop/[id].tsx(366,17): error TS2322: Type '(type: "LICENSE" | "TIN" | "BRELA") => void' is not assignable to type '(type: string) => void'.
+  Types of parameters 'type' and 'type' are incompatible.
+    Type 'string' is not assignable to type '"LICENSE" | "TIN" | "BRELA"'.
+app/(buyer)/shop/product/[id].tsx(97,37): error TS2339: Property 'location' does not exist on type 'Store'.
+app/(buyer)/shop/product/[id].tsx(128,56): error TS2339: Property 'url' does not exist on type 'string | ProductImage'.
+  Property 'url' does not exist on type 'string'.
+app/(buyer)/shop/product/[id].tsx(180,33): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+app/(buyer)/shop/product/[id].tsx(181,33): error TS2339: Property 'profile_picture' does not exist on type 'AuthResponse'.
+app/(buyer)/shop/product/[id].tsx(182,33): error TS2339: Property 'photo_url' does not exist on type 'AuthResponse'.
+app/(buyer)/shop/product/[id].tsx(191,42): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(buyer)/shop/product/[id].tsx(201,21): error TS2353: Object literal may only specify known properties, and 'entity_id' does not exist in type 'UpdateRatingBody'.
+app/(buyer)/shop/product/[id].tsx(207,50): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(buyer)/shop/product/[id].tsx(383,79): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+app/(buyer)/shop/product/[id].tsx(383,152): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(buyer)/shop/product/[id].tsx(391,60): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(buyer)/stores/[id]/index.tsx(36,38): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/(buyer)/wishlist.tsx(6,49): error TS2459: Module '"../../src/services/wishlist"' declares 'WishlistItem' locally, but it is not exported.
+app/(delivery)/account/index.tsx(20,25): error TS2339: Property 'refreshUserData' does not exist on type 'TunzaaAuthContextType'.
+app/(delivery)/onboarding/index.tsx(18,52): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(delivery)/onboarding/step-2-map.tsx(262,34): error TS2604: JSX element type 'Marker' does not have any construct or call signatures.
+app/(delivery)/onboarding/step-2-map.tsx(262,34): error TS2786: 'Marker' cannot be used as a JSX component.
+  Its type 'RNMarker' is not a valid JSX element type.
+app/(delivery)/onboarding/step-2-map.tsx(265,49): error TS7006: Parameter 'e' implicitly has an 'any' type.
+app/(delivery)/onboarding/step-4.tsx(122,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(loan)/edit-profile.tsx(292,21): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+app/(loan)/edit-profile.tsx(305,51): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/(loan)/index.tsx(159,51): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(loan)/onboarding/index.tsx(17,58): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(loan)/onboarding/step-2-map.tsx(241,34): error TS2604: JSX element type 'Marker' does not have any construct or call signatures.
+app/(loan)/onboarding/step-2-map.tsx(241,34): error TS2786: 'Marker' cannot be used as a JSX component.
+  Its type 'RNMarker' is not a valid JSX element type.
+app/(loan)/onboarding/step-2-map.tsx(244,49): error TS7006: Parameter 'e' implicitly has an 'any' type.
+app/(loan)/onboarding/step-3.tsx(74,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(loan)/onboarding/step-3.tsx(82,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(loan)/onboarding/step-3.tsx(91,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(loan)/onboarding/step-3.tsx(98,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(loan)/onboarding/step-3.tsx(105,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(loan)/onboarding/step-3.tsx(160,71): error TS2339: Property 'id' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+app/(public)/_layout.tsx(177,13): error TS2820: Type '"/(onboarding)"' is not assignable to type 'RelativePathString | ExternalPathString | "/" | `/?${string}` | `/#${string}` | "/interests" | `/interests?${string}` | `/interests#${string}` | "/language" | `/language?${string}` | ... 1191 more ... | undefined'. Did you mean '"/onboarding"'?
+app/(public)/account.tsx(13,20): error TS2345: Argument of type '"/(onboarding)"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/" | `/?${string}` | `/#${string}` | "/interests" | `/interests?${string}` | `/interests#${string}` | "/language" | `/language?${string}` | ... 1189 more ... | { ...; }'.
+app/(public)/categories/index.tsx(14,41): error TS2339: Property 'items' does not exist on type '{}'.
+app/(public)/categories/index.tsx(15,47): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+app/(public)/categories/index.tsx(48,36): error TS7006: Parameter 'category' implicitly has an 'any' type.
+app/(public)/search.tsx(49,38): error TS2339: Property 'items' does not exist on type '{}'.
+app/(public)/search.tsx(88,33): error TS7006: Parameter 'category' implicitly has an 'any' type.
+app/(public)/stores/[id]/index.tsx(37,38): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/(vendor)/_layout.tsx(44,16): error TS2367: This comparison appears to be unintentional because the types 'UserRole' and '"loan"' have no overlap.
+app/(vendor)/_layout.tsx(44,53): error TS2367: This comparison appears to be unintentional because the types 'UserRole' and '"loan_provider"' have no overlap.
+app/(vendor)/account/index.tsx(170,11): error TS2322: Type '{ [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; } | undefined' is not assignable to type '{ verification_status: string; verification_documents: { document_id: string; document_type_name: string; document_type_description?: string | undefined; number: string; document_url: string; ... 4 more ...; expires_at?: string | undefined; }[]; }'.
+  Type 'undefined' is not assignable to type '{ verification_status: string; verification_documents: { document_id: string; document_type_name: string; document_type_description?: string | undefined; number: string; document_url: string; ... 4 more ...; expires_at?: string | undefined; }[]; }'.
+app/(vendor)/activities/likes.tsx(22,28): error TS2339: Property 'vendor_id' does not exist on type 'AuthResponse'.
+app/(vendor)/activities/likes.tsx(22,47): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+app/(vendor)/activities/shares.tsx(22,28): error TS2339: Property 'vendor_id' does not exist on type 'AuthResponse'.
+app/(vendor)/activities/shares.tsx(22,47): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+app/(vendor)/activities/spending.tsx(157,41): error TS2339: Property 'emptyState' does not exist on type '{ container: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; }; ... 55 more ...; activePickerText: { ...; }; }'.
+app/(vendor)/activities/spending.tsx(158,45): error TS2339: Property 'emptyText' does not exist on type '{ container: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; }; ... 55 more ...; activePickerText: { ...; }; }'.
+app/(vendor)/activities/spending.tsx(263,37): error TS2339: Property 'loadingContainer' does not exist on type '{ container: { flex: number; backgroundColor: string; }; header: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; paddingHorizontal: number; paddingVertical: number; }; ... 55 more ...; activePickerText: { ...; }; }'.
+app/(vendor)/activities/wishlist.tsx(22,28): error TS2339: Property 'vendor_id' does not exist on type 'AuthResponse'.
+app/(vendor)/activities/wishlist.tsx(22,47): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+app/(vendor)/add-product.tsx(125,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(vendor)/add-product.tsx(351,22): error TS2304: Cannot find name 'LayoutGrid'.
+app/(vendor)/add-product.tsx(449,67): error TS2345: Argument of type '"/(vendor)/index"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/" | `/?${string}` | `/#${string}` | "/interests" | `/interests?${string}` | `/interests#${string}` | "/language" | `/language?${string}` | ... 1189 more ... | { ...; }'.
+app/(vendor)/edit-business.tsx(290,21): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+app/(vendor)/edit-business.tsx(329,42): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(vendor)/loan-services/[id]/apply.tsx(268,82): error TS2551: Property 'firstName' does not exist on type 'AuthResponse'. Did you mean 'first_name'?
+app/(vendor)/loan-services/[id]/providers.tsx(84,45): error TS2322: Type '`/(vendor)/loan-services/${string}/apply`' is not assignable to type 'RelativePathString | ExternalPathString | "/" | "/interests" | "/language" | "/mauzo-intro" | "/role" | "/_sitemap" | "/(auth)/complete-profile" | ... 333 more ... | "/(winga)/stores/[id]"'.
+app/(vendor)/onboarding/step-1.tsx(18,52): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+app/(vendor)/onboarding/step-2-map.tsx(262,34): error TS2604: JSX element type 'Marker' does not have any construct or call signatures.
+app/(vendor)/onboarding/step-2-map.tsx(262,34): error TS2786: 'Marker' cannot be used as a JSX component.
+  Its type 'RNMarker' is not a valid JSX element type.
+app/(vendor)/onboarding/step-2-map.tsx(265,49): error TS7006: Parameter 'e' implicitly has an 'any' type.
+app/(vendor)/onboarding/step-4.tsx(191,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(vendor)/onboarding/step-4.tsx(202,49): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/(vendor)/product-insight.tsx(42,56): error TS2339: Property 'items' does not exist on type 'TopPerformingProductsResponse'.
+app/(vendor)/product-insight.tsx(42,77): error TS2339: Property 'items' does not exist on type 'TopPerformingProductsResponse'.
+app/(winga)/index.tsx(15,11): error TS2339: Property 'language' does not exist on type 'LanguageContextValue'.
+app/(winga)/orders/sales.tsx(50,9): error TS7034: Variable 'mockOrdersList' implicitly has type 'any[]' in some locations where its type cannot be determined.
+app/(winga)/orders/sales.tsx(63,7): error TS7005: Variable 'mockOrdersList' implicitly has an 'any[]' type.
+app/(winga)/search.tsx(43,38): error TS2339: Property 'items' does not exist on type '{}'.
+app/(winga)/search.tsx(81,33): error TS7006: Parameter 'category' implicitly has an 'any' type.
+app/product/[id].tsx(25,17): error TS2304: Cannot find name 'error'.
+app/product/[id].tsx(25,30): error TS2304: Cannot find name 'error'.
+app/product/[id].tsx(26,24): error TS2304: Cannot find name 'data'.
+components/ChatwootWidget/SafeChatwootWrapper.tsx(25,53): error TS2339: Property 'removeEventListener' does not exist on type 'BackHandlerStatic'.
+components/ChatwootWidget/SafeChatwootWrapper.tsx(27,22): error TS2339: Property 'removeEventListener' does not exist on type 'BackHandlerStatic'.
+components/carousel/index.tsx(63,31): error TS7006: Parameter '_' implicitly has an 'any' type.
+components/carousel/index.tsx(63,34): error TS7006: Parameter 'index' implicitly has an 'any' type.
+components/home/BuyerHome.tsx(144,78): error TS7006: Parameter 'category' implicitly has an 'any' type.
+components/home/BuyerHome.tsx(178,41): error TS2339: Property 'items' does not exist on type '{}'.
+components/home/BuyerHome.tsx(180,47): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+components/home/BuyerHome.tsx(195,36): error TS7006: Parameter 'category' implicitly has an 'any' type.
+components/home/BuyerHome.tsx(312,40): error TS7006: Parameter 'category' implicitly has an 'any' type.
+components/home/BuyerHome.tsx(351,31): error TS7006: Parameter 'shop' implicitly has an 'any' type.
+components/home/VendorHome.tsx(179,5): error TS2559: Type 'boolean' has no properties in common with type '{ start_date?: string | undefined; end_date?: string | undefined; }'.
+components/home/VendorHome.tsx(184,5): error TS2559: Type 'boolean' has no properties in common with type '{ start_date?: string | undefined; end_date?: string | undefined; }'.
+components/home/VendorHome.tsx(189,5): error TS2559: Type 'boolean' has no properties in common with type '{ start_date?: string | undefined; end_date?: string | undefined; }'.
+components/layout/CategoriesSidebar.tsx(58,38): error TS2339: Property 'items' does not exist on type '{}'.
+components/layout/CategoriesSidebar.tsx(59,44): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+components/layout/CategoriesSidebar.tsx(191,35): error TS7006: Parameter 'category' implicitly has an 'any' type.
+components/layout/index.ts(13,3): error TS2305: Module '"./DesktopNavigation"' has no exported member 'DesktopBreadcrumbNav'.
+components/modals/AddressSelectionModal.tsx(102,32): error TS2551: Property 'address_line2' does not exist on type 'DeliveryAddress'. Did you mean 'address_line1'?
+components/modals/AddressSelectionModal.tsx(102,62): error TS2551: Property 'address_line2' does not exist on type 'DeliveryAddress'. Did you mean 'address_line1'?
+components/modals/BatchDetailsModal.tsx(282,9): error TS2322: Type '{ width: "75vw"; minHeight: "70vh"; }' is not assignable to type 'StyleProp<ViewStyle>'.
+  Types of property 'width' are incompatible.
+    Type '"75vw"' is not assignable to type 'DimensionValue | undefined'.
+components/modals/BatchListModal.tsx(110,9): error TS2322: Type '{ width: "75vw"; minHeight: "70vh"; }' is not assignable to type 'StyleProp<ViewStyle>'.
+  Types of property 'width' are incompatible.
+    Type '"75vw"' is not assignable to type 'DimensionValue | undefined'.
+components/modals/BulkUploadModal.tsx(256,9): error TS2322: Type '{ width: "60vw"; minWidth: "600px"; }' is not assignable to type 'StyleProp<ViewStyle>'.
+  Types of property 'width' are incompatible.
+    Type '"60vw"' is not assignable to type 'DimensionValue | undefined'.
+components/modals/ProductModal.tsx(201,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/modals/ProductModal.tsx(492,40): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/modals/ProfileCreationModal.tsx(47,26): error TS2339: Property 'name' does not exist on type 'DeliveryFormData'.
+components/modals/ProfileCreationModal.tsx(48,25): error TS2339: Property 'name' does not exist on type 'DeliveryFormData'.
+components/modals/ProfileCreationModal.tsx(49,21): error TS2339: Property 'email' does not exist on type 'DeliveryFormData'.
+components/modals/ProfileCreationModal.tsx(148,13): error TS2741: Property 'tenant_id' is missing in type '{ user_id: string; name: any; email: any; phone: string; bio: string; website: string; social_media: { instagram: string | undefined; twitter: string | undefined; facebook: string | undefined; }; }' but required in type 'CreateAffiliateBody'.
+components/modals/ProfileCreationModal.tsx(150,20): error TS2339: Property 'name' does not exist on type 'AffiliateFormData'.
+components/modals/ProfileCreationModal.tsx(151,21): error TS2339: Property 'email' does not exist on type 'AffiliateFormData'.
+components/notifications/NotificationsList.tsx(14,3): error TS2305: Module '"@/src/services/notifications"' has no exported member 'useGetNotifications'.
+components/notifications/NotificationsList.tsx(15,3): error TS2305: Module '"@/src/services/notifications"' has no exported member 'useMarkAsRead'.
+components/notifications/NotificationsList.tsx(16,3): error TS2305: Module '"@/src/services/notifications"' has no exported member 'useMarkAllAsRead'.
+components/notifications/NotificationsList.tsx(242,33): error TS7006: Parameter 'notification' implicitly has an 'any' type.
+components/orders/DeliveryOrders.tsx(93,39): error TS2304: Cannot find name 'DeliveryStage'.
+components/orders/DeliveryOrders.tsx(147,22): error TS2339: Property 'partner_id' does not exist on type 'DeliveryStage'.
+components/orders/DeliveryOrders.tsx(306,31): error TS2339: Property 'partner_name' does not exist on type 'Delivery'.
+components/orders/DeliveryOrders.tsx(310,37): error TS2339: Property 'partner_name' does not exist on type 'Delivery'.
+components/orders/WebOrderView.tsx(17,10): error TS2724: '"@/src/services/orders"' has no exported member named 'useGetOrder'. Did you mean 'useGetOrders'?
+components/orders/WebOrderView.tsx(17,23): error TS2305: Module '"@/src/services/orders"' has no exported member 'useGetOrderByNumber'.
+components/orders/WebOrderView.tsx(81,28): error TS7006: Parameter 'item' implicitly has an 'any' type.
+components/orders/WebOrderView.tsx(123,32): error TS7006: Parameter 'groups' implicitly has an 'any' type.
+components/orders/WebOrderView.tsx(123,40): error TS7006: Parameter 'item' implicitly has an 'any' type.
+components/orders/WebOrderView.tsx(141,17): error TS2339: Property 'current_stage' does not exist on type 'Delivery'.
+components/orders/WebOrderView.tsx(143,40): error TS2339: Property 'current_stage' does not exist on type 'Delivery'.
+components/orders/WebOrderView.tsx(371,22): error TS18046: 'storeGroup' is of type 'unknown'.
+components/orders/WebOrderView.tsx(378,24): error TS18046: 'storeGroup' is of type 'unknown'.
+components/orders/WebOrderView.tsx(381,24): error TS18046: 'storeGroup' is of type 'unknown'.
+components/orders/WebOrderView.tsx(381,54): error TS18046: 'storeGroup' is of type 'unknown'.
+components/orders/WebOrderView.tsx(396,16): error TS18046: 'storeGroup' is of type 'unknown'.
+components/orders/WebOrderView.tsx(396,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+components/orders/WebOrderView.tsx(396,44): error TS7006: Parameter 'index' implicitly has an 'any' type.
+components/orders/WebOrderView.tsx(440,30): error TS18046: 'storeGroup' is of type 'unknown'.
+components/orders/WebOrderView.tsx(453,38): error TS2339: Property 'current_stage' does not exist on type 'Delivery'.
+components/orders/details/DeliveryOrderDetails.tsx(246,33): error TS2339: Property 'id' does not exist on type 'Delivery'.
+components/orders/details/DeliveryOrderDetails.tsx(575,31): error TS2339: Property 'id' does not exist on type 'Delivery'.
+components/payment/PaymentForm.tsx(15,10): error TS2724: '"@/src/services/orders"' has no exported member named 'useGetOrder'. Did you mean 'useGetOrders'?
+components/payment/PaymentForm.tsx(25,10): error TS2724: '"@/src/services/orders"' has no exported member named 'ordersApi'. Did you mean 'orderApi'?
+components/products/ProductTile.tsx(61,47): error TS2694: Namespace 'React' has no exported member 'GestureResponderEvent'.
+components/rewards/RewardsCard.tsx(127,57): error TS2339: Property 'redemption_points' does not exist on type 'RewardConfig'.
+components/rewards/RewardsCard.tsx(128,77): error TS2339: Property 'redemption_points' does not exist on type 'RewardConfig'.
+components/rewards/RewardsCard.tsx(132,28): error TS2339: Property 'balance' does not exist on type 'UserBalance'.
+components/rewards/RewardsCard.tsx(142,9): error TS2353: Object literal may only specify known properties, and 'user_id' does not exist in type 'RedeemPointsBody'.
+components/rewards/RewardsCard.tsx(192,53): error TS2339: Property 'balance' does not exist on type 'UserBalance'.
+components/rewards/RewardsCard.tsx(222,21): error TS2339: Property 'history' does not exist on type 'UserBalance'.
+components/rewards/RewardsCard.tsx(222,40): error TS2339: Property 'history' does not exist on type 'UserBalance'.
+components/rewards/RewardsCard.tsx(224,24): error TS2339: Property 'history' does not exist on type 'UserBalance'.
+components/rewards/RewardsCard.tsx(224,37): error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+components/rewards/RewardsCard.tsx(375,26): error TS2339: Property 'redemption_points' does not exist on type 'RewardConfig'.
+components/rewards/RewardsCard.tsx(375,93): error TS2339: Property 'redemption_value_tzs' does not exist on type 'RewardConfig'.
+components/rewards/RewardsCard.tsx(385,46): error TS2339: Property 'redemption_points' does not exist on type 'RewardConfig'.
+components/rewards/RewardsCard.tsx(395,31): error TS2339: Property 'redemption_points' does not exist on type 'RewardConfig'.
+components/rewards/RewardsCard.tsx(396,23): error TS2554: Expected 1-2 arguments, but got 3.
+components/rewards/RewardsCard.tsx(396,31): error TS2339: Property 'redemption_value_tzs' does not exist on type 'RewardConfig'.
+components/search/ProductSearchPage.tsx(48,38): error TS2339: Property 'items' does not exist on type '{}'.
+components/search/ProductSearchPage.tsx(88,47): error TS7006: Parameter 'category' implicitly has an 'any' type.
+components/search/SearchWithFilters.tsx(61,38): error TS2339: Property 'items' does not exist on type '{}'.
+components/search/SearchWithFilters.tsx(164,30): error TS7006: Parameter 'cat' implicitly has an 'any' type.
+components/search/SearchWithFilters.tsx(317,34): error TS7006: Parameter 'category' implicitly has an 'any' type.
+components/shop/StoresList.tsx(57,41): error TS7006: Parameter 'store' implicitly has an 'any' type.
+components/ui/file-uploader.tsx(98,24): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/ui/image-uploader.tsx(138,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/ui/image-uploader.tsx(146,25): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/ui/radio-group.tsx(87,7): error TS2322: Type '{ height?: undefined; width?: undefined; borderRadius?: undefined; borderWidth?: undefined; borderColor?: undefined; alignItems?: undefined; justifyContent?: undefined; } | { height: number; width: number; ... 4 more ...; justifyContent: string; } | (ViewStyle | ... 4 more ... | { ...; })[]' is not assignable to type 'StyleProp<ViewStyle> | ((state: PressableStateCallbackType) => StyleProp<ViewStyle>)'.
+  Type '{ height: number; width: number; borderRadius: number; borderWidth: number; borderColor: any; alignItems: string; justifyContent: string; }' is not assignable to type 'StyleProp<ViewStyle> | ((state: PressableStateCallbackType) => StyleProp<ViewStyle>)'.
+    Type '{ height: number; width: number; borderRadius: number; borderWidth: number; borderColor: any; alignItems: string; justifyContent: string; }' is not assignable to type 'ViewStyle'.
+      Types of property 'alignItems' are incompatible.
+        Type 'string' is not assignable to type 'FlexAlignType | undefined'.
+components/ui/select.tsx(34,50): error TS2345: Argument of type '{ pressed: false; }' is not assignable to parameter of type 'PressableStateCallbackType'.
+  Property 'hovered' is missing in type '{ pressed: false; }' but required in type 'PressableStateCallbackType'.
+features/categories/components/CategoryDetails.tsx(26,17): error TS2339: Property 'subcategories' does not exist on type 'Category'.
+features/categories/components/CategoryDetails.tsx(26,43): error TS2339: Property 'subcategories' does not exist on type 'Category'.
+features/categories/components/CategoryDetails.tsx(36,23): error TS2339: Property 'subcategories' does not exist on type 'Category'.
+features/products/components/ProductGrid.tsx(2,10): error TS2459: Module '"@/stores/products"' declares 'Product' locally, but it is not exported.
+hooks/useCategories.ts(17,5): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(options: DefinedInitialDataOptions<unknown, Error, unknown, string[]>, queryClient?: QueryClient | undefined): DefinedUseQueryResult<unknown, Error>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<unknown, string[]>'.
+      Types of parameters 'params' and 'context' are incompatible.
+        Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 2 of 3, '(options: UndefinedInitialDataOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 3 of 3, '(options: UseQueryOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+hooks/useCategories.ts(23,23): error TS2339: Property 'items' does not exist on type '{}'.
+hooks/useTenantModules.ts(12,41): error TS2339: Property 'delivery' does not exist on type '{ payments: boolean; promotions: boolean; inventory: boolean; }'.
+hooks/useTenantModules.ts(13,40): error TS2339: Property 'rewards_referrals' does not exist on type '{ payments: boolean; promotions: boolean; inventory: boolean; }'.
+hooks/useTenantModules.ts(14,43): error TS2339: Property 'affiliates' does not exist on type '{ payments: boolean; promotions: boolean; inventory: boolean; }'.
+src/components/merchant/SidebarMenu.tsx(120,44): error TS2339: Property 'branding' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/components/merchant/SidebarMenu.tsx(120,93): error TS2339: Property 'branding' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/components/merchant/SidebarMenu.tsx(120,121): error TS2339: Property 'branding' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/components/merchant/SidebarMenu.tsx(139,40): error TS2339: Property 'business_name' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/components/merchant/SidebarMenu.tsx(140,31): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+src/components/merchant/SidebarMenu.tsx(159,39): error TS2339: Property 'created_at' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/components/merchant/SidebarMenu.tsx(160,34): error TS2339: Property 'created_at' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/components/navigation/DeliveryBottomNav.tsx(23,44): error TS2345: Argument of type '"/(delivery)/home"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/" | `/?${string}` | `/#${string}` | "/interests" | `/interests?${string}` | `/interests#${string}` | "/language" | `/language?${string}` | ... 1189 more ... | { ...; }'.
+src/components/navigation/DeliveryBottomNav.tsx(42,44): error TS2345: Argument of type '"/(delivery)/profile"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/" | `/?${string}` | `/#${string}` | "/interests" | `/interests?${string}` | `/interests#${string}` | "/language" | `/language?${string}` | ... 1189 more ... | { ...; }'.
+src/components/orders/PaymentModal.tsx(32,25): error TS2345: Argument of type '"/(buyer)/checkout/payment-input"' is not assignable to parameter of type 'RelativePathString | ExternalPathString | "/" | `/?${string}` | `/#${string}` | "/interests" | `/interests?${string}` | `/interests#${string}` | "/language" | `/language?${string}` | ... 1189 more ... | { ...; }'.
+src/components/product/ProductCardHorizontal.tsx(18,69): error TS2339: Property 'id' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(18,94): error TS2339: Property 'id' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(26,22): error TS2339: Property 'id' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(28,53): error TS2339: Property 'id' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(30,49): error TS2339: Property 'id' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(35,49): error TS2339: Property 'id' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(42,47): error TS2551: Property 'image' does not exist on type 'Product'. Did you mean 'images'?
+src/components/product/ProductCardHorizontal.tsx(61,66): error TS2339: Property 'rating' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(61,84): error TS2339: Property 'reviews' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(68,30): error TS2339: Property 'specs' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(68,54): error TS7006: Parameter 'spec' implicitly has an 'any' type.
+src/components/product/ProductCardHorizontal.tsx(68,60): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/product/ProductCardHorizontal.tsx(71,30): error TS2339: Property 'specs' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(71,47): error TS2339: Property 'specs' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(76,39): error TS2339: Property 'vendor' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(77,43): error TS2339: Property 'vendor' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(78,77): error TS2339: Property 'vendor' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(83,46): error TS2339: Property 'price' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(84,30): error TS2339: Property 'originalPrice' does not exist on type 'Product'.
+src/components/product/ProductCardHorizontal.tsx(86,81): error TS2339: Property 'originalPrice' does not exist on type 'Product'.
+src/components/shop/ShareSheet.tsx(94,13): error TS2322: Type '"product" | "profile" | "shop"' is not assignable to type '"product" | "shop"'.
+  Type '"profile"' is not assignable to type '"product" | "shop"'.
+src/components/wishlist/WishlistItem.tsx(8,10): error TS2459: Module '"../../services/wishlist"' declares 'WishlistItem' locally, but it is not exported.
+src/contexts/TunzaaAuthContext.tsx(156,85): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/contexts/TunzaaAuthContext.tsx(157,89): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/contexts/TunzaaAuthContext.tsx(170,35): error TS2339: Property 'display_name' does not exist on type 'AuthResponse'.
+src/contexts/TunzaaAuthContext.tsx(419,95): error TS2339: Property 'id' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/contexts/TunzaaAuthContext.tsx(661,91): error TS2339: Property 'id' does not exist on type '{ profileId: string; profile_id: string; role: string; displayName: string | null; display_name: string | null; is_active: boolean; metadata: { [key: string]: any; terms_conditions?: string | undefined; privacy_policy?: string | undefined; }; storeDetails?: { ...; } | undefined; kyc?: { ...; } | undefined; }'.
+src/contexts/TunzaaAuthContext.tsx(681,99): error TS2339: Property 'company_name' does not exist on type 'VendorResponse'.
+src/hooks/useCategories.ts(17,5): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(options: DefinedInitialDataOptions<unknown, Error, unknown, string[]>, queryClient?: QueryClient | undefined): DefinedUseQueryResult<unknown, Error>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<unknown, string[]>'.
+      Types of parameters 'params' and 'context' are incompatible.
+        Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 2 of 3, '(options: UndefinedInitialDataOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 3 of 3, '(options: UseQueryOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+src/hooks/useCategories.ts(23,23): error TS2339: Property 'items' does not exist on type '{}'.
+src/hooks/useProfileCompletion.ts(36,15): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+src/hooks/useProfileCompletion.ts(37,31): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+src/hooks/useProfileCompletion.ts(37,71): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+src/hooks/useProfileCompletion.ts(37,88): error TS2339: Property 'metadata' does not exist on type 'AuthResponse'.
+src/hooks/useProfileDetails.ts(42,41): error TS2339: Property 'affiliateDetails' does not exist on type 'AuthResponse'.
+src/i18n/translations.ts(725,7): error TS2740: Type '{ languageScreenTitle: string; languageScreenChoosePreferred: string; languageScreenSkip: string; roleScreenTitle: string; roleScreenDescription: string; roleScreenBuyer: string; roleScreenBusiness: string; ... 192 more ...; "vendor.loans.repayments_track": string; }' is missing the following properties from type 'TranslationKeys': affiliateRegisterTitle, affiliateLoginTitle, affiliatePhonePlaceholder, affiliateTermsAgreement, and 4 more.
+src/i18n/translations.ts(1175,7): error TS2740: Type '{ languageScreenTitle: string; languageScreenChoosePreferred: string; languageScreenSkip: string; roleScreenTitle: string; roleScreenDescription: string; roleScreenBuyer: string; roleScreenBusiness: string; ... 192 more ...; "vendor.loans.repayments_track": string; }' is missing the following properties from type 'TranslationKeys': affiliateRegisterTitle, affiliateLoginTitle, affiliatePhonePlaceholder, affiliateTermsAgreement, and 4 more.
+src/services/notifications.ts(10,27): error TS2307: Cannot find module 'expo-device' or its corresponding type declarations.
+src/services/notifications.ts(11,34): error TS2307: Cannot find module 'expo-notifications' or its corresponding type declarations.
+src/services/ratings.ts(113,9): error TS2739: Type '{ entity_id: string; average_rating: number; total_ratings: number; rating_distribution: { "1": number; "2": number; "3": number; "4": number; "5": number; }; }' is missing the following properties from type 'RatingsSummary': summary_id, tenant_id, entity_type, total_reviews, last_updated
+src/services/tenant.ts(42,56): error TS2339: Property 'id' does not exist on type 'Product'.
+src/services/tenant.ts(46,79): error TS2339: Property 'id' does not exist on type 'Product'.
+src/stores/cart.ts(354,46): error TS2345: Argument of type 'Record<string, any>[]' is not assignable to parameter of type 'AddToCartRequest[]'.
+  Type 'Record<string, any>' is missing the following properties from type 'AddToCartRequest': product_id, quantity
+src/stores/cart.ts(389,51): error TS2345: Argument of type '{ item_id: string; product_id: string; variant_id: null; quantity: number; unit_price: number; added_at: string; metadata: { sku: string | undefined; currency: string | undefined; }; }' is not assignable to parameter of type 'CartItem'.
+  Property 'sale_price' is missing in type '{ item_id: string; product_id: string; variant_id: null; quantity: number; unit_price: number; added_at: string; metadata: { sku: string | undefined; currency: string | undefined; }; }' but required in type 'CartItem'.
+src/stores/cart.ts(504,46): error TS2345: Argument of type 'Record<string, any>[]' is not assignable to parameter of type 'AddToCartRequest[]'.
+  Type 'Record<string, any>' is missing the following properties from type 'AddToCartRequest': product_id, quantity
+src/stores/cart.ts(534,47): error TS2345: Argument of type '{ item_id: string; product_id: string; variant_id: null; quantity: number; unit_price: number; added_at: string; metadata: { sku: string | undefined; currency: string | undefined; }; }' is not assignable to parameter of type 'CartItem'.
+  Property 'sale_price' is missing in type '{ item_id: string; product_id: string; variant_id: null; quantity: number; unit_price: number; added_at: string; metadata: { sku: string | undefined; currency: string | undefined; }; }' but required in type 'CartItem'.
+src/stores/cart.ts(705,36): error TS2339: Property 'existingCart' does not exist on type '{ cartId: string; }'.
+src/stores/cart.ts(815,47): error TS2339: Property 'createCart' does not exist on type '{ getOrCreateCart: (userId: string) => Promise<Cart>; addToCart: (cartId: string, items: AddToCartRequest[]) => Promise<Cart>; updateCartItem: (cartId: string, itemId: string, update: UpdateCartItemRequest) => Promise<...>; removeCartItem: (cartId: string, itemId: string) => Promise<...>; clearCart: (cartId: string)...'.
+src/stores/cart.ts(834,45): error TS2339: Property 'createCart' does not exist on type '{ getOrCreateCart: (userId: string) => Promise<Cart>; addToCart: (cartId: string, items: AddToCartRequest[]) => Promise<Cart>; updateCartItem: (cartId: string, itemId: string, update: UpdateCartItemRequest) => Promise<...>; removeCartItem: (cartId: string, itemId: string) => Promise<...>; clearCart: (cartId: string)...'.
+src/stores/categories.ts(22,5): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(options: DefinedInitialDataOptions<unknown, Error, unknown, string[]>, queryClient?: QueryClient | undefined): DefinedUseQueryResult<unknown, Error>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<unknown, string[]>'.
+      Types of parameters 'params' and 'context' are incompatible.
+        Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 2 of 3, '(options: UndefinedInitialDataOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 3 of 3, '(options: UseQueryOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+src/stores/orders.ts(5,3): error TS2724: '"@/src/services/orders"' has no exported member named 'ordersApi'. Did you mean 'orderApi'?
+src/stores/orders.ts(7,3): error TS2724: '"@/src/services/orders"' has no exported member named 'OrdersResponse'. Did you mean 'GetOrdersResponse'?
+src/stores/product-management.ts(2,15): error TS2459: Module '"./products"' declares 'Product' locally, but it is not exported.
+src/stores/product-management.ts(69,33): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/stores/shops.ts(2,17): error TS2305: Module '"../services/shops"' has no exported member 'getStores'.
+src/stores/shops.ts(2,28): error TS2305: Module '"../services/shops"' has no exported member 'getStoreById'.
+stores/cart.ts(638,42): error TS2345: Argument of type 'RemoveCartItemRequest' is not assignable to parameter of type 'string'.
+stores/categories.ts(22,5): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(options: DefinedInitialDataOptions<unknown, Error, unknown, string[]>, queryClient?: QueryClient | undefined): DefinedUseQueryResult<unknown, Error>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<unknown, string[]>'.
+      Types of parameters 'params' and 'context' are incompatible.
+        Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 2 of 3, '(options: UndefinedInitialDataOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+  Overload 3 of 3, '(options: UseQueryOptions<CategoriesResponse, Error, CategoriesResponse, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<...>', gave the following error.
+    Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'unique symbol | QueryFunction<CategoriesResponse, string[], never> | undefined'.
+      Type '(params?: CategoriesParams) => Promise<CategoriesResponse>' is not assignable to type 'QueryFunction<CategoriesResponse, string[], never>'.
+        Types of parameters 'params' and 'context' are incompatible.
+          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'CategoriesParams'.
+stores/orders.ts(5,3): error TS2724: '"@/src/services/orders"' has no exported member named 'ordersApi'. Did you mean 'orderApi'?
+stores/orders.ts(7,3): error TS2724: '"@/src/services/orders"' has no exported member named 'OrdersResponse'. Did you mean 'GetOrdersResponse'?
+stores/product-management.ts(2,15): error TS2459: Module '"./products"' declares 'Product' locally, but it is not exported.
+stores/product-management.ts(69,33): error TS7006: Parameter 'c' implicitly has an 'any' type.
+stores/shops.ts(2,17): error TS2305: Module '"@/src/services/shops"' has no exported member 'getStores'.
+stores/shops.ts(2,28): error TS2305: Module '"@/src/services/shops"' has no exported member 'getStoreById'.
