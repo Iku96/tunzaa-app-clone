@@ -60,14 +60,35 @@ export function AffiliateHome() {
   const { affiliateDetails, isLoading: profileLoading } = useProfileDetails();
   const affiliateId = affiliateDetails?.id;
 
+  useEffect(() => {
+    if (affiliateDetails) {
+      console.log("🛠️ [DEBUG] Incoming Affiliate Payload:", JSON.stringify({
+        id: affiliateDetails?.id,
+        name: affiliateDetails?.name,
+        profile_picture: affiliateDetails?.profile_picture,
+        website: affiliateDetails?.website
+      }, null, 2));
+    }
+  }, [affiliateDetails]);
+
   // Use real dynamic names if available
   const displayName = affiliateDetails?.name || savedName;
   
   // Build dynamic letter avatar fallback
   const letterAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3B5191&color=fff&size=200`;
   
-  // Fallback Chain: API Logo -> Local Cached Logo -> Letter Avatar
-  const displayLogo = affiliateDetails?.profile_picture || savedLogo || letterAvatar; 
+  // Sanitize inputs - filter out literal strings like "null", "undefined", or empties that break fallbacks
+  const sanitize = (url: any) => {
+    if (!url) return null;
+    const s = String(url).trim();
+    if (!s || s === "null" || s === "undefined" || s === "[object Object]") return null;
+    return s;
+  };
+
+  // Strict Fallback Chain: API Logo -> Local Cached Logo -> Letter Avatar
+  const displayLogo = sanitize(affiliateDetails?.profile_picture) || sanitize(savedLogo) || letterAvatar; 
+  
+  console.log(`🖼️ [DEBUG] Computed displayLogo URI: "${displayLogo}"`);
 
   // Fetch dynamic affiliate statistics
   const { data: affiliateStats, isLoading: statsLoading } = useGetAffiliateStats(
@@ -133,7 +154,11 @@ export function AffiliateHome() {
           className="flex-row items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full"
         >
           <View className="w-6 h-6 rounded-full overflow-hidden bg-gray-200">
-            <Image source={{ uri: displayLogo }} className="w-full h-full" />
+            <Image 
+              source={{ uri: displayLogo }} 
+              className="w-full h-full" 
+              onError={(e) => console.warn("❌ [DASH IMAGE ERROR]", e.nativeEvent)}
+            />
           </View>
           <Text className="font-extrabold text-gray-800 text-sm">{displayName}</Text>
           <CheckCircle size={14} color="#10B981" fill="#FFFFFF" />
@@ -311,6 +336,7 @@ export function AffiliateHome() {
                   <Image 
                     source={{ uri: displayLogo }} 
                     className="w-full h-full"
+                    onError={(e) => console.warn("❌ [DRAWER IMAGE ERROR]", e.nativeEvent)}
                   />
                 </View>
                 <View className="flex-1">

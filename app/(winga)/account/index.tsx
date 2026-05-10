@@ -69,6 +69,13 @@ export default function AccountScreen() {
   const [displayBio, setDisplayBio] = useState("");
   const [displayLogo, setDisplayLogo] = useState("");
 
+  const sanitize = (url: any) => {
+    if (!url) return null;
+    const s = String(url).trim();
+    if (!s || s === "null" || s === "undefined") return null;
+    return s;
+  };
+
   useEffect(() => {
     const loadInitialData = async () => {
       const savedLogo = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_LOGO");
@@ -76,10 +83,18 @@ export default function AccountScreen() {
       const savedBio = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_BIO");
       const savedLocation = await AsyncStorage.getItem("TEMP_WINGA_PROFILE_LOCATION");
 
+      console.log("🛠️ [DEBUG] Details screen payloads:", {
+        api_profile_picture: affiliateDetails?.profile_picture,
+        async_saved_logo: savedLogo
+      });
+
       const activeName = affiliateDetails?.name || savedName || "Winga Affiliate";
       const letterAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeName)}&background=3B5191&color=fff&size=200`;
 
-      setDisplayLogo(affiliateDetails?.profile_picture || savedLogo || letterAvatar);
+      const resolved = sanitize(affiliateDetails?.profile_picture) || sanitize(savedLogo) || letterAvatar;
+      setDisplayLogo(resolved);
+      
+      console.log(`🖼️ [DEBUG] Account Screen Resolved displayLogo: "${resolved}"`);
       
       // Fallback intelligently so we never show 'Loading...' indefinitely
       setDisplayName(activeName);
@@ -195,6 +210,7 @@ export default function AccountScreen() {
               <Image 
                 source={{ uri: displayLogo }} 
                 className="w-full h-full rounded-full"
+                onError={(e) => console.warn("❌ [PROFILE IMAGE ERROR]", e.nativeEvent)}
               />
             </View>
             <View className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-2 border-white items-center justify-center">
