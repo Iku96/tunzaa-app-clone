@@ -27,6 +27,7 @@ export type OrderStatus =
   | 'confirmed'
   | 'rejected'
   | 'shipped'
+  | 'picked_up'
   | 'delivered'
   | 'completed'
   | 'cancelled'
@@ -134,9 +135,9 @@ const getTimelineSteps = (
         title: 'Order Shipped',
         description: 'Your order is on the way',
         icon: Truck,
-        status: ['shipped', 'delivered', 'completed'].includes(normalizedOrderStatus) ? 'completed' :
+        status: ['shipped', 'picked_up', 'delivered', 'completed'].includes(normalizedOrderStatus) ? 'completed' :
                 ['cancelled', 'rejected'].includes(normalizedOrderStatus) ? 'skipped' : 'pending',
-        color: ['shipped', 'delivered', 'completed'].includes(normalizedOrderStatus) ? '#22c55e' : '#6b7280'
+        color: ['shipped', 'picked_up', 'delivered', 'completed'].includes(normalizedOrderStatus) ? '#22c55e' : '#6b7280'
       },
       {
         id: 'delivered',
@@ -253,9 +254,18 @@ const getTimelineSteps = (
         title: 'Ready for Pickup',
         description: 'Order ready for delivery partner',
         icon: Truck,
-        status: ['shipped', 'delivered', 'completed'].includes(normalizedOrderStatus) ? 'completed' :
+        status: ['shipped', 'picked_up', 'delivered', 'completed'].includes(normalizedOrderStatus) ? 'completed' :
                 ['cancelled', 'rejected'].includes(normalizedOrderStatus) ? 'skipped' : 'pending',
-        color: ['shipped', 'delivered', 'completed'].includes(normalizedOrderStatus) ? '#22c55e' : '#6b7280'
+        color: ['shipped', 'picked_up', 'delivered', 'completed'].includes(normalizedOrderStatus) ? '#22c55e' : '#6b7280'
+      },
+      {
+        id: 'picked_up',
+        title: 'Picked Up',
+        description: 'Order picked up by delivery partner',
+        icon: Truck,
+        status: ['picked_up', 'delivered', 'completed'].includes(normalizedOrderStatus) ? 'completed' :
+                ['cancelled', 'rejected'].includes(normalizedOrderStatus) ? 'skipped' : 'pending',
+        color: ['picked_up', 'delivered', 'completed'].includes(normalizedOrderStatus) ? '#22c55e' : '#6b7280'
       },
       {
         id: 'order_delivered',

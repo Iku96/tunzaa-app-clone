@@ -38,7 +38,7 @@ interface PaymentFormProps {
   onPaymentFailure?: (error: string) => void;
   onPaymentTimeout?: () => void;
   onRetry?: () => void;
-  onContinue?: () => void;
+  onContinue?: (orderId?: string) => void;
   showContinueButton?: boolean;
   continueButtonText?: string;
   className?: string;
@@ -515,7 +515,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   };
 
   const handleContinue = () => {
-    onContinue?.();
+    onContinue?.(currentOrderId || undefined);
   };
 
   return (

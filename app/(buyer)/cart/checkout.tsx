@@ -20,7 +20,9 @@ import { useAddressManagement } from "@/hooks/useAddressManagement";
 import {
   useDeliveryTypesWithFallback,
   useGetDeliveryPartners,
+  useCalculateShippingFee,
 } from "@/src/services/delivery";
+import { useGetVendor } from "@/src/services/vendors";
 import { useGetVehicleTypes } from "@/src/services/configuration";
 import { useProductById } from "@/stores/products";
 import { AddressModal } from "@/components/modals/AddressModal";
@@ -164,6 +166,32 @@ const CheckoutScreen = () => {
     { partner_type: "business" },
     true
   );
+  
+  // Dynamic Shipping Fee Calculation
+  const vendorId = cart.cart?.items[0]?.metadata?.vendor_id || cart.cart?.items[0]?.vendor_id;
+  const { data: vendor } = useGetVendor(vendorId as string, !!vendorId);
+  const { mutate: calculateFee, data: feeData, isPending: calculatingFee } = useCalculateShippingFee();
+
+  useEffect(() => {
+    if (isDeliveryEnabled && selectedAddressId && selectedDeliveryType && vendor?.latitude && vendor?.longitude) {
+      const selectedAddressData = buyerProfile?.delivery_address.find(
+        (addr) => addr.address_id === selectedAddressId
+      );
+      
+      if (selectedAddressData?.lat && selectedAddressData?.lng) {
+        calculateFee({
+          origin: { lat: vendor.latitude, lng: vendor.longitude },
+          destination: { 
+            lat: parseFloat(selectedAddressData.lat), 
+            lng: parseFloat(selectedAddressData.lng) 
+          },
+          // Mapping delivery type to vehicle type for the fee engine
+          vehicle_type_id: selectedDeliveryType === "express" ? "motorcycle" : "pickup_truck",
+          partner_id: selectedPartner || undefined
+        });
+      }
+    }
+  }, [selectedAddressId, selectedDeliveryType, selectedPartner, vendor, buyerProfile, isDeliveryEnabled, calculateFee]);
 
   // Use delivery types with fallback
   const availableDeliveryTypes = deliveryTypes || [];
@@ -382,6 +410,7 @@ const CheckoutScreen = () => {
         deliveryType: isDeliveryEnabled ? selectedDeliveryType : "",
         vehicleId: isDeliveryEnabled ? (selectedVehicle || "") : "",
         partnerId: isDeliveryEnabled ? (selectedPartner || "") : "",
+        calculatedFee: feeData?.fee?.toString() || "",
         returnTo: returnTo || "cart",
         productId: productId || "",
       },
@@ -693,6 +722,7 @@ const CheckoutScreen = () => {
                 onPaymentCategorySelect={handlePaymentCategorySelect}
                 isPaymentsEnabled={isPaymentsEnabled}
                 isDeliveryEnabled={isDeliveryEnabled}
+                calculatedFee={feeData?.fee}
               />
             ) : (
               <View className="p-4 border-t border-border">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import { View, ScrollView, TouchableOpacity, RefreshControl, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { User, Building2, Car } from "lucide-react-native";
@@ -55,6 +55,8 @@ const AccountScreen = () => {
     ? "Individual Courier"
     : deliveryDetails?.type || "Courier";
   const vehicleInfo = deliveryDetails?.vehicle_info?.details || deliveryDetails?.vehicle_info?.type || "—";
+  const isApproved = deliveryDetails?.is_approved ?? false;
+  const profilePicture = deliveryDetails?.profile_picture || user?.profile_picture || null;
 
   return (
     <DesktopLayoutWrapper
@@ -117,6 +119,21 @@ const AccountScreen = () => {
                 width: isDesktop ? 600 : "100%",
               }}
             >
+              {/* Profile Picture */}
+              <View className="items-center mb-2">
+                <View className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 border-4 border-white shadow-sm items-center justify-center">
+                  {profilePicture ? (
+                    <Image 
+                      source={{ uri: profilePicture }} 
+                      style={{ width: '100%', height: '100%', borderRadius: 50 }} 
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <User size={40} color="#9CA3AF" />
+                  )}
+                </View>
+              </View>
+
               {/* Your Name */}
               <View className="flex-row items-center">
                 <User size={20} color="#9CA3AF" />
@@ -150,12 +167,25 @@ const AccountScreen = () => {
                 </View>
               </View>
 
+              {/* Status Indicator */}
+              <View className="flex-row items-center">
+                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: isApproved ? '#84CC16' : '#F59E0B', justifyContent: 'center', alignItems: 'center' }}>
+                  <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#FFFFFF' }} />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text className="text-xs text-muted-foreground">Account Status</Text>
+                  <Text className="text-base font-semibold mt-0.5" style={{ color: isApproved ? '#65A30D' : '#D97706' }}>
+                    {isApproved ? "Approved" : "Pending Approval"}
+                  </Text>
+                </View>
+              </View>
+
               {/* Logout Button */}
               <View className="mt-8">
                 <TouchableOpacity
-                  className="py-4 rounded-2xl items-center justify-center"
+                  className="py-4 rounded-full items-center justify-center"
                   style={{
-                    backgroundColor: "#1F2937",
+                    backgroundColor: "#315BA9",
                     opacity: isLoggingOut ? 0.6 : 1,
                   }}
                   onPress={handleLogout}

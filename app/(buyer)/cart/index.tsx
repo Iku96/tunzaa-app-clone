@@ -13,12 +13,28 @@ export default function CartScreen() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
     const userId = user?.user_id || user?.id || '';
-    const { cart, isLoading, updateCartItemQuantity, removeCartItem } = useCartCombined(userId);
+    const { 
+        cart, 
+        isLoading, 
+        updateItemById, 
+        removeItemById, 
+        isUpdating, 
+        isRemoving, 
+        refetch 
+    } = useCartCombined(userId);
     
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
+    const [processingItemId, setProcessingItemId] = useState<string | null>(null);
 
     const cartItems = useMemo(() => cart?.items || [], [cart]);
     
+    // Auto-select all items on load
+    React.useEffect(() => {
+        if (cartItems.length > 0 && selectedItems.length === 0) {
+            setSelectedItems(cartItems.map(item => item.item_id || item.product_id));
+        }
+    }, [cartItems]);
+
     const subtotal = useMemo(() => {
         return cartItems
             .filter(item => selectedItems.includes(item.item_id || item.product_id))
@@ -43,41 +59,61 @@ export default function CartScreen() {
 
     const handleUpdateQuantity = async (item: any, increment: boolean) => {
         const newQty = increment ? item.quantity + 1 : item.quantity - 1;
-        if (newQty < 0) return;
-
-        if (newQty === 0) {
+        if (newQty < 1) {
             handleRemoveItem(item);
-        } else {
-            try {
-                await updateCartItemQuantity(item.product_id, item.metadata?.sku, newQty);
-            } catch (err: any) {
-                if (err.message?.includes('inventory') || err.message?.includes('stock')) {
-                    Alert.alert("Out of Stock", "Sorry, there is no more inventory available for this item.");
-                } else {
-                    Alert.alert("Error", "Could not update quantity. Please try again.");
-                }
+            return;
+        }
+
+        setProcessingItemId(item.item_id);
+        try {
+            await updateItemById(item.item_id, newQty);
+            await refetch();
+        } catch (err: any) {
+            if (err.message?.includes('inventory') || err.message?.includes('stock')) {
+                Alert.alert("Out of Stock", "Sorry, there is no more inventory available for this item.");
+            } else {
+                Alert.alert("Error", "Could not update quantity. Please try again.");
             }
+        } finally {
+            setProcessingItemId(null);
         }
     };
 
     const handleRemoveItem = (item: any) => {
         Alert.alert(
             "Remove Item",
-            `Are you sure you want to remove ${item.product_name} from your cart?`,
+            `Are you sure you want to remove ${item.product_name || 'this item'} from your cart?`,
             [
                 { text: "Cancel", style: "cancel" },
                 { 
                     text: "Remove", 
                     style: "destructive", 
-                    onPress: () => removeCartItem(item.product_id, item.metadata?.sku) 
+                    onPress: async () => {
+                        setProcessingItemId(item.item_id);
+                        try {
+                            await removeItemById(item.item_id);
+                            setSelectedItems(prev => prev.filter(id => id !== item.item_id));
+                            await refetch();
+                        } catch (err) {
+                            Alert.alert("Error", "Could not remove item. Please try again.");
+                        } finally {
+                            setProcessingItemId(null);
+                        }
+                    }
                 }
             ]
         );
     };
 
+    const handleCheckout = () => {
+        if (selectedCount === 0) return;
+        router.push('/(buyer)/cart/summary' as any);
+    };
+
     const renderCartItem = (item: any) => {
         const id = item.item_id || item.product_id;
         const isSelected = selectedItems.includes(id);
+        const isProcessing = processingItemId === item.item_id;
         const rawImage = item.image_url;
         const image = typeof rawImage === 'string' 
             ? rawImage 
@@ -108,8 +144,16 @@ export default function CartScreen() {
                     <View style={styles.detailsWrapper}>
                         <View style={styles.titleRow}>
                             <Text style={styles.productTitle} numberOfLines={1}>{item.product_name}</Text>
-                            <TouchableOpacity style={styles.trashBtn} onPress={() => handleRemoveItem(item)}>
-                                <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                            <TouchableOpacity 
+                                style={styles.trashBtn} 
+                                onPress={() => handleRemoveItem(item)}
+                                disabled={isProcessing}
+                            >
+                                {isProcessing ? (
+                                    <ActivityIndicator size="small" color="#EF4444" />
+                                ) : (
+                                    <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                                )}
                             </TouchableOpacity>
                         </View>
 
@@ -143,11 +187,23 @@ export default function CartScreen() {
                             </View>
 
                             <View style={styles.qtyRow}>
-                                <TouchableOpacity style={styles.qtyButton} onPress={() => handleUpdateQuantity(item, false)}>
+                                <TouchableOpacity 
+                                    style={styles.qtyButton} 
+                                    onPress={() => handleUpdateQuantity(item, false)}
+                                    disabled={isProcessing}
+                                >
                                     <Ionicons name="remove" size={16} color="#6B7280" />
                                 </TouchableOpacity>
-                                <Text style={styles.qtyText}>{item.quantity}</Text>
-                                <TouchableOpacity style={[styles.qtyButton, styles.qtyButtonAdd]} onPress={() => handleUpdateQuantity(item, true)}>
+                                {isProcessing ? (
+                                    <ActivityIndicator size="small" color="#425BA4" style={{ marginHorizontal: 8 }} />
+                                ) : (
+                                    <Text style={styles.qtyText}>{item.quantity}</Text>
+                                )}
+                                <TouchableOpacity 
+                                    style={[styles.qtyButton, styles.qtyButtonAdd]} 
+                                    onPress={() => handleUpdateQuantity(item, true)}
+                                    disabled={isProcessing}
+                                >
                                     <Ionicons name="add" size={16} color="#FFFFFF" />
                                 </TouchableOpacity>
                             </View>
@@ -170,7 +226,15 @@ export default function CartScreen() {
 
             <View style={styles.content}>
                 <TouchableOpacity style={styles.selectAllRow} onPress={toggleSelectAll}>
-                    <Text style={styles.selectAllText}>Select all items</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Ionicons 
+                            name={selectedItems.length === cartItems.length && cartItems.length > 0 ? "checkbox" : "square-outline"} 
+                            size={22} 
+                            color={selectedItems.length === cartItems.length && cartItems.length > 0 ? "#425BA4" : "#D1D5DB"} 
+                        />
+                        <Text style={styles.selectAllText}>Select all items</Text>
+                    </View>
+                    <Text style={{ fontSize: 13, color: '#6B7280' }}>{cartItems.length} item{cartItems.length !== 1 ? 's' : ''}</Text>
                 </TouchableOpacity>
 
                 {isLoading ? (
@@ -201,7 +265,8 @@ export default function CartScreen() {
                         </View>
                         <TouchableOpacity 
                             style={[styles.checkoutButton, selectedCount === 0 && styles.disabledButton]}
-                            onPress={() => selectedCount > 0 && router.push('/(buyer)/cart/checkout' as any)}
+                            onPress={handleCheckout}
+                            disabled={selectedCount === 0}
                         >
                             <Text style={styles.checkoutButtonText}>Proceed to checkout</Text>
                         </TouchableOpacity>
@@ -242,6 +307,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 12,
         backgroundColor: '#FFFFFF',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     selectAllText: {
         fontSize: 15,

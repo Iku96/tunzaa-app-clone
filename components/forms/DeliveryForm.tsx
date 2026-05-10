@@ -36,6 +36,11 @@ export interface DeliveryFormData {
   location?: LocationData;
   locationDescription?: string;
   drivers?: Driver[];
+  kycDocuments?: {
+    id_card?: string;
+    driving_license?: string;
+    business_license?: string;
+  };
 }
 
 interface DeliveryFormProps {
@@ -720,6 +725,79 @@ export function DeliveryForm({ onSubmit, isLoading }: DeliveryFormProps) {
           </View>
         </View>
       )}
+
+      {/* KYC Documents Section */}
+      <View className="gap-4 border-t border-border pt-6 px-4">
+        <Text className="text-lg font-semibold text-foreground">
+          KYC Documents
+        </Text>
+        <Text className="text-sm text-muted-foreground mb-2">
+          Please upload clear photos of your identification documents for verification.
+        </Text>
+
+        <View className="gap-2">
+          <Text className="text-sm font-semibold text-foreground">
+            ID Card / Passport<Text className="text-destructive">*</Text>
+          </Text>
+          <Controller
+            control={control}
+            name="kycDocuments.id_card"
+            rules={{ required: "ID Card is required" }}
+            render={({ field: { onChange, value } }) => (
+              <ImageUploader
+                value={value}
+                onImageSelected={onChange}
+                onImageRemoved={() => onChange("")}
+                placeholder="Upload ID Card"
+                disabled={isLoading}
+              />
+            )}
+          />
+        </View>
+
+        {(formType === "individual" || formType === "business") && (
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-foreground">
+              Driving License<Text className="text-destructive">*</Text>
+            </Text>
+            <Controller
+              control={control}
+              name="kycDocuments.driving_license"
+              rules={{ required: formType === "individual" ? "Driving license is required" : false }}
+              render={({ field: { onChange, value } }) => (
+                <ImageUploader
+                  value={value}
+                  onImageSelected={onChange}
+                  onImageRemoved={() => onChange("")}
+                  placeholder="Upload Driving License"
+                  disabled={isLoading}
+                />
+              )}
+            />
+          </View>
+        )}
+
+        {(formType === "business" || formType === "wakala") && (
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-foreground">
+              Business License
+            </Text>
+            <Controller
+              control={control}
+              name="kycDocuments.business_license"
+              render={({ field: { onChange, value } }) => (
+                <ImageUploader
+                  value={value}
+                  onImageSelected={onChange}
+                  onImageRemoved={() => onChange("")}
+                  placeholder="Upload Business License"
+                  disabled={isLoading}
+                />
+              )}
+            />
+          </View>
+        )}
+      </View>
 
       <Button
         variant="default"

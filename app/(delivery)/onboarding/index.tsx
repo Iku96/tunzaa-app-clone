@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Dimensions, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { Camera, LogOut } from 'lucide-react-native';
@@ -20,7 +21,40 @@ export default function Step1Details() {
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
     const [coverImage, setCoverImage] = useState<string | null>(null);
+    const [plateNumber, setPlateNumber] = useState('');
     const [logoImage, setLogoImage] = useState<string | null>(null);
+
+    // New delivery fields
+    const [partnerType, setPartnerType] = useState<'individual' | 'business'>('individual');
+    const [vehicleType, setVehicleType] = useState<'motorcycle' | 'car' | 'truck'>('motorcycle');
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const [sName, sPhone, sDesc, sPType, sVType, sCover, sLogo, sPlate] = await Promise.all([
+                    AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME'),
+                    AsyncStorage.getItem('TEMP_ONBOARDING_PHONE'),
+                    AsyncStorage.getItem('TEMP_ONBOARDING_DESCRIPTION'),
+                    AsyncStorage.getItem('TEMP_ONBOARDING_PARTNER_TYPE'),
+                    AsyncStorage.getItem('TEMP_ONBOARDING_VEHICLE_TYPE'),
+                    AsyncStorage.getItem('TEMP_ONBOARDING_COVER'),
+                    AsyncStorage.getItem('TEMP_ONBOARDING_LOGO'),
+                    AsyncStorage.getItem('TEMP_ONBOARDING_PLATE_NUMBER'),
+                ]);
+                
+                if (sName) setShopName(sName);
+                if (sPhone) setPhone(sPhone);
+                if (sDesc) setDescription(sDesc);
+                if (sPType) setPartnerType(sPType as any);
+                if (sVType) setVehicleType(sVType as any);
+                if (sCover) setCoverImage(sCover);
+                if (sLogo) setLogoImage(sLogo);
+                if (sPlate) setPlateNumber(sPlate);
+            } catch (error) {
+                console.error("Failed to load saved onboarding details", error);
+            }
+        })();
+    }, []);
 
     const pickImage = async (type: 'cover' | 'logo') => {
         try {
@@ -50,6 +84,11 @@ export default function Step1Details() {
             return;
         }
 
+        if (!plateNumber.trim()) {
+            alert("Tafadhali weka Namba ya Chombo / Plate Number.");
+            return;
+        }
+
         setLoading(true);
         try {
             // Persist shop details for late creation
@@ -60,6 +99,9 @@ export default function Step1Details() {
                 AsyncStorage.setItem('TEMP_ONBOARDING_SHOP_NAME', shopName.trim()),
                 AsyncStorage.setItem('TEMP_ONBOARDING_PHONE', phone.trim()),
                 AsyncStorage.setItem('TEMP_ONBOARDING_DESCRIPTION', description.trim()),
+                AsyncStorage.setItem('TEMP_ONBOARDING_PARTNER_TYPE', partnerType),
+                AsyncStorage.setItem('TEMP_ONBOARDING_VEHICLE_TYPE', vehicleType),
+                AsyncStorage.setItem('TEMP_ONBOARDING_PLATE_NUMBER', plateNumber.trim()),
                 coverImage ? AsyncStorage.setItem('TEMP_ONBOARDING_COVER', coverImage) : Promise.resolve(),
                 logoImage ? AsyncStorage.setItem('TEMP_ONBOARDING_LOGO', logoImage) : Promise.resolve(),
             ]);
@@ -88,7 +130,7 @@ export default function Step1Details() {
                 >
                     <View style={styles.staticContent}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Text style={styles.title}>Weka Taarifa Zako Kama Winga</Text>
+                            <Text style={styles.title}>Taarifa Zako Kama Dereva</Text>
                             <TouchableOpacity 
                                 onPress={logout}
                                 style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 20 }}
@@ -97,7 +139,7 @@ export default function Step1Details() {
                             </TouchableOpacity>
                         </View>
                         <Text style={styles.subtitle}>
-                            Logo, jina la duka na maelezo ya duka ni muhimu katika kuunda duka lako Tunzaa.
+                            Logo, jina na maelezo yako ni muhimu katika kuunda wasifu wako Tunzaa.
                         </Text>
 
                         <View style={styles.card}>
@@ -123,12 +165,66 @@ export default function Step1Details() {
 
                             <View style={styles.formContent}>
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>Add business name</Text>
+                                    <Text style={styles.label}>Aina ya Ubia (Partner Type)</Text>
+                                    <View style={styles.pillContainer}>
+                                        <TouchableOpacity 
+                                            style={[styles.pill, partnerType === 'individual' && styles.pillActive]} 
+                                            onPress={() => setPartnerType('individual')}
+                                        >
+                                            <Text style={[styles.pillText, partnerType === 'individual' && styles.pillTextActive]}>Mtu Binafsi</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            style={[styles.pill, partnerType === 'business' && styles.pillActive]} 
+                                            onPress={() => setPartnerType('business')}
+                                        >
+                                            <Text style={[styles.pillText, partnerType === 'business' && styles.pillTextActive]}>Kampuni</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>Aina ya Usafiri (Vehicle Type)</Text>
+                                    <View style={styles.pillContainer}>
+                                        <TouchableOpacity 
+                                            style={[styles.pill, vehicleType === 'motorcycle' && styles.pillActive]} 
+                                            onPress={() => setVehicleType('motorcycle')}
+                                        >
+                                            <Text style={[styles.pillText, vehicleType === 'motorcycle' && styles.pillTextActive]}>Pikipiki</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            style={[styles.pill, vehicleType === 'car' && styles.pillActive]} 
+                                            onPress={() => setVehicleType('car')}
+                                        >
+                                            <Text style={[styles.pillText, vehicleType === 'car' && styles.pillTextActive]}>Gari Ndogo</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            style={[styles.pill, vehicleType === 'truck' && styles.pillActive]} 
+                                            onPress={() => setVehicleType('truck')}
+                                        >
+                                            <Text style={[styles.pillText, vehicleType === 'truck' && styles.pillTextActive]}>Lori</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>Namba ya Chombo (Plate Number) *</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={plateNumber}
+                                        onChangeText={setPlateNumber}
+                                        placeholder="Mfano: MC 123 ABC"
+                                        placeholderTextColor="#9CA3AF"
+                                        autoCapitalize="characters"
+                                    />
+                                </View>
+
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>{partnerType === 'business' ? 'Jina la Kampuni' : 'Jina Kamili'}</Text>
                                     <TextInput
                                         style={styles.input}
                                         value={shopName}
                                         onChangeText={setShopName}
-                                        placeholder={t.onboardingStep2CompanyNamePlaceholder}
+                                        placeholder={partnerType === 'business' ? "Weka jina la kampuni" : "Weka jina lako"}
                                         placeholderTextColor="#9CA3AF"
                                     />
                                 </View>
@@ -205,5 +301,10 @@ const styles = StyleSheet.create({
     backButton: { width: 154, height: 53, borderRadius: 8, borderWidth: 1, borderColor: '#7EC155', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
     buttonTextOutline: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
     nextButton: { width: 154, height: 53, borderRadius: 8, backgroundColor: '#84CC16', alignItems: 'center', justifyContent: 'center' },
-    buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' }
+    buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+    pillContainer: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+    pill: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E7EB' },
+    pillActive: { backgroundColor: '#EFF6FF', borderColor: '#3A5BA9' },
+    pillText: { fontSize: 14, color: '#4B5563', fontWeight: '500' },
+    pillTextActive: { color: '#3A5BA9', fontWeight: '700' }
 });

@@ -9,7 +9,7 @@ import { ActivityIndicator } from 'react-native';
 
 export default function OrderSummaryScreen() {
     const router = useRouter();
-    const { productId } = useLocalSearchParams();
+    const { productId, addressId, deliveryType, partnerId, vehicleId } = useLocalSearchParams();
     const { user } = useTunzaaAuth();
     const userId = user?.user_id || user?.id || '';
     const { cart, isLoading: cartLoading } = useCartCombined(userId);
@@ -25,19 +25,33 @@ export default function OrderSummaryScreen() {
     const tax = totals?.tax || 0;
     const total = (totals?.total || 0) + deliveryFees; // Add delivery fees to server total
 
-    const handleCheckout = () => {
+    const handleCheckout = (type: 'installment' | 'full') => {
         if (!cart) return;
 
-        if (paymentType === 'installment') {
+        // Base params to pass to the payment engine
+        const paymentParams: any = {
+            cartId: cart.cart_id,
+            returnTo: 'cart'
+        };
+
+        // Pass along delivery and address configuration if they were selected in previous steps
+        if (addressId) paymentParams.addressId = addressId;
+        if (deliveryType) paymentParams.deliveryType = deliveryType;
+        if (partnerId) paymentParams.partnerId = partnerId;
+        if (vehicleId) paymentParams.vehicleId = vehicleId;
+
+        if (type === 'installment') {
+            paymentParams.amount = total;
             router.push({
-                pathname: '/(buyer)/product/installment-plan',
-                params: { productId: cart.items[0]?.product_id } // Use first item for demo if it's cart-based
+                pathname: '/(buyer)/payment/installment-goal',
+                params: paymentParams
             });
         } else {
-            // Full Payment
+            paymentParams.paymentMethod = 'mobile_money';
+            paymentParams.amount = total;
             router.push({
-                pathname: '/(buyer)/payment',
-                params: { cartId: cart.cart_id }
+                pathname: '/(buyer)/payment/methods',
+                params: paymentParams
             });
         }
     };
@@ -133,27 +147,18 @@ export default function OrderSummaryScreen() {
                 {/* Footer Buttons */}
                 <View style={styles.footer}>
                     <TouchableOpacity
-                        style={[styles.paymentTypeBtn, paymentType === 'installment' && styles.paymentTypeBtnActive]}
-                        onPress={() => setPaymentType('installment')}
+                        style={styles.installmentBtn}
+                        onPress={() => handleCheckout('installment')}
                     >
-                        <Text style={[styles.btnTitle, paymentType === 'installment' && styles.btnTitleActive]}>Installment</Text>
-                        <Text style={[styles.btnSubtitle, paymentType === 'installment' && styles.btnSubtitleActive]}>Tunzaa 10,000 Tsh/wiki</Text>
+                        <Text style={styles.btnTitle}>Installment</Text>
+                        <Text style={styles.btnSubtitle}>Tunzaa 10,000 Tsh/wk</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.paymentTypeBtn, paymentType === 'full' && styles.paymentTypeBtnActive]}
-                        onPress={() => setPaymentType('full')}
+                        style={styles.fullPayBtn}
+                        onPress={() => handleCheckout('full')}
                     >
-                        <Text style={[styles.btnTitle, paymentType === 'full' && styles.btnTitleActive]}>Full Payment</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Sticky Checkout Action */}
-                <View style={styles.checkoutActionContainer}>
-                    <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
-                        <Text style={styles.checkoutBtnText}>
-                            {paymentType === 'installment' ? 'Start Installment Plan' : 'Pay Full Amount'}
-                        </Text>
+                        <Text style={styles.btnTitle}>Full Payment</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -359,47 +364,5 @@ const styles = StyleSheet.create({
         fontSize: 10,
         opacity: 0.9,
     },
-    paymentTypeBtn: {
-        flex: 1,
-        backgroundColor: '#F3F4F6',
-        borderRadius: 25,
-        paddingVertical: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 60,
-        borderWidth: 1,
-        borderColor: '#F3F4F6',
-    },
-    paymentTypeBtnActive: {
-        backgroundColor: '#059669', // Green for installment default or active
-        borderColor: '#059669',
-    },
-    btnTitleActive: {
-        color: '#FFFFFF',
-    },
-    btnSubtitleActive: {
-        color: 'rgba(255,255,255,0.9)',
-    },
-    checkoutActionContainer: {
-        padding: 20,
-        backgroundColor: '#FFFFFF',
-        borderTopWidth: 1,
-        borderTopColor: '#F3F4F6',
-    },
-    checkoutBtn: {
-        backgroundColor: '#425BA4',
-        paddingVertical: 16,
-        borderRadius: 30,
-        alignItems: 'center',
-        shadowColor: "#425BA4",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    checkoutBtnText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
+    // The following styles are no longer needed, removing them to clean up
 });

@@ -52,6 +52,7 @@ const PaymentScreen = () => {
     deliveryType,
     vehicleId,
     partnerId,
+    calculatedFee,
     returnTo,
     productId
   } = useLocalSearchParams();
@@ -120,7 +121,7 @@ const PaymentScreen = () => {
 
       // Find the selected delivery type to get the price
       const selectedDelivery = deliveryTypes.find(dt => dt.id === deliveryType);
-      const deliveryCost = selectedDelivery?.price || 0;
+      const deliveryCost = calculatedFee ? parseFloat(calculatedFee as string) : (selectedDelivery?.price || 0);
 
       // Calculate total including delivery cost
       const totalWithDelivery = cartTotals.total + deliveryCost;
@@ -179,10 +180,17 @@ const PaymentScreen = () => {
     // This is now handled by PaymentForm component
   };
 
-  const handleContinue = () => {
+  const handleContinue = (orderIdFromForm?: string) => {
     if (paymentStatus === "completed") {
-      // Navigate to orders page - the order will be there whether it was created here or existed before
-      router.push("/(buyer)/orders");
+      const finalOrderId = orderIdFromForm || orderId || order?.order_id;
+      if (finalOrderId) {
+        router.push({
+          pathname: "/(buyer)/orders/tracking",
+          params: { orderId: finalOrderId }
+        });
+      } else {
+        router.push("/(buyer)/orders");
+      }
     } else {
       router.push("/(buyer)/orders");
     }
@@ -412,6 +420,7 @@ const PaymentScreen = () => {
                           onPaymentCategorySelect={!orderId ? handlePaymentCategoryChange : () => { }} // Allow editing if no order exists
                           disabled={!!orderId} // Disable interactions if order exists
                           showContinueButton={false}
+                          calculatedFee={calculatedFee ? parseFloat(calculatedFee as string) : undefined}
                         />
                       </View>
                     )}
@@ -700,6 +709,7 @@ const PaymentScreen = () => {
                         onPaymentCategorySelect={!orderId ? handlePaymentCategoryChange : () => { }} // Allow editing if no order exists
                         disabled={!!orderId} // Disable interactions if order exists
                         showContinueButton={false}
+                        calculatedFee={calculatedFee ? parseFloat(calculatedFee as string) : undefined}
                       />
                     </View>
                   )}
