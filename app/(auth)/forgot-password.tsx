@@ -169,7 +169,7 @@ export default function ForgotPasswordScreen() {
                             onChangeText={setIdentifier}
                             selectedCountry={selectedCountry}
                             onCountryChange={setSelectedCountry}
-                            label=""
+                            required={false}
                             editable={!requestPasswordReset.isPending}
                           />
                       </View>
