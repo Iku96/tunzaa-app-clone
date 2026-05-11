@@ -11,7 +11,7 @@ import {
     AddToCartRequest,
     UpdateCartItemRequest,
     RemoveCartItemRequest,
-} from "../services/cart";
+} from "@/src/services/cart";
 
 console.log('🚀 [CART_STORE] File loaded into memory');
 
@@ -880,10 +880,14 @@ export const useCartCombined = (userId: string) => {
 
     const updateItemQuantityHelper = async (productId: string, variantSku: string | undefined, quantity: number) => {
         if (!serverCart) return;
-        const cartItem = serverCart.items.find(item =>
+        // Try exact match first, then fallback to product_id only
+        let cartItem = serverCart.items.find(item =>
             item.product_id === productId &&
             item.metadata?.sku === variantSku
         );
+        if (!cartItem) {
+            cartItem = serverCart.items.find(item => item.product_id === productId);
+        }
         if (cartItem) {
             try {
                 await updateCartItem.mutateAsync({
@@ -893,7 +897,39 @@ export const useCartCombined = (userId: string) => {
                 });
             } catch (error) {
                 console.error("Failed to update cart item quantity:", error);
+                throw error;
             }
+        } else {
+            console.warn(`[Cart] Item not found for update: ${productId}`);
+        }
+    };
+
+    // Direct item_id based operations (most reliable)
+    const updateItemByIdHelper = async (itemId: string, quantity: number) => {
+        if (!serverCart) return;
+        try {
+            await updateCartItem.mutateAsync({
+                cartId: serverCart.cart_id,
+                itemId,
+                update: { quantity }
+            });
+        } catch (error) {
+            console.error("Failed to update cart item:", error);
+            throw error;
+        }
+    };
+
+    const removeItemByIdHelper = async (itemId: string) => {
+        if (!serverCart) return;
+        try {
+            await removeCartItemMutation.mutateAsync({
+                cartId: serverCart.cart_id,
+                userId,
+                itemId
+            });
+        } catch (error) {
+            console.error("Failed to remove cart item:", error);
+            throw error;
         }
     };
 
@@ -918,15 +954,25 @@ export const useCartCombined = (userId: string) => {
         },
         removeCartItem: async (productId: string, variantSku: string | undefined) => {
             if (!serverCart) return;
-            const item = serverCart.items.find(i => i.product_id === productId && i.metadata?.sku === variantSku);
+            // Try exact match first, then fallback to product_id only
+            let item = serverCart.items.find(i => i.product_id === productId && i.metadata?.sku === variantSku);
+            if (!item) {
+                item = serverCart.items.find(i => i.product_id === productId);
+            }
             if (item) {
+                cartStore.removeCartItem(productId, variantSku);
                 await removeCartItemMutation.mutateAsync({
                     cartId: serverCart.cart_id,
                     userId,
                     itemId: item.item_id
                 });
+            } else {
+                console.warn(`[Cart] Item not found for removal: ${productId}`);
             }
         },
+        // Direct item_id based operations (preferred for cart screen)
+        updateItemById: updateItemByIdHelper,
+        removeItemById: removeItemByIdHelper,
         addToCartMutation: addToCart,
         updateCartItemMutation: updateCartItem,
         clearCartMutation: clearCart,
@@ -937,5 +983,6 @@ export const useCartCombined = (userId: string) => {
         clearTempCart: cartStore.clearTempCart,
         isAdding: addToCart.isPending || addToCartBulk.isPending,
         isUpdating: updateCartItem.isPending,
+        isRemoving: removeCartItemMutation.isPending,
     };
 };

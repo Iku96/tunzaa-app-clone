@@ -82,9 +82,9 @@ export default function AccountScreen() {
 
     // Order status actions
     const orderActions = [
-        { icon: 'bus-outline' as const, label: t.orderShipped, route: '/(buyer)/orders/delivery' },
-        { icon: 'download-outline' as const, label: t.orderReceived, route: '/(buyer)/orders' },
-        { icon: 'reload-circle-outline' as const, label: t.orderReturn, route: '/(buyer)/orders' },
+        { icon: 'bus-outline' as const, label: t.orderShipped, route: '/(buyer)/orders/deliveries' },
+        { icon: 'download-outline' as const, label: t.orderReceived, route: '/(buyer)/orders/deliveries' },
+        { icon: 'reload-circle-outline' as const, label: t.orderReturn, route: '/(buyer)/orders/deliveries' },
     ];
 
     // Quick actions

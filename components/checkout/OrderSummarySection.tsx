@@ -68,6 +68,7 @@ interface OrderSummarySectionProps {
   showContinueButton?: boolean;
   isPaymentsEnabled?: boolean;
   isDeliveryEnabled?: boolean;
+  calculatedFee?: number;
 }
 
 export const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
@@ -85,6 +86,7 @@ export const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
   showContinueButton = true,
   isPaymentsEnabled = true,
   isDeliveryEnabled = true,
+  calculatedFee,
 }) => {
   const resolvedColors = useResolvedThemeColors();
   const { t } = useI18n();
@@ -93,7 +95,7 @@ export const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
   const selectedDelivery = availableDeliveryTypes.find(
     (dt) => dt.id === selectedDeliveryType
   );
-  const deliveryPrice = selectedDelivery?.price || 0;
+  const deliveryPrice = calculatedFee !== undefined ? calculatedFee : (selectedDelivery?.price || 0);
 
   return (
     <View className="p-4 border-t border-border">

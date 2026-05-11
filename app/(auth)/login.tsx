@@ -81,6 +81,14 @@ export default function LoginScreen() {
             const response = await tunzaaLogin(identifier, password, isPhone, portalTarget);
             console.log('✅ Login success:', response?.name || response?.first_name);
 
+            // Explicitly update LAST_PORTAL so we don't accidentally get redirected
+            // to a previously logged-in portal (like merchant) when logging in as buyer.
+            const finalPortalTarget = targetRole === 'merchant' ? 'merchant'
+                                    : targetRole === 'delivery' ? 'delivery'
+                                    : targetRole === 'winga' ? 'winga'
+                                    : 'buyer';
+            await AsyncStorage.setItem('LAST_PORTAL', finalPortalTarget);
+
             // Edge case: Pending merchant onboarding
             const hasPending = await AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME');
             if (hasPending) {

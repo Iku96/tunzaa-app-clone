@@ -86,6 +86,12 @@ export const cartApi = {
         return response.data;
     },
 
+    createCart: async (userId: string): Promise<Cart> => {
+        // The getOrCreateCart endpoint typically auto-creates, so reuse it
+        const response = await apiClient.get(`/carts/user?user_id=${userId}`);
+        return response.data;
+    },
+
     addToCart: async (
         cartId: string,
         items: AddToCartRequest[]

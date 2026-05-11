@@ -164,6 +164,20 @@ export interface PartnersResponse {
     limit: number;
 }
 
+export interface ShippingFeeParams {
+    origin: { lat: number; lng: number };
+    destination: { lat: number; lng: number };
+    partner_id?: string;
+    vehicle_type_id?: string;
+}
+
+export interface ShippingFeeResponse {
+    fee: number;
+    currency: string;
+    distance_km: number;
+    estimated_time_minutes: number;
+}
+
 // ---- API Functions ----
 
 export const deliveryApi = {
@@ -271,6 +285,12 @@ export const deliveryApi = {
         );
         return response.data;
     },
+
+    /** Calculate shipping fee based on locations and delivery partner */
+    calculateShippingFee: async (params: ShippingFeeParams): Promise<ShippingFeeResponse> => {
+        const response = await apiClient.get<ShippingFeeResponse>("/deliveries/calculate-fee", { params });
+        return response.data;
+    },
 };
 
 // ---- React Query Hooks ----
@@ -372,6 +392,13 @@ export const useSubmitKYC = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["partner"] });
         },
+    });
+};
+
+/** Mutation: calculate shipping fee */
+export const useCalculateShippingFee = () => {
+    return useMutation({
+        mutationFn: (params: ShippingFeeParams) => deliveryApi.calculateShippingFee(params),
     });
 };
 

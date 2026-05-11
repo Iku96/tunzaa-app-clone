@@ -22,6 +22,13 @@ export default function Step4Documents() {
     const [loading, setLoading] = useState(false);
     const [activeSection, setActiveSection] = useState<DocType>(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [partnerType, setPartnerType] = useState('individual');
+
+    React.useEffect(() => {
+        AsyncStorage.getItem('TEMP_ONBOARDING_PARTNER_TYPE').then(val => {
+            if (val) setPartnerType(val);
+        });
+    }, []);
 
     // State for documents
     const [licenseFile, setLicenseFile] = useState<any>(null);
@@ -97,13 +104,16 @@ export default function Step4Documents() {
         setLoading(true);
         try {
             // Retrieve persisted shop details
-            const [savedShopName, savedPhone, savedDesc, savedLogo, savedCover, savedLocationStr] = await Promise.all([
+            const [savedShopName, savedPhone, savedDesc, savedLogo, savedCover, savedLocationStr, savedPartnerType, savedVehicleType, savedPlateNumber] = await Promise.all([
                 AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_PHONE'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_DESCRIPTION'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_LOGO'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_COVER'),
                 AsyncStorage.getItem('TEMP_ONBOARDING_LOCATION'),
+                AsyncStorage.getItem('TEMP_ONBOARDING_PARTNER_TYPE'),
+                AsyncStorage.getItem('TEMP_ONBOARDING_VEHICLE_TYPE'),
+                AsyncStorage.getItem('TEMP_ONBOARDING_PLATE_NUMBER'),
             ]);
             
             const location = savedLocationStr ? JSON.parse(savedLocationStr) as { region: string; municipal: string; ward: string; extraInfo: string } : null;
@@ -111,7 +121,7 @@ export default function Step4Documents() {
             const finalShopName = savedShopName || `${user?.first_name || 'My'}'s Delivery`;
 
             console.log(`🚚 [Step4] Finalizing delivery profile for: ${deliveryUserId}`);
-            console.log(`📝 [Step4] Business Name: ${finalShopName}`);
+            console.log(`📝 [Step4] Name: ${finalShopName}`);
 
             let logoUrl = savedLogo || '';
             // 1. Upload Logo if it's a local URI
@@ -126,14 +136,16 @@ export default function Step4Documents() {
             }
 
             const deliveryData = {
-                form_type: "individual", // Or conditionally business/wakala
-                business_name: finalShopName,
-                business_logo: logoUrl,
-                contact_details: savedPhone || user?.phone_number || '',
-                profile_picture: logoUrl, // Delivery requires a profile picture
-                vehicle_type: "motorcycle", // Default, could be asked in a separate step later
-                location: location ? JSON.stringify(location) : "",
-                location_description: savedDesc || "",
+                type: (savedPartnerType || "individual") as "individual" | "business" | "pickup_point",
+                name: finalShopName,
+                contact_phone: savedPhone || user?.phone_number || '',
+                profile_picture: logoUrl,
+                vehicle_info: {
+                    vehicle_type_id: savedVehicleType || "motorcycle",
+                    details: savedPlateNumber || "Boda",
+                },
+                location_description: location ? JSON.stringify(location) : (savedDesc || ""),
+                commission_percent: 0,
             };
 
             // 3. Create Delivery Partner
@@ -327,22 +339,24 @@ export default function Step4Documents() {
                             <View style={styles.accordionContainer}>
                                 <RenderAccordionItem
                                     id="license"
-                                    label="Kitambulisho cha Taifa"
+                                    label={partnerType === 'business' ? "Kitambulisho cha Taifa cha Mkurugenzi" : "Kitambulisho cha Taifa"}
                                     file={licenseFile}
                                     setFile={setLicenseFile}
                                 />
                                 <RenderAccordionItem
                                     id="tin"
-                                    label={t.onboardingStep5TIN}
+                                    label={partnerType === 'business' ? t.onboardingStep5TIN : "Leseni ya Udereva"}
                                     file={tinFile}
                                     setFile={setTinFile}
                                 />
-                                <RenderAccordionItem
-                                    id="brela"
-                                    label={t.onboardingStep5BRELA}
-                                    file={brelaFile}
-                                    setFile={setBrelaFile}
-                                />
+                                {partnerType === 'business' && (
+                                    <RenderAccordionItem
+                                        id="brela"
+                                        label={t.onboardingStep5BRELA}
+                                        file={brelaFile}
+                                        setFile={setBrelaFile}
+                                    />
+                                )}
                             </View>
 
                             <View style={styles.skipContainer}>

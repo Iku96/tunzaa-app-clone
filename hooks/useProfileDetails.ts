@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useGetVendor } from "@/src/services/vendors";
-import { usePartner } from "@/src/services/delivery";
+import { usePartnerByUser } from "@/src/services/delivery";
 import { useGetAffiliate } from "@/src/services/affiliates";
 import { useAuth } from "@/context/auth";
 
@@ -58,10 +58,10 @@ export const useProfileDetails = (): ProfileDetails => {
     data: deliveryData,
     isLoading: isDeliveryLoading,
     error: deliveryError,
-  } = usePartner(
-    deliveryProfile?.profile_id || "",
-    // Only fetch if we don't have context data and have a profile ID
-    !contextDeliveryDetails && !!deliveryProfile?.profile_id
+  } = usePartnerByUser(
+    user?.user_id || "",
+    // Only fetch if we don't have context data and have a user ID
+    !contextDeliveryDetails && !!user?.user_id
   );
 
   // Conditionally fetch affiliate details (using user_id for now as per TODO)

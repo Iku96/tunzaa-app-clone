@@ -19,9 +19,9 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 const { width, height } = Dimensions.get("window");
 
 const STATUS_STEPS = [
-  { key: "placed", label: "Placed", icon: "📋" },
-  { key: "in_transit", label: "InTransit", icon: "🚚" },
-  { key: "delivered", label: "Delivered", icon: "🏠" },
+  { key: "picked_up", label: "Picked up", icon: "receipt-outline" },
+  { key: "in_transit", label: "In transit", icon: "bicycle-outline" },
+  { key: "delivered", label: "Delivered", icon: "home-outline" },
 ];
 
 export default function TrackingScreen() {
@@ -71,6 +71,18 @@ export default function TrackingScreen() {
     if (driverPhone) Linking.openURL(`tel:${driverPhone}`);
   };
 
+  const getShopDetails = () => {
+    // For now we mock the shop details as requested in the UI
+    // In production, extract from orderResponse.vendor or orderResponse.items[0].vendor
+    return {
+      name: "Vodacom Shop",
+      logo: "https://via.placeholder.com/100/FF0000/FFFFFF?text=V",
+      supplierSince: "2024",
+    };
+  };
+
+  const shop = getShopDetails();
+
   return (
     <View className="flex-1 bg-background">
       {/* Map */}
@@ -109,27 +121,6 @@ export default function TrackingScreen() {
           >
             <ArrowLeft size={20} color="#1F2937" />
           </TouchableOpacity>
-
-          {/* ETA Bubble */}
-          <View
-            className="self-start mt-4 ml-10 px-4 py-2 rounded-xl"
-            style={{ backgroundColor: "#425BA4" }}
-          >
-            <Text className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
-              {statusStep === 0
-                ? "Order Placed"
-                : statusStep === 1
-                ? "On the way"
-                : "Delivered! 🎉"}
-            </Text>
-            <Text className="text-xs" style={{ color: "#E0E7FF" }}>
-              {statusStep === 0
-                ? "Waiting for pickup"
-                : statusStep === 1
-                ? "Driver is heading to you"
-                : "Enjoy your product!"}
-            </Text>
-          </View>
         </View>
       </SafeAreaView>
 
@@ -150,87 +141,94 @@ export default function TrackingScreen() {
           <ActivityIndicator size="large" color="#425BA4" />
         ) : (
           <>
+            {/* Drag Handle */}
+            <View className="items-center mb-4">
+              <View className="w-10 h-1 rounded-full bg-gray-200" />
+            </View>
+
             {/* Status Title */}
-            <Text className="text-lg font-bold text-foreground mb-1">
+            <Text className="text-xl font-bold text-foreground mb-1">
               {statusStep === 0
-                ? "Order Placed"
+                ? "Your order is being prepared"
                 : statusStep === 1
                 ? "Your order is on the way"
                 : "Order Delivered"}
             </Text>
             <Text className="text-sm text-muted-foreground mb-6">
-              {statusStep === 0
-                ? "Checking availability"
-                : statusStep === 1
-                ? "Driver is assigned and heading to you"
-                : "Enjoy your product!"}
+              Arrives between 11:23 PM - 12:01 AM
             </Text>
 
             {/* Status Steps */}
-            <View className="flex-row items-center justify-between mb-6">
+            <View className="flex-row items-center justify-between mb-2 px-2">
               {STATUS_STEPS.map((step, index) => {
                 const isActive = statusStep >= index;
+                const { Ionicons } = require("@expo/vector-icons");
                 return (
                   <React.Fragment key={step.key}>
-                    {index > 0 && (
+                    <View
+                      className="w-10 h-10 rounded-full items-center justify-center"
+                      style={{
+                        backgroundColor: isActive ? "#315BA9" : "#F3F4F6",
+                      }}
+                    >
+                      <Ionicons
+                        name={step.icon}
+                        size={20}
+                        color={isActive ? "#FFFFFF" : "#9CA3AF"}
+                      />
+                    </View>
+                    {index < STATUS_STEPS.length - 1 && (
                       <View
-                        className="flex-1 h-0.5 mx-1"
+                        className="flex-1 h-1 mx-2 rounded-full"
                         style={{
-                          backgroundColor: statusStep >= index ? "#425BA4" : "#E5E7EB",
+                          backgroundColor: statusStep > index ? "#315BA9" : "#F3F4F6",
                         }}
                       />
                     )}
-                    <View className="items-center" style={{ width: 60 }}>
-                      <View
-                        className="w-9 h-9 rounded-full items-center justify-center mb-1"
-                        style={{
-                          backgroundColor: isActive ? "#425BA4" : "#F3F4F6",
-                        }}
-                      >
-                        <Text style={{ fontSize: 14 }}>{step.icon}</Text>
-                      </View>
-                      <Text
-                        className="text-xs font-medium"
-                        style={{ color: isActive ? "#425BA4" : "#9CA3AF" }}
-                      >
-                        {step.label}
-                      </Text>
-                    </View>
                   </React.Fragment>
                 );
               })}
             </View>
+            
+            <View className="flex-row items-center justify-between mb-6">
+               {STATUS_STEPS.map((step, index) => (
+                  <Text
+                    key={`label-${step.key}`}
+                    className="text-xs font-medium text-center"
+                    style={{ color: statusStep >= index ? "#1F2937" : "#9CA3AF", width: 60 }}
+                  >
+                    {step.label}
+                  </Text>
+               ))}
+            </View>
 
             {/* Divider */}
-            <View className="h-px bg-border mb-5" />
+            <View className="h-px bg-border mb-6" />
 
-            {/* Driver Info */}
-            <View className="flex-row items-center">
-              <View className="w-12 h-12 rounded-full bg-muted items-center justify-center">
-                <Text className="text-lg">🧑‍✈️</Text>
+            {/* Shop Info */}
+            <View className="flex-row items-center mb-6">
+              <View className="w-14 h-14 rounded-full bg-red-600 items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+                <Text className="text-white text-2xl font-bold">V</Text>
               </View>
-              <View className="flex-1 ml-3">
-                <Text className="text-base font-semibold text-foreground">
-                  {driverName}
+              <View className="flex-1 ml-4">
+                <Text className="text-base font-bold text-foreground">
+                  {shop.name}
                 </Text>
-                <Text className="text-xs text-muted-foreground">
-                  {statusStep === 0
-                    ? "Pending assignment"
-                    : statusStep === 1
-                    ? "Delivering your order"
-                    : "Delivery completed"}
+                <Text className="text-xs text-muted-foreground mt-0.5">
+                  Supplier since {shop.supplierSince}
                 </Text>
               </View>
-              {driverPhone && statusStep === 1 && (
-                <TouchableOpacity
-                  className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: "#EFF6FF" }}
-                  onPress={handleCall}
-                >
-                  <Phone size={18} color="#425BA4" />
-                </TouchableOpacity>
-              )}
             </View>
+
+            {/* Contact Button */}
+            <TouchableOpacity
+              className="w-full py-4 rounded-3xl flex-row items-center justify-center"
+              style={{ backgroundColor: "#315BA9" }}
+              onPress={handleCall}
+            >
+              <Phone size={18} color="#FFFFFF" />
+              <Text className="text-white font-bold text-base ml-2">Contact Shop</Text>
+            </TouchableOpacity>
           </>
         )}
       </View>

@@ -1,8 +1,8 @@
 // Payment Processing & Installment API Types
 
-// Payment Processing Types
 export interface InitiatePaymentBody {
   customer_msisdn: string;
+  plan_id?: string;
 }
 
 // Payment Processing Types

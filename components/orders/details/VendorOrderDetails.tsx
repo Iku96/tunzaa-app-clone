@@ -164,6 +164,17 @@ export const VendorOrderDetails = ({
     });
   };
 
+  const handleConfirmHandover = () => {
+    openDialog({
+      title: "Confirm Handover",
+      description: "Confirm that you have handed over the package to the delivery partner?",
+      confirmText: "Confirm Handover",
+      confirmVariant: "default",
+      newStatus: "picked_up",
+      action: "handed over",
+    });
+  };
+
   const handleCompleteOrder = () => {
     openDialog({
       title: "Complete Order",
@@ -322,6 +333,28 @@ export const VendorOrderDetails = ({
                     </Text>
                   </Card>
                 )}
+
+                {/* Ready for Pickup Button for Processing orders */}
+                {order.status.toLowerCase() === "processing" && (
+                  <Card className="mb-6 p-6">
+                    <Text className="text-lg font-semibold text-foreground mb-4">
+                      Order Readiness
+                    </Text>
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="w-full"
+                      onPress={handleMarkReady}
+                      disabled={updateOrderStatusMutation.isPending}
+                      style={{ backgroundColor: resolvedThemeColors.primary }}
+                    >
+                      <Package size={20} className="mr-2" color="#fff" />
+                      <Text className="text-white font-semibold">
+                        {updateOrderStatusMutation.isPending ? "Processing..." : "Mark Ready for Pickup"}
+                      </Text>
+                    </Button>
+                  </Card>
+                )}
               </View>
 
               {/* Right Column - Sidebar */}
@@ -362,6 +395,26 @@ export const VendorOrderDetails = ({
                 )}
 
                 {order.status.toLowerCase() === "shipped" && (
+                  <Card className="mb-6 p-6">
+                    <Text className="text-lg font-semibold text-foreground mb-4">
+                      Quick Actions
+                    </Text>
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="w-full"
+                      onPress={handleConfirmHandover}
+                      disabled={updateOrderStatusMutation.isPending}
+                    >
+                      <Check size={20} className="mr-2" color="#fff" />
+                      <Text className="text-white font-semibold">
+                        {updateOrderStatusMutation.isPending ? "Processing..." : "Confirm Handover"}
+                      </Text>
+                    </Button>
+                  </Card>
+                )}
+
+                {order.status.toLowerCase() === "picked_up" && (
                   <Card className="mb-6 p-6">
                     <Text className="text-lg font-semibold text-foreground mb-4">
                       Quick Actions

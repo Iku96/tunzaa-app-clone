@@ -11,28 +11,41 @@ export default function Step3Review() {
     const params = useLocalSearchParams();
     const { t } = useLanguage();
 
-    const [locationData, setLocationData] = useState({
+    const [onboardingData, setOnboardingData] = useState({
         region: params.region as string || '...',
         municipal: params.municipal as string || '...',
         ward: params.ward as string || '...',
         notes: params.extraInfo as string || '...',
+        partnerType: '...',
+        vehicleType: '...',
+        plateNumber: '...',
     });
 
     useEffect(() => {
         (async () => {
             try {
-                const saved = await AsyncStorage.getItem('TEMP_ONBOARDING_LOCATION');
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    setLocationData({
-                        region: data.region || locationData.region,
-                        municipal: data.municipal || locationData.municipal,
-                        ward: data.ward || locationData.ward,
-                        notes: data.extraInfo || locationData.notes,
-                    });
+                const savedLoc = await AsyncStorage.getItem('TEMP_ONBOARDING_LOCATION');
+                const pType = await AsyncStorage.getItem('TEMP_ONBOARDING_PARTNER_TYPE');
+                const vType = await AsyncStorage.getItem('TEMP_ONBOARDING_VEHICLE_TYPE');
+                const pNumber = await AsyncStorage.getItem('TEMP_ONBOARDING_PLATE_NUMBER');
+                
+                let data = { region: '', municipal: '', ward: '', extraInfo: '' };
+                if (savedLoc) {
+                    data = JSON.parse(savedLoc);
                 }
+
+                setOnboardingData(prev => ({
+                    ...prev,
+                    region: data.region || prev.region,
+                    municipal: data.municipal || prev.municipal,
+                    ward: data.ward || prev.ward,
+                    notes: data.extraInfo || prev.notes,
+                    partnerType: pType === 'business' ? 'Kampuni' : (pType === 'individual' ? 'Mtu Binafsi' : prev.partnerType),
+                    vehicleType: vType === 'car' ? 'Gari Ndogo' : (vType === 'truck' ? 'Lori' : (vType === 'motorcycle' ? 'Pikipiki' : prev.vehicleType)),
+                    plateNumber: pNumber || prev.plateNumber,
+                }));
             } catch (e) {
-                console.error('❌ [Step4] Failed to load location data:', e);
+                console.error('❌ [Step3] Failed to load onboarding data:', e);
             }
         })();
     }, []);
@@ -78,44 +91,50 @@ export default function Step3Review() {
 
                         <View style={styles.divider} />
 
-                        {/* 2x2 GRID LAYOUT */}
+                        {/* 3x2 GRID LAYOUT */}
                         <View style={styles.gridContainer}>
-                            {/* Row 1, Col 1: Mkoa */}
+                            {/* Row 1, Col 1: Aina ya Ubia */}
+                            <View style={styles.gridItem}>
+                                <Text style={styles.detailLabel}>Aina ya Ubia</Text>
+                                <Text style={styles.detailValue}>{onboardingData.partnerType}</Text>
+                            </View>
+
+                            {/* Row 1, Col 2: Aina ya Usafiri */}
+                            <View style={styles.gridItem}>
+                                <Text style={styles.detailLabel}>Aina ya Usafiri</Text>
+                                <Text style={styles.detailValue}>{onboardingData.vehicleType} - {onboardingData.plateNumber}</Text>
+                            </View>
+
+                            {/* Row 2, Col 1: Mkoa */}
                             <View style={styles.gridItem}>
                                 <Text style={styles.detailLabel}>{t.onboardingStep3RegionLabel}</Text>
-                                <Text style={styles.detailValue}>{locationData.region}</Text>
+                                <Text style={styles.detailValue}>{onboardingData.region}</Text>
                             </View>
 
-                            {/* Row 1, Col 2: Wilaya */}
+                            {/* Row 2, Col 2: Wilaya */}
                             <View style={styles.gridItem}>
                                 <Text style={styles.detailLabel}>{t.onboardingStep3MunicipalLabel}</Text>
-                                <Text style={styles.detailValue}>{locationData.municipal}</Text>
+                                <Text style={styles.detailValue}>{onboardingData.municipal}</Text>
                             </View>
 
-                            {/* Row 2, Col 1: Kata */}
+                            {/* Row 3, Col 1: Kata */}
                             <View style={styles.gridItem}>
                                 <Text style={styles.detailLabel}>{t.onboardingStep3WardLabel}</Text>
-                                <Text style={styles.detailValue}>{locationData.ward}</Text>
+                                <Text style={styles.detailValue}>{onboardingData.ward}</Text>
                             </View>
 
-                            {/* Row 2, Col 2: Maelezo */}
+                            {/* Row 3, Col 2: Maelezo */}
                             <View style={styles.gridItem}>
                                 <Text style={styles.detailLabel}>{t.onboardingStep4NotesLabel}</Text>
                                 <Text style={styles.notesValue} numberOfLines={3}>
-                                    {locationData.notes}
+                                    {onboardingData.notes}
                                 </Text>
                             </View>
                         </View>
 
                         <View style={styles.dividerLight} />
 
-                        {/* "ONGEZA DUKA" LINK */}
-                        <View style={styles.cardFooterLink}>
-                            <Text style={styles.textLinkQuestion}>{t.onboardingStep4MultiLocationQuestion} </Text>
-                            <TouchableOpacity onPress={() => alert('Add Shop clicked')}>
-                                <Text style={styles.textLinkAction}>{t.onboardingStep4AddShop}</Text>
-                            </TouchableOpacity>
-                        </View>
+                        {/* REMOVED ONGEZA DUKA LINK AS IT MAKES NO SENSE FOR DRIVERS */}
 
                     </View>
 

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, Alert, Linking, TouchableOpacity } from "react-native";
+import { View, ScrollView, Alert, Linking, TouchableOpacity, Image } from "react-native";
 import * as Burnt from "burnt";
 import * as Location from "expo-location";
 import {
@@ -165,15 +165,30 @@ export const DeliveryOrderDetails = ({ deliveryId }: DeliveryOrderDetailsProps) 
     }
 
     try {
-      await updateDeliveryStage.mutateAsync({
-        deliveryId: delivery.delivery_id,
-        data: {
-          partner_id: PARTNER_ID,
-          stage,
-          location: currentLocation || undefined,
-          notes: imageUrl ? message : undefined,
-        },
-      });
+      if (stage === "delivered") {
+        await addDeliveryProof.mutateAsync({
+          deliveryId: delivery.delivery_id,
+          data: {
+            partner_id: PARTNER_ID,
+            proof: {
+              type: "photo",
+              url: imageUrl,
+              notes: message,
+            },
+            location: currentLocation || undefined,
+          },
+        });
+      } else {
+        await updateDeliveryStage.mutateAsync({
+          deliveryId: delivery.delivery_id,
+          data: {
+            partner_id: PARTNER_ID,
+            stage,
+            location: currentLocation || undefined,
+            notes: imageUrl ? message : undefined,
+          },
+        });
+      }
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["delivery", deliveryId] }),
@@ -505,6 +520,32 @@ export const DeliveryOrderDetails = ({ deliveryId }: DeliveryOrderDetailsProps) 
           </TouchableOpacity>
         )}
       </View>
+      
+      {/* --- Delivery Proof (If available) --- */}
+      {delivery.proof && (
+        <View className="px-4 py-4 border-t border-border">
+          <Text className="text-base font-semibold text-foreground mb-3">
+            Delivery Proof
+          </Text>
+          <View className="bg-muted p-3 rounded-xl">
+            {delivery.proof.url && (
+              <Image 
+                source={{ uri: delivery.proof.url }} 
+                className="w-full h-48 rounded-lg mb-2"
+                resizeMode="cover"
+              />
+            )}
+            {delivery.proof.notes && (
+              <Text className="text-sm text-foreground">
+                Note: {delivery.proof.notes}
+              </Text>
+            )}
+            <Text className="text-xs text-muted-foreground mt-1">
+              Uploaded at: {format(new Date(delivery.updated_at), 'MMM d, h:mm a')}
+            </Text>
+          </View>
+        </View>
+      )}
 
       {/* --- Action Button --- */}
       {canUpdateStatus && nextStage && (
