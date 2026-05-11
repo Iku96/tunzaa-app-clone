@@ -1,5 +1,5 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth as useAuth } from "@/src/contexts/TunzaaAuthContext";
 import { DeliveryOrders } from "@/components/orders/DeliveryOrders";
 import { DesktopLayoutWrapper } from "@/components/layout";
 

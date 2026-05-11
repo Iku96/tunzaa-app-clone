@@ -8,6 +8,7 @@ import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useCreateDeliveryPartner } from '@/src/services/auth';
 import { uploadApi } from '@/src/services/upload';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { cleanseImageUrl } from '@/src/utils/images';
 
 const { width, height } = Dimensions.get('window');
 
@@ -15,7 +16,7 @@ type DocType = 'license' | 'tin' | 'brela' | null;
 
 export default function Step4Documents() {
     const router = useRouter();
-    const { isAuthenticated, isLoading, submitVendorKyc, refreshProfile, user } = useTunzaaAuth();
+    const { isAuthenticated, isLoading, submitDeliveryKyc, refreshProfile, user } = useTunzaaAuth();
     const createDeliveryPartner = useCreateDeliveryPartner();
     const { t } = useLanguage();
     
@@ -129,7 +130,7 @@ export default function Step4Documents() {
                 console.log('📤 [Step4] Uploading logo...');
                 try {
                     const uploadRes = await uploadApi.uploadFile(savedLogo, `delivery_logo_${deliveryUserId}.jpg`, 'image/jpeg');
-                    logoUrl = uploadRes.url;
+                    logoUrl = cleanseImageUrl(uploadRes.url) || '';
                 } catch (e) {
                     console.error('❌ [Step4] Logo upload failed:', e);
                 }
@@ -176,7 +177,7 @@ export default function Step4Documents() {
                         const uploadRes = await uploadApi.uploadFile(doc.file.uri, `${doc.id}_${deliveryUserId}.${fileExt}`, doc.file.mimeType);
                         uploadedDocs.push({
                             document_type_id: doc.id, // Simplified ID ('tin', 'license', 'brela')
-                            document_url: uploadRes.url,
+                            document_url: cleanseImageUrl(uploadRes.url),
                             verification_status: 'pending'
                         });
                     } catch (e: any) {
@@ -187,7 +188,7 @@ export default function Step4Documents() {
 
                 if (uploadedDocs.length > 0) {
                     console.log('📄 [Step5] Submitting KYC documents...');
-                    await submitVendorKyc(uploadedDocs).catch(e => {
+                    await submitDeliveryKyc(uploadedDocs).catch(e => {
                         console.error('❌ [Step5] KYC Submission failed:', e);
                         uploadErrors.push(`KYC Submit: ${e.apiError?.message || e.message}`);
                     });

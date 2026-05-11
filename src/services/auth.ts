@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "./client";
 import { API_CONFIG } from "./config";
 import { saveTokens, clearTokens } from "../utils/storage";
@@ -83,16 +83,43 @@ export const useRequestOTP = () => useMutation({ mutationFn: authApi.requestOTP 
 export const useVerifyOTP = () => useMutation({ mutationFn: authApi.verifyOTP });
 export const useRegister = () => useMutation({ mutationFn: authApi.register, onSuccess: async (data) => await authApi.saveTokens(data.access_token, data.refresh_token) });
 export const useLogin = () => useMutation({ mutationFn: authApi.login, onSuccess: async (data) => await authApi.saveTokens(data.access_token, data.refresh_token) });
-export const useUpdateUser = () => useMutation({ mutationFn: ({ userId, data }: any) => authApi.updateUser(userId, data) });
+export const useUpdateUser = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ userId, data }: any) => authApi.updateUser(userId, data),
+        onSuccess: (_, { userId }) => {
+            queryClient.invalidateQueries({ queryKey: ["userDetails"] });
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+        },
+    });
+};
 export const useUpdateUserProfile = () => useMutation({ mutationFn: ({ userId, profileId, data }: any) => authApi.updateUserProfile(userId, profileId, data) });
 export const useUpdatePassword = () => useMutation({ mutationFn: ({ userId, data }: any) => authApi.updatePassword(userId, data) });
 export const useUpdateProfile = () => useMutation({ mutationFn: (data: any) => authApi.updateProfile(data) });
 export const useGetUserDetails = (userId: string, enabled: boolean = true) => useQuery({ queryKey: ["userDetails", userId], queryFn: () => authApi.getUserDetails(userId), enabled: enabled && !!userId });
 
 export const useCreateVendor = () => useMutation({ mutationFn: ({ userId, data }: any) => authApi.createVendor(userId, data) });
-export const useUpdateVendor = () => useMutation({ mutationFn: ({ vendorId, data }: any) => authApi.updateVendor(vendorId, data) });
+export const useUpdateVendor = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ vendorId, data }: any) => authApi.updateVendor(vendorId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["vendor"] });
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+        },
+    });
+};
 export const useCreateDeliveryPartner = () => useMutation({ mutationFn: ({ userId, data }: any) => authApi.createDeliveryPartner(userId, data) });
-export const useUpdateDeliveryPartner = () => useMutation({ mutationFn: ({ partnerId, data }: any) => authApi.updateDeliveryPartner(partnerId, data) });
+export const useUpdateDeliveryPartner = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ partnerId, data }: any) => authApi.updateDeliveryPartner(partnerId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["partner"] });
+            queryClient.invalidateQueries({ queryKey: ["user"] });
+        },
+    });
+};
 
 // ---- Utility Hooks ----
 export const useRequestPasswordReset = () => useMutation({ mutationFn: authApi.requestPasswordReset });

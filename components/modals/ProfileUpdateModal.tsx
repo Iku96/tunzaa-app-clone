@@ -87,6 +87,7 @@ export function ProfileUpdateModal({
   isOpen,
   onClose,
   profile,
+  onSuccess,
 }: ProfileUpdateModalProps) {
   const updateUser = useUpdateUser();
   const updateVendor = useUpdateVendor();
@@ -226,6 +227,7 @@ export function ProfileUpdateModal({
         from: "top",
       });
 
+      onSuccess?.();
       onClose();
     } catch (err) {
       console.error(err);

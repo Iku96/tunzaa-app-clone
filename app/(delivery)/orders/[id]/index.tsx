@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth as useAuth } from "@/src/contexts/TunzaaAuthContext";
 import { VendorOrderDetails } from "@/components/orders/details/VendorOrderDetails";
 import { DeliveryOrderDetails } from "@/components/orders/details/DeliveryOrderDetails";
 import { BuyerOrderDetails } from "@/components/orders/details/BuyerOrderDetails";

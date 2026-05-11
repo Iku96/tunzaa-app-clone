@@ -10,7 +10,7 @@ import { Text } from "@/components/ui/text";
 import { BlurView } from "expo-blur";
 import { Bell } from "lucide-react-native";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
-import { useColorScheme } from "react-native";
+import { useColorScheme } from "@/lib/useColorScheme";
 
 export interface ForegroundNotificationData {
   title: string;
@@ -35,8 +35,7 @@ export const ForegroundNotificationBanner: React.FC<
   const translateY = useRef(new Animated.Value(-BANNER_HEIGHT - 50)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const resolvedColors = useResolvedThemeColors();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { isDarkColorScheme: isDark } = useColorScheme();
 
   useEffect(() => {
     // Slide in animation

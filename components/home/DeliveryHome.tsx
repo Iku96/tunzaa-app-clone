@@ -5,7 +5,6 @@ import { Package } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { useDeliveries, useAddDeliveryStage } from "@/src/services/delivery";
 import { useGetOrder } from "@/src/services/order-management";
-import { useAuth } from "@/context/auth";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
 import { useI18n } from "@/hooks/useI18n";
 import { DeliveryRequestCard } from "@/components/delivery/DeliveryRequestCard";

@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useResponsive } from "@/hooks/useResponsive";
 import { DesktopLayoutWrapper } from "@/components/layout";
 import { useTenantStore } from "@/stores/tenant";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth as useAuth } from "@/src/contexts/TunzaaAuthContext";
 import SafeChatwootWrapper from "@/components/ChatwootWidget/SafeChatwootWrapper";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 
@@ -227,7 +227,7 @@ export default function SupportScreen() {
             isModalVisible={isChatVisible}
             closeModal={() => setIsChatVisible(false)}
             locale="en"
-            colorScheme="dark"
+            colorScheme="light"
           />
         </KeyboardAvoidingView>
       </SafeAreaView>

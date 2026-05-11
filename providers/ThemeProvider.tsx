@@ -209,31 +209,31 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         // Define system-appropriate colors based on dark/light mode
         // Updated to follow Material Design 2 Dark Theme guidelines for better accessibility
         const systemColors = {
-          // System backgrounds - always respect dark/light mode with lighter dark theme colors
+          // System backgrounds - Locked to Light Mode
           background: {
-            primary: isDarkColorScheme ? "#1A1A1A" : "#FFFFFF", // Lighter: 10% instead of 0%
-            secondary: isDarkColorScheme ? "#2A2A2A" : "#F5F5F5", // Lighter: 16% instead of 10%
-            tertiary: isDarkColorScheme ? "#3A3A3A" : "#F8F9FA", // Lighter: 23% instead of 18%
-            elevated: isDarkColorScheme ? "#2A2A2A" : "#FFFFFF", // Lighter: 16% instead of 12%
+            primary: "#FFFFFF",
+            secondary: "#F5F5F5",
+            tertiary: "#F8F9FA",
+            elevated: "#FFFFFF",
           },
-          // System text colors - always respect dark/light mode with improved contrast
+          // System text colors - Locked to Light Mode
           text: {
-            primary: isDarkColorScheme ? "#FFFFFF" : "#000000",
-            secondary: isDarkColorScheme ? "#B3B3B3" : "#666666", // Lighter: 70% instead of 63%
-            tertiary: isDarkColorScheme ? "#8A8A8A" : "#9CA3AF", // Lighter: 54% instead of 47%
-            disabled: isDarkColorScheme ? "#666666" : "#D1D5DB", // Lighter: 40% instead of 32%
+            primary: "#000000",
+            secondary: "#666666",
+            tertiary: "#9CA3AF",
+            disabled: "#D1D5DB",
           },
-          // System borders and dividers with lighter dark theme variants
+          // System borders and dividers - Locked to Light Mode
           border: {
-            primary: isDarkColorScheme ? "#404040" : "#E5E7EB", // Lighter: 25% instead of 23%
-            secondary: isDarkColorScheme ? "#555555" : "#D1D5DB", // Lighter: 33% instead of 29%
-            focus: isDarkColorScheme ? "#4F9BFF" : "#3B82F6", // Lighter blue for dark theme
+            primary: "#E5E7EB",
+            secondary: "#D1D5DB",
+            focus: "#3B82F6",
           },
-          // System surfaces with lighter dark theme variants
+          // System surfaces - Locked to Light Mode
           surface: {
-            default: isDarkColorScheme ? "#1A1A1A" : "#FFFFFF", // Lighter: 10% instead of 7%
-            elevated: isDarkColorScheme ? "#2A2A2A" : "#FFFFFF", // Lighter: 16% instead of 11%
-            sunken: isDarkColorScheme ? "#151515" : "#F9FAFB", // Lighter: 8% instead of 4%
+            default: "#FFFFFF",
+            elevated: "#FFFFFF",
+            sunken: "#F9FAFB",
           },
         };
 
@@ -293,16 +293,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           "--primary": hexToHsl(brandColors.primary),
           "--primary-foreground": getContrastColor(brandColors.primary),
           "--secondary": hexToHsl(brandColors.secondary),
-          "--secondary-foreground": isDarkColorScheme 
-            ? hexToHsl("#1A1A1A") // Dark text on light secondary in dark mode
-            : hexToHsl("#FFFFFF"), // White text on dark secondary in light mode
+          "--secondary-foreground": hexToHsl("#FFFFFF"),
           "--muted": hexToHsl(systemColors.background.secondary),
           "--muted-foreground": hexToHsl(systemColors.text.secondary),
           "--accent": hexToHsl(brandColors.accent),
           "--accent-foreground": getContrastColor(brandColors.accent),
-          "--destructive": isDarkColorScheme
-            ? "0 84.2% 60.2%" // Lighter red for better visibility in dark mode
-            : "0 84.2% 60.2%",
+          "--destructive": "0 84.2% 60.2%",
           "--destructive-foreground": "0 0% 98%",
           "--border": hexToHsl(systemColors.border.primary),
           "--input": hexToHsl(systemColors.border.primary),

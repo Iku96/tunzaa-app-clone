@@ -12,7 +12,7 @@ import {
   ChevronRight,
   Store,
 } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth as useAuth } from "@/src/contexts/TunzaaAuthContext";
 import { PERMISSIONS } from "@/config/permissions";
 import { PasswordResetModal } from "@/components/modals/PasswordResetModal";
 import { ProfileUpdateModal } from "@/components/modals/ProfileUpdateModal";

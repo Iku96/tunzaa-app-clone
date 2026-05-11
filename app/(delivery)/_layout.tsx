@@ -2,7 +2,7 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { Truck, User } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth as useAuth } from "@/src/contexts/TunzaaAuthContext";
 import { useState, useEffect } from "react";
 import { KycModal } from "@/components/modals/KycModal";
 import { cn } from "@/lib/utils";
@@ -120,6 +120,7 @@ const TabLayout = () => {
           name="onboarding"
           options={{
             href: null,
+            tabBarStyle: { display: 'none' },
           }}
         />
 

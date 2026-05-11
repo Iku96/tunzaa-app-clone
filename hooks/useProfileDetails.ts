@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useGetVendor } from "@/src/services/vendors";
 import { usePartnerByUser } from "@/src/services/delivery";
 import { useGetAffiliate } from "@/src/services/affiliates";
-import { useAuth } from "@/context/auth";
+import { useTunzaaAuth } from "@/src/contexts/TunzaaAuthContext";
 
 interface ProfileDetails {
   vendorDetails: any | null;
@@ -23,26 +23,29 @@ interface ProfileDetails {
  * Falls back to context data if available, otherwise fetches fresh data
  */
 export const useProfileDetails = (): ProfileDetails => {
-  const { user, getVendorDetails, getDeliveryDetails, getAffiliateDetails } =
-    useAuth();
+  const { user } = useTunzaaAuth();
 
-  // Get profile IDs from user profiles
-  const vendorProfile = user?.profiles?.find(
-    (profile) => profile.role === "vendor"
-  );
-  const deliveryProfile = user?.profiles?.find(
-    (profile) => profile.role === "delivery"
-  );
-  const affiliateProfile = user?.profiles?.find(
-    (profile) => profile.role === "winga"
-  );
+  // Case-insensitive safely search profiles
+  const findProfile = (role: string) => {
+      const lowerRole = role.toLowerCase();
+      return user?.profiles?.find(
+        (p: any) => p.role?.toLowerCase() === lowerRole
+      );
+  };
 
-  // Check if we already have details in context
-  const contextVendorDetails = getVendorDetails();
-  const contextDeliveryDetails = getDeliveryDetails();
-  const contextAffiliateDetails = getAffiliateDetails();
+  const vendorProfile = findProfile("vendor") || findProfile("merchant");
+  const deliveryProfile = findProfile("delivery") || findProfile("driver");
+  const affiliateProfile = findProfile("winga") || findProfile("affiliate");
 
-  // Conditionally fetch vendor details
+  // Extract pre-loaded details from TunzaaAuthContext if they exist
+  const contextVendorDetails = user?.vendorDetails || vendorProfile?.metadata;
+  const contextDeliveryDetails = user?.deliveryDetails || deliveryProfile?.metadata;
+  const contextAffiliateDetails = user?.affiliateDetails || affiliateProfile?.metadata;
+
+  // Use canonical user ID extractor
+  const activeUserId = user?.id || user?.user_id || "";
+
+  // Conditionally fetch vendor details if not present
   const {
     data: vendorData,
     isLoading: isVendorLoading,
@@ -59,20 +62,20 @@ export const useProfileDetails = (): ProfileDetails => {
     isLoading: isDeliveryLoading,
     error: deliveryError,
   } = usePartnerByUser(
-    user?.user_id || "",
+    activeUserId,
     // Only fetch if we don't have context data and have a user ID
-    !contextDeliveryDetails && !!user?.user_id
+    !contextDeliveryDetails && !!activeUserId
   );
 
-  // Conditionally fetch affiliate details (using user_id for now as per TODO)
+  // Conditionally fetch affiliate details
   const {
     data: affiliateData,
     isLoading: isAffiliateLoading,
     error: affiliateError,
   } = useGetAffiliate(
-    user?.user_id || "",
+    activeUserId,
     // Only fetch if we don't have context data and have a user ID and affiliate profile
-    !contextAffiliateDetails && !!user?.user_id && !!affiliateProfile
+    !contextAffiliateDetails && !!activeUserId && !!affiliateProfile
   );
 
   return useMemo(() => {
