@@ -215,6 +215,6 @@ const styles = StyleSheet.create({
   passwordWrapper: { height: 54, backgroundColor: '#F3F4F6', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 },
   passwordInput: { flex: 1, fontSize: 16, color: '#1D1E1F' },
   eyeBtn: { padding: 4 },
-  primaryButton: { height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 15 },
+  primaryButton: { height: 54, width: '100%', backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 15 },
   primaryButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
 });

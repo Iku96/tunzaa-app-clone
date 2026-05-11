@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   toggleTextActive: { color: '#3B5191' },
   input: { height: 56, backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1D1E1F' },
   phoneInputFix: { marginTop: -8 }, // Adjust for component padding
-  primaryButton: { height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
+  primaryButton: { height: 54, width: '100%', backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
   primaryButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
   
   successWrapper: { alignItems: 'center', marginTop: 30, width: '100%' },
