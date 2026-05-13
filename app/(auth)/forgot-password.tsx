@@ -88,7 +88,7 @@ export default function ForgotPasswordScreen() {
                         resizeMode="contain"
                     />
                 </View>
-                <View style={{ width: 40 }} /> {/* Balance Spacer */}
+                <View style={{ width: 40 }} />
             </View>
 
             <View style={styles.contentWrapper}>

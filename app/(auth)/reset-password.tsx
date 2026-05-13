@@ -104,7 +104,7 @@ export default function ResetPasswordScreen() {
                         resizeMode="contain"
                     />
                 </View>
-                <View style={{ width: 40 }} /> {/* Balance Spacer */}
+                <View style={{ width: 40 }} />
             </View>
 
             <View style={styles.contentWrapper}>
@@ -143,6 +143,8 @@ export default function ResetPasswordScreen() {
                         placeholderTextColor="#9CA3AF"
                         secureTextEntry={!showPassword}
                         editable={!confirmReset.isPending}
+                        autoCapitalize="none"
+                        autoCorrect={false}
                       />
                       <TouchableOpacity 
                         onPress={() => setShowPassword(!showPassword)}
@@ -165,6 +167,8 @@ export default function ResetPasswordScreen() {
                         placeholderTextColor="#9CA3AF"
                         secureTextEntry={!showConfirmPassword}
                         editable={!confirmReset.isPending}
+                        autoCapitalize="none"
+                        autoCorrect={false}
                       />
                       <TouchableOpacity 
                         onPress={() => setShowConfirmPassword(!showConfirmPassword)}
