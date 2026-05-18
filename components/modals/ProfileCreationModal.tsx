@@ -15,6 +15,7 @@ import {
 import { useCreateDeliveryPartner } from "@/src/services/auth";
 import { affiliatesApi } from "@/src/services/affiliates";
 import { CreateAffiliateBody } from "@/src/services/types/affiliates";
+import { API_CONFIG } from "@/src/services/config";
 
 interface ProfileCreationModalProps {
   isOpen: boolean;
@@ -146,6 +147,7 @@ export function ProfileCreationModal({
 
     try {
       const affiliateData: CreateAffiliateBody = {
+        tenant_id: API_CONFIG.TENANT_ID,
         user_id: user.user_id,
         name: data.name,
         email: data.email,
