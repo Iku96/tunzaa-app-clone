@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationService } from '../../../../src/services/notifications';
+import { authApi } from '../../../../src/services/auth';
+import { Platform, Alert } from 'react-native';
 
 const STORAGE_KEY = '@buyer_notification_settings';
 
@@ -49,31 +51,58 @@ export default function NotificationsSettingsScreen() {
         }
     };
 
+    const handleEnablePush = async () => {
+        try {
+            const token = await NotificationService.registerForPushNotificationsAsync();
+            if (token) {
+                // Save the token to the backend so the server can push to this device
+                await authApi.addFirebaseToken({
+                    token,
+                    device_type: Platform.OS === 'ios' ? 'ios' : 'android'
+                }).catch(e => console.log('Backend token sync issue (safe to ignore if testing):', e));
+                console.log("Push token registered successfully:", token);
+                return true;
+            } else {
+                Alert.alert(
+                    'Permission Required', 
+                    'Please enable notifications in your device settings to receive alerts.'
+                );
+                return false;
+            }
+        } catch (error) {
+            console.error("Failed to register push token:", error);
+            return false;
+        }
+    };
+
     const toggleDelivery = async (value: boolean) => {
-        setDeliveryAlerts(value);
-        saveSettings({ deliveryAlerts: value });
         if (value) {
-            await NotificationService.registerForPushNotificationsAsync();
+            const success = await handleEnablePush();
+            if (!success) return; // Revert switch if permission denied
             await NotificationService.sendDeliveryAlert('B-1029', 'Shipped');
         }
+        setDeliveryAlerts(value);
+        saveSettings({ deliveryAlerts: value });
     };
 
     const togglePromotions = async (value: boolean) => {
-        setPromotions(value);
-        saveSettings({ promotions: value });
         if (value) {
-            await NotificationService.registerForPushNotificationsAsync();
+            const success = await handleEnablePush();
+            if (!success) return;
             await NotificationService.sendPromotionAlert('20% Off Your Next Purchase');
         }
+        setPromotions(value);
+        saveSettings({ promotions: value });
     };
 
     const toggleSystem = async (value: boolean) => {
-        setSystemMessages(value);
-        saveSettings({ systemMessages: value });
         if (value) {
-            await NotificationService.registerForPushNotificationsAsync();
+            const success = await handleEnablePush();
+            if (!success) return;
             await NotificationService.sendSystemMessage('Welcome to Tunzaa Rewards!');
         }
+        setSystemMessages(value);
+        saveSettings({ systemMessages: value });
     };
 
     const renderToggleItem = (icon: string, label: string, value: boolean, onValueChange: (val: boolean) => void) => (

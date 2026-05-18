@@ -124,6 +124,25 @@ export interface GetOrdersResponse {
     limit: number;
 }
 
+export interface OrderTransaction {
+    id: string;
+    transaction_id: string;
+    reference: string;
+    amount: number;
+    status: string;
+    payment_date: string;
+    user_id: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface GetOrderTransactionsResponse {
+    data: OrderTransaction[];
+    total: number;
+    limit: number;
+    offset: number;
+}
+
 export const orderApi = {
     getVendorOrders: async (params: GetVendorOrdersParams): Promise<VendorOrdersResponse> => {
         const { vendor_id, ...queryParams } = params;
@@ -177,12 +196,11 @@ export const orderApi = {
         if (params?.skip !== undefined) searchParams.append("skip", params.skip.toString());
         if (params?.limit !== undefined) searchParams.append("limit", params.limit.toString());
 
-        const queryString = searchParams.toString();
-        const url = queryString
-            ? `/orders/user/${userId}?${queryString}`
-            : `/orders/user/${userId}`;
+        const endpoint = searchParams.toString()
+            ? `/orders/user/${userId}/orders?${searchParams.toString()}`
+            : `/orders/user/${userId}/orders`;
 
-        const response = await apiClient.get<GetOrdersResponse>(url);
+        const response = await apiClient.get<GetOrdersResponse>(endpoint);
         return response.data;
     },
 
@@ -209,6 +227,26 @@ export const orderApi = {
         console.log('📤 [Orders] Requesting refund for order:', orderId);
         const response = await apiClient.post(`/orders/${orderId}/refunds`, data);
         console.log('✅ [Orders] Refund response:', JSON.stringify(response.data, null, 2));
+        return response.data;
+    },
+
+    // Get Single Order
+    getOrder: async (orderId: string): Promise<Order> => {
+        const response = await apiClient.get<Order>(`/orders/${orderId}`);
+        return response.data;
+    },
+
+    // Get Order by Order Number
+    getOrderByNumber: async (orderNumber: string): Promise<Order> => {
+        const response = await apiClient.get<Order>(`/orders/by-number/${orderNumber}`);
+        return response.data;
+    },
+
+    // Get Order Transactions
+    getOrderTransactions: async (orderNumber: string): Promise<GetOrderTransactionsResponse> => {
+        const response = await apiClient.get<GetOrderTransactionsResponse>(
+            `/orders/${orderNumber}/transactions`
+        );
         return response.data;
     },
 };
@@ -296,3 +334,35 @@ export const useRequestRefund = () => {
         }) => orderApi.requestRefund(orderId, data),
     });
 };
+
+// Plural alias for backward compatibility
+export const ordersApi = orderApi;
+
+// Fetch single order hook
+export const useGetOrder = (orderId: string, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["order", orderId],
+        queryFn: () => orderApi.getOrder(orderId),
+        enabled: enabled && !!orderId,
+    });
+};
+
+// Fetch order by order number hook
+export const useGetOrderByNumber = (orderNumber: string, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["order-by-number", orderNumber],
+        queryFn: () => orderApi.getOrderByNumber(orderNumber),
+        enabled: enabled && !!orderNumber,
+    });
+};
+
+// Fetch order transactions hook
+export const useGetOrderTransactions = (orderNumber: string, enabled: boolean = true) => {
+    return useQuery({
+        queryKey: ["order-transactions", orderNumber],
+        queryFn: () => orderApi.getOrderTransactions(orderNumber),
+        enabled: enabled && !!orderNumber,
+    });
+};
+
+export type OrdersResponse = GetOrdersResponse;

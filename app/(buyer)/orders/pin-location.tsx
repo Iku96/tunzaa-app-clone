@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { View, TouchableOpacity, TextInput, Dimensions, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Search, MapPin } from "lucide-react-native";
+import { ArrowLeft, Search, MapPin, Navigation } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
@@ -28,41 +28,91 @@ export default function PinLocationScreen() {
   });
   const [isLocating, setIsLocating] = useState(true);
 
-  // Get user's current location on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          setIsLocating(false);
-          return;
-        }
-        const location = await Location.getCurrentPositionAsync({
+  const locateUser = async () => {
+    try {
+      setIsLocating(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setIsLocating(false);
+        return;
+      }
+      
+      // Try last known first for instant response
+      let location = await Location.getLastKnownPositionAsync({});
+      if (!location) {
+        location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
-        const region = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        };
-        setCurrentRegion(region);
-        setSelectedLocation({
+      }
+
+      const region = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      setCurrentRegion(region);
+      
+      // Reverse geocode
+      let addr = "";
+      try {
+        const results = await Location.reverseGeocodeAsync({
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         });
-        mapRef.current?.animateToRegion(region, 500);
-      } catch (error) {
-        console.error("Location error:", error);
-      } finally {
-        setIsLocating(false);
+        if (results.length > 0) {
+          const item = results[0];
+          addr = `${item.name || ""} ${item.street || ""}, ${item.city || item.region || ""}`.trim();
+          addr = addr.replace(/^,\s*/, ''); // Remove leading comma if any
+        }
+      } catch (err) {
+        console.warn("Reverse geocode error:", err);
       }
-    })();
+
+      setSelectedLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        address: addr || "Current Location",
+      });
+      mapRef.current?.animateToRegion(region, 500);
+    } catch (error) {
+      console.error("Location error:", error);
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
+  // Get user's current location on mount
+  useEffect(() => {
+    locateUser();
   }, []);
 
-  const handleMapPress = (e: any) => {
-    const { latitude, longitude } = e.nativeEvent.coordinate;
-    setSelectedLocation({ latitude, longitude });
+  const handleRegionChangeComplete = async (region: any) => {
+    setCurrentRegion(region);
+    const { latitude, longitude } = region;
+    
+    // We update coordinates immediately so UI feels responsive
+    setSelectedLocation((prev) => ({
+      latitude,
+      longitude,
+      address: prev?.address, // Keep old address while loading
+    }));
+
+    try {
+      const results = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (results.length > 0) {
+        const item = results[0];
+        let addr = `${item.name || ""} ${item.street || ""}, ${item.city || item.region || ""}`.trim();
+        addr = addr.replace(/^,\s*/, '');
+        setSelectedLocation({
+          latitude,
+          longitude,
+          address: addr || "Selected Location",
+        });
+      }
+    } catch (err) {
+      console.warn("Reverse geocode error:", err);
+    }
   };
 
   const handleConfirm = () => {
@@ -84,27 +134,45 @@ export default function PinLocationScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Map */}
-      <MapView
-        ref={mapRef}
-        style={{ width, height: height * 0.75 }}
-        initialRegion={currentRegion}
-        provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
-        onPress={handleMapPress}
-        showsUserLocation
-        showsMyLocationButton
-      >
-        {selectedLocation && (
-          // @ts-expect-error - react-native-maps Marker type mismatch
-          <Marker
-            coordinate={{
-              latitude: selectedLocation.latitude,
-              longitude: selectedLocation.longitude,
-            }}
-            title="Delivery location"
-          />
-        )}
-      </MapView>
+      {/* Map Container */}
+      <View style={{ width, height: height * 0.75 }}>
+        <MapView
+          ref={mapRef}
+          style={{ flex: 1 }}
+          initialRegion={currentRegion}
+          provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
+          onRegionChangeComplete={handleRegionChangeComplete}
+          showsUserLocation
+          showsMyLocationButton={false}
+        />
+
+        {/* Fixed Center Pin Overlay */}
+        <View 
+          className="absolute top-1/2 left-1/2 items-center justify-center" 
+          style={{ marginTop: -36, marginLeft: -18 }} 
+          pointerEvents="none"
+        >
+          <MapPin size={36} color="#425BA4" fill="#425BA4" />
+        </View>
+      </View>
+
+      {/* Locate Me Floating Button */}
+      <View className="absolute right-4" style={{ bottom: 180 }}>
+        <TouchableOpacity
+          className="w-12 h-12 bg-white rounded-full items-center justify-center"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
+            elevation: 5,
+          }}
+          onPress={locateUser}
+          disabled={isLocating}
+        >
+          <Navigation size={22} color={isLocating ? "#9CA3AF" : "#425BA4"} />
+        </TouchableOpacity>
+      </View>
 
       {/* Search Bar Overlay */}
       <SafeAreaView
@@ -166,11 +234,11 @@ export default function PinLocationScreen() {
             <View className="flex-row items-center mb-2">
               <MapPin size={16} color="#425BA4" />
               <Text className="text-sm font-semibold text-foreground ml-2">
-                Selected Location
+                {selectedLocation.address ? selectedLocation.address : "Selected Location"}
               </Text>
             </View>
             <Text className="text-xs text-muted-foreground">
-              {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
+              Coordinates: {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
             </Text>
           </View>
         ) : (

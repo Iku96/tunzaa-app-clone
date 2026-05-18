@@ -186,7 +186,7 @@ const CheckoutScreen = () => {
             lng: parseFloat(selectedAddressData.lng) 
           },
           // Mapping delivery type to vehicle type for the fee engine
-          vehicle_type_id: selectedDeliveryType === "express" ? "motorcycle" : "pickup_truck",
+          vehicle_type_id: "motorcycle", // Both standard and express utilize boda-boda (motorcycle)
           partner_id: selectedPartner || undefined
         });
       }

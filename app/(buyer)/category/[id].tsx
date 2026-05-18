@@ -52,7 +52,8 @@ export default function CategoryScreen() {
                     });
                     if (res?.items?.length > 0) {
                         console.log(`\u2705 [Category] Loaded ${res.items.length} products for category ${id}`);
-                        setCategoryProducts(res.items.map(p => ({
+                        const approved = res.items.filter((p: any) => p.verification_status === 'approved');
+                        setCategoryProducts(approved.map(p => ({
                             id: p.product_id || p._id,
                             name: p.name,
                             price: p.base_price_raw || p.base_price || 0,

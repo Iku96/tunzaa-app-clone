@@ -52,7 +52,7 @@ export default function WishlistScreen() {
             await addItem({
                 product_id: item.product_id,
                 quantity: 1,
-                sku: item.variant_sku || item.product.sku || '',
+                ...(item.variant_sku ? { sku: item.variant_sku } : {}),
                 currency: 'TZS',
             }, item.variant_sku);
             Burnt.toast({ title: "Added!", message: "Item added to cart", preset: "done" });

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { productsApi, Product as ApiProduct } from '../../../src/services/products';
 import { useCartCombined, useAddToCart } from '../../../src/stores/cart';
 import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
@@ -13,6 +13,7 @@ import { recommendationsApi } from '../../../src/services/recommendations';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
 import ShareSheet from '../../../src/components/shop/ShareSheet';
 import { useSearchHistory } from '../../../src/stores/searchHistory';
+import { getAvatarUrl } from '../../../src/utils/images';
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,11 +51,16 @@ export default function ProductDetailScreen() {
         const fetchProduct = async () => {
             try {
                 const data = await productsApi.getProductById(id as string);
-                setApiProduct(data);
-                console.log('✅ [ProductDetail] Loaded product from API:', data.name);
-                console.log('🆔 [ProductDetail] Product SKU:', data.sku);
-                console.log('🖼️ [ProductDetail] Product Images:', JSON.stringify(data.images));
-                console.log('🔢 [ProductDetail] Product Variants:', JSON.stringify(data.variants));
+                if (data.verification_status !== 'approved') {
+                    console.log('⚠️ [ProductDetail] Product not approved yet. Blocking display.');
+                    setApiProduct(null);
+                } else {
+                    setApiProduct(data);
+                    console.log('✅ [ProductDetail] Loaded product from API:', data.name);
+                    console.log('🆔 [ProductDetail] Product SKU:', data.sku);
+                    console.log('🖼️ [ProductDetail] Product Images:', JSON.stringify(data.images));
+                    console.log('🔢 [ProductDetail] Product Variants:', JSON.stringify(data.variants));
+                }
             } catch (e: any) {
                 console.warn('⚠️ [ProductDetail] API failed:', e.message);
                 setApiProduct(null);
@@ -86,6 +92,8 @@ export default function ProductDetailScreen() {
             shortDescription: apiProduct.short_description || '',
             sku: apiProduct.sku || '',
             tags: apiProduct.tags || [],
+            categoryIds: apiProduct.category_ids || [],
+            categoryId: apiProduct.category_ids?.[0] || null,
             inventory: apiProduct.inventory_quantity ?? 0,
             inventoryTracking: apiProduct.inventory_tracking ?? false,
             weight: apiProduct.weight || 0,
@@ -146,6 +154,62 @@ export default function ProductDetailScreen() {
         return [];
     }, [product?.variantAttributes]);
 
+    // Find matching variant based on selected size and color
+    const selectedVariant = useMemo(() => {
+        if (!product?.variants || product.variants.length === 0) return null;
+        
+        return product.variants.find((v: any) => {
+            if (!v.attributes) return false;
+            
+            // Check matching size
+            const sizeVal = v.attributes.size || v.attributes.Size || v.attributes.sizes;
+            const sizeMatch = selectedSize && sizeVal
+                ? String(sizeVal).toLowerCase() === selectedSize.toLowerCase()
+                : true;
+                
+            // Check matching color
+            const colorVal = v.attributes.color || v.attributes.Color || v.attributes.colors;
+            const colorMatch = selectedColor && colorVal
+                ? String(colorVal).toLowerCase() === selectedColor.toLowerCase()
+                : true;
+                
+            return sizeMatch && colorMatch;
+        });
+    }, [product?.variants, selectedSize, selectedColor]);
+
+    const displayImages = useMemo(() => {
+        if (!product) return [];
+        const baseImages = [...product.images];
+        if (selectedVariant?.image_url && !baseImages.includes(selectedVariant.image_url)) {
+            return [selectedVariant.image_url, ...baseImages];
+        }
+        return baseImages;
+    }, [product, selectedVariant?.image_url]);
+
+    const horizontalScrollRef = useRef<ScrollView>(null);
+
+    // Reset pagination to first slide when variant changes to show its specific image
+    useEffect(() => {
+        if (selectedVariant?.image_url && horizontalScrollRef.current) {
+            horizontalScrollRef.current.scrollTo({ x: 0, animated: true });
+            setActiveIndex(0);
+        }
+    }, [selectedVariant?.image_url]);
+
+    // Initialize/Reset selections to first options
+    useEffect(() => {
+        if (sizes.length > 0) {
+            setSelectedSize(sizes[0]);
+        } else {
+            setSelectedSize(null);
+        }
+        if (colors.length > 0) {
+            setSelectedColor(colors[0]);
+        } else {
+            setSelectedColor(null);
+        }
+    }, [sizes, colors]);
+
     // Build product specs from real data
     const specs = useMemo(() => {
         if (!product) return [];
@@ -178,6 +242,20 @@ export default function ProductDetailScreen() {
         enabled: !!product?.id
     });
 
+    // Fetch products in the same category or containing the same tags
+    const { data: categoryProductsRes } = useQuery({
+        queryKey: ['category-products-similar', product?.categoryId, product?.tags?.[0]],
+        queryFn: () => {
+            if (product?.categoryId) {
+                return productsApi.getProducts({ category_id: product.categoryId, limit: 10, is_active: true });
+            } else if (product?.tags && product.tags.length > 0) {
+                return productsApi.getProducts({ query: product.tags[0], limit: 10, is_active: true });
+            }
+            return Promise.resolve({ items: [], total: 0, skip: 0, limit: 10 });
+        },
+        enabled: !!product?.categoryId || (!!product?.tags && product.tags.length > 0)
+    });
+
     const { data: boughtTogetherRes } = useQuery({
         queryKey: ['bought-together', product?.id],
         queryFn: () => recommendationsApi.getPersonalizedRecommendations(user?.user_id || 'guest', { 
@@ -187,7 +265,41 @@ export default function ProductDetailScreen() {
         enabled: !!product?.id
     });
 
-    const similarProducts = similarRes?.recommendations || [];
+    const similarProducts = useMemo(() => {
+        // Start with raw recommendations if available
+        const recs = (similarRes?.recommendations || []).map((item: any) => ({
+            item_id: item.item_id || item.id,
+            image_url: item.image_url || item.image,
+            title: item.title || item.name,
+            price: item.price
+        }));
+        
+        // Add category products, filtering out the current product itself
+        const catProds = (categoryProductsRes?.items || [])
+            .filter((p: any) => p.product_id !== product?.id && p._id !== product?.id && p.verification_status === 'approved')
+            .map((p: any) => {
+                const img = p.images?.[0]
+                    ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0].url)
+                    : 'https://via.placeholder.com/300x300?text=No+Image';
+                return {
+                    item_id: p.product_id || p._id,
+                    image_url: img,
+                    title: p.name,
+                    price: p.base_price_raw || p.base_price || 0
+                };
+            });
+            
+        // Combine them, avoiding duplicates by item_id
+        const combined = [...recs];
+        catProds.forEach((cp: any) => {
+            if (!combined.some(c => c.item_id === cp.item_id)) {
+                combined.push(cp);
+            }
+        });
+        
+        return combined;
+    }, [similarRes?.recommendations, categoryProductsRes?.items, product?.id]);
+
     const boughtTogether = boughtTogetherRes?.recommendations || [];
 
     const isWishlisted = wishlistStatus?.is_wishlisted || false;
@@ -245,6 +357,7 @@ export default function ProductDetailScreen() {
                     {/* Product Image */}
                     <View style={styles.imageContainer}>
                         <ScrollView
+                            ref={horizontalScrollRef}
                             horizontal
                             pagingEnabled
                             showsHorizontalScrollIndicator={false}
@@ -253,7 +366,7 @@ export default function ProductDetailScreen() {
                                 setActiveIndex(index);
                             }}
                         >
-                            {product.images.map((imgUrl, idx) => (
+                            {displayImages.map((imgUrl, idx) => (
                                 <View key={idx} style={{ width, alignItems: 'center', justifyContent: 'center' }}>
                                     <Image 
                                         source={{ uri: imgUrl }} 
@@ -268,7 +381,7 @@ export default function ProductDetailScreen() {
 
                         {/* Pagination Pill */}
                         <View style={styles.paginationPill}>
-                            {product.images.map((_, idx) => (
+                            {displayImages.map((_, idx) => (
                                 <View key={idx} style={[styles.dot, idx === activeIndex && styles.activeDot]} />
                             ))}
                         </View>
@@ -280,9 +393,9 @@ export default function ProductDetailScreen() {
                         <View style={styles.priceActionsRow}>
                             <View>
                                 <Text style={styles.price}>
-                                    Tsh. {new Intl.NumberFormat('en-US').format(product.price)}
+                                    Tsh. {new Intl.NumberFormat('en-US').format(selectedVariant ? selectedVariant.price : product.price)}
                                 </Text>
-                                {product.salePrice && product.salePrice < product.price && (
+                                {!selectedVariant && product.salePrice && product.salePrice < product.price && (
                                     <Text style={styles.originalPrice}>
                                         Tsh. {new Intl.NumberFormat('en-US').format(product.salePrice)}
                                     </Text>
@@ -337,9 +450,18 @@ export default function ProductDetailScreen() {
                                 </View>
                                 {product.inventoryTracking && (
                                     <View style={[styles.ratingContainer, { marginTop: 4 }]}>
-                                        <Ionicons name="cube-outline" size={14} color={product.inventory > 0 ? '#10B981' : '#EF4444'} />
-                                        <Text style={[styles.soldText, { color: product.inventory > 0 ? '#10B981' : '#EF4444' }]}>
-                                            {product.inventory > 0 ? `${product.inventory} in stock` : 'Out of stock'}
+                                        <Ionicons 
+                                            name="cube-outline" 
+                                            size={14} 
+                                            color={(selectedVariant ? (selectedVariant.inventory_quantity ?? 0) : product.inventory) > 0 ? '#10B981' : '#EF4444'} 
+                                        />
+                                        <Text style={[
+                                            styles.soldText, 
+                                            { color: (selectedVariant ? (selectedVariant.inventory_quantity ?? 0) : product.inventory) > 0 ? '#10B981' : '#EF4444' }
+                                        ]}>
+                                            {(selectedVariant ? (selectedVariant.inventory_quantity ?? 0) : product.inventory) > 0 
+                                                ? `${selectedVariant ? (selectedVariant.inventory_quantity ?? 0) : product.inventory} in stock` 
+                                                : 'Out of stock'}
                                         </Text>
                                     </View>
                                 )}
@@ -350,13 +472,10 @@ export default function ProductDetailScreen() {
                                 style={styles.rightInfoCol}
                                 onPress={() => router.push({ pathname: '/(buyer)/shop/[id]', params: { id: product.vendor.id || '1' } })}
                             >
-                                {product.vendor.logo ? (
-                                    <Image source={{ uri: product.vendor.logo }} style={styles.vendorLogoImage} />
-                                ) : (
-                                    <View style={styles.vendorLogoContainer}>
-                                        <Ionicons name="storefront-outline" size={18} color="white" />
-                                    </View>
-                                )}
+                                <Image 
+                                    source={{ uri: getAvatarUrl(product.vendor.logo, product.vendor.name) }} 
+                                    style={styles.vendorLogoImage} 
+                                />
                                 <View style={styles.vendorDetails}>
                                     <Text style={styles.vendorName}>{product.vendor.name}</Text>
                                     {product.vendor.createdAt && (
@@ -516,6 +635,17 @@ export default function ProductDetailScreen() {
                                     ) : (
                                         <Text style={styles.emptyText}>No similar products found</Text>
                                     )}
+
+                                    <TouchableOpacity 
+                                        style={styles.moreLikeThisBtn}
+                                        onPress={() => {
+                                            const categoryId = product?.categoryId || 'all';
+                                            router.push(`/(buyer)/category/${categoryId}`);
+                                        }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Text style={styles.moreLikeThisText}>More products like this →</Text>
+                                    </TouchableOpacity>
                                 </View>
                             )}
 
@@ -611,9 +741,9 @@ export default function ProductDetailScreen() {
                                         await addItem({
                                             product_id: product?.id || '',
                                             quantity: quantity,
-                                            sku: selectedSize ? `UK-${selectedSize}` : (product?.sku || ''),
+                                            ...(selectedVariant?.sku ? { sku: selectedVariant.sku } : {}),
                                             currency: 'TZS',
-                                        }, selectedSize ? `UK-${selectedSize}` : (product?.sku || ''));
+                                        }, selectedVariant?.sku || undefined);
                                         
                                         Alert.alert('Success', 'Item added to cart!');
                                     }}
@@ -649,7 +779,7 @@ export default function ProductDetailScreen() {
                                                 item: {
                                                     product_id: product?.id || '',
                                                     quantity: quantity,
-                                                    sku: selectedSize ? `UK-${selectedSize}` : (product?.sku || ''),
+                                                    ...(selectedVariant?.sku ? { sku: selectedVariant.sku } : {}),
                                                     currency: 'TZS',
                                                 }
                                             });
@@ -1151,5 +1281,20 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#4B5563',
         lineHeight: 20,
+    },
+    moreLikeThisBtn: {
+        marginTop: 16,
+        paddingVertical: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#425BA4',
+        borderRadius: 8,
+        backgroundColor: '#F8FAFC',
+    },
+    moreLikeThisText: {
+        color: '#425BA4',
+        fontWeight: 'bold',
+        fontSize: 14,
     },
 });

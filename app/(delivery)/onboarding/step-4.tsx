@@ -137,16 +137,14 @@ export default function Step4Documents() {
             }
 
             const deliveryData = {
-                type: (savedPartnerType || "individual") as "individual" | "business" | "pickup_point",
-                name: finalShopName,
-                contact_phone: savedPhone || user?.phone_number || '',
+                form_type: (savedPartnerType === "pickup_point" ? "wakala" : (savedPartnerType || "individual")) as "individual" | "business" | "wakala",
+                business_name: finalShopName,
+                business_logo: logoUrl,
                 profile_picture: logoUrl,
-                vehicle_info: {
-                    vehicle_type_id: savedVehicleType || "motorcycle",
-                    details: savedPlateNumber || "Boda",
-                },
-                location_description: location ? JSON.stringify(location) : (savedDesc || ""),
-                commission_percent: 0,
+                contact_details: savedPhone || user?.phone_number || '',
+                vehicle_type: savedPlateNumber ? `${savedVehicleType || "motorcycle"} (${savedPlateNumber})` : (savedVehicleType || "motorcycle"),
+                location: location ? `${location.ward || ''}, ${location.municipal || ''}, ${location.region || ''}`.replace(/^[,\s]+|[,\s]+$/g, '') : '',
+                location_description: location ? location.extraInfo || savedDesc : savedDesc || "",
             };
 
             // 3. Create Delivery Partner

@@ -26,7 +26,8 @@ export function useShop(storeId: string | undefined | null) {
                 // Fetch store products concurrently if possible, or right after
                 try {
                     const productsResponse = await productsApi.getProducts({ store_id: storeId });
-                    setProducts(productsResponse.items || []);
+                    const approved = (productsResponse.items || []).filter((p: any) => p.verification_status === 'approved');
+                    setProducts(approved);
                 } catch (prodErr) {
                     console.error('`[useShop]` Error fetching store products', prodErr);
                     setProducts([]); // Fallback to empty products list

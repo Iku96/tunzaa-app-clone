@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, MapPin, Plus, Home, Briefcase, MoreHorizontal } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/context/auth";
-import { buyersApi } from "@/src/services/buyers";
+import { buyersApi, useUpdateBuyerProfile } from "@/src/services/buyers";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/hooks/useI18n";
 
@@ -14,15 +14,29 @@ type AddressType = "home" | "work" | "other";
 export default function DeliveryAddressScreen() {
   const router = useRouter();
   const { t } = useI18n();
-  const { cartId, orderId, partnerId } = useLocalSearchParams();
+  const { cartId, orderId, partnerId, lat, lng, address } = useLocalSearchParams();
   const { user } = useAuth();
+  const updateProfileMutation = useUpdateBuyerProfile();
 
   const [selectedType, setSelectedType] = useState<AddressType>("home");
-  const [addressLine, setAddressLine] = useState("");
+  const [addressLine, setAddressLine] = useState((address as string) || "");
   const [metro, setMetro] = useState("");
+  const [landmark, setLandmark] = useState("");
   const [deliveryNote, setDeliveryNote] = useState("");
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  
+  useEffect(() => {
+    if (address && typeof address === "string") {
+      setAddressLine(address);
+      // Attempt to extract city from reverse geocoded address (e.g., "Street Name, City")
+      const parts = address.split(",");
+      if (parts.length > 1) {
+        setMetro(parts[parts.length - 1].trim());
+      }
+    }
+  }, [address]);
+
+  const isNewAddressMode = !!(lat && lng);
 
   // Fetch buyer profile for saved addresses
   const { data: buyerProfile, isLoading } = useQuery({
@@ -41,7 +55,38 @@ export default function DeliveryAddressScreen() {
   };
 
   const handleSaveAndContinue = () => {
-    if (selectedAddressId) {
+    if (isNewAddressMode) {
+      if (!user?.user_id) return;
+      
+      const newAddressId = `addr_${Date.now()}`;
+      const newAddress = {
+        address_id: newAddressId,
+        title: selectedType === "other" ? "Other" : (selectedType === "home" ? "Home" : "Work"),
+        address_line1: addressLine,
+        city: metro || "Dar es Salaam",
+        state_province: metro || "Dar es Salaam",
+        country: "Tanzania",
+        land_mark: landmark,
+        lat: lat as string,
+        lng: lng as string
+      };
+
+      updateProfileMutation.mutate({
+        userId: user.user_id,
+        data: {
+          user_id: user.user_id,
+          tenant_id: buyerProfile?.tenant_id || "",
+          contact_email: buyerProfile?.contact_email || user?.email || "",
+          contact_phone: buyerProfile?.contact_phone || user?.phone_number || "",
+          delivery_address: [...savedAddresses, newAddress],
+        }
+      }, {
+        onSuccess: () => {
+          router.setParams({ lat: "", lng: "", address: "" });
+          setSelectedAddressId(newAddressId);
+        }
+      });
+    } else if (selectedAddressId) {
       // Use selected saved address
       router.push({
         pathname: "/(buyer)/payment",
@@ -76,108 +121,150 @@ export default function DeliveryAddressScreen() {
         <View className="px-4 pt-6">
           {/* Title */}
           <Text className="text-xl font-bold text-foreground mb-2">
-            Where should we deliver your order?
+            {isNewAddressMode ? "Confirm Address Details" : "Where should we deliver your order?"}
           </Text>
           <Text className="text-sm text-muted-foreground mb-6">
-            Select a saved address or add a new one.
+            {isNewAddressMode ? "Please verify the details of your pinned location." : "Select a saved address or add a new one."}
           </Text>
 
-          {/* Add New Address Button */}
-          <TouchableOpacity
-            className="flex-row items-center py-4 px-4 rounded-xl border border-dashed border-border mb-6"
-            onPress={handleAddNewAddress}
-          >
-            <View
-              className="w-10 h-10 rounded-full items-center justify-center"
-              style={{ backgroundColor: "#EFF6FF" }}
-            >
-              <Plus size={20} color="#425BA4" />
-            </View>
-            <Text className="text-base font-medium text-foreground ml-3">Add New Address</Text>
-          </TouchableOpacity>
-
-          {/* Saved Addresses */}
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#425BA4" />
-          ) : savedAddresses.length > 0 ? (
-            <>
-              <Text className="text-sm font-semibold text-muted-foreground mb-3">
-                SAVED ADDRESSES
+          {/* Dynamic Content based on Mode */}
+          {isNewAddressMode ? (
+            <View>
+              {/* Address Type Tabs */}
+              <Text className="text-sm font-semibold text-muted-foreground mt-4 mb-3">
+                ADDRESS TYPE
               </Text>
-              {savedAddresses.map((addr: any) => {
-                const isSelected = selectedAddressId === addr.address_id;
-                return (
+              <View className="flex-row gap-3 mb-6">
+                {typeOptions.map(({ key, label, icon: Icon }) => (
                   <TouchableOpacity
-                    key={addr.address_id}
-                    className="flex-row items-center py-4 px-4 rounded-xl border mb-3"
+                    key={key}
+                    className="flex-row items-center px-4 py-2 rounded-full border"
                     style={{
-                      borderColor: isSelected ? "#425BA4" : "#E5E7EB",
-                      backgroundColor: isSelected ? "#EFF6FF" : "#FFFFFF",
+                      borderColor: selectedType === key ? "#425BA4" : "#E5E7EB",
+                      backgroundColor: selectedType === key ? "#425BA4" : "#FFFFFF",
                     }}
-                    onPress={() => setSelectedAddressId(addr.address_id)}
+                    onPress={() => setSelectedType(key)}
                   >
-                    <MapPin
-                      size={20}
-                      color={isSelected ? "#425BA4" : "#9CA3AF"}
+                    <Icon
+                      size={14}
+                      color={selectedType === key ? "#FFFFFF" : "#6B7280"}
                     />
-                    <View className="flex-1 ml-3">
-                      <Text className="text-sm font-semibold text-foreground">
-                        {addr.address_line1}
-                      </Text>
-                      <Text className="text-xs text-muted-foreground">
-                        {addr.city}
-                        {addr.state_province ? `, ${addr.state_province}` : ""}
-                      </Text>
-                    </View>
-                    <View
-                      className="w-5 h-5 rounded-full border-2 items-center justify-center"
+                    <Text
+                      className="text-sm font-medium ml-1.5"
                       style={{
-                        borderColor: isSelected ? "#425BA4" : "#D1D5DB",
+                        color: selectedType === key ? "#FFFFFF" : "#6B7280",
                       }}
                     >
-                      {isSelected && (
-                        <View
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: "#425BA4" }}
-                        />
-                      )}
-                    </View>
+                      {label}
+                    </Text>
                   </TouchableOpacity>
-                );
-              })}
-            </>
-          ) : null}
+                ))}
+              </View>
 
-          {/* Address Type Tabs */}
-          <Text className="text-sm font-semibold text-muted-foreground mt-4 mb-3">
-            ADDRESS TYPE
-          </Text>
-          <View className="flex-row gap-3 mb-6">
-            {typeOptions.map(({ key, label, icon: Icon }) => (
+              <Text className="text-sm font-semibold text-muted-foreground mb-2">
+                STREET ADDRESS
+              </Text>
+              <TextInput
+                className="border border-border rounded-xl px-4 py-3 text-base text-foreground mb-4"
+                placeholder="e.g., Mbezi Beach, Makonde"
+                placeholderTextColor="#9CA3AF"
+                value={addressLine}
+                onChangeText={setAddressLine}
+              />
+
+              <Text className="text-sm font-semibold text-muted-foreground mb-2">
+                CITY / AREA
+              </Text>
+              <TextInput
+                className="border border-border rounded-xl px-4 py-3 text-base text-foreground mb-4"
+                placeholder="e.g., Dar es Salaam"
+                placeholderTextColor="#9CA3AF"
+                value={metro}
+                onChangeText={setMetro}
+              />
+
+              <Text className="text-sm font-semibold text-muted-foreground mb-2">
+                LANDMARK (optional)
+              </Text>
+              <TextInput
+                className="border border-border rounded-xl px-4 py-3 text-base text-foreground mb-6"
+                placeholder="e.g., Near the blue gate, opposite supermarket"
+                placeholderTextColor="#9CA3AF"
+                value={landmark}
+                onChangeText={setLandmark}
+              />
+            </View>
+          ) : (
+            <View>
+              {/* Add New Address Button */}
               <TouchableOpacity
-                key={key}
-                className="flex-row items-center px-4 py-2 rounded-full border"
-                style={{
-                  borderColor: selectedType === key ? "#425BA4" : "#E5E7EB",
-                  backgroundColor: selectedType === key ? "#425BA4" : "#FFFFFF",
-                }}
-                onPress={() => setSelectedType(key)}
+                className="flex-row items-center py-4 px-4 rounded-xl border border-dashed border-border mb-6"
+                onPress={handleAddNewAddress}
               >
-                <Icon
-                  size={14}
-                  color={selectedType === key ? "#FFFFFF" : "#6B7280"}
-                />
-                <Text
-                  className="text-sm font-medium ml-1.5"
-                  style={{
-                    color: selectedType === key ? "#FFFFFF" : "#6B7280",
-                  }}
+                <View
+                  className="w-10 h-10 rounded-full items-center justify-center"
+                  style={{ backgroundColor: "#EFF6FF" }}
                 >
-                  {label}
-                </Text>
+                  <Plus size={20} color="#425BA4" />
+                </View>
+                <Text className="text-base font-medium text-foreground ml-3">Add New Address</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+
+              {/* Saved Addresses */}
+              {isLoading ? (
+                <ActivityIndicator size="large" color="#425BA4" />
+              ) : savedAddresses.length > 0 ? (
+                <>
+                  <Text className="text-sm font-semibold text-muted-foreground mb-3">
+                    SAVED ADDRESSES
+                  </Text>
+                  {savedAddresses.map((addr: any) => {
+                    const isSelected = selectedAddressId === addr.address_id;
+                    return (
+                      <TouchableOpacity
+                        key={addr.address_id}
+                        className="flex-row items-center py-4 px-4 rounded-xl border mb-3"
+                        style={{
+                          borderColor: isSelected ? "#425BA4" : "#E5E7EB",
+                          backgroundColor: isSelected ? "#EFF6FF" : "#FFFFFF",
+                        }}
+                        onPress={() => setSelectedAddressId(addr.address_id)}
+                      >
+                        <MapPin
+                          size={20}
+                          color={isSelected ? "#425BA4" : "#9CA3AF"}
+                        />
+                        <View className="flex-1 ml-3">
+                          <Text className="text-sm font-semibold text-foreground">
+                            {addr.address_line1}
+                          </Text>
+                          <Text className="text-xs text-muted-foreground">
+                            {addr.city}
+                            {addr.state_province ? `, ${addr.state_province}` : ""}
+                          </Text>
+                        </View>
+                        <View
+                          className="w-5 h-5 rounded-full border-2 items-center justify-center"
+                          style={{
+                            borderColor: isSelected ? "#425BA4" : "#D1D5DB",
+                          }}
+                        >
+                          {isSelected && (
+                            <View
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ backgroundColor: "#425BA4" }}
+                            />
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </>
+              ) : null}
+            </View>
+          )}
+
+
 
           {/* Delivery Note */}
           <Text className="text-sm font-semibold text-muted-foreground mb-2">
@@ -201,15 +288,18 @@ export default function DeliveryAddressScreen() {
         <TouchableOpacity
           className="py-4 rounded-2xl items-center justify-center"
           style={{
-            backgroundColor: "#425BA4",
-            opacity: !selectedAddressId ? 0.5 : 1,
+            backgroundColor: (isNewAddressMode ? !addressLine : !selectedAddressId) ? "#9CA3AF" : "#425BA4",
           }}
           onPress={handleSaveAndContinue}
-          disabled={!selectedAddressId}
+          disabled={isNewAddressMode ? !addressLine || updateProfileMutation.isPending : !selectedAddressId}
         >
-          <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>
-            Continue
-          </Text>
+          {updateProfileMutation.isPending ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>
+              {isNewAddressMode ? "Save Address & Continue" : "Continue"}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

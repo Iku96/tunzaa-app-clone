@@ -3,14 +3,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useCartCombined, useCartTotals } from '../../../src/stores/cart';
-import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useCartCombined, useCartTotals } from '@/stores/cart';
+import { useAuth } from '@/context/auth';
 import { ActivityIndicator } from 'react-native';
 
 export default function OrderSummaryScreen() {
     const router = useRouter();
-    const { productId, addressId, deliveryType, partnerId, vehicleId } = useLocalSearchParams();
-    const { user } = useTunzaaAuth();
+    const { productId, addressId, deliveryType, partnerId, vehicleId, calculatedFee } = useLocalSearchParams();
+    const { user } = useAuth();
     const userId = user?.user_id || user?.id || '';
     const { cart, isLoading: cartLoading } = useCartCombined(userId);
     const { data: totals, isLoading: totalsLoading } = useCartTotals(cart?.cart_id || '');
@@ -21,7 +21,7 @@ export default function OrderSummaryScreen() {
     // Totals from server
     const subtotal = totals?.subtotal || 0;
     const discount = totals?.discount || 0;
-    const deliveryFees = 10000; // Still hardcoded as per design or fetch from delivery service
+    const deliveryFees = calculatedFee ? Number(calculatedFee) : 5000; // Dynamic delivery fees with 5k standard fallback
     const tax = totals?.tax || 0;
     const total = (totals?.total || 0) + deliveryFees; // Add delivery fees to server total
 
@@ -42,6 +42,7 @@ export default function OrderSummaryScreen() {
 
         if (type === 'installment') {
             paymentParams.amount = total;
+            paymentParams.deliveryFees = deliveryFees.toString();
             router.push({
                 pathname: '/(buyer)/payment/installment-goal',
                 params: paymentParams
@@ -49,6 +50,7 @@ export default function OrderSummaryScreen() {
         } else {
             paymentParams.paymentMethod = 'mobile_money';
             paymentParams.amount = total;
+            paymentParams.deliveryFees = deliveryFees.toString();
             router.push({
                 pathname: '/(buyer)/payment/methods',
                 params: paymentParams
@@ -79,88 +81,106 @@ export default function OrderSummaryScreen() {
                         </View>
                     ) : (
                         <>
-                            {cart?.items.map((item: any) => (
-                                <View key={item.item_id} style={styles.cartCard}>
-                                    <View style={styles.imageWrapper}>
-                                        <Image source={{ uri: item.image_url }} style={styles.productImage} resizeMode="contain" />
-                                    </View>
+                            {cart && cart.items && cart.items.length > 0 && (
+                                <>
+                                    {cart.items.map((item: any) => (
+                                        <View key={item.item_id} style={styles.cartCard}>
+                                            <View style={styles.imageWrapper}>
+                                                <Image source={{ uri: item.image_url }} style={styles.productImage} resizeMode="contain" />
+                                            </View>
 
-                                    <View style={styles.detailsColumn}>
-                                        <Text style={styles.productName}>{item.product_name}</Text>
-                                        <Text style={styles.productPrice}>Tsh. {new Intl.NumberFormat('en-US').format(item.unit_price || item.sale_price)}</Text>
+                                            <View style={styles.detailsColumn}>
+                                                <Text style={styles.productName}>{item.product_name}</Text>
+                                                <Text style={styles.productPrice}>Tsh. {new Intl.NumberFormat('en-US').format(item.unit_price || item.sale_price)}</Text>
 
-                                        <View style={styles.tagContainer}>
-                                            <Text style={styles.tagText}>#Added</Text>
-                                        </View>
+                                                <View style={styles.tagContainer}>
+                                                    <Text style={styles.tagText}>#Added</Text>
+                                                </View>
 
-                                        <View style={styles.actionsRow}>
-                                            <View style={styles.qtyContainer}>
-                                                <Text style={styles.qtyText}>Qty: {item.quantity}</Text>
+                                                <View style={styles.actionsRow}>
+                                                    <View style={styles.qtyContainer}>
+                                                        <Text style={styles.qtyText}>Qty: {item.quantity}</Text>
+                                                    </View>
+                                                </View>
                                             </View>
                                         </View>
+                                    ))}
+
+                                    {/* Order Breakdown */}
+                                    <View style={styles.orderItemRow}>
+                                        <Text style={styles.orderLabel}>Items</Text>
+                                        <Text style={styles.orderValue}>{cart.items.length} items</Text>
                                     </View>
-                                </View>
-                            ))}
+                                    <View style={styles.orderItemRow}>
+                                        <Text style={styles.orderLabel}>Primary Item</Text>
+                                        <Text style={styles.orderValue}>{cart.items[0].product_name}</Text>
+                                    </View>
 
-                            {/* Order Breakdown */}
-                            <View style={styles.orderItemRow}>
-                                <Text style={styles.orderLabel}>Items</Text>
-                                <Text style={styles.orderValue}>{cart?.items.length || 0} items</Text>
-                            </View>
-                            {cart?.items[0] && (
-                                <View style={styles.orderItemRow}>
-                                    <Text style={styles.orderLabel}>Primary Item</Text>
-                                    <Text style={styles.orderValue}>{cart.items[0].product_name}</Text>
-                                </View>
+                                    <View style={styles.divider} />
+
+                                    {/* Cost Breakdown */}
+                                    <View style={styles.costRow}>
+                                        <Text style={styles.costLabel}>Subtotal</Text>
+                                        <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(subtotal)}</Text>
+                                    </View>
+                                    <View style={styles.costRow}>
+                                        <Text style={styles.costLabel}>Discount</Text>
+                                        <Text style={styles.costValue}>Tsh. {discount}</Text>
+                                    </View>
+                                    <View style={styles.costRow}>
+                                        <Text style={styles.costLabel}>Delivery Fees</Text>
+                                        <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(deliveryFees)}</Text>
+                                    </View>
+                                    <View style={styles.costRow}>
+                                        <Text style={styles.costLabel}>Tax (18%)</Text>
+                                        <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(tax)}</Text>
+                                    </View>
+
+                                    <View style={[styles.divider, { marginTop: 16 }]} />
+
+                                    <View style={styles.totalRow}>
+                                        <Text style={styles.totalLabel}>Total costs</Text>
+                                        <Text style={styles.totalValue}>Tsh. {new Intl.NumberFormat('en-US').format(total)}</Text>
+                                    </View>
+                                </>
                             )}
-
-                            <View style={styles.divider} />
-
-                            {/* Cost Breakdown */}
-                            <View style={styles.costRow}>
-                                <Text style={styles.costLabel}>Subtotal</Text>
-                                <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(subtotal)}</Text>
-                            </View>
-                            <View style={styles.costRow}>
-                                <Text style={styles.costLabel}>Discount</Text>
-                                <Text style={styles.costValue}>Tsh. {discount}</Text>
-                            </View>
-                            <View style={styles.costRow}>
-                                <Text style={styles.costLabel}>Delivery Fees</Text>
-                                <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(deliveryFees)}</Text>
-                            </View>
-                            <View style={styles.costRow}>
-                                <Text style={styles.costLabel}>Tax (18%)</Text>
-                                <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(tax)}</Text>
-                            </View>
-
-                            <View style={[styles.divider, { marginTop: 16 }]} />
-
-                            <View style={styles.totalRow}>
-                                <Text style={styles.totalLabel}>Total costs</Text>
-                                <Text style={styles.totalValue}>Tsh. {new Intl.NumberFormat('en-US').format(total)}</Text>
-                            </View>
                         </>
+                    )}
+                    
+                    {cart && (!cart.items || cart.items.length === 0) && (
+                        <View style={{ padding: 40, alignItems: 'center' }}>
+                            <Ionicons name="cart-outline" size={64} color="#D1D5DB" />
+                            <Text style={{ marginTop: 16, fontSize: 18, fontWeight: 'bold', color: '#4B5563' }}>Your cart is empty</Text>
+                            <Text style={{ marginTop: 8, color: '#6B7280', textAlign: 'center' }}>Add items to your cart to see your order summary and checkout.</Text>
+                            <TouchableOpacity 
+                                style={{ marginTop: 24, backgroundColor: '#425BA4', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 }}
+                                onPress={() => router.push('/(buyer)/')}
+                            >
+                                <Text style={{ color: 'white', fontWeight: 'bold' }}>Start Shopping</Text>
+                            </TouchableOpacity>
+                        </View>
                     )}
                 </ScrollView>
 
                 {/* Footer Buttons */}
-                <View style={styles.footer}>
-                    <TouchableOpacity
-                        style={styles.installmentBtn}
-                        onPress={() => handleCheckout('installment')}
-                    >
-                        <Text style={styles.btnTitle}>Installment</Text>
-                        <Text style={styles.btnSubtitle}>Tunzaa 10,000 Tsh/wk</Text>
-                    </TouchableOpacity>
+                {cart && cart.items && cart.items.length > 0 && (
+                    <View style={styles.footer}>
+                        <TouchableOpacity
+                            style={styles.installmentBtn}
+                            onPress={() => handleCheckout('installment')}
+                        >
+                            <Text style={styles.btnTitle}>Installment</Text>
+                            <Text style={styles.btnSubtitle}>Tunzaa {new Intl.NumberFormat('en-US').format(Math.ceil(total / 4))} Tsh/wk</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.fullPayBtn}
-                        onPress={() => handleCheckout('full')}
-                    >
-                        <Text style={styles.btnTitle}>Full Payment</Text>
-                    </TouchableOpacity>
-                </View>
+                        <TouchableOpacity
+                            style={styles.fullPayBtn}
+                            onPress={() => handleCheckout('full')}
+                        >
+                            <Text style={styles.btnTitle}>Full Payment</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
         </SafeAreaView>
     );

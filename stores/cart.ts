@@ -490,18 +490,10 @@ export const useAddToCart = () => {
                 });
             }
 
-            // Convert map back to array for API - strip null/undefined values
-            const allItems = Array.from(existingItemsMap.values()).map(item => {
-                const clean: Record<string, any> = {};
-                for (const [k, v] of Object.entries(item)) {
-                    if (v !== null && v !== undefined) clean[k] = v;
-                }
-                return clean;
-            });
-            console.log('🛒 [useAddToCart] Final Payload to API:', JSON.stringify(allItems));
-
-            // Send all items to the API
-            return cartApi.addToCart(cartId, allItems);
+            // Send just the new item to the API as a single object, not an array of all items.
+            // REST POST /carts/{id}/items expects a single entity.
+            console.log('🛒 [useAddToCart] Final Payload to API:', JSON.stringify(item));
+            return cartApi.addToCart(cartId, item as any);
         },
 
         onMutate: async ({ cartId, item }) => {
@@ -537,6 +529,7 @@ export const useAddToCart = () => {
                         variant_id: null,
                         quantity: item.quantity,
                         unit_price: 0, // We don't have price in the request
+                        sale_price: 0,
                         added_at: new Date().toISOString(),
                         metadata: { sku: item.sku, currency: item.currency },
                     });

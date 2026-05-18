@@ -345,7 +345,7 @@ export const useAddToCartBulk = () => {
             const allItems = Array.from(existingItemsMap.values()).map(item => {
                 const clean: Record<string, any> = {};
                 for (const [k, v] of Object.entries(item)) {
-                    if (v !== null && v !== undefined) clean[k] = v;
+                    if (v !== null && v !== undefined && v !== '') clean[k] = v;
                 }
                 return clean;
             });
@@ -494,7 +494,7 @@ export const useAddToCart = () => {
             const allItems = Array.from(existingItemsMap.values()).map(item => {
                 const clean: Record<string, any> = {};
                 for (const [k, v] of Object.entries(item)) {
-                    if (v !== null && v !== undefined) clean[k] = v;
+                    if (v !== null && v !== undefined && v !== '') clean[k] = v;
                 }
                 return clean;
             });
@@ -537,6 +537,7 @@ export const useAddToCart = () => {
                         variant_id: null,
                         quantity: item.quantity,
                         unit_price: 0, // We don't have price in the request
+                        sale_price: 0,
                         added_at: new Date().toISOString(),
                         metadata: { sku: item.sku, currency: item.currency },
                     });

@@ -13,7 +13,7 @@ import ContactSheet from '../../../src/components/shop/ContactSheet';
 import { useWishlistStore } from '../../../src/stores/wishlist';
 import { useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
 import { useSearchHistory } from '../../../src/stores/searchHistory';
-import { getVendorLogoUrl } from '../../../src/utils/images';
+import { getVendorLogoUrl, getAvatarUrl } from '../../../src/utils/images';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useTrackInteraction } from '../../../src/hooks/useRecommendations';
 
@@ -120,7 +120,8 @@ export default function ShopProfileScreen() {
         );
     }
 
-    const validLogoUri = getVendorLogoUrl({ vendorData: shop, metadata: shop.metadata, branding: shop.branding }) || 'https://via.placeholder.com/100x100?text=Shop';
+    const rawLogoUrl = getVendorLogoUrl({ vendorData: shop, metadata: shop.metadata, branding: shop.branding });
+    const validLogoUri = getAvatarUrl(rawLogoUrl, shop.store_name);
 
     const certs = shop.metadata?.verification_documents || [];
     const certCount = Array.isArray(certs) ? certs.length : Object.keys(certs).length;

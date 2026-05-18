@@ -105,7 +105,8 @@ export default function SearchScreen() {
                 }
                 
                 if (res?.items && res.items.length > 0) {
-                    setResults(res.items.map(mapApiProductToUI));
+                    const approved = res.items.filter((p: any) => p.verification_status === 'approved');
+                    setResults(approved.map(mapApiProductToUI));
                 } else {
                     setResults([]);
                 }

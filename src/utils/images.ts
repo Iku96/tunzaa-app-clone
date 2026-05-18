@@ -38,23 +38,35 @@ export const cleanseImageUrl = (url?: string): string | undefined => {
 };
 
 /**
+ * Safely resolves any relative or absolute image URL to a fully-qualified URL.
+ * If the input starts with '/' it prepends the API base URL.
+ */
+export const resolveAbsoluteUrl = (url?: string): string | undefined => {
+  if (!url || typeof url !== 'string') return undefined;
+  const cleaned = cleanseImageUrl(url);
+  if (!cleaned) return undefined;
+  
+  if (isValidUrl(cleaned)) {
+    return cleaned;
+  }
+  
+  if (cleaned.startsWith('/')) {
+    const baseUrl = API_CONFIG.BASE_URL.endsWith('/') 
+      ? API_CONFIG.BASE_URL.slice(0, -1) 
+      : API_CONFIG.BASE_URL;
+    return `${baseUrl}${cleaned}`;
+  }
+  
+  return cleaned;
+};
+
+/**
  * Generates a consistent avatar URL with a fallback to ui-avatars.com
  * Handles relative paths by prepending the API base URL.
  */
 export const getAvatarUrl = (url?: string, name: string = 'User'): string => {
-  const cleaned = cleanseImageUrl(url);
-  
-  if (isValidUrl(cleaned)) {
-    return cleaned as string;
-  }
-  
-  // Handle relative paths from backend
-  if (url && typeof url === 'string' && url.startsWith('/')) {
-    const baseUrl = API_CONFIG.BASE_URL.endsWith('/') 
-      ? API_CONFIG.BASE_URL.slice(0, -1) 
-      : API_CONFIG.BASE_URL;
-    return `${baseUrl}${url}`;
-  }
+  const resolved = resolveAbsoluteUrl(url);
+  if (resolved) return resolved;
 
   // Fallback to initials avatar
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=eff6ff&color=425ba4`;
@@ -75,20 +87,21 @@ const safeParse = (val: any): any => {
 /**
  * Extracts the branding logo_url from a store object,
  * handling the case where `branding` may be a JSON string.
- * Only returns valid remote URLs (http/https) — rejects stale file:// URIs
- * that may have been saved from ImagePicker cache during onboarding.
+ * Supports absolute URLs and relative paths starting with '/'.
  */
 const getStoreLogoUrl = (store: any): string | undefined => {
   if (!store) return undefined;
   const branding = safeParse(store.branding);
   const candidates = [branding?.logo_url, branding?.logoUrl, branding?.image_url];
-  return candidates.find(url => isValidUrl(url));
+  const found = candidates.find(url => url && typeof url === 'string' && (isValidUrl(url) || url.startsWith('/')));
+  return found ? resolveAbsoluteUrl(found) : undefined;
 };
 
 /**
  * Exhaustively searches all possible locations for a vendor's logo URL.
  * Handles: VendorResponse (direct API), profile metadata (hydrated), 
  * vendorDetails from auth context, and profile-level branding.
+ * Supports absolute and relative paths starting with '/'.
  * 
  * @param sources Object containing all possible data sources
  * @returns The logo URL string, or undefined if not found
@@ -104,38 +117,47 @@ export const getVendorLogoUrl = (sources: {
 
   // 1. Direct vendor API response (most reliable, from useGetVendor)
   if (vendorData) {
+    const fromDirectStore = getStoreLogoUrl(vendorData);
+    if (fromDirectStore) return fromDirectStore;
+    
     const fromStores = getStoreLogoUrl(vendorData.stores?.[0]) || getStoreLogoUrl(vendorData.store);
-    if (fromStores) return cleanseImageUrl(fromStores);
+    if (fromStores) return fromStores;
   }
 
   // 2. Profile metadata (after hydration, contains spread VendorResponse)
   if (metadata) {
     const fromMetaStores = getStoreLogoUrl(metadata.stores?.[0]) || getStoreLogoUrl(metadata.store);
-    if (fromMetaStores) return cleanseImageUrl(fromMetaStores);
+    if (fromMetaStores) return fromMetaStores;
+    
     // Direct fields on metadata
-    if (isValidUrl(metadata.logo_url)) return cleanseImageUrl(metadata.logo_url);
-    if (isValidUrl(metadata.image_url)) return cleanseImageUrl(metadata.image_url);
-    if (isValidUrl(metadata.logoUrl)) return cleanseImageUrl(metadata.logoUrl);
-    if (isValidUrl(metadata.profile_picture)) return cleanseImageUrl(metadata.profile_picture);
+    const directMetaCandidates = [metadata.logo_url, metadata.image_url, metadata.logoUrl, metadata.profile_picture];
+    const foundMeta = directMetaCandidates.find(url => url && typeof url === 'string' && (isValidUrl(url) || url.startsWith('/')));
+    if (foundMeta) return resolveAbsoluteUrl(foundMeta);
   }
 
   // 3. Profile-level branding
   const parsedBranding = safeParse(branding);
   if (parsedBranding) {
-    if (isValidUrl(parsedBranding.logo_url)) return cleanseImageUrl(parsedBranding.logo_url);
-    if (isValidUrl(parsedBranding.logoUrl)) return cleanseImageUrl(parsedBranding.logoUrl);
-    if (isValidUrl(parsedBranding.image_url)) return cleanseImageUrl(parsedBranding.image_url);
+    const brandingCandidates = [parsedBranding.logo_url, parsedBranding.logoUrl, parsedBranding.image_url];
+    const foundBranding = brandingCandidates.find(url => url && typeof url === 'string' && (isValidUrl(url) || url.startsWith('/')));
+    if (foundBranding) return resolveAbsoluteUrl(foundBranding);
   }
 
   // 4. vendorDetails from auth context
   if (vendorDetails) {
     const fromDetailsStores = getStoreLogoUrl(vendorDetails.stores?.[0]) || getStoreLogoUrl(vendorDetails.store);
-    if (fromDetailsStores) return cleanseImageUrl(fromDetailsStores);
-    if (isValidUrl(vendorDetails.logo_url)) return cleanseImageUrl(vendorDetails.logo_url);
+    if (fromDetailsStores) return fromDetailsStores;
+    
+    const detailsCandidates = [vendorDetails.logo_url, vendorDetails.logoUrl, vendorDetails.image_url];
+    const foundDetails = detailsCandidates.find(url => url && typeof url === 'string' && (isValidUrl(url) || url.startsWith('/')));
+    if (foundDetails) return resolveAbsoluteUrl(foundDetails);
   }
 
   // 5. Local AsyncStorage extras (last resort cache)
-  if (localExtras && isValidUrl(localExtras.logo_url)) return cleanseImageUrl(localExtras.logo_url);
+  if (localExtras) {
+    const foundLocal = [localExtras.logo_url, localExtras.logoUrl].find(url => url && typeof url === 'string' && (isValidUrl(url) || url.startsWith('/')));
+    if (foundLocal) return resolveAbsoluteUrl(foundLocal);
+  }
 
   return undefined;
 };

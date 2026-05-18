@@ -317,7 +317,7 @@ const PaymentScreen = () => {
 
   // Calculate delivery cost
   const selectedDelivery = deliveryTypes?.find(dt => dt.id === deliveryType);
-  const deliveryCost = selectedDelivery?.price || 0;
+  const deliveryCost = calculatedFee ? parseFloat(calculatedFee as string) : (selectedDelivery?.price || 0);
 
   if (isLoading || (!orderToDisplay && !isOrderPageNavigation)) {
     return (

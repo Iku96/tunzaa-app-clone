@@ -94,7 +94,7 @@ export const cartApi = {
 
     addToCart: async (
         cartId: string,
-        items: AddToCartRequest[]
+        items: AddToCartRequest | AddToCartRequest[]
     ): Promise<Cart> => {
         const response = await apiClient.post(`/carts/${cartId}/items`, items);
         return response.data;

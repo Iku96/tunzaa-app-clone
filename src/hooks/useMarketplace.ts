@@ -118,7 +118,8 @@ export function useMarketplace(): UseMarketplaceResult {
             // Products
             if (productsRes && productsRes.items && productsRes.items.length > 0) {
                 console.log(`✅ [useMarketplace] Loaded ${productsRes.items.length} products from API`);
-                setProducts(productsRes.items.map(mapApiProductToUI));
+                const approvedProducts = productsRes.items.filter((p: any) => p.verification_status === 'approved');
+                setProducts(approvedProducts.map(mapApiProductToUI));
             } else {
                 console.log('ℹ️ [useMarketplace] No products from API');
                 setProducts([]);

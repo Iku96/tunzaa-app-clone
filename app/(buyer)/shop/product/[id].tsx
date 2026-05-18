@@ -62,7 +62,12 @@ export default function ShopProductDetailScreen() {
         const fetchProduct = async () => {
             try {
                 const data = await productsApi.getProductById(id as string);
-                setProduct(data);
+                if (data.verification_status !== 'approved') {
+                    console.log('⚠️ [ShopProductDetail] Product not approved yet. Blocking display.');
+                    setProduct(null);
+                } else {
+                    setProduct(data);
+                }
             } catch (e) {
                 console.warn('Failed to fetch product:', e);
             } finally {
@@ -236,12 +241,30 @@ export default function ShopProductDetailScreen() {
         }
     };
 
-    if (isLoading || !product) {
+    if (isLoading) {
         return (
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#3B5494" />
                     <Text style={{ marginTop: 12, color: '#64748b' }}>Loading product...</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    if (!product) {
+        return (
+            <SafeAreaView style={styles.safeArea}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                        <Ionicons name="arrow-back" size={24} color="#1F2937" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Product Not Found</Text>
+                    <View style={{ width: 40 }} />
+                </View>
+                <View style={[styles.loadingContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+                    <Ionicons name="alert-circle-outline" size={64} color="#9CA3AF" />
+                    <Text style={{ marginTop: 12, color: '#6B7280', fontSize: 16 }}>Product not found or pending approval</Text>
                 </View>
             </SafeAreaView>
         );
