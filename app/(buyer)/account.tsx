@@ -63,7 +63,7 @@ export default function AccountScreen() {
 
                     setProfileData({
                         username: apiMeta.username || localData.username || '',
-                        location: apiMeta.location || localData.location || 'Dar es Salaam',
+                        location: apiMeta.preferred_location || localData.preferred_location || apiMeta.location || localData.location || 'Dar es Salaam',
                         profile_picture: apiMeta.profile_picture || localData.profile_picture || '',
                     });
                 } catch (e) {

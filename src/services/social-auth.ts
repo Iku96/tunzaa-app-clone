@@ -28,7 +28,7 @@ if (Platform.OS !== "web") {
             webClientId:
                 "230701056851-d1lqfo4r16r29irhq2q7ihb61bsr5o9k.apps.googleusercontent.com",
             iosClientId:
-                "230701056851-gckqvt47r5ch4ln18iid3c6fe4e8vlad.apps.googleusercontent.com",
+                "230701056851-pkf15en5cledgeas3ui62menv1ja1som.apps.googleusercontent.com",
             offlineAccess: true,
         });
     } catch (e) {

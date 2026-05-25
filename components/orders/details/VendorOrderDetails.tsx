@@ -924,8 +924,7 @@ export const VendorOrderDetails = ({
                   Payment Method
                 </Text>
                 <Text className="text-base font-semibold">
-                  {/* {order.payment_details.method} */}
-                  AFRIZON
+                  {order.payment_details.method}
                 </Text>
               </View>
 

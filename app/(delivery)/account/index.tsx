@@ -275,7 +275,7 @@ const AccountScreen = () => {
                 <TouchableOpacity
                   className="py-4 rounded-full items-center justify-center"
                   style={{
-                    backgroundColor: "#315BA9",
+                    backgroundColor: "#425BA4",
                     opacity: isLoggingOut ? 0.6 : 1,
                   }}
                   onPress={handleLogout}

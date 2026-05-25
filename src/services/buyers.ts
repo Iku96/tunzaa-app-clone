@@ -7,12 +7,27 @@ import {
 } from "./types/buyers";
 
 export const buyersApi = {
-  // Get User's Delivery Addresses
   getBuyerProfile: async (userId: string): Promise<BuyerProfile> => {
-    const response = await apiClient.get<BuyerProfile>(
-      `/marketplace/buyers/user/${userId}`
-    );
-    return response.data;
+    try {
+      const response = await apiClient.get<BuyerProfile>(
+        `/marketplace/buyers/user/${userId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error?.originalError?.response?.status === 404 || error?.response?.status === 404) {
+        console.log(`ℹ️ [buyersApi] Buyer profile not found for user ${userId}, returning default empty profile.`);
+        return {
+          user_id: userId,
+          tenant_id: '',
+          contact_email: '',
+          contact_phone: '',
+          delivery_address: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+      throw error;
+    }
   },
 
   // Update User's Delivery Addresses

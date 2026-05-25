@@ -35,9 +35,21 @@ export default function WelcomeScreen() {
          * checkRouting: Determines the correct post-splash destination.
          */
         const checkRouting = async () => {
-            // Check if user has finished the initial language/role selection
-            const hasFinishedOnboarding = await AsyncStorage.getItem('HAS_FINISHED_ONBOARDING');
-            
+            // Retrieve all necessary values from AsyncStorage in parallel to avoid bridge overhead
+            const [
+                hasFinishedOnboarding,
+                lastPortal,
+                hasPendingMerchantOnboarding,
+                hasPendingDeliveryOnboarding,
+                isFirstTimeBuyer
+            ] = await Promise.all([
+                AsyncStorage.getItem('HAS_FINISHED_ONBOARDING'),
+                AsyncStorage.getItem('LAST_PORTAL'),
+                AsyncStorage.getItem('HAS_PENDING_MERCHANT_ONBOARDING'),
+                AsyncStorage.getItem('HAS_PENDING_DELIVERY_ONBOARDING'),
+                AsyncStorage.getItem('IS_FIRST_TIME_BUYER')
+            ]);
+
             // If they haven't finished onboarding, always force language selection
             if (!hasFinishedOnboarding) {
                 console.log('🚀 [Splash] Onboarding not finished, navigating to language selection');
@@ -48,16 +60,12 @@ export default function WelcomeScreen() {
             // If user has a valid session token and user data
             if (isAuthenticated && user) {
                 const role = user.activeProfileRole;
-                const lastPortal = await AsyncStorage.getItem('LAST_PORTAL');
                 
                 const merchantProfile = user.profiles?.find((p: any) => ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase() || ''));
                 const hasMerchantProfile = !!merchantProfile;
                 const hasDeliveryProfile = user.profiles?.some((p: any) => ['delivery', 'driver', 'delivery_partner'].includes(p.role?.toLowerCase() || ''));
 
                 console.log(`🚀 [Splash] Auth found. Server Role: ${role}, Last Local Portal: ${lastPortal}`);
-                
-                const hasPendingMerchantOnboarding = await AsyncStorage.getItem('HAS_PENDING_MERCHANT_ONBOARDING');
-                const hasPendingDeliveryOnboarding = await AsyncStorage.getItem('HAS_PENDING_DELIVERY_ONBOARDING');
                 
                 // Onboarding Status Check
                 const onboardingStatus = merchantProfile?.metadata?.onboarding_status || merchantProfile?.metadata?.onboardingStatus;
@@ -103,10 +111,9 @@ export default function WelcomeScreen() {
                 }
 
                 if (lastPortal === 'buyer') {
-                    const isFirstTimeBuyer = await AsyncStorage.getItem('IS_FIRST_TIME_BUYER');
                     if (isFirstTimeBuyer === 'true') {
                         console.log('🚀 [Splash] First-time buyer detected, directing to onboarding...');
-                        router.replace('/complete-profile');
+                        router.replace('/(buyer)/onboarding');
                         return;
                     }
                     router.replace('/(buyer)');
@@ -160,10 +167,10 @@ export default function WelcomeScreen() {
             router.replace('/language');
         };
 
-        // Artificial 1.5-second delay to ensure the splash screen branding is visible
+        // Small 100ms layout transition delay to prevent screen flickers
         const timer = setTimeout(() => {
             checkRouting();
-        }, 1500);
+        }, 100);
 
         // Cleanup the timer if the component unmounts prematurely
         return () => clearTimeout(timer);

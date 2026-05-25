@@ -46,9 +46,9 @@ export default function ShopPolicyScreen() {
     }
 
     // Use specific policies from metadata or fallbacks
-    const refundPolicy = shop.return_policy || shop.metadata?.refund_policy || 'Returns are accepted within 14 days of delivery. Items must be unused and in original condition.';
-    const generalPolicy = shop.general_policy || shop.metadata?.general_policy || 'Approved refunds are processed via original payment method within 3-7 business days.';
-    const shippingPolicy = shop.shipping_policy || shop.metadata?.shipping_policy || 'Customer covers return shipping unless the item was damaged or incorrect.';
+    const refundPolicy = shop.return_policy || shop.metadata?.refund_policy || 'This shop has not specified a return timeframe.';
+    const generalPolicy = shop.general_policy || shop.metadata?.general_policy || 'No specific refund method provided by this shop.';
+    const shippingPolicy = shop.shipping_policy || shop.metadata?.shipping_policy || 'No return shipping policy provided by this shop.';
 
     return (
         <SafeAreaView style={styles.safeArea}>

@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     },
     headerTextContainer: { flex: 1 },
     headerNameRow: { flexDirection: 'row', alignItems: 'center' },
-    headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827', fontFamily: 'Ubuntu_700Bold' },
+    headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827', fontFamily: 'Gilroy-Bold' },
     headerLocationRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
     headerSubtitle: { fontSize: 12, color: '#6B7280', marginLeft: 2 },
 

@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: 'Gilroy-SemiBold',
     color: "#000000",
   },
   searchSection: {
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: 'Gilroy-Regular',
   },
   filterButton: {
     padding: 12,

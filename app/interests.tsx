@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 24,
         fontWeight: '700',
         color: '#1D1E1F',
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     },
 
     subtitle: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 14,
         color: '#666666',
         textAlign: 'center',
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     },
 
     chipText: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 14,
         fontWeight: '500',
         color: '#1D1E1F',
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     },
 
     continueButtonText: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 16,
         fontWeight: '700',
         color: '#FFFFFF',
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     },
 
     skipText: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 16,
         fontWeight: '500',
         lineHeight: 24,

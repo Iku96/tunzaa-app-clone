@@ -46,7 +46,7 @@ export const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
         <Text className="text-muted-foreground">{t("common.loading")}</Text>
       ) : (
         <>
-          {buyerProfile?.delivery_address.map((address) => {
+          {buyerProfile?.delivery_address?.map((address) => {
             const isSelected = selectedAddressId === address.address_id;
             return resolvedColors && isSelected ? (
               <TouchableOpacity

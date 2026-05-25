@@ -150,7 +150,7 @@ export default function LoanProviderOnboardingStep1() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#315BA9', // Tunzaa Blue
+        backgroundColor: '#425BA4', // Tunzaa Blue
     },
     contentContainer: {
         paddingBottom: 120,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
-        borderColor: '#315BA9',
+        borderColor: '#425BA4',
         position: 'relative',
         overflow: 'visible',
     },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
         borderRadius: 11,
         backgroundColor: '#FFFFFF',
         borderWidth: 2,
-        borderColor: '#315BA9',
+        borderColor: '#425BA4',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 12,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingBottom: 40,
         paddingTop: 20,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     backButtonBottom: {
         width: '48%',

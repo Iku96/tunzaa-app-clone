@@ -52,8 +52,13 @@ const generateStoreSlug = (storeName: string): string => {
 type Step = "basic-info" | "role-selection" | "role-form";
 
 export default function CompleteProfileScreen() {
-  const { userType, error, register, setUserType, login, socialLogin } = useAuth();
-  const { user: tunzaaUser, isAuthenticated: isTunzaaAuthenticated } = useTunzaaAuth();
+  const { userType, error, setUserType, socialLogin } = useAuth();
+  const { 
+    user: tunzaaUser, 
+    isAuthenticated: isTunzaaAuthenticated,
+    register: tunzaaRegister,
+    login: tunzaaLogin
+  } = useTunzaaAuth();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>("basic-info");
@@ -167,9 +172,9 @@ export default function CompleteProfileScreen() {
         }
         
         await setNewlyRegisteredFlag();
-        await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
+        await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
         setRegistrationProgress({ step: 'done', message: 'Success!' });
-        navigateToRoleHome(router, "buyer");
+        router.replace('/(buyer)/onboarding');
       } else {
         // Regular registration flow - register user first
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
@@ -178,7 +183,7 @@ export default function CompleteProfileScreen() {
         const firstName = nameParts[0] || "";
         const lastName = nameParts.slice(1).join(" ") || firstName;
 
-        const authResponse = await register(
+        const authResponse = await tunzaaRegister(
           {
             first_name: firstName,
             last_name: lastName,
@@ -186,20 +191,20 @@ export default function CompleteProfileScreen() {
             phone_number: cachedPhoneNumber || "",
             password: registrationData.userData.password,
           },
-          false
+          'buyer'
         );
 
         // Login after registration
         setRegistrationProgress({ step: 'logging-in', message: 'Logging you in...' });
         const identifier = registrationData.userData.email || cachedPhoneNumber || "";
-        await login(identifier, registrationData.userData.password);
+        await tunzaaLogin(identifier, registrationData.userData.password);
 
         clearRegistrationState();
         await clearTempPhoneNumber();
         await setNewlyRegisteredFlag();
-        await AsyncStorage.removeItem('IS_FIRST_TIME_BUYER');
+        await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
         setRegistrationProgress({ step: 'done', message: 'Success!' });
-        navigateToRoleHome(router, "buyer");
+        router.replace('/(buyer)/onboarding');
       }
     } catch (err: any) {
       setRegistrationProgress({ step: 'idle', message: '' });
@@ -230,7 +235,7 @@ export default function CompleteProfileScreen() {
       } else {
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
         
-        const authResponse = await register(
+        const authResponse = await tunzaaRegister(
           {
             first_name: firstName,
             last_name: lastName,
@@ -238,9 +243,9 @@ export default function CompleteProfileScreen() {
             phone_number: cachedPhoneNumber || "",
             password: registrationData.userData.password,
           },
-          false
+          'vendor'
         );
-        userId = authResponse.user_id;
+        userId = authResponse.user_id || authResponse.id;
       }
 
       // Step 2: Create vendor profile
@@ -303,7 +308,7 @@ export default function CompleteProfileScreen() {
         clearRegistrationState();
         await clearTempPhoneNumber();
         const identifier = registrationData.userData.email || cachedPhoneNumber || "";
-        await login(identifier, registrationData.userData.password);
+        await tunzaaLogin(identifier, registrationData.userData.password);
       } else if (isSocialAuth) {
         await socialLogin(socialAuthData);
       }
@@ -346,7 +351,7 @@ export default function CompleteProfileScreen() {
       } else {
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
         
-        const authResponse = await register(
+        const authResponse = await tunzaaRegister(
           {
             first_name: firstName,
             last_name: lastName,
@@ -354,9 +359,9 @@ export default function CompleteProfileScreen() {
             phone_number: cachedPhoneNumber || "",
             password: registrationData.userData.password,
           },
-          false
+          'delivery'
         );
-        userId = authResponse.user_id;
+        userId = authResponse.user_id || authResponse.id;
       }
 
       // Step 2: Create delivery partner profile
@@ -386,7 +391,7 @@ export default function CompleteProfileScreen() {
         clearRegistrationState();
         await clearTempPhoneNumber();
         const identifier = registrationData.userData.email || cachedPhoneNumber || "";
-        await login(identifier, registrationData.userData.password);
+        await tunzaaLogin(identifier, registrationData.userData.password);
       } else if (isSocialAuth) {
         await socialLogin(socialAuthData);
       }
@@ -430,7 +435,7 @@ export default function CompleteProfileScreen() {
       } else {
         setRegistrationProgress({ step: 'registering', message: 'Creating your account...' });
         
-        const authResponse = await register(
+        const authResponse = await tunzaaRegister(
           {
             first_name: firstName,
             last_name: lastName,
@@ -438,9 +443,9 @@ export default function CompleteProfileScreen() {
             phone_number: cachedPhoneNumber || "",
             password: registrationData.userData.password,
           },
-          false
+          'affiliate'
         );
-        userId = authResponse.user_id;
+        userId = authResponse.user_id || authResponse.id;
       }
 
       // Step 2: Create affiliate profile
@@ -468,7 +473,7 @@ export default function CompleteProfileScreen() {
         clearRegistrationState();
         await clearTempPhoneNumber();
         const identifier = registrationData.userData.email || cachedPhoneNumber || "";
-        await login(identifier, registrationData.userData.password);
+        await tunzaaLogin(identifier, registrationData.userData.password);
       } else if (isSocialAuth) {
         await socialLogin(socialAuthData);
       }

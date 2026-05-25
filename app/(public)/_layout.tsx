@@ -25,7 +25,7 @@ const TabLayout = () => {
           tabBarActiveTintColor: "#425BA4",
           tabBarInactiveTintColor: resolvedColors?.muted || "#666666",
           tabBarLabelStyle: {
-            fontFamily: "InterMedium",
+            fontFamily: 'Gilroy-Medium',
             fontSize: 12,
             marginBottom: 4,
           },

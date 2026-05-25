@@ -13,6 +13,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Trash2,
 } from "lucide-react-native";
 import { useAuth } from "@/context/auth";
 import { useCartCombined, useCartTotals } from "@/stores/cart";
@@ -24,7 +25,7 @@ import {
 } from "@/src/services/delivery";
 import { useGetVendor } from "@/src/services/vendors";
 import { useGetVehicleTypes } from "@/src/services/configuration";
-import { useProductById } from "@/stores/products";
+import { useGetBuyerProfile } from "@/src/services/buyers";
 import { AddressModal } from "@/components/modals/AddressModal";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
@@ -113,6 +114,16 @@ const CheckoutScreen = () => {
   const [isRestoringCart, setIsRestoringCart] = useState(false);
 
   // Force server fetch when checkout page loads
+  const { refetch: refetchBuyerProfile } = useGetBuyerProfile(user?.user_id ?? "", !!user?.user_id);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.user_id) {
+        refetchBuyerProfile();
+      }
+    }, [user?.user_id, refetchBuyerProfile])
+  );
+
   useEffect(() => {
     if (user?.user_id) {
       cart.refetch();
@@ -154,6 +165,24 @@ const CheckoutScreen = () => {
     },
     onError: (errorMsg) => setError(errorMsg),
   });
+
+  // Auto-initialize selectedAddressId from profile
+  useEffect(() => {
+    if (buyerProfile?.delivery_address && buyerProfile.delivery_address.length > 0) {
+      const defaultId = buyerProfile.default_delivery_address;
+      const defaultExists = buyerProfile.delivery_address.some((addr) => addr.address_id === defaultId);
+      const currentExists = buyerProfile.delivery_address.some((addr) => addr.address_id === selectedAddressId);
+      
+      if (!selectedAddressId || !currentExists) {
+        if (defaultId && defaultExists) {
+          setSelectedAddressId(defaultId);
+        } else {
+          setSelectedAddressId(buyerProfile.delivery_address[0].address_id || "");
+        }
+      }
+    }
+  }, [buyerProfile, selectedAddressId]);
+
   const { data: deliveryTypes, isUsingFallback } = useDeliveryTypesWithFallback();
   
 
@@ -174,7 +203,7 @@ const CheckoutScreen = () => {
 
   useEffect(() => {
     if (isDeliveryEnabled && selectedAddressId && selectedDeliveryType && vendor?.latitude && vendor?.longitude) {
-      const selectedAddressData = buyerProfile?.delivery_address.find(
+      const selectedAddressData = buyerProfile?.delivery_address?.find(
         (addr) => addr.address_id === selectedAddressId
       );
       
@@ -385,7 +414,7 @@ const CheckoutScreen = () => {
         return;
       }
 
-      const selectedAddressData = buyerProfile.delivery_address.find(
+      const selectedAddressData = buyerProfile.delivery_address?.find(
         (addr) => addr.address_id === selectedAddressId
       );
 
@@ -401,20 +430,37 @@ const CheckoutScreen = () => {
       return;
     }
 
-    router.push({
-      pathname: "/(buyer)/payment",
-      params: {
-        cartId: cart.cart?.cart_id || "",
-        paymentMethod: isPaymentsEnabled ? selectedPaymentCategory : "cash_on_delivery",
-        addressId: isDeliveryEnabled ? selectedAddressId : "",
-        deliveryType: isDeliveryEnabled ? selectedDeliveryType : "",
-        vehicleId: isDeliveryEnabled ? (selectedVehicle || "") : "",
-        partnerId: isDeliveryEnabled ? (selectedPartner || "") : "",
-        calculatedFee: feeData?.fee?.toString() || "",
-        returnTo: returnTo || "cart",
-        productId: productId || "",
-      },
-    });
+    const deliveryFeeStr = feeData?.fee?.toString() || "0";
+    const subtotalCalc = cartTotals?.total || cart.cart?.items.reduce((sum, item) => sum + ((item.sale_price || item.unit_price || 0) * item.quantity), 0) || 0;
+    const taxCalc = subtotalCalc * 0.18;
+    const discountCalc = cartTotals?.discount || 0;
+    const computedTotal = subtotalCalc + Number(deliveryFeeStr) + taxCalc - discountCalc;
+
+    const baseParams = {
+      cartId: cart.cart?.cart_id || "",
+      paymentMethod: isPaymentsEnabled ? selectedPaymentCategory : "cash_on_delivery",
+      addressId: isDeliveryEnabled ? selectedAddressId : "",
+      deliveryType: isDeliveryEnabled ? selectedDeliveryType : "",
+      vehicleId: isDeliveryEnabled ? (selectedVehicle || "") : "",
+      partnerId: isDeliveryEnabled ? (selectedPartner || "") : "",
+      calculatedFee: deliveryFeeStr,
+      returnTo: returnTo || "cart",
+      productId: productId || "",
+      amount: computedTotal.toString(),
+      deliveryFees: deliveryFeeStr,
+    };
+
+    if (selectedPaymentCategory === "tunzaa_instalments") {
+      router.push({
+        pathname: "/(buyer)/payment/installment-goal",
+        params: baseParams,
+      });
+    } else {
+      router.push({
+        pathname: "/(buyer)/payment/methods",
+        params: baseParams,
+      });
+    }
   };
 
   // Handle cart restoration
@@ -464,6 +510,13 @@ const CheckoutScreen = () => {
     }, [handleCartRestoration])
   );
 
+  // Auto-select first delivery type if none selected
+  useEffect(() => {
+    if (availableDeliveryTypes.length > 0 && !selectedDeliveryType) {
+      setSelectedDeliveryType(availableDeliveryTypes[0].id);
+    }
+  }, [availableDeliveryTypes, selectedDeliveryType]);
+
   // Redirect to cart if empty and no progress
   const shouldRedirectToCart = !cart.hasItems() &&
     !cart.isLoading &&
@@ -479,7 +532,6 @@ const CheckoutScreen = () => {
 
   // Loading state
   if (cart.isLoading) {
-    const resolvedColors = useResolvedThemeColors();
     return (
       <SafeAreaView className="flex-1 bg-background" edges={["top", "right", "left"]}>
         <View className="flex-row justify-between items-center p-4 border-b border-border">
@@ -553,6 +605,56 @@ const CheckoutScreen = () => {
     }
   }
 
+  const cartItems = cart.cart?.items || [];
+  const selectedAddressData = buyerProfile?.delivery_address?.find(
+    (addr) => addr.address_id === selectedAddressId
+  );
+
+  const handlePayment = (method: string) => {
+    if (isDeliveryEnabled && !selectedAddressId) {
+      setError("Please select a delivery location first.");
+      return;
+    }
+    
+    const deliveryFeeStr = feeData?.fee?.toString() || "0";
+    const subtotalCalc = cartTotals?.total || cart.cart?.items.reduce((sum, item) => sum + ((item.sale_price || item.unit_price || 0) * item.quantity), 0) || 0;
+    const taxCalc = subtotalCalc * 0.18;
+    const discountCalc = cartTotals?.discount || 0;
+    const computedTotal = subtotalCalc + Number(deliveryFeeStr) + taxCalc - discountCalc;
+
+    const baseParams = {
+      cartId: cart.cart?.cart_id || "",
+      paymentMethod: method,
+      addressId: isDeliveryEnabled ? selectedAddressId : "",
+      deliveryType: isDeliveryEnabled ? selectedDeliveryType : "",
+      vehicleId: isDeliveryEnabled ? (selectedVehicle || "") : "",
+      partnerId: isDeliveryEnabled ? (selectedPartner || "") : "",
+      calculatedFee: deliveryFeeStr,
+      returnTo: returnTo || "cart",
+      productId: productId || "",
+      amount: computedTotal.toString(),
+      deliveryFees: deliveryFeeStr,
+    };
+
+    if (method === "tunzaa_instalments") {
+      router.push({
+        pathname: "/(buyer)/payment/installment-goal",
+        params: baseParams,
+      });
+    } else {
+      router.push({
+        pathname: "/(buyer)/payment/methods",
+        params: baseParams,
+      });
+    }
+  };
+
+  const deliveryFee = feeData?.fee || 0;
+  const subtotal = cartTotals?.total || cartItems.reduce((sum, item) => sum + ((item.sale_price || item.unit_price || 0) * item.quantity), 0) || 0;
+  const tax = subtotal * 0.18; // 18% tax
+  const discount = 0;
+  const totalCosts = subtotal + deliveryFee + tax - discount;
+
   return (
     <DesktopLayoutWrapper
       showSidebar={false}
@@ -560,356 +662,164 @@ const CheckoutScreen = () => {
       showFooter={false}
       containerClassName="bg-white"
     >
-      <SafeAreaView className="flex-1 bg-background">
-        <View
-  className={`${isDesktop ? 'w-[80%]' : ''} max-w-7xl mx-auto bg-white`}>
+      <SafeAreaView className="flex-1 bg-white">
+        <View className={`flex-1 w-full max-w-7xl mx-auto bg-white`}>
           {!isDesktop && (
-            <View className="flex-row justify-between items-center mb-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onPress={handleBackNavigation}
-              >
-                <ArrowLeft size={24} className="text-foreground" />
-              </Button>
-              <Text className="text-lg font-semibold text-foreground">Checkout</Text>
-              <View className="w-6" />
+            <View className="flex-row items-center justify-center p-4 bg-white border-b border-gray-100 w-full relative">
+              <TouchableOpacity onPress={handleBackNavigation} className="absolute left-4">
+                <ArrowLeft size={24} color="#000000" />
+              </TouchableOpacity>
+              <Text className="text-[20px] font-bold text-black text-center">Order Summary</Text>
             </View>
           )}
+
           {error && (
-            <Alert icon={Terminal} variant="destructive" className="mb-4">
-              <Text className="text-sm text-destructive">{error}</Text>
-            </Alert>
+            <View className="mx-4 mt-4">
+              <Alert icon={Terminal} variant="destructive">
+                <Text className="text-sm text-destructive">{error}</Text>
+              </Alert>
+            </View>
           )}
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className="flex-1"
-          >
-            <ScrollView
-              ref={scrollViewRef}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              {isDesktop ? (
-                <View className="flex-row">
-      {/* Left Column - Order Overview */}
-      <View className="w-1/2 pr-4">
-        <View ref={orderOverviewRef}>
-          <Card className="m-4">
-            <CheckoutStepHeader
-              step={CheckoutStep.ORDER_OVERVIEW}
-              title="Order Overview"
-              icon={ShoppingBag}
-              activeStep={CheckoutStep.ORDER_OVERVIEW}
-              isCompleted={isStepCompleted(CheckoutStep.ORDER_OVERVIEW)}
-              onPress={() => {}}
-              disabled={true}
-            />
-            <OrderOverviewSection
-              cartItems={cart.cart?.items.map((item) => ({
-                ...item,
-                variant_id: item.variant_id || undefined,
-              })) || []}
-              optimisticItems={cart.optimisticItems}
-              cartTotals={cartTotals}
-              totalItemCount={cart.getTotalItemCount()}
-              onContinue={() => {}}
-              isLoading={cart.isLoading || cartTotalsLoading}
-            />
-            {(!cart.hasItems() && hasCheckoutProgress) && (
-              <View className="p-4 border-t border-border bg-yellow-50">
-                <Text className="text-sm text-yellow-800 text-center">
-                  Your cart appears empty. This may happen during order processing.
-                </Text>
-              </View>
-            )}
-          </Card>
-        </View>
-      </View>
-      {/* Right Column - Other Steps */}
-      <View className="w-1/2 pl-4">
-        {/* Delivery Address Section - only show if delivery enabled */}
-        {isDeliveryEnabled && (
-        <View ref={deliveryAddressRef}>
-          <Card className={`m-4 ${!isStepAccessible(CheckoutStep.DELIVERY_ADDRESS) ? 'opacity-50' : ''}`}>
-            <CheckoutStepHeader
-              step={CheckoutStep.DELIVERY_ADDRESS}
-              title="Delivery Address"
-              icon={MapPin}
-              activeStep={CheckoutStep.DELIVERY_ADDRESS}
-              isCompleted={isStepCompleted(CheckoutStep.DELIVERY_ADDRESS)}
-              onPress={() => {}}
-              disabled={!isStepAccessible(CheckoutStep.DELIVERY_ADDRESS)}
-            />
-            {isStepAccessible(CheckoutStep.DELIVERY_ADDRESS) ? (
-              <DeliveryAddressSection
-                buyerProfile={buyerProfile as any}
-                selectedAddressId={selectedAddressId}
-                profileLoading={profileLoading}
-                onAddressSelect={handleAddressSelect}
-                onAddNewAddress={() => setShowAddressModal(true)}
-              />
-            ) : (
-              <View className="p-4 border-t border-border">
-                <Text className="text-sm text-muted-foreground text-center">
-                  Please complete the order overview first
-                </Text>
-              </View>
-            )}
-          </Card>
-        </View>
-        )}
-        {/* Delivery Options Section - only show if delivery enabled */}
-        {isDeliveryEnabled && (
-        <View ref={deliveryOptionsRef}>
-          <Card className={`m-4 ${!isStepAccessible(CheckoutStep.DELIVERY_OPTIONS) ? 'opacity-50' : ''}`}>
-            <CheckoutStepHeader
-              step={CheckoutStep.DELIVERY_OPTIONS}
-              title="Delivery Options"
-              icon={Truck}
-              activeStep={CheckoutStep.DELIVERY_OPTIONS}
-              isCompleted={isStepCompleted(CheckoutStep.DELIVERY_OPTIONS)}
-              onPress={() => {}}
-              disabled={!isStepAccessible(CheckoutStep.DELIVERY_OPTIONS)}
-            />
-            {isStepAccessible(CheckoutStep.DELIVERY_OPTIONS) ? (
-              <>
-                {isUsingFallback && (
-                  <View className="p-3 bg-yellow-50 border-b border-yellow-200">
-                    <Text className="text-xs text-yellow-800 text-center">
-                      Using default delivery options
-                    </Text>
+
+          <ScrollView className="flex-1 px-4 pt-4 pb-[300px]" showsVerticalScrollIndicator={false}>
+            {/* My cart */}
+            <Text className="text-[20px] font-bold mb-4 text-black">My cart</Text>
+            
+            {cartItems.map((item) => {
+              const rawImage = item.image_url || item.metadata?.image_url || item.metadata?.image;
+              const imageUrl = typeof rawImage === 'string' 
+                ? rawImage 
+                : (rawImage?.url || 'https://via.placeholder.com/300x300?text=No+Image');
+              const itemName = item.product_name || item.name || item.metadata?.name || 'Product';
+
+              return (
+                <View key={item.item_id || item.product_id} className="mb-8 flex-row items-stretch">
+                  <View className="w-[140px] h-[140px] bg-[#F4F6F9] rounded-3xl overflow-hidden mr-4 items-center justify-center">
+                    {imageUrl ? (
+                      <Image source={{ uri: imageUrl }} className="w-full h-full" resizeMode="cover" />
+                    ) : (
+                      <View className="w-full h-full bg-gray-200" />
+                    )}
                   </View>
-                )}
-                <DeliveryOptionsSection
-                  availableDeliveryTypes={availableDeliveryTypes}
-                  selectedDeliveryType={selectedDeliveryType}
-                  onDeliveryTypeSelect={handleDeliveryTypeSelect}
-                />
-              </>
-            ) : (
-              <View className="p-4 border-t border-border">
-                <Text className="text-sm text-muted-foreground text-center">
-                  Please select a delivery address first
-                </Text>
-              </View>
-            )}
-          </Card>
-        </View>
-        )}
-        <View ref={orderSummaryRef}>
-          <Card className={`m-4 ${!isStepAccessible(CheckoutStep.ORDER_SUMMARY) ? 'opacity-50' : ''}`}>
-            <CheckoutStepHeader
-              step={CheckoutStep.ORDER_SUMMARY}
-              title="Final Review"
-              icon={ShoppingBag}
-              activeStep={CheckoutStep.ORDER_SUMMARY}
-              isCompleted={isStepCompleted(CheckoutStep.ORDER_SUMMARY)}
-              onPress={() => {}}
-              disabled={!isStepAccessible(CheckoutStep.ORDER_SUMMARY)}
-            />
-            {isStepAccessible(CheckoutStep.ORDER_SUMMARY) ? (
-              <OrderSummarySection
-                buyerProfile={buyerProfile}
-                selectedAddressId={selectedAddressId}
-                availableDeliveryTypes={availableDeliveryTypes}
-                selectedDeliveryType={selectedDeliveryType}
-                paymentMethods={PAYMENT_METHODS}
-                selectedPaymentCategory={selectedPaymentCategory}
-                cartTotals={cartTotals}
-                totalItemCount={cart.getTotalItemCount()}
-                onPlaceOrder={handleContinueToPayment}
-                onPaymentCategorySelect={handlePaymentCategorySelect}
-                isPaymentsEnabled={isPaymentsEnabled}
-                isDeliveryEnabled={isDeliveryEnabled}
-                calculatedFee={feeData?.fee}
-              />
-            ) : (
-              <View className="p-4 border-t border-border">
-                <Text className="text-sm text-muted-foreground text-center">
-                  {isDeliveryEnabled ? "Please select delivery options first" : "Please select a payment method"}
-                </Text>
-              </View>
-            )}
-          </Card>
-        </View>
-        <View ref={similarItemsRef} className="m-4">
-          <View className="px-4 max-w-7xl mx-auto">
-            <SimilarItems
-              productId={productId as string}
-              categoryId={cart.cart?.items[0]?.metadata?.category_id}
-              count={6}
-              title="You May Also Like"
-            />
-          </View>
-        </View>
-      </View>
-    </View>
-              ) : (
-                <>
-                  {/* Order Overview Section */}
-                  <View ref={orderOverviewRef}>
-                    <Card className="m-4">
-                      <CheckoutStepHeader
-                        step={CheckoutStep.ORDER_OVERVIEW}
-                        title="Order Overview"
-                        icon={ShoppingBag}
-                        activeStep={CheckoutStep.ORDER_OVERVIEW}
-                        isCompleted={isStepCompleted(CheckoutStep.ORDER_OVERVIEW)}
-                        onPress={() => {}}
-                        disabled={true}
-                      />
-                      <OrderOverviewSection
-                        cartItems={cart.cart?.items.map((item) => ({
-                          ...item,
-                          variant_id: item.variant_id || undefined,
-                        })) || []}
-                        optimisticItems={cart.optimisticItems}
-                        cartTotals={cartTotals}
-                        totalItemCount={cart.getTotalItemCount()}
-                        onContinue={() => {}}
-                        isLoading={cart.isLoading || cartTotalsLoading}
-                      />
-                      {(!cart.hasItems() && hasCheckoutProgress) && (
-                        <View className="p-4 border-t border-border bg-yellow-50">
-                          <Text className="text-sm text-yellow-800 text-center">
-                            Your cart appears empty. This may happen during order processing.
-                          </Text>
-                        </View>
-                      )}
-                    </Card>
-                  </View>
-                  {/* Delivery Address Section - only show if delivery enabled */}
-                  {isDeliveryEnabled && (
-                  <View ref={deliveryAddressRef}>
-                    <Card className={`m-4 ${!isStepAccessible(CheckoutStep.DELIVERY_ADDRESS) ? 'opacity-50' : ''}`}>
-                      <CheckoutStepHeader
-                        step={CheckoutStep.DELIVERY_ADDRESS}
-                        title="Delivery Address"
-                        icon={MapPin}
-                        activeStep={CheckoutStep.DELIVERY_ADDRESS}
-                        isCompleted={isStepCompleted(CheckoutStep.DELIVERY_ADDRESS)}
-                        onPress={() => {}}
-                        disabled={!isStepAccessible(CheckoutStep.DELIVERY_ADDRESS)}
-                      />
-                      {isStepAccessible(CheckoutStep.DELIVERY_ADDRESS) ? (
-                        <DeliveryAddressSection
-                          buyerProfile={buyerProfile as any}
-                          selectedAddressId={selectedAddressId}
-                          profileLoading={profileLoading}
-                          onAddressSelect={handleAddressSelect}
-                          onAddNewAddress={() => setShowAddressModal(true)}
-                        />
-                      ) : (
-                        <View className="p-4 border-t border-border">
-                          <Text className="text-sm text-muted-foreground text-center">
-                            Please complete the order overview first
-                          </Text>
-                        </View>
-                      )}
-                    </Card>
-                  </View>
-                  )}
-                  {/* Delivery Options Section - only show if delivery enabled */}
-                  {isDeliveryEnabled && (
-                  <View ref={deliveryOptionsRef}>
-                    <Card className={`m-4 ${!isStepAccessible(CheckoutStep.DELIVERY_OPTIONS) ? 'opacity-50' : ''}`}>
-                      <CheckoutStepHeader
-                        step={CheckoutStep.DELIVERY_OPTIONS}
-                        title="Delivery Options"
-                        icon={Truck}
-                        activeStep={CheckoutStep.DELIVERY_OPTIONS}
-                        isCompleted={isStepCompleted(CheckoutStep.DELIVERY_OPTIONS)}
-                        onPress={() => {}}
-                        disabled={!isStepAccessible(CheckoutStep.DELIVERY_OPTIONS)}
-                      />
-                      {isStepAccessible(CheckoutStep.DELIVERY_OPTIONS) ? (
-                        <>
-                          {isUsingFallback && (
-                            <View className="p-3 bg-yellow-50 border-b border-yellow-200">
-                              <Text className="text-xs text-yellow-800 text-center">
-                                Using default delivery options
-                              </Text>
-                            </View>
-                          )}
-                          <DeliveryOptionsSection
-                            availableDeliveryTypes={availableDeliveryTypes}
-                            selectedDeliveryType={selectedDeliveryType}
-                            onDeliveryTypeSelect={handleDeliveryTypeSelect}
-                          />
-                        </>
-                      ) : (
-                        <View className="p-4 border-t border-border">
-                          <Text className="text-sm text-muted-foreground text-center">
-                            Please select a delivery address first
-                          </Text>
-                        </View>
-                      )}
-                    </Card>
-                  </View>
-                  )}
-                  {/* Order Summary Section */}
-                  <View ref={orderSummaryRef}>
-                    <Card className={`m-4 ${!isStepAccessible(CheckoutStep.ORDER_SUMMARY) ? 'opacity-50' : ''}`}>
-                      <CheckoutStepHeader
-                        step={CheckoutStep.ORDER_SUMMARY}
-                        title="Final Review"
-                        icon={ShoppingBag}
-                        activeStep={CheckoutStep.ORDER_SUMMARY}
-                        isCompleted={isStepCompleted(CheckoutStep.ORDER_SUMMARY)}
-                        onPress={() => {}}
-                        disabled={!isStepAccessible(CheckoutStep.ORDER_SUMMARY)}
-                      />
-                      {isStepAccessible(CheckoutStep.ORDER_SUMMARY) ? (
-                        <OrderSummarySection
-                          buyerProfile={buyerProfile}
-                          selectedAddressId={selectedAddressId}
-                          availableDeliveryTypes={availableDeliveryTypes}
-                          selectedDeliveryType={selectedDeliveryType}
-                          paymentMethods={PAYMENT_METHODS}
-                          selectedPaymentCategory={selectedPaymentCategory}
-                          cartTotals={cartTotals}
-                          totalItemCount={cart.getTotalItemCount()}
-                          onPlaceOrder={handleContinueToPayment}
-                          onPaymentCategorySelect={handlePaymentCategorySelect}
-                          isPaymentsEnabled={isPaymentsEnabled}
-                          isDeliveryEnabled={isDeliveryEnabled}
-                        />
-                      ) : (
-                        <View className="p-4 border-t border-border">
-                          <Text className="text-sm text-muted-foreground text-center">
-                            {isDeliveryEnabled ? "Please select delivery options first" : "Please select a payment method"}
-                          </Text>
-                        </View>
-                      )}
-                    </Card>
-                  </View>
-                  {/* SimilarItems Section */}
-                  <View ref={similarItemsRef} className="m-4">
-                    <View className="px-4 max-w-7xl mx-auto">
-                      <SimilarItems
-                        productId={productId as string}
-                        categoryId={cart.cart?.items[0]?.metadata?.category_id}
-                        count={6}
-                        title="You May Also Like"
-                      />
+                  <View className="flex-1 justify-between py-2">
+                    <View>
+                      <Text className="text-[16px] text-[#3B5191] font-normal mb-1" numberOfLines={2}>{itemName}</Text>
+                      <Text className="text-[18px] font-bold text-black mb-2">Tsh. {(item.sale_price || item.unit_price || 0).toLocaleString()}</Text>
+                    </View>
+                    <View className="flex-row items-center justify-between mt-auto">
+                      <View className="flex-row items-center bg-[#F4F6F9] rounded-full h-10 px-1 w-[100px] justify-between">
+                        <TouchableOpacity 
+                          className="w-8 h-8 items-center justify-center" 
+                          onPress={() => cart.updateCartItemQuantity(item.product_id, item.metadata?.sku, Math.max(1, item.quantity - 1))}
+                        >
+                          <Text className="text-gray-500 text-xl leading-none font-medium">-</Text>
+                        </TouchableOpacity>
+                        <Text className="font-medium text-[15px] text-black">{item.quantity || 1}</Text>
+                        <TouchableOpacity 
+                          className="w-8 h-8 items-center justify-center bg-[#3B5191] rounded-full shadow-sm" 
+                          onPress={() => cart.updateCartItemQuantity(item.product_id, item.metadata?.sku, item.quantity + 1)}
+                        >
+                          <Text className="text-white text-lg font-medium leading-none">+</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <TouchableOpacity onPress={() => cart.removeCartItem(item.product_id, item.metadata?.sku)} className="px-2">
+                        <Trash2 size={18} color="#EF4444" />
+                      </TouchableOpacity>
                     </View>
                   </View>
-                </>
-              )}
-            </ScrollView>
-          </KeyboardAvoidingView>
+                </View>
+              );
+            })}
+
+            {/* Order(1 item) */}
+            <Text className="text-[20px] font-bold mb-4 text-black mt-2">Order({cart.getTotalItemCount()} item{cart.getTotalItemCount() !== 1 ? 's' : ''})</Text>
+            
+            <View className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-[40px]">
+              {cartItems.map((item, index) => {
+                const itemName = item.product_name || item.name || item.metadata?.name || 'product';
+                return (
+                  <View key={`summary-${item.item_id || item.product_id}`}>
+                    <View className="flex-row justify-between mb-4">
+                      <Text className="text-[#6B7280] text-[18px]">Product</Text>
+                      <Text className="text-black text-[18px]" numberOfLines={1}>
+                        {itemName}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between mb-4">
+                      <Text className="text-[#6B7280] text-[18px]">Price</Text>
+                      <Text className="text-black text-[18px]">Tsh. {((item.sale_price || item.unit_price || 0) * item.quantity).toLocaleString()}</Text>
+                    </View>
+                    {index < cartItems.length - 1 && <View className="h-[1px] bg-gray-100 my-4" />}
+                  </View>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          {/* Fixed Bottom Section */}
+          <View className="absolute bottom-0 left-0 right-0 bg-white" style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -10 },
+            shadowOpacity: 0.05,
+            shadowRadius: 20,
+            elevation: 20,
+          }}>
+            <View className="p-6">
+              <View className="flex-row justify-between mb-5">
+                <Text className="text-[#6B7280] text-[18px]">Subtotal</Text>
+                <Text className="text-black font-bold text-[18px]">Tsh. {subtotal.toLocaleString()}</Text>
+              </View>
+              <View className="flex-row justify-between mb-5">
+                <Text className="text-[#6B7280] text-[18px]">Discount</Text>
+                <Text className="text-[#6B7280] text-[18px]">Tsh. {discount.toLocaleString()}</Text>
+              </View>
+              <View className="flex-row justify-between mb-5">
+                <Text className="text-[#6B7280] text-[18px]">Delivery Fees</Text>
+                <Text className="text-black font-bold text-[18px]">Tsh. {deliveryFee.toLocaleString()}</Text>
+              </View>
+              <View className="flex-row justify-between mb-7">
+                <Text className="text-[#6B7280] text-[18px]">Tax (18%)</Text>
+                <Text className="text-black font-bold text-[18px]">Tsh. {tax.toLocaleString()}</Text>
+              </View>
+              
+              <View className="h-[1px] bg-gray-100 mb-6" />
+              
+              <View className="flex-row justify-between items-center mb-8">
+                <Text className="text-black font-bold text-[18px]">Total costs</Text>
+                <Text className="text-black font-bold text-[24px]">Tsh. {totalCosts.toLocaleString()}</Text>
+              </View>
+
+              {/* Bottom Actions */}
+              <View className="flex-row justify-between items-center">
+                <TouchableOpacity 
+                  className="flex-1 bg-[#00B200] rounded-full items-center justify-center py-2 h-14 flex-col mr-2"
+                  onPress={() => handlePayment('tunzaa_instalments')}
+                >
+                  <Text className="text-white font-bold text-[16px] leading-tight mb-0.5">Installment</Text>
+                  <Text className="text-white text-[11px] font-medium opacity-90 leading-tight">Tunzaa 10,000 Tsh/wiki</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  className="flex-1 bg-[#3B5191] rounded-full items-center justify-center py-2 h-14 ml-2"
+                  onPress={() => handlePayment('mobile_money')}
+                >
+                  <Text className="text-white font-bold text-[16px]">Full Payment</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </View>
+
         {isDeliveryEnabled && (
-        <AddressModal
-          isOpen={showAddressModal}
-          address={selectedAddress}
-          onClose={() => {
-            setShowAddressModal(false);
-            setSelectedAddress(null);
-          }}
-          onSubmit={handleAddressModalSubmit}
-        />
+          <AddressModal
+            isOpen={showAddressModal}
+            address={selectedAddress}
+            onClose={() => {
+              setShowAddressModal(false);
+              setSelectedAddress(null);
+            }}
+            onSubmit={handleAddressModalSubmit}
+          />
         )}
       </SafeAreaView>
     </DesktopLayoutWrapper>

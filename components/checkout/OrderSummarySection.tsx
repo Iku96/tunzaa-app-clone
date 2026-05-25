@@ -106,7 +106,7 @@ export const OrderSummarySection: React.FC<OrderSummarySectionProps> = ({
           <MapPin size={16} className="text-muted-foreground mr-2" />
           <Text className="text-sm text-muted-foreground flex-1 ml-2">
             {
-              buyerProfile?.delivery_address.find(
+              buyerProfile?.delivery_address?.find(
                 (addr) => addr.address_id === selectedAddressId
               )?.title
             }

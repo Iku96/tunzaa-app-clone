@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     productPrice: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#315BA9',
+        color: '#425BA4',
         marginTop: 2,
     },
     productMeta: {
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     activeDot: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     line: {
         width: 2,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
         marginBottom: -4,
     },
     activeLine: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     timelineText: {
         fontSize: 14,

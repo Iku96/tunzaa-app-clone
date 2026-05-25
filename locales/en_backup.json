@@ -1,6 +1,6 @@
 {
   "auth": {
-    "welcome": "Welcome to Afrizon!",
+    "welcome": "Welcome to Tunzaa!",
     "welcome_back": "Welcome back!",
     "enter_or_create_account": "Enter or create an account in a few easy steps.",
     "log_in_to_account": "Log in to your account",
@@ -367,7 +367,7 @@
     "terms_of_service": "Terms of Service"
   },
   "onboarding": {
-    "welcome_to_afrizon": "Welcome to Afrizon!",
+    "welcome_to_tunzaa": "Welcome to Tunzaa!",
     "go_to_app_description": "Your go-to app for a hassle-free life. We are here to help with all your needs anytime, anywhere.",
     "fresh_groceries_delivered": "Fresh Groceries Delivered",
     "fresh_produce_description": "Get fresh produce and groceries delivered to your doorstep within hours.",

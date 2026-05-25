@@ -17,9 +17,9 @@ export const PushNotificationsProvider: React.FC<
     canRequestPermission,
     blocked,
     loading,
-    requestPermissions,
     isSupported,
     currentToken,
+    initialize,
   } = usePushNotifications();
 
   // Initialize push notifications when user is logged in
@@ -75,6 +75,16 @@ export const PushNotificationsProvider: React.FC<
     isSupported,
     loading,
   ]);
+
+  // Trigger token registration explicitly when the user logs in
+  useEffect(() => {
+    if (isAuthenticated && hasPermission && isSupported && !loading) {
+      console.log("🔄 [Push Provider] User is authenticated and has permission - ensuring token is registered...");
+      // initialize() gets the token and attempts to register it. Since we cleared the local cache 
+      // when it previously failed while unauthenticated, it will successfully register now.
+      initialize();
+    }
+  }, [isAuthenticated, hasPermission, isSupported, loading, initialize]);
 
   // Log token changes for debugging
   useEffect(() => {

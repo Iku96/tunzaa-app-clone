@@ -31,7 +31,7 @@ export default function DeliveryRouteCard({
         <View style={styles.card}>
             <View style={styles.header}>
                 <View style={styles.iconContainer}>
-                    <Ionicons name="cube-outline" size={24} color="#315BA9" />
+                    <Ionicons name="cube-outline" size={24} color="#425BA4" />
                 </View>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.title}>Package is on its way</Text>
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     activeDot: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     stepText: {
         fontSize: 12,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
         marginHorizontal: -15,
     },
     activeLine: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     driverInfoContainer: {
         flexDirection: 'row',

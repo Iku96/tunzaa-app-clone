@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useReducer } from "react";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type UseStateHook<T> = [
   [boolean, T | null],
@@ -31,14 +32,23 @@ export async function setStorageItemAsync(key: string, value: string | null) {
       console.error("Local storage is unavailable:", e);
     }
   } else {
+    const useSecure = key.includes("Token");
     try {
-      if (value === null) {
-        await SecureStore.deleteItemAsync(key);
+      if (useSecure) {
+        if (value === null) {
+          await SecureStore.deleteItemAsync(key);
+        } else {
+          await SecureStore.setItemAsync(key, value);
+        }
       } else {
-        await SecureStore.setItemAsync(key, value);
+        if (value === null) {
+          await AsyncStorage.removeItem(key);
+        } else {
+          await AsyncStorage.setItem(key, value);
+        }
       }
     } catch (e) {
-      console.error("SecureStore error:", e);
+      console.error(`${useSecure ? "SecureStore" : "AsyncStorage"} error for key ${key}:`, e);
     }
   }
 }
@@ -58,11 +68,14 @@ export function useStorageState(key: string): UseStateHook<string> {
           setState(null);
         }
       } else {
+        const useSecure = key.includes("Token");
         try {
-          const val = await SecureStore.getItemAsync(key);
+          const val = useSecure
+            ? await SecureStore.getItemAsync(key)
+            : await AsyncStorage.getItem(key);
           setState(val);
         } catch (e) {
-          console.error("SecureStore error:", e);
+          console.error(`${useSecure ? "SecureStore" : "AsyncStorage"} error for key ${key}:`, e);
           setState(null);
         }
       }
@@ -80,3 +93,4 @@ export function useStorageState(key: string): UseStateHook<string> {
 
   return [state, setValue];
 }
+

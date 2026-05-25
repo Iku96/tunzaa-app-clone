@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     callButton: {
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
         width: 40,
         height: 40,
         borderRadius: 8,

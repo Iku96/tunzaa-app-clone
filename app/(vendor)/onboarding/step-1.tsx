@@ -180,11 +180,11 @@ export default function Step1Details() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#315BA9' },
+    container: { flex: 1, backgroundColor: '#425BA4' },
     contentContainer: { flexGrow: 1, paddingBottom: 100 },
     staticContent: { paddingHorizontal: 20, paddingBottom: 20 },
     title: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'left', marginTop: 0, fontFamily: 'Gilroy-Bold' },
-    subtitle: { fontSize: 14, color: '#E0E7FF', textAlign: 'left', marginTop: 8, marginBottom: 25, paddingRight: 20, lineHeight: 20, fontFamily: 'System' },
+    subtitle: { fontSize: 14, color: '#E0E7FF', textAlign: 'left', marginTop: 8, marginBottom: 25, paddingRight: 20, lineHeight: 20, fontFamily: 'Gilroy-Regular' },
     card: { backgroundColor: '#FFFFFF', borderRadius: 20, width: '100%', alignSelf: 'center', minHeight: 396, paddingBottom: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84, elevation: 5 },
     coverImageContainer: { width: '100%', height: 112, backgroundColor: '#CBDAFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, position: 'relative', justifyContent: 'center', overflow: 'hidden' },
     coverImage: { width: '100%', height: '100%' },
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     textArea: { textAlign: 'left', backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, height: 120, fontWeight: '400', fontSize: 14, marginTop: 6, color: '#111827', textAlignVertical: 'top' },
     charCount: { fontSize: 10, color: '#9CA3AF', textAlign: 'right', marginTop: 4 },
     requiredText: { fontSize: 12, color: '#9CA3AF', marginTop: 4 },
-    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20, backgroundColor: '#315BA9' },
+    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 40, paddingTop: 20, backgroundColor: '#425BA4' },
     backButton: { width: 154, height: 53, borderRadius: 8, borderWidth: 1, borderColor: '#7EC155', backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
     buttonTextOutline: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
     nextButton: { width: 154, height: 53, borderRadius: 8, backgroundColor: '#84CC16', alignItems: 'center', justifyContent: 'center' },

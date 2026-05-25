@@ -547,8 +547,7 @@ export default function OrderDetailsScreen({ orderId }: { orderId: string }) {
               <View className="flex-row justify-between">
                 <Text className="text-muted-foreground">Payment Method:</Text>
                 <Text className="text-foreground capitalize">
-                  {/* {order.payment_details.method} */}
-                  AFRIZON
+                  {order.payment_details.method}
                 </Text>
               </View>
 

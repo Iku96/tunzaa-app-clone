@@ -78,7 +78,7 @@ const TabLayout = () => {
         //   tabBarActiveTintColor: resolvedColors?.primary || colors.primary,
         //   tabBarInactiveTintColor: "#6B7280",
         //   tabBarLabelStyle: {
-        //     fontFamily: "InterMedium",
+        //     fontFamily: 'Gilroy-Medium',
         //     fontSize: 12,
         //     marginBottom: 4,
         //   },
@@ -93,7 +93,7 @@ const TabLayout = () => {
           tabBarActiveTintColor: resolvedColors?.primary || colors.primary,
           tabBarInactiveTintColor: resolvedColors?.muted || "#666666",
           tabBarLabelStyle: {
-            fontFamily: "InterMedium",
+            fontFamily: 'Gilroy-Medium',
             fontSize: 12,
             marginBottom: 4,
           },

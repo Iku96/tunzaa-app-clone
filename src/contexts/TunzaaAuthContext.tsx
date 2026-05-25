@@ -28,6 +28,8 @@ export interface TunzaaAuthContextType {
     submitDeliveryKyc: (documents: any[]) => Promise<any>;
     switchRole: (role: string) => Promise<void>;
     hasPermission: (permission: string) => boolean;
+    signInWithGoogle: () => Promise<TunzaaUser | null>;
+    signInWithApple: () => Promise<TunzaaUser | null>;
     isSidebarOpen: boolean;
     setIsSidebarOpen: (open: boolean) => void;
     isLoggingOut: boolean;
@@ -507,7 +509,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                             branding: { 
                                 logo_url: logo, 
                                 banner_url: banner,
-                                colors: vendorData.metadata?.colors || vendorData.colors || { primary: '#315BA9', secondary: '#84CC16', accent: '#FBBF24', text: '#1F2937', background: '#FFFFFF' }
+                                colors: vendorData.metadata?.colors || vendorData.colors || { primary: '#425BA4', secondary: '#84CC16', accent: '#FBBF24', text: '#1F2937', background: '#FFFFFF' }
                             },
                             banners: banner ? [banner] : []
                         }
@@ -553,6 +555,20 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             return true;
         },
         saveAuthResponse: storeUserData,
+        signInWithGoogle: async () => {
+            const response = await socialAuth.signInWithGoogle();
+            if (response) {
+                return await storeUserData(response);
+            }
+            return null;
+        },
+        signInWithApple: async () => {
+            const response = await socialAuth.signInWithApple();
+            if (response) {
+                return await storeUserData(response);
+            }
+            return null;
+        },
         
         createVendor: async (vendorData: any) => {
             const previousState = userRef.current;
@@ -585,7 +601,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             
             const normalizedDocs = documents.map(doc => {
                 const url = doc.document_url || doc.url || doc.image_url || doc.link;
-                const id = (doc.document_type_id || doc.id || '').toString().toLowerCase();
+                const id = (doc.document_type_id || doc.id || '').toString();
                 return {
                     document_type_id: id,
                     document_url: url,

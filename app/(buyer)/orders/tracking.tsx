@@ -168,7 +168,7 @@ export default function TrackingScreen() {
                     <View
                       className="w-10 h-10 rounded-full items-center justify-center"
                       style={{
-                        backgroundColor: isActive ? "#315BA9" : "#F3F4F6",
+                        backgroundColor: isActive ? "#425BA4" : "#F3F4F6",
                       }}
                     >
                       <Ionicons
@@ -181,7 +181,7 @@ export default function TrackingScreen() {
                       <View
                         className="flex-1 h-1 mx-2 rounded-full"
                         style={{
-                          backgroundColor: statusStep > index ? "#315BA9" : "#F3F4F6",
+                          backgroundColor: statusStep > index ? "#425BA4" : "#F3F4F6",
                         }}
                       />
                     )}
@@ -223,7 +223,7 @@ export default function TrackingScreen() {
             {/* Contact Button */}
             <TouchableOpacity
               className="w-full py-4 rounded-3xl flex-row items-center justify-center"
-              style={{ backgroundColor: "#315BA9" }}
+              style={{ backgroundColor: "#425BA4" }}
               onPress={handleCall}
             >
               <Phone size={18} color="#FFFFFF" />

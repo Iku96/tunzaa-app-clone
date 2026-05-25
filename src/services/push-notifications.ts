@@ -287,7 +287,7 @@ class PushNotificationsService {
   /**
    * Register token with backend
    */
-  private async registerTokenWithBackend(token: string): Promise<void> {
+    private async registerTokenWithBackend(token: string): Promise<void> {
     try {
       const deviceType = Platform.OS as "ios" | "android";
 
@@ -300,7 +300,16 @@ class PushNotificationsService {
       });
 
       console.log("✅ [FCM Token] Successfully registered with backend");
-    } catch (error) {
+    } catch (error: any) {
+      // Clear the token cache so we re-attempt registration later (e.g. after login)
+      this.currentToken = null;
+      
+      const status = error?.apiError?.status || error?.response?.status;
+      if (status === 401 || status === 422) {
+        console.log("ℹ️ [FCM Token] Deferred token registration: User is not authenticated yet.");
+        return;
+      }
+      
       console.error("❌ [FCM Token] Failed to register token with backend:", error);
     }
   }

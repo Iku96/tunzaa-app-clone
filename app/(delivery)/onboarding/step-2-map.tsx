@@ -316,7 +316,7 @@ export default function Step3Map() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#315BA9' },
+    container: { flex: 1, backgroundColor: '#425BA4' },
     contentContainer: { flexGrow: 1, paddingBottom: 40 },
     staticContent: { paddingHorizontal: 20, paddingTop: 10 },
     title: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'left', fontFamily: 'Gilroy-Bold' },

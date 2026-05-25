@@ -19,12 +19,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons, FontAwesome, FontAwesome5, FontAwesome6 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Global Contexts
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { useLanguage } from '@/src/contexts/LanguageContext';
+import { formatPhoneNumber } from '@/src/utils/phone';
 
 export default function LoginScreen() {
     const { t } = useLanguage();
@@ -67,9 +68,7 @@ export default function LoginScreen() {
             // Determine if input is a phone number or email to format it correctly for the backend
             const trimmedInput = usernameOrEmail.trim();
             const isPhone = !trimmedInput.includes('@');
-            const identifier = isPhone && !trimmedInput.startsWith('+')
-                ? `+255${trimmedInput.replace(/^0/, '')}`
-                : trimmedInput;
+            const identifier = isPhone ? formatPhoneNumber(trimmedInput) : trimmedInput;
 
             const portalTarget = targetRole === 'merchant' ? 'merchant'
                                : targetRole === 'delivery' ? 'delivery'
@@ -212,7 +211,7 @@ export default function LoginScreen() {
                                     onPress={() => router.push('/forgot-password')}
                                     style={{ alignSelf: 'flex-end', marginTop: 4 }}
                                 >
-                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#3B5191' }}>Forgot Password?</Text>
+                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#425BA4' }}>Forgot Password?</Text>
                                 </TouchableOpacity>
                             </View>
 
@@ -221,18 +220,18 @@ export default function LoginScreen() {
                                 style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 24 }}
                                 onPress={() => setAgreedToTerms(!agreedToTerms)}
                             >
-                                <View style={[{ width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#EFF3F9', marginRight: 10, alignItems: 'center', justifyContent: 'center' }, agreedToTerms && { backgroundColor: '#3B5191', borderColor: '#3B5191' }]}>
+                                <View style={[{ width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#EFF3F9', marginRight: 10, alignItems: 'center', justifyContent: 'center' }, agreedToTerms && { backgroundColor: '#425BA4', borderColor: '#425BA4' }]}>
                                     {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                 </View>
                                 <Text style={{ fontSize: 13, lineHeight: 18, color: '#4B5563', flex: 1 }}>
                                     I have read agree to Tunzaa{" "}
-                                    <Text style={{ color: '#3B5191', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                                    <Text style={{ color: '#425BA4', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Button: Log In */}
                             <TouchableOpacity 
-                                style={{ height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 32 }} 
+                                style={{ height: 54, backgroundColor: '#425BA4', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 32 }} 
                                 onPress={handleLogin} 
                                 disabled={loading}
                             >
@@ -330,11 +329,7 @@ export default function LoginScreen() {
                                     {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                 </View>
                                 <Text style={styles.termsText}>
-                                    {t.loginAgreedTerms.split('Terms and Conditions')[0]}
-                                    <Text style={styles.termsLink} onPress={() => router.push('/terms')}>
-                                        {t.registerTermsLink}
-                                    </Text>
-                                    {t.loginAgreedTerms.split('Terms and Conditions')[1]}
+                                    I agree to the <Text style={styles.termsLink}>Terms and Conditions</Text>
                                 </Text>
                             </TouchableOpacity>
 
@@ -358,26 +353,21 @@ export default function LoginScreen() {
                                 <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
                                     <Ionicons name="logo-apple" size={22} color="#1D1E1F" />
                                 </TouchableOpacity>
-
-                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
-                                    <FontAwesome name="facebook-f" size={20} color="#1877F2" />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('x')}>
-                                    <FontAwesome5 name="twitter" size={20} color="#1D1E1F" />
-                                </TouchableOpacity>
                             </View>
 
                             {/* Sign Up Link */}
                             <View style={styles.signUpContainer}>
                                 <TouchableOpacity onPress={() => router.push('/register')} className="flex-row items-center">
-                                    <Text style={styles.signUpText}>{t.loginNoAccount}</Text>
+                                    <Text style={styles.signUpText}>Don't have an account? <Text style={{ color: '#425BA4', fontWeight: '600' }}>Sign up</Text></Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
 
                         {/* Skip Button */}
-                        <TouchableOpacity style={styles.skipButton} onPress={() => router.replace('/(buyer)')}>
+                        <TouchableOpacity style={styles.skipButton} onPress={async () => {
+                            await AsyncStorage.setItem('LAST_PORTAL', 'buyer');
+                            router.replace('/(buyer)');
+                        }}>
                             <Text style={styles.skipText}>{t.loginSkip}</Text>
                             <Text style={styles.skipArrow}>→</Text>
                         </TouchableOpacity>
@@ -394,23 +384,23 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 24, paddingTop: 40, justifyContent: 'space-between', paddingBottom: 20 },
     contentWrapper: { width: '100%', maxWidth: 353, alignSelf: 'center' },
     header: { alignItems: 'center', marginBottom: 24 },
-    title: { fontSize: 20, fontWeight: '700', color: '#1D1E1F', textAlign: 'center' },
+    title: { fontSize: 24, fontWeight: '700', color: '#1D1E1F', textAlign: 'center' },
     subtitle: { fontSize: 14, fontWeight: '400', color: '#666666', textAlign: 'center', marginTop: 6 },
     logoContainer: { alignItems: 'center', marginBottom: 24 },
-    logo: { width: 170, height: 60 },
+    logo: { width: 220, height: 75 },
     formContainer: { gap: 16 },
-    input: { height: 54, backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1D1E1F' },
-    passwordContainer: { height: 54, backgroundColor: '#F3F4F6', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 },
+    input: { height: 54, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1D1E1F' },
+    passwordContainer: { height: 54, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 },
     passwordInput: { flex: 1, fontSize: 16, color: '#1D1E1F' },
     eyeIcon: { padding: 4 },
     forgotPasswordContainer: { alignSelf: 'flex-end', marginTop: 8 },
-    forgotPassword: { fontSize: 14, fontWeight: '600', color: '#3B5191' },
+    forgotPassword: { fontSize: 14, fontWeight: '600', color: '#425BA4' },
     termsContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 16 },
-    checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
-    checkboxChecked: { backgroundColor: '#3B5191', borderColor: '#3B5191' },
+    checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#EFF3F9', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
+    checkboxChecked: { backgroundColor: '#425BA4', borderColor: '#425BA4' },
     termsText: { fontSize: 13, color: '#666666', flex: 1 },
-    termsLink: { color: '#3B5191', fontWeight: '600' },
-    loginButton: { height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
+    termsLink: { color: '#425BA4', fontWeight: '600' },
+    loginButton: { height: 54, backgroundColor: '#425BA4', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
     loginButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
     dividerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 24, marginBottom: 20 },
     dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
@@ -420,6 +410,6 @@ const styles = StyleSheet.create({
     signUpContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 8 },
     signUpText: { fontSize: 14, color: '#1D1E1F' },
     skipButton: { flexDirection: 'row', alignSelf: 'center', alignItems: 'center', paddingBottom: 20, marginTop: 16 },
-    skipText: { fontSize: 16, fontWeight: '500', color: '#3B5191', marginRight: 8 },
-    skipArrow: { fontSize: 16, color: '#3B5191', fontWeight: '500' },
+    skipText: { fontSize: 16, fontWeight: '500', color: '#425BA4', marginRight: 8 },
+    skipArrow: { fontSize: 16, color: '#425BA4', fontWeight: '500' },
 });

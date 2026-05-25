@@ -125,7 +125,7 @@ export const vendorsApi = {
   // Get All Vendors
   getVendors: async (params?: VendorsParams): Promise<VendorsResponse> => {
     const response = await apiClient.get<VendorsResponse>(
-      "/marketplace/vendors/",
+      "/marketplace/vendors",
       { params }
     );
     return response.data;

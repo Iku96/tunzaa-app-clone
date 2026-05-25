@@ -25,8 +25,8 @@ export function mapApiProductToUI(product: Product) {
         price: product.base_price_raw || product.base_price || 0,
         originalPrice: (product.sale_price_raw || product.sale_price) ? (product.base_price_raw || product.base_price) : undefined,
         image: imageUrl || 'https://via.placeholder.com/300x300?text=No+Image',
-        rating: 0,
-        reviews: 0,
+        rating: product.rating || product.average_rating || 0,
+        reviews: product.reviews || product.review_count || 0,
         vendor: {
             id: product.store_id || product.store?.store_id || '1',
             name: product.store?.store_name || 'Vendor',

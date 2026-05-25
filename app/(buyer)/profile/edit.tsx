@@ -14,6 +14,7 @@ import { useProfileCompletion } from '../../../src/hooks/useProfileCompletion';
 import { getAvatarUrl, isValidUrl, cleanseImageUrl } from '../../../src/utils/images';
 import { uploadApi } from '../../../src/services/upload';
 import { API_CONFIG } from '../../../src/services/config';
+import * as Location from 'expo-location';
 
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 
@@ -40,8 +41,11 @@ export default function EditProfileScreen() {
     const [phone, setPhone] = useState(user?.phone_number || '');
     const [dob, setDob] = useState('');
     const [gender, setGender] = useState('');
+    const [location, setLocation] = useState('');
+    const [locationCoords, setLocationCoords] = useState<{lat: number, lng: number} | null>(null);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
     // UI state
     const [showGenderPicker, setShowGenderPicker] = useState(false);
@@ -80,12 +84,16 @@ export default function EditProfileScreen() {
                     username: apiMeta.username || localData.username || '',
                     gender: apiMeta.gender || localData.gender || '',
                     date_of_birth: apiMeta.date_of_birth || localData.date_of_birth || '',
+                    preferred_location: apiMeta.preferred_location || localData.preferred_location || '',
+                    location_coords: apiMeta.location_coords || localData.location_coords || null,
                     profile_picture: apiMeta.profile_picture || localData.profile_picture || '',
                 };
 
                 if (merged.username) setUsername(merged.username);
                 if (merged.gender) setGender(merged.gender);
                 if (merged.profile_picture) setProfileImage(merged.profile_picture);
+                if (merged.preferred_location) setLocation(merged.preferred_location);
+                if (merged.location_coords) setLocationCoords(merged.location_coords);
                 if (merged.date_of_birth) {
                     setDob(merged.date_of_birth);
                     const parts = merged.date_of_birth.split('/');
@@ -109,6 +117,36 @@ export default function EditProfileScreen() {
         const formatted = `${day}/${month}/${selectedYear}`;
         setDob(formatted);
         setShowDatePicker(false);
+    };
+
+    // ---- Location Picker ----
+    const handleUseCurrentLocation = async () => {
+        setIsFetchingLocation(true);
+        try {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission denied', 'Please allow access to your location to use this feature.');
+                setIsFetchingLocation(false);
+                return;
+            }
+
+            let loc = await Location.getCurrentPositionAsync({});
+            const { latitude, longitude } = loc.coords;
+            setLocationCoords({ lat: latitude, lng: longitude });
+
+            const [geocode] = await Location.reverseGeocodeAsync({ latitude, longitude });
+            if (geocode) {
+                const readableLocation = [geocode.street, geocode.city, geocode.region].filter(Boolean).join(', ');
+                setLocation(readableLocation || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            } else {
+                setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            }
+        } catch (error) {
+            console.error('Error fetching location:', error);
+            Alert.alert('Error', 'Failed to get current location. Please try again or enter manually.');
+        } finally {
+            setIsFetchingLocation(false);
+        }
     };
 
     // ---- Profile Photo Picker ----
@@ -257,6 +295,8 @@ export default function EditProfileScreen() {
                 username: username || undefined,
                 gender: gender || undefined,
                 date_of_birth: dob || undefined,
+                preferred_location: location || undefined,
+                location_coords: locationCoords,
                 profile_picture: cleanseImageUrl(profileImage || targetProfile?.metadata?.profile_picture || undefined),
             };
 
@@ -286,6 +326,8 @@ export default function EditProfileScreen() {
             if (username) localData.username = username;
             if (gender) localData.gender = gender;
             if (dob) localData.date_of_birth = dob;
+            if (location) localData.preferred_location = location;
+            if (locationCoords) localData.location_coords = locationCoords;
             await AsyncStorage.setItem(`${PROFILE_EXTRAS_KEY}_${targetUserId}`, JSON.stringify(localData));
 
             // 3. Also try saving to API metadata
@@ -429,6 +471,31 @@ export default function EditProfileScreen() {
                                 {gender || 'Choose gender'}
                             </Text>
                             <Ionicons name="chevron-down" size={20} color="#6B7280" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Location */}
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.label}>Preferred delivery location</Text>
+                        <View style={styles.inputWrapper}>
+                            <TextInput
+                                style={styles.input}
+                                value={location}
+                                onChangeText={setLocation}
+                                placeholder="Enter location"
+                                placeholderTextColor="#9CA3AF"
+                            />
+                            <Ionicons name="location-outline" size={20} color="#6B7280" />
+                        </View>
+                        <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }} onPress={handleUseCurrentLocation} disabled={isFetchingLocation}>
+                            {isFetchingLocation ? (
+                                <ActivityIndicator size="small" color="#425BA4" style={{ marginRight: 6 }} />
+                            ) : (
+                                <Ionicons name="navigate-circle-outline" size={18} color="#425BA4" style={{ marginRight: 6 }} />
+                            )}
+                            <Text style={{ color: '#425BA4', fontSize: 14, fontWeight: '600' }}>
+                                {isFetchingLocation ? 'Locating...' : 'Use Current Location'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>

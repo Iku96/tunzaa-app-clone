@@ -35,6 +35,8 @@ import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 import { CategorySelector } from '@/components/vendor/CategorySelector';
 import { uploadApi } from '@/src/services/upload';
 import { getAvatarUrl, getVendorLogoUrl } from '@/src/utils/images';
+import { useEntities } from '@/src/services/configuration';
+import { API_CONFIG } from '@/src/services/config';
 
 const { width, height } = Dimensions.get('window');
 
@@ -66,6 +68,11 @@ export default function EditBusinessScreen() {
     const router = useRouter();
     const { user, updateVendor, submitVendorKyc, refreshProfile } = useTunzaaAuth();
     
+    // Fetch entities to map configurations
+    const { data: entitiesData } = useEntities({
+        tenant_id: API_CONFIG.TENANT_ID || ''
+    });
+    
     // Find active profile (vendor or loan provider based on current portal)
     const activeRole = user?.activeProfileRole || '';
     const isLoanPortal = activeRole.toLowerCase() === 'loan' || activeRole.toLowerCase() === 'loan_provider';
@@ -76,6 +83,24 @@ export default function EditBusinessScreen() {
         return ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase());
     });
     const metadata = vendorProfile?.metadata || {};
+
+    const entityRoleKey = isLoanPortal ? 'loan' : 'vendor';
+    const vendorEntityNames = ['vendor', 'merchant', 'seller', 'business'];
+    const loanEntityNames = ['loan', 'loan_provider', 'lender'];
+    const matchNames = isLoanPortal ? loanEntityNames : vendorEntityNames;
+    
+    const activeEntity = entitiesData?.items?.find(
+        (entity) => entity && entity.name && matchNames.includes(entity.name.toLowerCase())
+    );
+    // If no match by name, use the first entity that has document_types
+    const fallbackEntity = !activeEntity 
+        ? entitiesData?.items?.find((entity) => entity?.document_types?.length > 0) 
+        : null;
+    const resolvedEntity = activeEntity || fallbackEntity;
+    const documentTypes = resolvedEntity?.document_types || [];
+    
+    console.log('📋 [KYC] Entities loaded:', entitiesData?.items?.map(e => ({ name: e.name, docTypes: e.document_types?.length })));
+    console.log('📋 [KYC] Resolved entity:', resolvedEntity?.name, '| Document types:', documentTypes.length);
     
     // Form State
     const getInitialEmail = () => {
@@ -189,7 +214,9 @@ export default function EditBusinessScreen() {
             const file = result.assets[0];
             setIsUploadingDoc(true);
 
-            // 1. Upload to server
+            console.log('📄 [KYC] Starting document upload. Type ID:', docType);
+
+            // 1. Upload file to CDN
             const fileExt = file.name ? file.name.split('.').pop() : 'pdf';
             const uploadRes = await uploadApi.uploadFile(
                 file.uri, 
@@ -201,6 +228,9 @@ export default function EditBusinessScreen() {
             if (docUrl && docUrl.includes('?')) {
                 docUrl = docUrl.split('?')[0];
             }
+
+            console.log('📄 [KYC] File uploaded to CDN:', docUrl);
+
             const newDoc = {
                 document_type_id: docType,
                 document_url: docUrl,
@@ -210,12 +240,16 @@ export default function EditBusinessScreen() {
                 submitted_at: new Date().toISOString()
             };
 
-            const updatedDocs = [...verificationDocs, newDoc];
-            await submitVendorKyc(updatedDocs);
+            // 2. Submit ONLY the new document to the KYC API
+            // (existing documents are already persisted server-side; re-sending them
+            //  with potentially stale/hardcoded type IDs causes backend validation failures)
+            console.log('📄 [KYC] Submitting document to backend:', JSON.stringify(newDoc));
+            await submitVendorKyc([newDoc]);
             
-            Alert.alert('Success', `${docType.toUpperCase()} uploaded successfully`);
+            Alert.alert('Success', `Document uploaded successfully`);
             await refreshProfile();
         } catch (error: any) {
+            console.error('❌ [KYC] Upload failed:', error.message, error);
             Alert.alert('Upload Failed', error.message || 'Failed to upload document');
         } finally {
             setIsUploadingDoc(false);
@@ -418,27 +452,48 @@ export default function EditBusinessScreen() {
             >
                 <View style={styles.docTypeContent}>
                     <Text style={styles.modalHeaderTitle}>Select Document Type</Text>
-                    <TouchableOpacity 
-                        style={styles.docTypeOption}
-                        onPress={() => handleUploadDocument('license')}
-                    >
-                        <FileText size={24} color="#3A5BA9" />
-                        <Text style={styles.docTypeOptionText}>Business License</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={styles.docTypeOption}
-                        onPress={() => handleUploadDocument('tin')}
-                    >
-                        <FileCheck size={24} color="#3A5BA9" />
-                        <Text style={styles.docTypeOptionText}>TIN Certificate</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={styles.docTypeOption}
-                        onPress={() => handleUploadDocument('brela')}
-                    >
-                        <Check size={24} color="#3A5BA9" />
-                        <Text style={styles.docTypeOptionText}>BRELA Registration</Text>
-                    </TouchableOpacity>
+                    {documentTypes.length > 0 ? (
+                        documentTypes.map((docType) => {
+                            const nameLower = docType.name.toLowerCase();
+                            const icon = nameLower.includes('tin') ? <FileCheck size={24} color="#3A5BA9" />
+                                       : nameLower.includes('license') || nameLower.includes('taifa') || nameLower.includes('national') ? <FileText size={24} color="#3A5BA9" />
+                                       : <Check size={24} color="#3A5BA9" />;
+                            return (
+                                <TouchableOpacity 
+                                    key={docType.document_type_id}
+                                    style={styles.docTypeOption}
+                                    onPress={() => handleUploadDocument(docType.document_type_id)}
+                                >
+                                    {icon}
+                                    <Text style={styles.docTypeOptionText}>{docType.name}</Text>
+                                </TouchableOpacity>
+                            );
+                        })
+                    ) : (
+                        <>
+                            <TouchableOpacity 
+                                style={styles.docTypeOption}
+                                onPress={() => handleUploadDocument('license')}
+                            >
+                                <FileText size={24} color="#3A5BA9" />
+                                <Text style={styles.docTypeOptionText}>Business License</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={styles.docTypeOption}
+                                onPress={() => handleUploadDocument('tin')}
+                            >
+                                <FileCheck size={24} color="#3A5BA9" />
+                                <Text style={styles.docTypeOptionText}>TIN Certificate</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={styles.docTypeOption}
+                                onPress={() => handleUploadDocument('brela')}
+                            >
+                                <Check size={24} color="#3A5BA9" />
+                                <Text style={styles.docTypeOptionText}>BRELA Registration</Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
                     <TouchableOpacity 
                         style={styles.cancelBtn}
                         onPress={() => setShowDocTypeModal(false)}
@@ -570,7 +625,9 @@ export default function EditBusinessScreen() {
                                         <FileText size={20} color={isApproved ? "#10B981" : "#EF4444"} />
                                     </View>
                                     <View style={styles.docInfo}>
-                                        <Text style={styles.docName}>{doc.document_type_id?.toUpperCase() || 'Document'}</Text>
+                                        <Text style={styles.docName}>
+                                            {documentTypes.find(dt => dt.document_type_id === doc.document_type_id)?.name || doc.document_type_id?.toUpperCase() || 'Document'}
+                                        </Text>
                                         <Text style={styles.docMeta}>
                                             {doc.submitted_at ? `Uploaded ${new Date(doc.submitted_at).toLocaleDateString()}` : 'Status: ' + (doc.verification_status || 'Pending')}
                                         </Text>

@@ -94,7 +94,7 @@ export default function LoanOnboardingLayout() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#315BA9', // Tunzaa Blue
+        backgroundColor: '#425BA4', // Tunzaa Blue
     },
     header: {
         flexDirection: 'row',

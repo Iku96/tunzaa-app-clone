@@ -172,7 +172,7 @@ export default function Step4Documents() {
                     branding: {
                         logo_url: savedLogo || '',
                         colors: {
-                            primary: '#315BA9',
+                            primary: '#425BA4',
                             secondary: '#84CC16',
                             accent: '#FBBF24',
                             text: '#1F2937',
@@ -325,9 +325,9 @@ export default function Step4Documents() {
                             <CheckCircle size={18} color="#84CC16" style={{ marginRight: 8 }} />
                         )}
                         {isActive ? (
-                            <ChevronUp size={20} color="#315BA9" />
+                            <ChevronUp size={20} color="#425BA4" />
                         ) : (
-                            <ChevronDown size={20} color="#315BA9" />
+                            <ChevronDown size={20} color="#425BA4" />
                         )}
                     </View>
                 </TouchableOpacity>
@@ -474,11 +474,11 @@ export default function Step4Documents() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#315BA9' },
+    container: { flex: 1, backgroundColor: '#425BA4' },
     contentContainer: { flexGrow: 1 },
     contentWrapper: { flex: 1, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 40 },
     title: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'left', fontFamily: 'Gilroy-Bold' },
-    subtitle: { fontSize: 14, color: '#E0E7FF', textAlign: 'left', marginTop: 8, marginBottom: 30, paddingRight: 60, lineHeight: 22, fontFamily: 'System' },
+    subtitle: { fontSize: 14, color: '#E0E7FF', textAlign: 'left', marginTop: 8, marginBottom: 30, paddingRight: 60, lineHeight: 22, fontFamily: 'Gilroy-Regular' },
     card: { backgroundColor: '#FFFFFF', borderRadius: 16, paddingHorizontal: 24, paddingVertical: 40, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3.84, elevation: 5 },
     cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
     headerIcon: { width: 24, height: 24, marginRight: 10 },
@@ -486,9 +486,9 @@ const styles = StyleSheet.create({
     accordionContainer: { gap: 12 },
     accordionItem: { overflow: 'hidden' },
     accordionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14 },
-    accordionHeaderActive: { backgroundColor: '#EFF6FF', borderColor: '#315BA9' },
-    accordionTitle: { fontSize: 14, color: '#315BA9', fontWeight: '500' },
-    accordionTitleActive: { color: '#315BA9', fontWeight: '600' },
+    accordionHeaderActive: { backgroundColor: '#EFF6FF', borderColor: '#425BA4' },
+    accordionTitle: { fontSize: 14, color: '#425BA4', fontWeight: '500' },
+    accordionTitleActive: { color: '#425BA4', fontWeight: '600' },
     headerRight: { flexDirection: 'row', alignItems: 'center' },
     accordionContent: { marginTop: 12 },
     uploadBox: { backgroundColor: '#F9FAFB', borderRadius: 12, borderWidth: 1.5, borderColor: '#D1D5DB', borderStyle: 'dashed', height: 130, alignItems: 'center', justifyContent: 'center', padding: 16 },
@@ -511,8 +511,8 @@ const styles = StyleSheet.create({
     nextButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
     modalContent: { backgroundColor: '#FFFFFF', width: width * 0.85, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 24, alignItems: 'center' },
-    modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#315BA9', marginBottom: 12 },
+    modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#425BA4', marginBottom: 12 },
     modalDescription: { fontSize: 14, color: '#6B7280', textAlign: 'center', lineHeight: 22, marginBottom: 24 },
     modalButton: { paddingVertical: 10, paddingHorizontal: 20 },
-    modalButtonText: { fontSize: 16, color: '#315BA9', fontWeight: '600' }
+    modalButtonText: { fontSize: 16, color: '#425BA4', fontWeight: '600' }
 });

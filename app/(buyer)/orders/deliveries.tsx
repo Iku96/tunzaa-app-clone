@@ -120,7 +120,7 @@ export default function BuyerDeliveriesScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {isLoading ? (
                     <View style={styles.emptyState}>
-                        <ActivityIndicator size="large" color="#315BA9" />
+                        <ActivityIndicator size="large" color="#425BA4" />
                         <Text style={{ marginTop: 12, color: '#6B7280' }}>Loading deliveries...</Text>
                     </View>
                 ) : (

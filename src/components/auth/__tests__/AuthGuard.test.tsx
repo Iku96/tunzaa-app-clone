@@ -36,8 +36,7 @@ describe('AuthGuard Redirection', () => {
             </AuthGuard>
         );
 
-        // Expectation: Should redirect to /login
-        // Note: Currently it redirects to /language, so this test SHOULD FAIL.
-        expect(mockReplace).toHaveBeenCalledWith('/');
+        // Expectation: Should redirect to /language
+        expect(mockReplace).toHaveBeenCalledWith('/language');
     });
 });

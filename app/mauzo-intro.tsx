@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 22,
         paddingHorizontal: 10,
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontWeight: '400',
     },
     bottomSection: {
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     loginText: {
         color: '#FFFFFF',
         fontSize: 14,
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
     },
     loginTextBold: {
         fontWeight: '700',

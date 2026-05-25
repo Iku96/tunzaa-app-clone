@@ -80,7 +80,7 @@ const TabLayout = () => {
           tabBarActiveTintColor: activeColor,
           tabBarInactiveTintColor: inactiveColor,
           tabBarLabelStyle: {
-            fontFamily: "InterMedium",
+            fontFamily: 'Gilroy-Medium',
             fontSize: 12,
             marginBottom: 4,
           },

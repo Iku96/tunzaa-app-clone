@@ -16,7 +16,12 @@ const getStorageItemAsync = async (key: string): Promise<string | null> => {
     if (Platform.OS === "web") {
         try { return localStorage.getItem(key); } catch (e) { return null; }
     } else {
-        try { return await SecureStore.getItemAsync(key); } catch (e) { return null; }
+        try {
+            // Try AsyncStorage first (current), then SecureStore as fallback (migration)
+            const val = await AsyncStorage.getItem(key);
+            if (val !== null) return val;
+            return await SecureStore.getItemAsync(key);
+        } catch (e) { return null; }
     }
 };
 
@@ -37,9 +42,9 @@ export const setAccessToken = async (token: string | null | undefined): Promise<
         else localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
     } else {
         try {
-            if (typeof token !== 'string') await SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN);
-            else await SecureStore.setItemAsync(STORAGE_KEYS.ACCESS_TOKEN, token);
-        } catch (e) { console.error("SecureStore Error:", e); }
+            if (typeof token !== 'string') await AsyncStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+            else await AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+        } catch (e) { console.error("AsyncStorage Error:", e); }
     }
 };
 
@@ -49,9 +54,9 @@ export const setRefreshToken = async (token: string | null | undefined): Promise
         else localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token);
     } else {
         try {
-            if (typeof token !== 'string') await SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN);
-            else await SecureStore.setItemAsync(STORAGE_KEYS.REFRESH_TOKEN, token);
-        } catch (e) { console.error("SecureStore Error:", e); }
+            if (typeof token !== 'string') await AsyncStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+            else await AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token);
+        } catch (e) { console.error("AsyncStorage Error:", e); }
     }
 };
 
@@ -67,11 +72,16 @@ export const clearTokens = async (): Promise<void> => {
     try {
         if (Platform.OS !== "web") {
             await Promise.all([
+                AsyncStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN).catch(() => { }),
+                AsyncStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN).catch(() => { }),
+                AsyncStorage.removeItem("user_id").catch(() => { }),
+                AsyncStorage.removeItem("temp_phone_number").catch(() => { }),
+                AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA).catch(() => { }),
+                // Clean up legacy SecureStore keys
                 SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN).catch(() => { }),
                 SecureStore.deleteItemAsync(STORAGE_KEYS.REFRESH_TOKEN).catch(() => { }),
                 SecureStore.deleteItemAsync("user_id").catch(() => { }),
                 SecureStore.deleteItemAsync("temp_phone_number").catch(() => { }),
-                AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA).catch(() => { })
             ]);
         } else {
             localStorage.clear();
@@ -92,8 +102,8 @@ export const setUserId = async (userId: string | null): Promise<void> => {
         else localStorage.setItem("user_id", userId);
     } else {
         try {
-            if (!userId) await SecureStore.deleteItemAsync("user_id");
-            else await SecureStore.setItemAsync("user_id", userId);
+            if (!userId) await AsyncStorage.removeItem("user_id");
+            else await AsyncStorage.setItem("user_id", userId);
         } catch (e) { }
     }
 };
@@ -112,8 +122,8 @@ export const setTempPhoneNumber = async (phoneNumber: string | null): Promise<vo
         else localStorage.setItem("temp_phone_number", phoneNumber);
     } else {
         try {
-            if (!phoneNumber) await SecureStore.deleteItemAsync("temp_phone_number");
-            else await SecureStore.setItemAsync("temp_phone_number", phoneNumber);
+            if (!phoneNumber) await AsyncStorage.removeItem("temp_phone_number");
+            else await AsyncStorage.setItem("temp_phone_number", phoneNumber);
         } catch (e) { }
     }
 };

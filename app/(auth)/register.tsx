@@ -19,12 +19,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons, FontAwesome, FontAwesome5, FontAwesome6 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Global Contexts
 import { useLanguage } from '@/src/contexts/LanguageContext';
 import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
+import { formatPhoneNumber } from '@/src/utils/phone';
 
 export default function RegisterScreen() {
     const router = useRouter();
@@ -53,7 +54,7 @@ export default function RegisterScreen() {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const { requestOTP, register, signInWithGoogle, signInWithApple } = useTunzaaAuth();
+    const { requestOTP, register, signInWithGoogle, signInWithApple, updateUser } = useTunzaaAuth();
 
     const handleBack = () => {
         router.back();
@@ -83,7 +84,7 @@ export default function RegisterScreen() {
 
         setLoading(true);
         try {
-            const phoneNumber = phone.startsWith('+') ? phone : `+255${phone.replace(/^0/, '')}`;
+            const phoneNumber = formatPhoneNumber(phone);
             
             // Request OTP
             await requestOTP(phoneNumber);
@@ -122,15 +123,25 @@ export default function RegisterScreen() {
         setLoading(true);
         try {
             const registrationData = {
-                first_name: firstName,
-                last_name: secondName,
+                first_name: firstName.trim(),
+                last_name: secondName.trim(),
                 phone_number: phone,
-                email: email,
+                email: email.trim().toLowerCase(),
                 password: password,
             };
 
             const portal = userRole === 'merchant' ? 'merchant' : userRole === 'delivery' ? 'delivery' : userRole === 'loan' ? 'loan' : 'buyer';
             await register(registrationData, portal);
+            
+            // Explicitly force update user details since the register API might not persist first/last names immediately
+            try {
+                await updateUser({
+                    first_name: firstName,
+                    last_name: secondName
+                });
+            } catch (err) {
+                console.warn('⚠️ [Register] Could not explicitly update names:', err);
+            }
             
             // Set first-time buyer flag to ensure index.tsx routes correctly
             if (userRole === 'buyer') {
@@ -267,13 +278,13 @@ export default function RegisterScreen() {
                                 </View>
                                 <Text style={[styles.termsText, { fontSize: 13, lineHeight: 18, color: '#4B5563', flex: 1 }]}>
                                     I have read agree to Tunzaa{" "}
-                                    <Text style={{ color: '#3F51B5', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                                    <Text style={{ color: '#425BA4', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Button: Create Account */}
                             <TouchableOpacity 
-                                style={[styles.createButton, { height: 52, borderRadius: 26, backgroundColor: '#3B5191', marginTop: 32, justifyContent: 'center', alignItems: 'center' }]} 
+                                style={[styles.createButton, { height: 52, borderRadius: 26, backgroundColor: '#425BA4', marginTop: 32, justifyContent: 'center', alignItems: 'center' }]} 
                                 onPress={handleCreateAccount} 
                                 disabled={loading}
                             >
@@ -289,7 +300,7 @@ export default function RegisterScreen() {
                             >
                                 <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>
                                     Already have an account?{" "}
-                                    <Text style={{ color: '#3F51B5', fontWeight: '700' }}>Log in</Text>
+                                    <Text style={{ color: '#425BA4', fontWeight: '700' }}>Log in</Text>
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -365,7 +376,7 @@ export default function RegisterScreen() {
                                         />
                                         <TextInput
                                             style={styles.input}
-                                            placeholder="Email Address"
+                                            placeholder="Enter email address"
                                             placeholderTextColor="#9CA3AF"
                                             value={email}
                                             onChangeText={setEmail}
@@ -431,7 +442,7 @@ export default function RegisterScreen() {
                                         {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                     </View>
                                     <Text style={styles.termsText}>
-                                        {t.loginAgreedTerms}
+                                        I agree to the <Text style={styles.termsLink}>Terms and Conditions</Text>
                                     </Text>
                                 </TouchableOpacity>
                             )}
@@ -446,33 +457,36 @@ export default function RegisterScreen() {
                                 </Text>
                             </TouchableOpacity>
 
-                            <View style={styles.dividerRow}>
-                                <View style={styles.dividerLine} />
-                                <Text style={styles.dividerText}>{t.loginOrContinue}</Text>
-                                <View style={styles.dividerLine} />
-                            </View>
+                            {currentStep === '1' && (
+                                <>
+                                    <View style={styles.dividerRow}>
+                                        <View style={styles.dividerLine} />
+                                        <Text style={styles.dividerText}>{t.loginOrContinue}</Text>
+                                        <View style={styles.dividerLine} />
+                                    </View>
 
-                            <View style={styles.socialContainer}>
-                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
-                                    <FontAwesome name="google" size={19} color="#EA4335" />
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
-                                    <Ionicons name="logo-apple" size={20} color="#1D1E1F" />
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')}>
-                                    <FontAwesome name="facebook-f" size={20} color="#1877F2" />
-                                </TouchableOpacity>
-                            </View>
+                                    <View style={styles.socialContainer}>
+                                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')}>
+                                            <FontAwesome name="google" size={19} color="#EA4335" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('apple')}>
+                                            <Ionicons name="logo-apple" size={20} color="#1D1E1F" />
+                                        </TouchableOpacity>
+                                    </View>
 
-                            <TouchableOpacity onPress={() => router.replace({ pathname: '/login', params: { role: userRole } })} style={styles.loginContainer}>
-                                <Text style={styles.loginText}>{t.registerAlreadyAccount}</Text>
-                            </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => router.replace({ pathname: '/login', params: { role: userRole } })} style={styles.loginContainer}>
+                                        <Text style={styles.loginText}>Already have an account? <Text style={{ color: '#425BA4', fontWeight: '600' }}>Log in</Text></Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
                         </View>
 
-                        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-                            <Text style={styles.skipText}>{t.loginSkip}</Text>
-                            <Text style={styles.skipArrow}>→</Text>
-                        </TouchableOpacity>
+                        {currentStep === '1' && (
+                            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+                                <Text style={styles.skipText}>{t.loginSkip}</Text>
+                                <Text style={styles.skipArrow}>→</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -486,19 +500,20 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 24, paddingTop: 20, justifyContent: 'space-between', paddingBottom: 20 },
     backButton: { marginBottom: 20 },
     header: { alignItems: 'center' },
-    title: { fontSize: 20, fontWeight: '600', color: '#1D1E1F', textAlign: 'center' },
+    title: { fontSize: 24, fontWeight: '700', color: '#1D1E1F', textAlign: 'center' },
     subtitle: { marginTop: 9, fontSize: 14, color: '#666666', textAlign: 'center' },
     logoContainer: { alignItems: 'center', marginTop: 22, marginBottom: 18 },
-    logo: { width: 170, height: 60 },
+    logo: { width: 220, height: 75 },
     formContainer: { gap: 16 },
-    input: { height: 54, backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1F2937' },
-    passwordContainer: { height: 54, backgroundColor: '#F3F4F6', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 },
+    input: { height: 54, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1F2937' },
+    passwordContainer: { height: 54, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 },
     passwordInput: { flex: 1, fontSize: 16, color: '#1D1E1F' },
     eyeIcon: { padding: 4 },
     termsContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 14 },
-    checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
+    checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 1, borderColor: '#D1D5DB', backgroundColor: '#EFF3F9', marginRight: 10, alignItems: 'center', justifyContent: 'center' },
     checkboxChecked: { backgroundColor: '#425BA4', borderColor: '#425BA4' },
     termsText: { fontSize: 13, color: '#666666', flex: 1 },
+    termsLink: { color: '#425BA4', fontWeight: '600' },
     createButton: { height: 47, marginTop: 19, backgroundColor: '#425BA4', borderRadius: 40, alignItems: 'center', justifyContent: 'center' },
     createButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
     dividerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 18, marginBottom: 16 },
@@ -509,7 +524,7 @@ const styles = StyleSheet.create({
     loginContainer: { alignItems: 'center', marginTop: 6 },
     loginText: { fontSize: 13, color: '#1D1E1F', fontWeight: '600' },
     skipButton: { width: 190, height: 54, borderRadius: 1000, flexDirection: 'row', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 18 },
-    skipText: { fontSize: 16, fontWeight: '500', color: '#3B5191' },
-    skipArrow: { fontSize: 20, color: '#3B5191' },
+    skipText: { fontSize: 16, fontWeight: '500', color: '#425BA4' },
+    skipArrow: { fontSize: 20, color: '#425BA4' },
     contentWrapper: { width: '100%', maxWidth: 353, alignSelf: 'center' },
 });

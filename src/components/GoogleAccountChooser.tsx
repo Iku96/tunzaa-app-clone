@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 
     // Title
     title: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 20,
         fontWeight: '600',
         color: '#1D1E1F',
@@ -155,14 +155,14 @@ const styles = StyleSheet.create({
     },
 
     subtitle: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 14,
         color: '#666666',
         textAlign: 'center',
     },
 
     subtitle2: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 14,
         color: '#666666',
         textAlign: 'center',
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     },
 
     accountName: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 15,
         fontWeight: '600',
         color: '#1D1E1F',
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     },
 
     accountEmail: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 13,
         color: '#666666',
     },
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     },
 
     addAccountText: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 15,
         fontWeight: '500',
         color: '#1D1E1F',
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     },
 
     footerLink: {
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
         fontSize: 12,
         color: '#3B5191',
     },

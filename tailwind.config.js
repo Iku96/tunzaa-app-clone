@@ -104,7 +104,12 @@ module.exports = {
         "2xl": ["25px", { lineHeight: "37px" }],
       },
       fontFamily: {
+        'sans': ['Gilroy-Regular', 'system-ui', '-apple-system', 'sans-serif'],
         'lato': ['var(--font-family-lato)', 'Lato', 'system-ui', '-apple-system', 'sans-serif'],
+        'gilroy': ['Gilroy-Regular', 'system-ui', '-apple-system', 'sans-serif'],
+        'gilroy-medium': ['Gilroy-Medium', 'system-ui', '-apple-system', 'sans-serif'],
+        'gilroy-semibold': ['Gilroy-SemiBold', 'system-ui', '-apple-system', 'sans-serif'],
+        'gilroy-bold': ['Gilroy-Bold', 'system-ui', '-apple-system', 'sans-serif'],
       },
       borderWidth: {
         hairline: hairlineWidth(),

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Afrizon",
+    "name": "Tunzaa",
     "owner": "iku101",
     "slug": "dynamic-marketplace",
     "version": "1.0.10",
@@ -45,7 +45,7 @@
       "googleServicesFile": "./config/google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ec1c24"
+        "backgroundColor": "#425BA4"
       },
       "package": "africa.afrizon.gsm",
       "permissions": [
@@ -58,7 +58,8 @@
         "com.google.android.c2dm.permission.RECEIVE",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
       ],
       "config": {
         "googleMaps": {
@@ -102,7 +103,7 @@
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png",
-      "name": "Afrizon",
+      "name": "Tunzaa",
       "config": {
         "googleMapsApiKey": "AIzaSyDj0-dYOYHB4eHnwELuV2cnOSpjtVPliMk"
       }
@@ -114,11 +115,11 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ec1c24",
+          "backgroundColor": "#425BA4",
           "image": "./assets/images/splash-icon-light.png",
           "dark": {
             "image": "./assets/images/splash-icon-dark.png",
-            "backgroundColor": "#ec1c24"
+            "backgroundColor": "#425BA4"
           },
           "imageWidth": 200,
           "resizeMode": "contain"

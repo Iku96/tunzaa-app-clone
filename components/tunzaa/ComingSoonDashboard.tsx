@@ -84,7 +84,7 @@ export default function ComingSoonDashboard({ role = 'buyer' }: { role?: 'buyer'
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#315BA9', // Tunzaa Blue
+        backgroundColor: '#425BA4', // Tunzaa Blue
     },
     header: {
         flexDirection: 'row',
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     welcomeText: {
         color: 'rgba(255, 255, 255, 0.7)',
         fontSize: 14,
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
     },
     nameText: {
         color: '#FFFFFF',

@@ -10,11 +10,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Text } from "@/components/ui/text";
 import { useRouter } from "expo-router";
 import { useUploadFile } from "@/src/services/upload";
-import { useUpdateAffiliate } from "@/src/services/affiliates";
+import { useUpdateAffiliate, useCreateAffiliate } from "@/src/services/affiliates";
 import { useProfileDetails } from "@/hooks/useProfileDetails";
+import { API_CONFIG } from "@/src/services/config";
 
 export default function HomeScreen() {
-  const { user } = useTunzaaAuth();
+  const { user, refreshProfile } = useTunzaaAuth();
   const { language } = useLanguage();
   const [step, setStep] = useState(3); // Onboarding Steps: 3 (Details), 4 (Industry), 5 (Documents)
   const [loading, setLoading] = useState(false);
@@ -31,6 +32,7 @@ export default function HomeScreen() {
   // Hook setup for final persist step
   const { affiliateDetails } = useProfileDetails();
   const updateAffiliate = useUpdateAffiliate();
+  const createAffiliate = useCreateAffiliate();
   const uploadFile = useUploadFile();
   
   const affiliateId = affiliateDetails?.id;
@@ -292,14 +294,50 @@ export default function HomeScreen() {
         }
       }
 
-      // 3. Persist Logo URL to backend Affiliate record if we possess an affiliateId
-      if (affiliateId && finalLogo && finalLogo.startsWith('http')) {
-        await updateAffiliate.mutateAsync({
-          affiliateId,
-          data: {
-            profile_picture: finalLogo,
-          }
+      // 3. Create or Update Affiliate record
+      let activeAffiliateId = affiliateId;
+
+      if (!activeAffiliateId) {
+        console.log("➕ Creating new affiliate profile in backend...");
+        
+        const nameParts = (user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Winga User').trim().split(" ");
+        const firstName = nameParts[0] || "Winga";
+        const lastName = nameParts.slice(1).join(" ") || "User";
+        const fullName = `${firstName} ${lastName}`;
+
+        const signupResponse = await createAffiliate.mutateAsync({
+          tenant_id: API_CONFIG.TENANT_ID,
+          user_id: user?.user_id || user?.id || "",
+          name: businessName || fullName,
+          email: user?.email || `${user?.phone_number || 'winga'}@tunzaa.co.tz`,
+          phone: user?.phone_number || "",
+          bio: businessBio || "",
+          website: "",
+          profile_picture: finalLogo || undefined,
         });
+
+        activeAffiliateId = signupResponse.id;
+        console.log("✅ Affiliate profile created successfully. ID:", activeAffiliateId);
+      } else {
+        // Update existing affiliate profile
+        if (finalLogo && finalLogo.startsWith('http')) {
+          await updateAffiliate.mutateAsync({
+            affiliateId: activeAffiliateId,
+            data: {
+              profile_picture: finalLogo,
+              name: businessName,
+              bio: businessBio,
+            }
+          });
+        }
+      }
+
+      // 4. Refresh global auth context profile to synchronize newly created profiles
+      try {
+        console.log("🔄 Refreshing global auth context profiles...");
+        await refreshProfile();
+      } catch (err) {
+        console.warn("⚠️ Failed to refresh auth profiles after winga creation:", err);
       }
 
       // Persist onboarding completeness locally
@@ -315,7 +353,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: step === 4 ? '#FFFFFF' : '#315BA9' }} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: step === 4 ? '#FFFFFF' : '#425BA4' }} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -657,7 +695,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   stepNumberActive: {
-    color: '#315BA9', // Tunzaa Blue
+    color: '#425BA4', // Tunzaa Blue
   },
   stepNumberInactive: {
     color: 'rgba(255, 255, 255, 0.5)',

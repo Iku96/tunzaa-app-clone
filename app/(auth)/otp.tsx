@@ -128,18 +128,18 @@ export default function OTPScreen() {
                 <View style={styles.container}>
                     <View style={styles.contentWrapper}>
                         {/* Header: Back Button & Title */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 40, marginTop: 10 }}>
-                            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 16 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 40, marginTop: 10, position: 'relative' }}>
+                            <TouchableOpacity onPress={() => router.back()} style={{ position: 'absolute', left: 0, padding: 8, zIndex: 1 }}>
                                 <Ionicons name="arrow-back" size={24} color="#1D1E1F" />
                             </TouchableOpacity>
-                            <Text style={{ fontSize: 20, fontWeight: '700', color: '#1D1E1F' }}>Verify & create password</Text>
+                            <Text style={{ fontSize: 18, fontWeight: '600', color: '#1D1E1F' }}>Verify & create password</Text>
                         </View>
 
                         {/* Centered Logo: TUNZAA */}
                         <View style={{ alignItems: 'center', marginBottom: 40, marginTop: 20 }}>
                             <Image
                                 source={require('@/assets/blue-tunzaa-logo.png')}
-                                style={{ width: 180, height: 60 }}
+                                style={{ width: 240, height: 80 }}
                                 resizeMode="contain"
                             />
                         </View>
@@ -286,21 +286,21 @@ const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: '#FFFFFF' },
     container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 24, paddingTop: 20, justifyContent: 'space-between', paddingBottom: 20 },
     contentWrapper: { width: '100%', maxWidth: 353, alignSelf: 'center' },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 30 },
-    backButton: { marginRight: 12 },
-    title: { fontSize: 18, fontWeight: '600', color: '#1D1E1F' },
-    logoContainer: { alignItems: 'center', marginBottom: 32 },
-    logo: { width: 170, height: 60 },
-    instruction: { fontSize: 14, color: '#666666', textAlign: 'center', marginBottom: 24 },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 40, marginTop: 10, position: 'relative' },
+    backButton: { position: 'absolute', left: -8, padding: 8, zIndex: 1 },
+    title: { fontSize: 18, fontWeight: '600', color: '#1D1E1F', textAlign: 'center' },
+    logoContainer: { alignItems: 'center', marginBottom: 40 },
+    logo: { width: 260, height: 90 },
+    instruction: { fontSize: 16, color: '#666666', textAlign: 'center', marginBottom: 32, lineHeight: 24, paddingHorizontal: 16 },
     otpContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 8 },
-    otpBox: { flex: 1, aspectRatio: 1, backgroundColor: '#F3F4F6', borderRadius: 12, fontSize: 24, fontWeight: '700', textAlign: 'center', color: '#1D1E1F' },
+    otpBox: { flex: 1, aspectRatio: 1, backgroundColor: '#EFF3F9', borderRadius: 12, fontSize: 28, fontWeight: '700', textAlign: 'center', color: '#1D1E1F' },
     resendContainer: { alignItems: 'center', marginBottom: 8 },
-    resendText: { fontSize: 14, color: '#1D1E1F' },
+    resendText: { fontSize: 15, color: '#1D1E1F', fontWeight: '600' },
     resendLink: { fontWeight: '700', color: '#3B5191' },
     resendDisabled: { color: '#9CA3AF' },
     timerContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 24, gap: 6 },
     timerText: { fontSize: 13, color: '#666666' },
-    continueButton: { height: 54, backgroundColor: '#3B5191', borderRadius: 27, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+    continueButton: { height: 56, backgroundColor: '#3B5191', borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
     continueButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
     skipButton: { flexDirection: 'row', alignSelf: 'center', alignItems: 'center', paddingBottom: 20, marginTop: 16 },
     skipText: { fontSize: 16, fontWeight: '500', color: '#3B5191', marginRight: 8 },

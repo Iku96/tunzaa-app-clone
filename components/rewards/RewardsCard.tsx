@@ -162,7 +162,7 @@ export function RewardsCard() {
 
   const getShareMessage = () => {
     if (!referralCode) return "";
-    return `Join Afrizon Marketplace, use the referral code ${referralCode.code}`;
+    return `Join Tunzaa Marketplace, use the referral code ${referralCode.code}`;
   };
   // ISOLATION: Restore Header and Points Balance
   return (

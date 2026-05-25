@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { Platform } from "react-native";
-import * as SecureStore from "expo-secure-store";
+
 
 // Simple local cart item
 export interface LocalCartItem {
@@ -45,26 +45,28 @@ interface SimplifiedCartState {
   getItem: (productId: string, variantSku?: string) => LocalCartItem | undefined;
 }
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const createCrossPlatformStorage = () => ({
   getItem: async (name: string): Promise<string | null> => {
     if (Platform.OS === "web") {
       return localStorage.getItem(name);
     } else {
-      return await SecureStore.getItemAsync(name);
+      return await AsyncStorage.getItem(name);
     }
   },
   setItem: async (name: string, value: string): Promise<void> => {
     if (Platform.OS === "web") {
       localStorage.setItem(name, value);
     } else {
-      await SecureStore.setItemAsync(name, value);
+      await AsyncStorage.setItem(name, value);
     }
   },
   removeItem: async (name: string): Promise<void> => {
     if (Platform.OS === "web") {
       localStorage.removeItem(name);
     } else {
-      await SecureStore.deleteItemAsync(name);
+      await AsyncStorage.removeItem(name);
     }
   },
 });

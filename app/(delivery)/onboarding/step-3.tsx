@@ -162,7 +162,7 @@ export default function Step3Review() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     contentWrapper: {
         flex: 1,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         marginBottom: 25,
         paddingRight: 20,
         lineHeight: 20,
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
     },
     // CARD STYLES
     card: {
@@ -236,11 +236,11 @@ const styles = StyleSheet.create({
         width: 14,
         height: 14,
         marginRight: 6,
-        tintColor: '#315BA9',
+        tintColor: '#425BA4',
     },
     editButtonText: {
         fontSize: 12,
-        color: '#315BA9',
+        color: '#425BA4',
         fontWeight: '600',
     },
 

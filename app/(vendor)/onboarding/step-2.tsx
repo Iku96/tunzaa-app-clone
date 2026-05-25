@@ -73,7 +73,7 @@ export default function Step2Location() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#315BA9',
+        backgroundColor: '#425BA4',
     },
     contentWrapper: {
         flex: 1,
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
         marginBottom: 25,
         paddingRight: 20,
         lineHeight: 20,
-        fontFamily: 'System',
+        fontFamily: 'Gilroy-Regular',
     },
     card: {
         backgroundColor: '#FFFFFF',

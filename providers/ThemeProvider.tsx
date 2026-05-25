@@ -239,7 +239,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
         // Get Tunzaa brand colors (Locking branding to Tunzaa 2.0)
         const brandColors = {
-          primary: "#315BA9", // Tunzaa Blue
+          primary: "#425BA4", // Tunzaa Blue
           secondary: "#84CC16", // Tunzaa Green
           accent: "#FBBF24", // Tunzaa Yellow
         };
@@ -435,7 +435,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
         // Tunzaa default brand colors
         const defaultBrandColors = {
-          primary: "#315BA9", // Tunzaa Blue
+          primary: "#425BA4", // Tunzaa Blue
           secondary: "#84CC16", // Tunzaa Green
           accent: "#FBBF24", // Tunzaa Yellow
         };
@@ -555,7 +555,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           branding: {
             theme: {
               colors: {
-                primary: "#315BA9",
+                primary: "#425BA4",
                 secondary: "#84CC16",
                 accent: "#FBBF24",
               },

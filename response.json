@@ -1,0 +1,79 @@
+* Host api.demo.tunzaa.co.tz:443 was resolved.
+* IPv6: (none)
+* IPv4: 104.248.247.172
+*   Trying 104.248.247.172:443...
+* Connected to api.demo.tunzaa.co.tz (104.248.247.172) port 443
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122 bytes data]
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+{ [25 bytes data]
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+{ [2053 bytes data]
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+{ [79 bytes data]
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+{ [52 bytes data]
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+} [1 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+} [52 bytes data]
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / X25519 / id-ecPublicKey
+* ALPN: server accepted http/1.1
+* Server certificate:
+*  subject: CN=api.demo.tunzaa.co.tz
+*  start date: Apr  3 22:48:12 2026 GMT
+*  expire date: Jul  2 22:48:11 2026 GMT
+*  subjectAltName: host "api.demo.tunzaa.co.tz" matched cert's "api.demo.tunzaa.co.tz"
+*  issuer: C=US; O=Let's Encrypt; CN=E8
+*  SSL certificate verify ok.
+*   Certificate level 0: Public key type EC/prime256v1 (256/128 Bits/secBits), signed using ecdsa-with-SHA384
+*   Certificate level 1: Public key type EC/secp384r1 (384/192 Bits/secBits), signed using sha256WithRSAEncryption
+*   Certificate level 2: Public key type RSA (4096/152 Bits/secBits), signed using sha256WithRSAEncryption
+* using HTTP/1.x
+} [5 bytes data]
+> GET /v1/marketplace/vendors HTTP/1.1
+> Host: api.demo.tunzaa.co.tz
+> User-Agent: curl/8.5.0
+> Accept: application/json
+> Content-Type: application/json
+> X-Tenant-ID: 90c9aad8-4201-4416-8af6-c5561b7e6b35
+> X-Environment: sandbox
+> Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5OTE3ZDdlMS1mMmZhLTQxOTctOTBmZS03OWQ3MjlmMjdhNDkiLCJ0aWQiOiI5MGM5YWFkOC00MjAxLTQ0MTYtOGFmNi1jNTU2MWI3ZTZiMzUiLCJ0eXBlIjoiYWNjZXNzIiwianRpIjoiODIzNWYxMjktOTlhNi00YWMzLWExN2MtZjk2YmNkOTk4NWUyIiwicm9sZSI6ImJ1eWVyIiwidXNlciI6IntcInVzZXJfaWRcIjpcIjk5MTdkN2UxLWYyZmEtNDE5Ny05MGZlLTc5ZDcyOWYyN2E0OVwiLFwiZmlyc3RfbmFtZVwiOlwiU3VtbWVyIFwiLFwibGFzdF9uYW1lXCI6XCJTbWl0aFwiLFwiZW1haWxcIjpudWxsLFwicGhvbmVfbnVtYmVyXCI6XCIyNTU2MjU1NTI3MjhcIixcImFjdGl2ZV9wcm9maWxlX3JvbGVcIjpcImJ1eWVyXCIsXCJwcm9maWxlc1wiOlt7XCJwcm9maWxlX2lkXCI6XCJkYWM3MzdkMC1lZTc1LTQ4OWYtYjhlOC1jMDg1NmJmZDFhNThcIixcInJvbGVcIjpcImJ1eWVyXCIsXCJkaXNwbGF5X25hbWVcIjpcIlN1bW1lciAgU21pdGhcIixcImlzX2FjdGl2ZVwiOnRydWUsXCJtZXRhZGF0YVwiOnt9fV0sXCJyb2xlc1wiOlt7XCJyb2xlXCI6XCJidXllclwiLFwiZGVzY3JpcHRpb25cIjpcIkRlZmF1bHQgcm9sZVwifV0sXCJpc192ZXJpZmllZFwiOnRydWUsXCJ0ZW5hbnRfaWRcIjpcIjkwYzlhYWQ4LTQyMDEtNDQxNi04YWY2LWM1NTYxYjdlNmIzNVwiLFwibGFzdF9sb2dpblwiOm51bGwsXCJwcm92aWRlclwiOlwiZW1haWxcIixcImZpcmViYXNlX3VpZFwiOm51bGwsXCJyZWZyZXNoX3Rva2VuXCI6bnVsbCxcImFjY2Vzc190b2tlblwiOm51bGwsXCJ0b2tlbl90eXBlXCI6bnVsbCxcInJlc2V0X3Bhc3N3b3JkXCI6ZmFsc2UsXCJmY21fdG9rZW5zXCI6W10sXCJwcmVmZXJyZWRfbGFuZ3VhZ2VcIjpcImVuXCIsXCJjcmVhdGVkX2F0XCI6XCIyMDI2LTA1LTIxVDEwOjUxOjQ5LjUwODYxOVpcIixcInVwZGF0ZWRfYXRcIjpcIjIwMjYtMDUtMjFUMTA6NTE6NDkuNTA4NjIwWlwifSIsImZjbV90b2tlbnMiOltdLCJleHAiOjE3Nzk1NzY3MDkuNTU1NDAyLCJpYXQiOjE3NzkzNjA3MDkuNTU4NDMzfQ.8-jZyU3kg3Ow9PDh5iJYO9WEYsforhJ98bUiYah1bGg
+> 
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [57 bytes data]
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+{ [57 bytes data]
+* old SSL session ID is stale, removing
+{ [5 bytes data]
+< HTTP/1.1 200 OK
+< Server: nginx/1.24.0 (Ubuntu)
+< Date: Thu, 21 May 2026 11:03:31 GMT
+< Content-Type: application/json
+< Content-Length: 11175
+< Connection: keep-alive
+< X-RateLimit-Remaining-Second: 49
+< X-RateLimit-Limit-Second: 50
+< X-RateLimit-Remaining-Hour: 9998
+< X-RateLimit-Limit-Hour: 10000
+< RateLimit-Reset: 1
+< RateLimit-Remaining: 49
+< RateLimit-Limit: 50
+< x-process-time: 712.5515937805176
+< Access-Control-Allow-Origin: *
+< X-Correlation-ID: 77c557aa-d938-4b85-b926-ccd5d5a7b770
+< X-Kong-Upstream-Latency: 717
+< X-Kong-Proxy-Latency: 1
+< Via: kong/3.0.2
+< 
+{ [11175 bytes data]
+{"items":[{"vendor_id":"2e222eac-d0af-4c92-a942-cc2d7878134f","tenant_id":"90c9aad8-4201-4416-8af6-c5561b7e6b35","user_id":"0d928a29-52c7-49a1-9e1d-e376b37ee313","business_name":"Roland's Store","display_name":"Roland's Store","policy":"No policy specified","contact_email":"255753440028@tunzaa.co.tz","contact_phone":"255753440028","website":"","address_line1":"Lake oil","address_line2":"","city":"Kinondoni ","state_province":"Dar es Salaam","postal_code":"0000","country":"Tanzania","tax_id":"","bank_account":{"bank_name":"Stanbic Bank","account_number":"0000000000123","account_name":"Roland John","swift_code":"","branch_code":""},"verification_documents":[{"document_id":"afa66fde-2552-4eaa-a17b-24f2afedc319","document_type_name":"NIDA (National ID)","document_type_id":"9f4ee638-ce8f-484e-9358-a287ab69209e","number":"3333","document_url":"https://tunzaa-multi-tenant-dev.nyc3.cdn.digitaloceanspaces.com/whitelabel-demo/public/3c9e6b9c-921a-4629-b99a-04853bc4c742.jpg","verification_status":"verified","rejection_reason":null,"submitted_at":"2026-05-15T10:01:45.877920+00:00","verified_at":"2026-05-15T10:01:56.203577","expires_at":"2026-07-15T00:00:00","document_type_description":"National Identification Authority ID card"},{"document_id":"668e5d9d-07f0-48dd-8fcd-6ca290e24047","document_type_name":"Business License","document_type_id":"c43a9493-6268-4b66-b499-b7782e7d7ab9","number":"444","document_url":"https://tunzaa-multi-tenant-dev.nyc3.cdn.digitaloceanspaces.com/whitelabel-demo/public/de9e2e10-e8f8-4b69-9f8c-e036af4959f5.jpeg","verification_status":"verified","rejection_reason":null,"submitted_at":"2026-05-15T10:01:45.877954+00:00","verified_at":"2026-05-15T10:01:59.526273","expires_at":"2026-05-16T00:00:00","document_type_description":"Current business operating license"}],"verification_status":"approved","is_active":true,"commission_rate":"0","rating":0.0,"created_at":"2026-05-15T09:56:29.839520Z","updated_at":"2026-05-15T10:02:08.576222Z","approved_at":"2026-05-15T10:02:08.576213Z","stores":[],"user":{"user_id":"0d928a29-52c7-49a1-9e1d-e376b37ee313","name":"Roland John","phone_number":"255753440028","is_verified":true,"is_active":true,"active_profile_role":"buyer","created_at":"2026-05-14T12:05:07.583081Z","updated_at":"2026-05-14T12:28:32.571049Z","preferred_language":"en"}},{"vendor_id":"9aee2801-80cb-4d50-8e52-539a7f2699a9","tenant_id":"90c9aad8-4201-4416-8af6-c5561b7e6b35","user_id":"90360e81-9c84-42a5-bfe8-b327fd7bd02f","business_name":"Summer's Store","display_name":"Summer's Store","policy":"No policy specified","contact_email":"ikumwana2@gmail.com","contact_phone":"255625552728","website":"","address_line1":"Street Address","address_line2":"","city":"Ilala","state_province":"Dar es Salaam","postal_code":"0000","country":"Tanzania","tax_id":"","bank_account":{"bank_name":"None","account_number":"0000000000","account_name":"Summer Smith","swift_code":"","branch_code":""},"verification_documents":[],"verification_status":"pending","is_active":false,"commission_rate":"0","rating":0.0,"created_at":"2026-05-08T16:00:51.701756Z","updated_at":"2026-05-08T16:00:51.701756Z","approved_at":null,"stores":[],"user":{"user_id":"90360e81-9c84-42a5-bfe8-b327fd7bd02f","name":"Summer Smith","email":"ikumwana2@gmail.chom","phone_number":"25562555272884340","is_verified":true,"is_active":true,"active_profile_role":"buyer","created_at":"2026-04-24T05:48:35.737567Z","updated_at":"2026-05-18T13:35:54.043836Z","preferred_language":"en"}},{"vendor_id":"95672ba1-588f-47aa-8fcf-6733760fde39","tenant_id":"90c9aad8-4201-4416-8af6-c5561b7e6b35","user_id":"c41fa0e7-d61f-416a-b6a6-0504981208d9","business_name":"Breezy Jones","display_name":"Breezy Jones","policy":"No policy specified","contact_email":"emelynemalisa93@icloud.com","contact_phone":"255753944298","website":"","address_line1":"Near lake oil","address_line2":"","city":"Kinondoni","state_province":"Dar es Salaam","postal_code":"0000","country":"Tanzania","tax_id":"","bank_account":{"bank_name":"None","account_number":"0000000000","account_name":"Breezy Jones","swift_code":"","branch_code":""},"verification_documents":[{"document_id":"b6dc72a6-faca-4323-a5a8-587b301655f5","document_type_name":"NIDA (National ID)","document_type_id":"9f4ee638-ce8f-484e-9358-a287ab69209e","number":null,"document_url":"https://eu-central-1.linodeobjects.com/afrizon/documents/1777554386913-8f2c4721-188e-4622-85b7-c14e16aa5725.jpeg","verification_status":"verified","rejection_reason":null,"submitted_at":"2026-04-30T13:06:41.938907+00:00","verified_at":"2026-04-30T13:08:55.355293","expires_at":null,"document_type_description":"National Identification Authority ID card"},{"document_id":"8882b127-d359-4dbb-8d37-718c7ed4c17a","document_type_name":"Business License","document_type_id":"c43a9493-6268-4b66-b499-b7782e7d7ab9","number":null,"document_url":"https://eu-central-1.linodeobjects.com/afrizon/documents/1777554399931-80aede5f-7a10-4ffa-b9c8-7dc3514d7fde.jpeg","verification_status":"verified","rejection_reason":null,"submitted_at":"2026-04-30T13:06:41.938925+00:00","verified_at":"2026-04-30T13:08:57.517798","expires_at":null,"document_type_description":"Current business operating license"}],"verification_status":"approved","is_active":true,"commission_rate":"0","rating":0.0,"created_at":"2026-04-30T12:57:24.097566Z","updated_at":"2026-04-30T13:35:25.923552Z","approved_at":"2026-04-30T13:09:03.300230Z","stores":[],"user":{"user_id":"c41fa0e7-d61f-416a-b6a6-0504981208d9","name":"Breezy Jones","phone_number":"255753944298976865","is_verified":true,"is_active":true,"active_profile_role":"buyer","created_at":"2026-04-30T12:55:19.283281Z","updated_at":"2026-04-30T12:55:19.283281Z","preferred_language":"en"}},{"vendor_id":"8ca0487a-28aa-4037-808e-5c74b184761e","tenant_id":"90c9aad8-4201-4416-8af6-c5561b7e6b35","user_id":"cf6c63fd-a629-491d-9c39-00422132746c","business_name":"Jerry Smith","display_name":"Jerry Smith","policy":"No policy specified","contact_email":"+255767016524@c824f4a6-fbcf-48ef-bf49-0250cc5f758f.com","contact_phone":"255767016524","website":"","address_line1":"Street Address","address_line2":"","city":"Ilala","state_province":"Dar es Salaam","postal_code":"0000","country":"Tanzania","tax_id":"","bank_account":{"bank_name":"None","account_number":"0000000000","account_name":"Jerry Smith","swift_code":"","branch_code":""},"verification_documents":[],"verification_status":"rejected","is_active":false,"commission_rate":"0","rating":0.0,"created_at":"2026-04-27T20:41:42.957745Z","updated_at":"2026-04-27T20:56:58.605258Z","approved_at":null,"stores":[],"user":null},{"vendor_id":"bd2f3728-a2d3-4cbe-b353-5921e1f11547","tenant_id":"90c9aad8-4201-4416-8af6-c5561b7e6b35","user_id":"50678838-e619-4f9c-93b3-3c9b654efdab","business_name":"Testing Company","display_name":"Testing Company","policy":"No policy specified","contact_email":"Ikumwana@gmail.com","contact_phone":"255736552728","website":"","address_line1":"Street Address","address_line2":"","city":"Ilala","state_province":"Dar es Salaam","postal_code":"0000","country":"Tanzania","tax_id":"","bank_account":{"bank_name":"None","account_number":"0000000000","account_name":"John Rambo","swift_code":"","branch_code":""},"verification_documents":[{"document_id":"49d092e4-f81e-4794-81b4-6e67599af101","document_type_name":"NIDA (National ID)","document_type_id":"9f4ee638-ce8f-484e-9358-a287ab69209e","number":null,"document_url":"https://eu-central-1.linodeobjects.com/afrizon/documents/1779171781669-9f4ee638-ce8f-484e-9358-a287ab69209e_1779171781209.png","verification_status":"pending","rejection_reason":null,"submitted_at":"2026-05-19T06:23:01.916146+00:00","verified_at":null,"expires_at":null,"document_type_description":"National Identification Authority ID card"}],"verification_status":"approved","is_active":true,"commission_rate":"0","rating":0.0,"created_at":"2026-04-25T10:03:36.251255Z","updated_at":"2026-05-19T06:23:58.108657Z","approved_at":"2026-04-26T08:46:58.152620Z","stores":[],"user":{"user_id":"50678838-e619-4f9c-93b3-3c9b654efdab","name":"Jon Rambo","email":"+255736552728@90c9aad8-4201-4416-8af6-c5561b7e6b35.com","phone_number":"255736552728","is_verified":true,"i* Connection #0 to host api.demo.tunzaa.co.tz left intact
+s_active":true,"active_profile_role":"buyer","created_at":"2026-04-23T19:27:26.181507Z","updated_at":"2026-05-11T05:15:53.776088Z","preferred_language":"en"}},{"vendor_id":"00809fdf-3e7f-4fca-b2d9-5613f702d1c7","tenant_id":"90c9aad8-4201-4416-8af6-c5561b7e6b35","user_id":"19697574-1c6d-45bd-b05d-1ea85e23c540","business_name":"Bb","display_name":"Bb","policy":"No policy specified","contact_email":"ikumwana@gmail.com","contact_phone":"0736552728","website":"","address_line1":"Street Address","address_line2":"","city":"Ilala","state_province":"Dar es Salaam","postal_code":"0000","country":"Tanzania","tax_id":"","bank_account":{"bank_name":"None","account_number":"0000000000","account_name":"Store Owner","swift_code":"","branch_code":""},"verification_documents":[{"document_id":"4460dc62-7fa1-482b-a270-e7e55915b90a","document_type_name":"Business License","document_type_id":"c43a9493-6268-4b66-b499-b7782e7d7ab9","number":"6","document_url":"https://tunzaa-multi-tenant-dev.nyc3.cdn.digitaloceanspaces.com/whitelabel-demo/public/fdfdc06b-d445-4d3e-8be8-9b01cf5bc0e7.pdf","verification_status":"verified","rejection_reason":null,"submitted_at":"2026-04-20T13:42:56.294903+00:00","verified_at":"2026-04-20T13:43:22.970386","expires_at":null,"document_type_description":"Current business operating license"}],"verification_status":"approved","is_active":true,"commission_rate":"0","rating":0.0,"created_at":"2026-04-18T12:51:20.539829Z","updated_at":"2026-04-20T13:43:38.351562Z","approved_at":"2026-04-20T13:43:38.351550Z","stores":[],"user":null},{"vendor_id":"a0c6113a-3dd2-4f28-989b-380ef39ad76c","tenant_id":"90c9aad8-4201-4416-8af6-c5561b7e6b35","user_id":"fad5afd4-41a5-4935-8ea1-4c146d4505e3","business_name":"Business 1","display_name":"Business 1","policy":null,"contact_email":"nimrodambrose@gmail.com","contact_phone":"+255679580444","website":null,"address_line1":"address","address_line2":null,"city":"city","state_province":"state","postal_code":null,"country":"Tanzania","tax_id":null,"bank_account":{"bank_name":"NMB Bank","account_number":"1234","account_name":"Business","swift_code":"","branch_code":""},"verification_documents":[{"document_id":"4df0daca-8009-4f05-b498-bb31289fad46","document_type_name":"NIDA (National ID)","document_type_id":"9f4ee638-ce8f-484e-9358-a287ab69209e","number":"12345678","document_url":"https://tunzaa-multi-tenant-dev.nyc3.cdn.digitaloceanspaces.com/whitelabel-demo/public/e4592d96-c1cb-45bd-ac2b-994330eaa76c.pdf","verification_status":"verified","rejection_reason":null,"submitted_at":"2026-04-02T14:39:02.669635+00:00","verified_at":null,"expires_at":"2026-04-02T00:00:00","document_type_description":"National Identification Authority ID card"}],"verification_status":"approved","is_active":false,"commission_rate":"10","rating":0.0,"created_at":"2026-02-19T20:16:49.762921Z","updated_at":"2026-04-02T15:18:29.270164Z","approved_at":"2026-04-02T14:39:14.500611Z","stores":[],"user":null}],"total":7,"skip":0,"limit":50}

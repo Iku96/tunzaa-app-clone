@@ -47,7 +47,7 @@ export function useAddressManagement(options: AddressSubmissionOptions = {}) {
       };
 
       // Check if editing existing address or creating new
-      const isEditing = address.address_id && buyerProfile?.delivery_address.some(
+      const isEditing = address.address_id && buyerProfile?.delivery_address?.some(
         (addr) => addr.address_id === address.address_id
       );
 

@@ -443,8 +443,7 @@ const PaymentScreen = () => {
                       <View className="flex-row justify-between items-center mb-2">
                         <Text className="text-sm text-muted-foreground">Payment Method:</Text>
                         <Text className="text-sm font-medium text-foreground">
-                          {/* {getPaymentMethodName(order.payment_details?.method || "mobile_money", t)} */}
-                          AFRIZON
+                          {getPaymentMethodName(order.payment_details?.method || "mobile_money", t)}
                         </Text>
                       </View>
                       <View className="flex-row justify-between items-center mb-2">

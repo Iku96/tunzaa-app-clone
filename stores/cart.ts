@@ -831,7 +831,13 @@ export const useCartCombined = (userId: string) => {
         }
 
         try {
-            if (currentCart) cartStore.saveTempCart(currentCart);
+            if (currentCart && currentCart.items.length > 0) {
+                cartStore.saveTempCart(currentCart);
+                await cartApi.clearCart(currentCart.cart_id);
+            } else if (currentCart) {
+                // If cart is already empty, just save the empty state so we can restore it (which just clears tempCart later)
+                cartStore.saveTempCart(currentCart);
+            }
             return await addToCart.mutateAsync({
                 cartId: currentCart?.cart_id || userId,
                 item: safeItem,

@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     titleContainer: {
         flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     },
-    headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#1F2937', fontFamily: 'Ubuntu_700Bold' },
+    headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#1F2937', fontFamily: 'Gilroy-Bold' },
     newMessageButton: {
         width: 50, height: 50, borderRadius: 25, backgroundColor: '#2D3E7B',
         justifyContent: 'center', alignItems: 'center',

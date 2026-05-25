@@ -156,7 +156,7 @@ const linking = {
   useTimeTracker(); // Hooks MUST be called unconditionally before any early returns
 
   // Segment Analysis
-  const protectedSegments = ['(vendor)', '(delivery)', '(winga)', '(buyer)', '(payment)'];
+  const protectedSegments = ['(vendor)', '(delivery)', '(winga)', '(payment)'];
   const currentSegment = segments[0];
   const isProtected = protectedSegments.includes(currentSegment);
   const isEntryScreen = currentSegment === 'language' || currentSegment === 'role' || currentSegment === '(auth)';
@@ -211,7 +211,10 @@ export default function RootLayout() {
 
   // Custom Tunzaa fonts
   const [customFontsLoaded] = useFonts({
+    'Gilroy-Regular': require('../assets/fonts/Gilroy-Regular.ttf'),
+    'Gilroy-Medium': require('../assets/fonts/Gilroy-Medium.ttf'),
     'Gilroy-SemiBold': require('../assets/fonts/Gilroy-SemiBold.ttf'),
+    'Gilroy-Bold': require('../assets/fonts/Gilroy-Bold.ttf'),
     'Calibri': require('../assets/fonts/Calibri Regular.ttf'),
   });
 

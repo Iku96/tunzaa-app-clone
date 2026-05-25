@@ -64,10 +64,9 @@ export default function ProfileScreen() {
                                  userData?.avatar || 
                                  localData.profile_picture || '';
 
-                    // 3. Merge
                     setProfileData({
                         username: apiMeta.username || localData.username || '',
-                        location: apiMeta.location || localData.location || 'Dar es Salaam',
+                        location: apiMeta.preferred_location || localData.preferred_location || apiMeta.location || localData.location || 'Dar es Salaam',
                         followers_count: apiMeta.followers_count || 0,
                         following_count: apiMeta.following_count || 0,
                         profile_picture: picUrl

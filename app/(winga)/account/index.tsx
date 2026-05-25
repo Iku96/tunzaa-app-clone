@@ -251,7 +251,7 @@ export default function AccountScreen() {
               onPress={() => setShowDiamondModal(true)}
               className="bg-blue-50 px-2 py-0.5 rounded-full flex-row items-center gap-1 border border-blue-200"
             >
-              <Award size={12} color="#315BA9" />
+              <Award size={12} color="#425BA4" />
               <Text className="text-[10px] font-bold text-blue-700 uppercase">Diamond</Text>
             </TouchableOpacity>
           </View>
@@ -516,7 +516,7 @@ export default function AccountScreen() {
         <View className="flex-1 bg-black/60 items-center justify-center p-6">
           <View className="bg-white w-full rounded-3xl p-6 items-center">
             <View className="w-16 h-16 bg-blue-50 rounded-full items-center justify-center mb-4">
-              <Award size={32} color="#315BA9" />
+              <Award size={32} color="#425BA4" />
             </View>
             <Text className="text-2xl font-extrabold text-gray-900 mb-2">Diamond Status</Text>
             <Text className="text-center text-gray-500 font-medium leading-5 mb-6">

@@ -26,6 +26,25 @@ jest.mock('@/components/home/AffiliateHome', () => {
   return { AffiliateHome: () => <View testID="affiliate-home" /> };
 });
 jest.mock('@rn-primitives/slot', () => ({}));
+jest.mock('@/hooks/useProfileDetails', () => ({
+  useProfileDetails: () => ({
+    affiliateDetails: null,
+    isLoading: false,
+    hasErrors: false,
+    errors: {},
+    vendorDetails: null,
+    deliveryDetails: null,
+  }),
+}));
+jest.mock('@/src/services/upload', () => ({
+  useUploadFile: () => ({
+    mutateAsync: jest.fn().mockResolvedValue({ fileCDNUrl: "https://cdn.example.com/logo.jpg" }),
+  }),
+}));
+jest.mock('@/src/services/affiliates', () => ({
+  useCreateAffiliate: () => ({ mutateAsync: jest.fn() }),
+  useUpdateAffiliate: () => ({ mutateAsync: jest.fn() }),
+}));
 
 describe('Winga Onboarding and Login Screen Specs', () => {
   beforeEach(() => {

@@ -21,7 +21,7 @@ export function DynamicLogo({
   
   // Get the appropriate logo URL based on theme
   const logoUrlLight = tenant?.branding?.logoUrl;
-  const logoUrlDark = tenant?.branding?.theme?.logo?.secondary || "https://edatesting.nyc3.cdn.digitaloceanspaces.com/edatesting/documents/1751484606780-Afrizon%20Logo%20Design1.png";
+  const logoUrlDark = tenant?.branding?.theme?.logo?.secondary || logoUrlLight;
   
   // Use dark logo in dark mode, light logo in light mode
   const logoUrl = isDarkColorScheme ? logoUrlDark : logoUrlLight;

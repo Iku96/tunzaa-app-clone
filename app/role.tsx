@@ -149,7 +149,7 @@ export default function RoleScreen() {
                     <Text
                         className="text-center text-[#666666]"
                         style={{
-                            fontFamily: 'Calibri',
+                            fontFamily: 'Gilroy-Regular',
                             fontSize: 12,
                             lineHeight: 18, // Increased line height slightly for better readability
                             letterSpacing: 0.01,
@@ -283,7 +283,7 @@ export default function RoleScreen() {
                 >
                     <Text
                         style={{
-                            fontFamily: 'System',
+                            fontFamily: 'Gilroy-Regular',
                             fontSize: 16,
                             fontWeight: '500',
                             letterSpacing: -0.24,

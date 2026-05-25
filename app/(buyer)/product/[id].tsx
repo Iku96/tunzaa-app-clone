@@ -1,14 +1,15 @@
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Alert } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { productsApi, Product as ApiProduct } from '../../../src/services/products';
 import { useCartCombined, useAddToCart } from '../../../src/stores/cart';
 import { useCheckWishlistStatus, useAddToWishlist, useRemoveFromWishlist } from '../../../src/services/wishlist';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 import { useGetRatingSummary } from '../../../src/services/ratings';
+import { useGetBuyerProfile } from '../../../src/services/buyers';
 import { recommendationsApi } from '../../../src/services/recommendations';
 import ProductCardVertical from '../../../src/components/product/ProductCardVertical';
 import ShareSheet from '../../../src/components/shop/ShareSheet';
@@ -21,6 +22,15 @@ export default function ProductDetailScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { isAuthenticated, user } = useTunzaaAuth();
+    const { data: buyerProfile, refetch: refetchBuyerProfile } = useGetBuyerProfile(user?.user_id || user?.id || '');
+
+    useFocusEffect(
+        useCallback(() => {
+            if (user?.user_id || user?.id) {
+                refetchBuyerProfile();
+            }
+        }, [user, refetchBuyerProfile])
+    );
     const [loading, setLoading] = useState(true);
     
     console.log('[ProductDetail] Render. ID:', id, 'Authenticated:', isAuthenticated);
@@ -43,9 +53,11 @@ export default function ProductDetailScreen() {
     const { 
         cart: serverCart, 
         addItem,
+        buyNow,
         isAdding: isAddingToCartOptimistic
     } = useCartCombined(user?.user_id || user?.id || 'guest');
     const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
+    const [isBuyingNow, setIsBuyingNow] = useState(false);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -109,6 +121,7 @@ export default function ProductDetailScreen() {
                 location: apiProduct.store?.address || apiProduct.store?.city || '',
                 logo: apiProduct.store?.logo_url || apiProduct.store?.logo || null,
                 createdAt: apiProduct.store?.created_at || null,
+                refundPolicy: apiProduct.store?.return_policy || apiProduct.store?.metadata?.refund_policy || null,
             },
         };
     }, [apiProduct]);
@@ -416,17 +429,30 @@ export default function ProductDetailScreen() {
                         </View>
 
                         {/* Delivery Info */}
-                        {product.requiresShipping && (
-                            <View style={styles.deliveryContainer}>
-                                <View style={styles.deliveryRow}>
-                                    <Ionicons name="location-outline" size={16} color="#4B5563" />
-                                    <Text style={styles.deliveryText}>Delivery available for this item</Text>
+                        {product.requiresShipping && (() => {
+                            const hasAddress = buyerProfile?.delivery_address && buyerProfile.delivery_address.length > 0;
+                            const defaultAddressObj = hasAddress ? (
+                                buyerProfile.delivery_address.find(
+                                    (addr) => addr.address_id === buyerProfile.default_delivery_address || addr.address_line1 === buyerProfile.default_delivery_address
+                                ) || buyerProfile.delivery_address[0]
+                            ) : null;
+                            const defaultAddress = defaultAddressObj ? defaultAddressObj.address_line1 : null;
+                            return (
+                                <View style={styles.deliveryContainer}>
+                                    <View style={styles.deliveryRow}>
+                                        <Ionicons name="location-outline" size={16} color="#4B5563" />
+                                        <Text style={styles.deliveryText}>
+                                            {defaultAddress ? `Deliver to: ${defaultAddress}` : 'Delivery available for this item'}
+                                        </Text>
+                                    </View>
+                                    <TouchableOpacity onPress={() => router.push('/(buyer)/profile/delivery/address')}>
+                                        <Text style={styles.changeLocationText}>
+                                            {hasAddress ? 'Change delivery location' : 'Set delivery location'}
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity onPress={() => router.push('/(buyer)/profile/delivery/address')}>
-                                    <Text style={styles.changeLocationText}>Set delivery location</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
+                            );
+                        })()}
 
                         {/* Two-Column Info Layout */}
                         <View style={styles.infoRow}>
@@ -708,8 +734,7 @@ export default function ProductDetailScreen() {
                             {expandedSections['policy'] && (
                                 <View style={styles.expandedSection}>
                                     <Text style={styles.policyText}>
-                                        Items can be returned within 7 days of delivery if they are in original condition and packaging. 
-                                        Refunds are processed within 3-5 business days after inspection.
+                                        {product.vendor.refundPolicy || 'This shop has not specified a return and refund policy.'}
                                     </Text>
                                 </View>
                             )}
@@ -730,33 +755,6 @@ export default function ProductDetailScreen() {
                         ) : (
                             <>
                                 <TouchableOpacity
-                                    style={[styles.cartButton, (isAddingToCartOptimistic || isAddingToCart) && styles.buttonDisabled]}
-                                    onPress={async () => {
-                                        console.log('🖱️ [Add to Cart] Button pressed. IsAuthenticated:', isAuthenticated);
-                                        if (!isAuthenticated) {
-                                            router.push('/login');
-                                            return;
-                                        }
-                                        console.log('🛒 [Add to Cart] Server Cart state:', JSON.stringify(serverCart));
-                                        await addItem({
-                                            product_id: product?.id || '',
-                                            quantity: quantity,
-                                            ...(selectedVariant?.sku ? { sku: selectedVariant.sku } : {}),
-                                            currency: 'TZS',
-                                        }, selectedVariant?.sku || undefined);
-                                        
-                                        Alert.alert('Success', 'Item added to cart!');
-                                    }}
-                                    disabled={isAddingToCartOptimistic || isAddingToCart}
-                                >
-                                    {isAddingToCartOptimistic ? (
-                                        <ActivityIndicator size="small" color="#425BA4" />
-                                    ) : (
-                                        <Ionicons name="cart-outline" size={24} color="#425BA4" />
-                                    )}
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
                                     style={[styles.buyButton, (isAddingToCartOptimistic || isAddingToCart) && styles.buttonDisabled]}
                                     onPress={async () => {
                                         console.log('🖱️ [Buy Now] Button pressed. IsAuthenticated:', isAuthenticated);
@@ -767,29 +765,26 @@ export default function ProductDetailScreen() {
                                         
                                         if (isAddingToCart) return;
 
-                                        if (!serverCart?.cart_id) {
-                                            router.push({ pathname: '/(buyer)/cart/summary', params: { productId: product?.id } });
-                                            return;
-                                        }
+                                        if (isAddingToCart || isBuyingNow) return;
 
                                         try {
-                                            console.log('🛒 [Buy Now] Triggering addToCart mutation...');
-                                            await addToCart({
-                                                cartId: serverCart.cart_id,
-                                                item: {
-                                                    product_id: product?.id || '',
-                                                    quantity: quantity,
-                                                    ...(selectedVariant?.sku ? { sku: selectedVariant.sku } : {}),
-                                                    currency: 'TZS',
-                                                }
+                                            setIsBuyingNow(true);
+                                            console.log('🛒 [Buy Now] Triggering buyNow flow...');
+                                            await buyNow({
+                                                product_id: product?.id || '',
+                                                quantity: quantity,
+                                                ...(selectedVariant?.sku ? { sku: selectedVariant.sku } : {}),
+                                                currency: 'TZS',
                                             });
-                                            router.push('/(buyer)/cart/summary');
+                                            router.push({ pathname: '/(buyer)/cart/checkout', params: { productId: product?.id, returnTo: 'product' } });
                                         } catch (error) {
-                                            console.error('Failed to add to cart:', error);
+                                            console.error('Failed to initiate Buy Now:', error);
+                                        } finally {
+                                            setIsBuyingNow(false);
                                         }
                                     }}
                                     activeOpacity={0.9}
-                                    disabled={isAddingToCartOptimistic || isAddingToCart}
+                                    disabled={isAddingToCartOptimistic || isAddingToCart || isBuyingNow}
                                 >
                                     <Text style={styles.buyButtonText}>Buy Now</Text>
                                 </TouchableOpacity>
