@@ -8,6 +8,20 @@ const { width } = Dimensions.get('window');
 
 import { useTunzaaAuth } from '../../contexts/TunzaaAuthContext';
 
+const CustomCartIcon = ({ color, size = 24 }: { color: string, size?: number }) => {
+    return (
+        <Svg width={size} height={size} viewBox="15 0 24 24" fill="none">
+            <Path d="M22.9004 16H30.1636C34.6512 16 35.3337 13.1808 36.1614 9.06908C36.4002 7.88311 36.5196 7.29013 36.2325 6.89507C35.9454 6.5 35.3951 6.5 34.2945 6.5H33.9004M20.9004 6.5H22.9004" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+            <Path d="M25.9004 8.5C26.3919 9.0057 27.7002 11 28.4004 11M28.4004 11C29.1006 11 30.4089 9.0057 30.9004 8.5M28.4004 11V3" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <Path d="M22.9004 16L20.2791 3.51493C20.0565 2.62459 19.2566 2 18.3388 2H17.4004" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+            <Path d="M23.7804 16H23.369C22.0056 16 20.9004 17.1513 20.9004 18.5714C20.9004 18.8081 21.0846 19 21.3118 19H32.4004" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <Path d="M25.4004 22C26.2288 22 26.9004 21.3284 26.9004 20.5C26.9004 19.6716 26.2288 19 25.4004 19C24.572 19 23.9004 19.6716 23.9004 20.5C23.9004 21.3284 24.572 22 25.4004 22Z" stroke={color} strokeWidth="1.5"/>
+            <Path d="M32.4004 22C33.2288 22 33.9004 21.3284 33.9004 20.5C33.9004 19.6716 33.2288 19 32.4004 19C31.572 19 30.9004 19.6716 30.9004 20.5C30.9004 21.3284 31.572 22 32.4004 22Z" stroke={color} strokeWidth="1.5"/>
+        </Svg>
+    );
+};
+
+
 export default function BottomNav() {
     const router = useRouter();
     const pathname = usePathname();
@@ -70,7 +84,11 @@ export default function BottomNav() {
                     <Text style={[styles.navText, { color: getTextColor('/(buyer)/orders') }]}>Order</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navItem} onPress={() => handleNav('/(buyer)/cart', true)}>
-                    <Ionicons name={getIconName('/(buyer)/cart', 'cart', 'cart-outline') as any} size={24} color={getIconColor('/(buyer)/cart')} />
+                    {isActive('/(buyer)/cart') ? (
+                        <CustomCartIcon color="#FFFFFF" size={26} />
+                    ) : (
+                        <CustomCartIcon color="rgba(255, 255, 255, 0.7)" size={24} />
+                    )}
                     <Text style={[styles.navText, { color: getTextColor('/(buyer)/cart') }]}>Cart</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.navItem} onPress={() => handleNav('/(buyer)/services')}>

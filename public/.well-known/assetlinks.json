@@ -3,7 +3,7 @@
       "relation": [ "delegate_permission/common.handle_all_urls" ],
       "target": {
         "namespace": "android_app",
-        "package_name": "com.gsmgroup.afrizon",
+        "package_name": "com.tunzaa.app",
         "sha256_cert_fingerprints": [
           "D7:D6:33:E2:A3:3D:42:F9:64:E4:68:0C:30:7A:0F:D9:C5:BD:98:98:2F:50:05:3B:5C:0F:99:6D:1D:34:30:4B"
         ]

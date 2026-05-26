@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../src/contexts/LanguageContext";
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ import { orderApi } from '../../../src/services/orders';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 export default function OrdersScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { user } = useTunzaaAuth();
     const userId = user?.user_id || user?.id || '';
@@ -26,7 +28,7 @@ export default function OrdersScreen() {
 
     const renderTabs = () => (
         <View style={styles.tabsContainer}>
-            {['Pending', 'Shipped', 'Completed', 'Gift cards'].map((tab) => {
+            {[t.ordersTabPending, t.ordersTabShipped, t.ordersTabCompleted, t.ordersTabGiftCards].map((tab) => {
                 const isActive = activeTab === tab;
                 return (
                     <TouchableOpacity
@@ -43,7 +45,7 @@ export default function OrdersScreen() {
 
     const renderPendingCard = (item: any) => {
         // Derive variables from the API Order object
-        const itemName = item.items?.[0]?.name || 'Unknown Product';
+        const itemName = item.items?.[0]?.name || t.ordersUnknownProduct;
         const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
         const date = new Date(item.created_at).toLocaleDateString();
         const total = item.totals?.total || 0;
@@ -69,7 +71,7 @@ export default function OrdersScreen() {
                 </View>
 
                 <View style={styles.installmentRow}>
-                    <Text style={styles.installmentLabel}>Next installment :</Text>
+                    <Text style={styles.installmentLabel}>{t.ordersNextInstallment}</Text>
                     <Text style={styles.installmentValue}>Tsh {formatPrice(nextInstallment)}</Text>
                 </View>
 
@@ -84,7 +86,7 @@ export default function OrdersScreen() {
                     style={styles.payButton}
                     onPress={() => router.push(`/(buyer)/orders/${item.order_id}`)}
                 >
-                    <Text style={styles.payButtonText}>pay Tsh {formatPrice(paymentDue)}</Text>
+                    <Text style={styles.payButtonText}>{t.ordersPayPrefix}{formatPrice(paymentDue)}</Text>
                 </TouchableOpacity>
             </TouchableOpacity>
         );
@@ -112,14 +114,14 @@ export default function OrdersScreen() {
                 </View>
 
                 <View style={[styles.installmentRow, { borderBottomWidth: 0 }]}>
-                    <Text style={styles.installmentLabel}>Total paid :</Text>
+                    <Text style={styles.installmentLabel}>{t.ordersTotalPaid}</Text>
                     <Text style={[styles.installmentValue, { color: '#22C55E' }]}>Tsh {formatPrice(total)}</Text>
                 </View>
 
                 <View style={styles.completedBadgeRow}>
                     <View style={styles.completedBadge}>
                         <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
-                        <Text style={styles.completedBadgeText}>Completed</Text>
+                        <Text style={styles.completedBadgeText}>{t.ordersBadgeCompleted}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -137,7 +139,7 @@ export default function OrdersScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Order</Text>
+                <Text style={styles.headerTitle}>{t.ordersHeaderTitle}</Text>
                 <View style={{ width: 24 }} />
             </View>
  
@@ -147,32 +149,32 @@ export default function OrdersScreen() {
                 {isLoading ? (
                     <View style={{ padding: 40, alignItems: 'center' }}>
                         <ActivityIndicator size="large" color="#425BA4" />
-                        <Text style={{ marginTop: 12, color: '#6B7280' }}>Loading orders...</Text>
+                        <Text style={{ marginTop: 12, color: '#6B7280' }}>{t.ordersLoading}</Text>
                     </View>
                 ) : (
                     <>
-                        {activeTab === 'Pending' && (
+                        {activeTab === t.ordersTabPending && (
                             pendingOrders.length === 0 ? (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No pending orders</Text>
+                                    <Text style={styles.emptyText}>{t.ordersEmptyPending}</Text>
                                 </View>
                             ) : (
                                 pendingOrders.map(renderPendingCard)
                             )
                         )}
-                        {activeTab === 'Shipped' && (
+                        {activeTab === t.ordersTabShipped && (
                             shippedOrders.length === 0 ? (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No orders in transit</Text>
+                                    <Text style={styles.emptyText}>{t.ordersEmptyTransit}</Text>
                                 </View>
                             ) : (
                                 shippedOrders.map(renderPendingCard) // Reuse pending card style for shipped
                             )
                         )}
-                        {activeTab === 'Completed' && (
+                        {activeTab === t.ordersTabCompleted && (
                             completedOrders.length === 0 ? (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No completed orders</Text>
+                                    <Text style={styles.emptyText}>{t.ordersEmptyCompleted}</Text>
                                 </View>
                             ) : (
                                 completedOrders.map(renderCompletedCard)
@@ -180,9 +182,9 @@ export default function OrdersScreen() {
                         )}
                     </>
                 )}
-                {activeTab === 'Gift cards' && (
+                {activeTab === t.ordersTabGiftCards && (
                     <View style={styles.emptyState}>
-                        <Text style={styles.emptyText}>No gift cards available</Text>
+                        <Text style={styles.emptyText}>{t.ordersEmptyGiftCards}</Text>
                     </View>
                 )}
             </ScrollView>

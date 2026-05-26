@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../src/contexts/LanguageContext";
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -7,6 +8,7 @@ import { useGetOrder } from '../../../src/services/orders';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
 
 export default function RateDeliveryScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { orderId } = useLocalSearchParams();
     const { user } = useTunzaaAuth();
@@ -76,13 +78,13 @@ export default function RateDeliveryScreen() {
                         <Ionicons name="star" size={40} color="#425BA4" />
                     </View>
 
-                    <Text style={styles.successTitle}>Thanks for rating!</Text>
+                    <Text style={styles.successTitle}>{t.rateSuccessTitle}</Text>
                     <Text style={styles.successText}>
-                        We're grateful for your trust in our service! Your satisfaction is our priority.
+                        {t.rateSuccessMsg}
                     </Text>
 
                     <TouchableOpacity style={styles.submitBtn} onPress={handleDone}>
-                        <Text style={styles.submitBtnText}>Done Reviewing</Text>
+                        <Text style={styles.submitBtnText}>{t.rateDoneBtn}</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -95,7 +97,7 @@ export default function RateDeliveryScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Rate</Text>
+                <Text style={styles.headerTitle}>{t.rateHeaderTitle}</Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -106,12 +108,12 @@ export default function RateDeliveryScreen() {
             ) : (
                 <View style={styles.formContent}>
                     <Text style={styles.ratingQuestion}>
-                        How would you rate your experience with {order?.items?.[0]?.vendor_id ? 'the vendor' : 'the shop'}?
+                        {order?.items?.[0]?.vendor_id ? t.rateQuestionVendor : t.rateQuestionShop}
                     </Text>
                     <StarRow rating={shopRating} setRating={setShopRating} />
 
                     <Text style={[styles.ratingQuestion, { marginTop: 40 }]}>
-                        How would you rate your delivery experience?
+                        {t.rateQuestionDelivery}
                     </Text>
                     <StarRow rating={driverRating} setRating={setDriverRating} />
                 </View>
@@ -126,7 +128,7 @@ export default function RateDeliveryScreen() {
                     {isSubmitting ? (
                         <ActivityIndicator color="#FFFFFF" />
                     ) : (
-                        <Text style={styles.submitBtnText}>Leave Feedback</Text>
+                        <Text style={styles.submitBtnText}>{t.rateSubmitBtn}</Text>
                     )}
                 </TouchableOpacity>
             </View>

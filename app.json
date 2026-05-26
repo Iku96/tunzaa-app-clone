@@ -1,12 +1,11 @@
 {
   "expo": {
     "name": "Tunzaa",
-    "owner": "iku101",
     "slug": "dynamic-marketplace",
     "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "afrizon",
+    "scheme": "tunzaa",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "assetBundlePatterns": [
@@ -19,7 +18,7 @@
       },
       "googleServicesFile": "./config/GoogleService-Info.plist",
       "supportsTablet": true,
-      "bundleIdentifier": "africa.afrizon.gsm",
+      "bundleIdentifier": "com.tunzaa.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": [
@@ -37,7 +36,7 @@
       "appleTeamId": "LLHL722QJ2",
       "associatedDomains": [
         "applinks:afrizon.africa",
-        "applinks:afrizon.africa"
+        "applinks:tunzaa.co.tz"
       ]
     },
     "android": {
@@ -47,7 +46,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#425BA4"
       },
-      "package": "africa.afrizon.gsm",
+      "package": "com.tunzaa.app",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
@@ -88,7 +87,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "afrizon.africa",
+              "host": "tunzaa.co.tz",
               "pathPrefix": "/"
             }
           ],
@@ -170,7 +169,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.230701056851-pkf15en5cledgeas3ui62menv1ja1som"
+          "iosUrlScheme": "com.googleusercontent.apps.881892445823-rh7rijobdjg7ndqhha9o4v0oelqjqgk5"
         }
       ],
       "expo-apple-authentication",
@@ -191,7 +190,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9abca9ad-2024-4b8d-956f-481f2a40fbe1"
+        "projectId": "b7141a0c-6b74-485d-af60-dab1c00b3e70"
       }
     },
     "runtimeVersion": {

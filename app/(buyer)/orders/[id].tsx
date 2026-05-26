@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../src/contexts/LanguageContext";
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -13,6 +14,7 @@ import { ActivityIndicator } from 'react-native';
 const { width } = Dimensions.get('window');
 
 export default function OrderDetailsScreen() {
+    const { t } = useLanguage();
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const [paymentModalVisible, setPaymentModalVisible] = useState(false);
@@ -34,12 +36,12 @@ export default function OrderDetailsScreen() {
             price: i.unit_price,
             image: i.metadata?.image || 'https://via.placeholder.com/500?text=Order',
             quantity: i.quantity
-        })) : [{ name: 'Loading Item...', price: 0, image: 'https://via.placeholder.com/500', quantity: 1 }],
+        })) : [{ name: t.orderDetailsLoadingItem, price: 0, image: 'https://via.placeholder.com/500', quantity: 1 }],
         paidAmount: paid,
         pendingAmount: Math.max(0, total - paid),
         totalAmount: total,
         progress: progress > 1 ? 1 : progress,
-        status: apiOrder?.status || 'Pending',
+        status: apiOrder?.status || t.orderDetailsStatusPending,
     };
 
     // Circular Progress Props
@@ -66,7 +68,7 @@ export default function OrderDetailsScreen() {
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Order</Text>
+                    <Text style={styles.headerTitle}>{t.ordersHeaderTitle}</Text>
                     <View style={{ width: 24 }} />
                 </View>
             </SafeAreaView>
@@ -75,12 +77,12 @@ export default function OrderDetailsScreen() {
                 {isLoading ? (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 }}>
                         <ActivityIndicator size="large" color="#425BA4" />
-                        <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading order details...</Text>
+                        <Text style={{ marginTop: 10, color: '#6B7280' }}>{t.summaryLoadingOrder}</Text>
                     </View>
                 ) : !apiOrder ? (
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 }}>
                         <Ionicons name="alert-circle-outline" size={48} color="#9CA3AF" />
-                        <Text style={{ marginTop: 10, color: '#6B7280' }}>Order not found</Text>
+                        <Text style={{ marginTop: 10, color: '#6B7280' }}>{t.orderDetailsNotFound}</Text>
                     </View>
                 ) : (
                     <View style={styles.card}>
@@ -111,29 +113,29 @@ export default function OrderDetailsScreen() {
                                 </Svg>
                                 <View style={styles.progressTextContainer}>
                                     <Text style={styles.progressText}>{Math.round(order.progress * 100)}%</Text>
-                                    <Text style={styles.progressLabel}>Paid</Text>
+                                    <Text style={styles.progressLabel}>{t.orderDetailsProgressPaid}</Text>
                                 </View>
                             </View>
                         </View>
 
                         <Text style={styles.productName}>{order.items[0].name}</Text>
-                        <Text style={styles.orderNumber}>Order number #{order.id}</Text>
+                        <Text style={styles.orderNumber}>{t.orderDetailsNumberPrefix}{order.id}</Text>
                         <Text style={styles.orderDate}>{order.date}</Text>
 
                         <View style={styles.divider} />
 
-                        <Text style={styles.sectionTitle}>Order details</Text>
+                        <Text style={styles.sectionTitle}>{t.orderDetailsSectionTitle}</Text>
 
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Amount paid</Text>
+                            <Text style={styles.detailLabel}>{t.orderDetailsAmountPaid}</Text>
                             <Text style={[styles.detailValue, { color: '#22C55E' }]}>Tzs {order.paidAmount.toLocaleString()}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Pending amount</Text>
+                            <Text style={styles.detailLabel}>{t.orderDetailsPendingAmount}</Text>
                             <Text style={[styles.detailValue, { color: '#EF4444' }]}>Tzs {order.pendingAmount.toLocaleString()}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Total Amount</Text>
+                            <Text style={styles.detailLabel}>{t.orderDetailsTotalAmount}</Text>
                             <Text style={styles.detailValue}>Tzs {order.totalAmount.toLocaleString()}</Text>
                         </View>
 
@@ -142,14 +144,14 @@ export default function OrderDetailsScreen() {
                                 style={styles.primaryButton}
                                 onPress={() => router.push('/(buyer)/orders/delivery')}
                             >
-                                <Text style={styles.primaryButtonText}>Receive your product</Text>
+                                <Text style={styles.primaryButtonText}>{t.orderDetailsReceiveBtn}</Text>
                             </TouchableOpacity>
                         ) : (
                             <TouchableOpacity
                                 style={styles.primaryButton}
                                 onPress={() => setPaymentModalVisible(true)}
                             >
-                                <Text style={styles.primaryButtonText}>Pay Installment</Text>
+                                <Text style={styles.primaryButtonText}>{t.orderDetailsPayInstallmentBtn}</Text>
                             </TouchableOpacity>
                         )}
 
@@ -157,7 +159,7 @@ export default function OrderDetailsScreen() {
                             style={styles.secondaryButton}
                             onPress={() => router.push('/(buyer)/orders/receipt')}
                         >
-                            <Text style={styles.secondaryButtonText}>View receipt</Text>
+                            <Text style={styles.secondaryButtonText}>{t.orderDetailsViewReceiptBtn}</Text>
                         </TouchableOpacity>
                     </View>
                 )}

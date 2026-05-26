@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Burnt from 'burnt';
 
 export default function HelpCenterScreen() {
     const router = useRouter();
@@ -43,7 +44,7 @@ export default function HelpCenterScreen() {
                     </View>
                 ) : (
                     <View style={styles.contactContainer}>
-                        <TouchableOpacity style={styles.contactCard} onPress={() => router.push('/(buyer)/chat')}>
+                        <TouchableOpacity style={styles.contactCard} onPress={() => Burnt.toast({ title: 'Live chat coming soon', preset: 'none' })}>
                             <View style={styles.contactLeft}>
                                 <View style={styles.iconCircle}>
                                     <Ionicons name="chatbubbles-outline" size={24} color="#425BA4" />

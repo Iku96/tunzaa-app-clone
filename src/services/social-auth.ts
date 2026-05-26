@@ -26,9 +26,9 @@ if (Platform.OS !== "web") {
         GoogleSignin = gsModule.GoogleSignin;
         GoogleSignin.configure({
             webClientId:
-                "230701056851-d1lqfo4r16r29irhq2q7ihb61bsr5o9k.apps.googleusercontent.com",
+                "881892445823-qfughrm517b6ak2dcsdo49bdel06boif.apps.googleusercontent.com",
             iosClientId:
-                "230701056851-pkf15en5cledgeas3ui62menv1ja1som.apps.googleusercontent.com",
+                "881892445823-rh7rijobdjg7ndqhha9o4v0oelqjqgk5.apps.googleusercontent.com",
             offlineAccess: true,
         });
     } catch (e) {

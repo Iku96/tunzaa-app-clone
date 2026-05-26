@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 
 const SuccessScreen = () => {
   const router = useRouter();
   const { orderId } = useLocalSearchParams();
   const resolvedColors = useResolvedThemeColors();
-  const { t } = useI18n();
+  const { t } = useLanguage();
      usePageTitle("Cart");
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -25,10 +25,10 @@ const SuccessScreen = () => {
             <CheckCircle2 size={48} className="text-success" />
           </View>
           <Text className="text-2xl font-bold text-success text-center mb-2">
-            Order Successful!
+            {t.successOrderTitle}
           </Text>
           <Text className="text-lg text-muted-foreground text-center">
-            Your order has been placed successfully
+            {t.successOrderDesc}
           </Text>
         </View>
 
@@ -37,16 +37,15 @@ const SuccessScreen = () => {
           <View className="p-6 items-center">
             <Package size={32} className="text-primary mb-4" />
             <Text className="text-lg font-semibold text-foreground mb-2">
-              Order Confirmation
+              {t.successOrderConfTitle}
             </Text>
             {orderId && (
               <Text className="text-sm text-muted-foreground text-center mb-4">
-                Order ID: {orderId}
+                {t.successOrderIdPrefix}{orderId}
               </Text>
             )}
             <Text className="text-sm text-muted-foreground text-center">
-              We'll send you updates about your order via email and SMS. You can
-              also track your order in the orders section.
+              {t.successOrderUpdateMsg}
             </Text>
           </View>
         </Card>
@@ -61,7 +60,7 @@ const SuccessScreen = () => {
             >
               <View className="flex-row items-center">
                 <Text className="text-foreground font-semibold mr-2">
-                  View Order Details
+                  {t.successViewOrderDetails}
                 </Text>
                 <ArrowRight size={16} className="text-foreground" color={resolvedColors?.foreground} />
               </View>
@@ -73,7 +72,7 @@ const SuccessScreen = () => {
             onPress={() => router.push("/orders")}
             className="w-full"
           >
-            <Text className="font-semibold">View All Orders</Text>
+            <Text className="font-semibold">{t.successViewAllOrders}</Text>
           </Button>
 
           <Button
@@ -81,7 +80,7 @@ const SuccessScreen = () => {
             onPress={() => router.push("/")}
             className="w-full"
           >
-            <Text className="font-semibold">Continue Shopping</Text>
+            <Text className="font-semibold">{t.successContinueShopping}</Text>
           </Button>
         </View>
       </View>

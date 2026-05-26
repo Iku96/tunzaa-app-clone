@@ -47,12 +47,29 @@ class PushNotificationsService {
   private currentToken: string | null = null;
   private lastPermissionStatus: PushNotificationPermissionStatus | null = null;
   private foregroundNotificationHandler: ((notification: NotificationData) => void) | null = null;
+  private pendingNavigationData: NotificationData | null = null;
+  private isNavigationReady: boolean = false;
 
   static getInstance(): PushNotificationsService {
     if (!PushNotificationsService.instance) {
       PushNotificationsService.instance = new PushNotificationsService();
     }
     return PushNotificationsService.instance;
+  }
+
+  /**
+   * Set navigation readiness to allow handling deferred notifications
+   */
+  setNavigationReady(ready: boolean): void {
+    this.isNavigationReady = ready;
+    console.log(`[PushNotifications] Navigation ready: ${ready}`);
+    
+    // Process any pending notifications
+    if (ready && this.pendingNavigationData) {
+      console.log("[PushNotifications] Processing pending notification navigation");
+      this.navigateBasedOnNotification(this.pendingNavigationData);
+      this.pendingNavigationData = null;
+    }
   }
 
   /**
@@ -508,10 +525,15 @@ class PushNotificationsService {
     }
 
     try {
-      // Add a small delay to ensure app is fully loaded
-      setTimeout(() => {
-        this.navigateBasedOnNotification(notificationData);
-      }, 1000);
+      if (this.isNavigationReady) {
+        // Add a small delay to ensure screens transition properly if app just foregrounded
+        setTimeout(() => {
+          this.navigateBasedOnNotification(notificationData);
+        }, 300);
+      } else {
+        console.log("[PushNotifications] Navigation not ready, storing pending notification");
+        this.pendingNavigationData = notificationData;
+      }
     } catch (error) {
       console.error("Error handling notification navigation:", error);
     }

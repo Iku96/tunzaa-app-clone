@@ -1,3 +1,4 @@
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
@@ -18,15 +19,18 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
 const { width, height } = Dimensions.get("window");
 
-const STATUS_STEPS = [
-  { key: "picked_up", label: "Picked up", icon: "receipt-outline" },
-  { key: "in_transit", label: "In transit", icon: "bicycle-outline" },
-  { key: "delivered", label: "Delivered", icon: "home-outline" },
-];
+// STATUS_STEPS moved into component to use translation hook
 
 export default function TrackingScreen() {
+    const { t } = useLanguage();
   const router = useRouter();
   const { orderId } = useLocalSearchParams();
+
+  const STATUS_STEPS = [
+    { key: "picked_up", label: t.trackingStatusPickedUp, icon: "receipt-outline" },
+    { key: "in_transit", label: t.trackingStatusInTransit, icon: "bicycle-outline" },
+    { key: "delivered", label: t.trackingStatusDelivered, icon: "home-outline" },
+  ];
 
   // Poll for order updates every 10 seconds
   const { data: orderResponse, isLoading } = useQuery({
@@ -99,7 +103,7 @@ export default function TrackingScreen() {
               latitude: parseFloat(orderResponse.shipping_address.latitude || "-6.7924"),
               longitude: parseFloat(orderResponse.shipping_address.longitude || "39.2083"),
             }}
-            title="Delivery Location"
+            title={t.trackingMapMarkerTitle}
             description={orderResponse.shipping_address.address_line1}
           />
         )}
@@ -149,13 +153,13 @@ export default function TrackingScreen() {
             {/* Status Title */}
             <Text className="text-xl font-bold text-foreground mb-1">
               {statusStep === 0
-                ? "Your order is being prepared"
+                ? t.trackingHeaderPrepared
                 : statusStep === 1
-                ? "Your order is on the way"
-                : "Order Delivered"}
+                ? t.trackingHeaderOnWay
+                : t.trackingHeaderDelivered}
             </Text>
             <Text className="text-sm text-muted-foreground mb-6">
-              Arrives between 11:23 PM - 12:01 AM
+              {t.trackingArrivesBetween}
             </Text>
 
             {/* Status Steps */}
@@ -215,7 +219,7 @@ export default function TrackingScreen() {
                   {shop.name}
                 </Text>
                 <Text className="text-xs text-muted-foreground mt-0.5">
-                  Supplier since {shop.supplierSince}
+                  {t.trackingSupplierSince}{shop.supplierSince}
                 </Text>
               </View>
             </View>
@@ -227,7 +231,7 @@ export default function TrackingScreen() {
               onPress={handleCall}
             >
               <Phone size={18} color="#FFFFFF" />
-              <Text className="text-white font-bold text-base ml-2">Contact Shop</Text>
+              <Text className="text-white font-bold text-base ml-2">{t.trackingContactShopBtn}</Text>
             </TouchableOpacity>
           </>
         )}

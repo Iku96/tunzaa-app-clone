@@ -31,7 +31,7 @@ export default function ShareSheet({ visible, onClose, id, type, title, image }:
         if (type === 'profile') {
             return `https://tunzaa.co.tz/users/profile/${id}`;
         } else {
-            return `https://tunzaa.co.tz/${type}s/${id}`;
+            return `https://tunzaa.co.tz/${type}/${id}`;
         }
     };
 
@@ -127,7 +127,7 @@ export default function ShareSheet({ visible, onClose, id, type, title, image }:
                     {/* Copy Link Input Lookalike */}
                     <View style={styles.linkContainer}>
                         <Text style={styles.linkText} numberOfLines={1}>
-                            {type === 'profile' ? `https://tunzaa.co.tz/users/profile/${id}` : `https://tunzaa.co.tz/${type}s/${id}`}
+                            {type === 'profile' ? `https://tunzaa.co.tz/users/profile/${id}` : `https://tunzaa.co.tz/${type}/${id}`}
                         </Text>
                         <TouchableOpacity style={styles.copyButton} onPress={() => handleShare()}>
                             <Ionicons name="copy-outline" size={18} color="#425BA4" />

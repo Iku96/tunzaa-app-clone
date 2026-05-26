@@ -17,6 +17,7 @@ export default function NotificationsSettingsScreen() {
     const [deliveryAlerts, setDeliveryAlerts] = useState(false);
     const [promotions, setPromotions] = useState(false);
     const [systemMessages, setSystemMessages] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Load settings on mount
     React.useEffect(() => {
@@ -76,32 +77,44 @@ export default function NotificationsSettingsScreen() {
     };
 
     const toggleDelivery = async (value: boolean) => {
-        if (value) {
-            const success = await handleEnablePush();
-            if (!success) return; // Revert switch if permission denied
-            await NotificationService.sendDeliveryAlert('B-1029', 'Shipped');
-        }
         setDeliveryAlerts(value);
+        if (value) {
+            setIsProcessing(true);
+            const success = await handleEnablePush();
+            setIsProcessing(false);
+            if (!success) {
+                setDeliveryAlerts(false);
+                return;
+            }
+        }
         saveSettings({ deliveryAlerts: value });
     };
 
     const togglePromotions = async (value: boolean) => {
-        if (value) {
-            const success = await handleEnablePush();
-            if (!success) return;
-            await NotificationService.sendPromotionAlert('20% Off Your Next Purchase');
-        }
         setPromotions(value);
+        if (value) {
+            setIsProcessing(true);
+            const success = await handleEnablePush();
+            setIsProcessing(false);
+            if (!success) {
+                setPromotions(false);
+                return;
+            }
+        }
         saveSettings({ promotions: value });
     };
 
     const toggleSystem = async (value: boolean) => {
-        if (value) {
-            const success = await handleEnablePush();
-            if (!success) return;
-            await NotificationService.sendSystemMessage('Welcome to Tunzaa Rewards!');
-        }
         setSystemMessages(value);
+        if (value) {
+            setIsProcessing(true);
+            const success = await handleEnablePush();
+            setIsProcessing(false);
+            if (!success) {
+                setSystemMessages(false);
+                return;
+            }
+        }
         saveSettings({ systemMessages: value });
     };
 
@@ -117,7 +130,8 @@ export default function NotificationsSettingsScreen() {
                 ios_backgroundColor="#E5E7EB"
                 onValueChange={onValueChange}
                 value={value}
-                style={styles.switch}
+                disabled={isProcessing}
+                style={[styles.switch, isProcessing && { opacity: 0.7 }]}
             />
         </View>
     );

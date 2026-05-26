@@ -43,7 +43,17 @@
     "dont_have_account": "Don't have an account?",
     "by_logging_in_or_registering_you_agree_to_our": "By logging in or registering, you agree to our",
     "and": "and",
-    "i_m_new_sign_me_up": "I'm new, sign me up"
+    "i_m_new_sign_me_up": "I'm new, sign me up",
+    "winga": {
+      "welcome_back": "Welcome Back",
+      "enter_details": "Enter your details to sign in",
+      "phone_placeholder": "Enter +255xxx xxx xxx",
+      "password_placeholder": "Enter password",
+      "forgot_password": "Forgot Password?",
+      "terms_text1": "I have read agree to Tunzaa ",
+      "terms_link": "Terms and Conditions of use, privacy policy, and return policy",
+      "login_button": "Log In"
+    }
   },
   "common": {
     "home": "Home",
@@ -201,7 +211,9 @@
     "qty": "Qty",
     "updating_cart": "Updating Cart...",
     "pending_items": "+{{count}} pending",
-    "error_loading_cart": "An error occurred while loading your cart"
+    "error_loading_cart": "An error occurred while loading your cart",
+    "customer_reviews": "Mawazo ya wateja",
+    "see_all_reviews": "Angalia mawazo yote"
   },
   "orders": {
     "payment_method": "Payment Method",
@@ -891,7 +903,9 @@
       "retake": "Retake",
       "submit": "Submit Proof",
       "submitting": "Submitting...",
-      "error_photo_required": "Photo is required"
+      "error_photo_required": "Photo is required",
+      "upload_button": "Pakia Picha",
+      "choose_gallery": "Chagua kutoka Picha"
     },
     "delivery_otp": {
       "title": "Verify Delivery",
@@ -908,6 +922,75 @@
       "swahili": "Swahili",
       "french": "French",
       "cancel": "Cancel"
+    },
+    "inventory": {
+      "title": "Simamia Hesabu",
+      "product_name": "Jina la Bidhaa",
+      "current_stock": "Hesabu ya Sasa",
+      "add_stock": "Ongeza Hesabu",
+      "remove_stock": "Ondoa Hesabu",
+      "quantity": "Idadi",
+      "update_button": "Sasisha Hesabu",
+      "updating": "Inasasisha..."
+    },
+    "product": {
+      "title": "Maelezo ya Bidhaa",
+      "add_product": "Ongeza Bidhaa",
+      "edit_product": "Hariri Bidhaa",
+      "product_name": "Jina la Bidhaa",
+      "description": "Maelezo",
+      "price": "Bei",
+      "category": "Aina",
+      "stock": "Idadi ya Hesabu",
+      "images": "Picha za Bidhaa",
+      "save_button": "Hifadhi Bidhaa",
+      "saving": "Inahifadhi..."
+    },
+    "address": {
+      "title": "Anwani",
+      "add_address": "Ongeza Anwani Mpya",
+      "edit_address": "Hariri Anwani",
+      "address_title": "Kichwa cha Anwani",
+      "address_line1": "Mstari wa Anwani 1",
+      "address_line2": "Mstari wa Anwani 2",
+      "city": "Jiji",
+      "region": "Mkoa",
+      "postal_code": "Nambari ya Posta",
+      "landmark": "Alama ya Eneo",
+      "phone": "Nambari ya Simu",
+      "save_button": "Hifadhi Anwani",
+      "saving": "Inahifadhi..."
+    },
+    "address_selection": {
+      "title": "Chagua Anwani",
+      "select_address": "Chagua anwani",
+      "add_new": "Ongeza Anwani Mpya",
+      "set_default": "Weka kama Chaguo-msingi"
+    },
+    "document_status": {
+      "title": "Hali ya Hati",
+      "pending": "Inasubiri Ukaguzi",
+      "approved": "Imeidhinishwa",
+      "rejected": "Imekataliwa",
+      "resubmit": "Wasilisha Hati Tena"
+    },
+    "vendor_profile": {
+      "title": "Wasifu wa Muuzaji",
+      "business_name": "Jina la Biashara",
+      "business_description": "Maelezo ya Biashara",
+      "business_type": "Aina ya Biashara",
+      "save_button": "Hifadhi Wasifu"
+    },
+    "bulk_upload": {
+      "title": "Pakia Bidhaa Nyingi",
+      "important_notes": "Maelezo Muhimu:",
+      "note_csv": "Faili za CSV zinapaswa kufuata umbizo la kiolezo halisi",
+      "note_zip": "Faili za ZIP lazima ziwe na faili ya CSV na picha za bidhaa (si lazima)",
+      "note_size": "Ukubwa wa juu wa faili ni 50MB",
+      "note_review": "Baada ya kupakia, unaweza kukagua na kuidhinisha bidhaa zako",
+      "uploading": "Inapakia...",
+      "upload": "Pakia",
+      "download_template": "Pakua Njia"
     }
   },
   "vendor": {
@@ -987,7 +1070,91 @@
       "product_hidden": "Product Hidden",
       "success_message": "Product {{action}}d successfully",
       "error_title": "Error",
-      "error_message": "Failed to {{action}} product"
+      "error_message": "Failed to {{action}} product",
+      "price": "Bei",
+      "category": "Jamii",
+      "images": "Picha",
+      "save_product": "Hifadhi Bidhaa",
+      "saving": "Inahifadhi...",
+      "add_your_first_product": "Ongeza bidhaa yako ya kwanza ili kuanza kuuza",
+      "product_name": "Nom du produit"
+    },
+    "vendor_notifications": "Arifa za Muuzaji",
+    "my_products": "Bidhaa Zangu",
+    "add_product": "Ongeza Bidhaa",
+    "edit_product": "Hariri Bidhaa",
+    "manage_inventory": "Simamia Hesabu",
+    "store_analytics": "Uchambuzi wa Duka",
+    "vendor_orders": "Oda za Muuzaji",
+    "earnings_page": {
+      "title": "Mapato",
+      "filter": "Chuja",
+      "available_balance": "Salio Linalopo",
+      "last_updated": "Imesasishwa mwisho: {{time}}",
+      "withdraw_funds": "Ondoa Fedha",
+      "transaction_history": "Historia ya Miamala",
+      "transaction_details": "Maelezo ya Muamala",
+      "transaction_id": "Kitambulisho cha Muamala",
+      "order_number": "Nambari ya Oda",
+      "customer_information": "Taarifa za Mteja",
+      "items": "Vitu",
+      "commission_breakdown": "Mgawanyo wa Tume",
+      "gross_amount": "Kiasi Jumla",
+      "platform_fee": "Ada ya Jukwaa ({{percent}}%)",
+      "net_amount": "Kiasi Halisi",
+      "payment_method": "Njia ya Malipo",
+      "download_invoice": "Pakua Ankara",
+      "filter_transactions": "Chuja Miamala",
+      "date_range": "Muda wa Tarehe",
+      "last_30_days": "Siku 30 za mwisho",
+      "transaction_type": "Aina ya Muamala",
+      "all": "Yote",
+      "sales": "Mauzo",
+      "payouts": "Malipo",
+      "refunds": "Marejesho",
+      "status": "Hali",
+      "completed": "Imekamilika",
+      "pending": "Inasubiri",
+      "failed": "Imeshindwa",
+      "apply_filters": "Tumia Vichujio",
+      "at": "saa",
+      "sale": "Mauzo",
+      "payout": "Malipo",
+      "refund": "Marejesho"
+    },
+    "orders": {
+      "order_status_updated": "Hali ya oda imesasishwa kwa mafanikio",
+      "failed_to_update_status": "Imeshindwa kusasisha hali ya oda",
+      "no_orders_found": "Hakuna oda zilizopatikana"
+    },
+    "profile": {
+      "update_profile": "Sasisha Wasifu",
+      "no_profile_data": "Hakuna data ya wasifu inayopatikana",
+      "business_name": "Jina la Biashara",
+      "display_name": "Jina la Kuonyesha",
+      "contact_email": "Barua Pepe ya Mawasiliano",
+      "contact_phone": "Simu ya Mawasiliano",
+      "website": "Tovuti",
+      "address": "Anwani",
+      "business_address": "Anwani ya Biashara",
+      "tax_information": "Taarifa za Kodi",
+      "bank_information": "Taarifa za Benki",
+      "business_policies": "Sera za Biashara",
+      "save_changes": "Hifadhi Mabadiliko",
+      "saving": "Inahifadhi...",
+      "address_line1": "Anwani Mstari 1",
+      "address_line2": "Anwani Mstari 2",
+      "city": "Jiji",
+      "state_province": "Jimbo/Mkoa",
+      "postal_code": "Nambari ya Posta",
+      "country": "Nchi",
+      "tax_id": "Nambari ya Kodi",
+      "policy": "Sera ya Kurejesha na Kurudisha",
+      "bank_name": "Jina la Benki",
+      "account_number": "Nambari ya Akaunti",
+      "account_name": "Jina la Akaunti",
+      "swift_code": "Nambari ya SWIFT",
+      "branch_code": "Nambari ya Tawi"
     }
   },
   "delivery_home": {
@@ -1024,7 +1191,9 @@
     "failed_to_load": "Failed to load delivery details",
     "pickup_location": "Pickup Location",
     "store_location": "Store Location",
-    "delivery_address": "Delivery Address"
+    "delivery_address": "Delivery Address",
+    "vendor_order_not_implemented": "Maelezo ya oda ya muuzaji hayajatekelezwa kwa mtazamo wa utoaji",
+    "buyer_order_not_implemented": "Maelezo ya oda ya mnunuzi hayajatekelezwa kwa mtazamo wa utoaji"
   },
   "product": {
     "title": "Product Details",
@@ -1037,7 +1206,30 @@
     "stock": "Stock Quantity",
     "images": "Product Images",
     "save_button": "Save Product",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "invalid_product": "Bidhaa Batili",
+    "invalid_product_link": "Kiungo cha bidhaa kinaonekana kuwa batili au kimeharibika.",
+    "browse_products": "Vinjari Bidhaa",
+    "product_not_found": "Bidhaa haikupatikana",
+    "product_not_exist": "Bidhaa unayoitafuta haipo au huenda ikafutwa.",
+    "error_loading_product": "Hitilafu katika kupakia bidhaa",
+    "check_connection": "Hatukuweza kupakia bidhaa hii. Tafadhali angalia muunganisho wako wa mtandao na ujaribu tena.",
+    "go_back": "Rudi Nyuma",
+    "try_again": "Jaribu Tena",
+    "unable_to_load": "Imeshindwa kupakia taarifa za bidhaa.",
+    "product_details": "Maelezo ya Bidhaa",
+    "added_to_cart": "Imeongezwa kwenye kikapu!",
+    "added_to_cart_message": "imeongezwa kwenye kikapu chako",
+    "failed_to_add": "Imeshindwa kuongeza kitu kwenye kikapu. Tafadhali jaribu tena.",
+    "ready_to_checkout": "Tayari kuhitimisha!",
+    "redirecting": "Inaelekeza kwenye malipo...",
+    "cart_sync_failed": "Usawazishaji wa kikapu umeshindwa. Mabadiliko yatajaribiwa tena kiotomatiki.",
+    "retry_now": "Jaribu Sasa",
+    "referral_link_message": "🎉 Unaangalia bidhaa hii kupitia kiungo cha rufaa! Mshirika atapokea tume ikiwa utafanya ununuzi.",
+    "have_questions": "Una maswali kuhusu bidhaa hii?",
+    "unable_to_add_cart": "Imeshindwa kuongeza kitu kwenye kikapu. Tafadhali jaribu tena.",
+    "unable_to_proceed": "Imeshindwa kuendelea na ununuzi. Tafadhali jaribu tena.",
+    "failed_to_process": "Imeshindwa kuchakata ununuzi. Tafadhali jaribu tena."
   },
   "address_selection": {
     "title": "Select Address",
@@ -1075,7 +1267,12 @@
     "note_review": "After upload, you can review and approve your products",
     "uploading": "Uploading...",
     "upload": "Upload",
-    "download_template": "Download Template"
+    "download_template": "Download Template",
+    "no_file_selected": "Hakuna Faili Liliochaguliwa",
+    "select_file_message": "Tafadhali chagua faili la kupakia",
+    "upload_successful": "Upakiaji Umefanikiwa",
+    "products_processing": "Bidhaa zako zinachakatwa",
+    "upload_failed": "Upakiaji Umeshindwa"
   },
   "forms": {
     "vendor": {
@@ -1152,7 +1349,9 @@
     "continue_conversation": "Continue Conversation",
     "continue_conversation_info": "Click below to open the chat and continue your conversation with our support team.",
     "active": "Active",
-    "support_and_help": "Support & Help"
+    "support_and_help": "Support & Help",
+    "brief_summary_placeholder": "Muhtasari mfupi wa suala lako",
+    "describe_issue_detail_placeholder": "Eleza suala lako kwa undani"
   },
   "wishlist": {
     "wishlist": "Wishlist",
@@ -1312,6 +1511,20 @@
       "a3": "Payments are settled to your registered bank account or mobile wallet automatically within 24 to 48 hours after an order is successfully delivered and marked as 'Completed'.",
       "q4": "Can I manage multiple business branches?",
       "a4": "Yes, you can manage multiple branches. Go to Settings > Business tools and controls, where you can add new business branches and switch between different account types."
+    }
+  },
+  "alerts": {
+    "login": {
+      "terms_required_title": "Terms Required",
+      "terms_required_msg": "Please agree to Terms and Conditions",
+      "missing_fields_title": "Missing Fields",
+      "missing_fields_msg": "Please enter your identifier and password",
+      "failed_title": "Login Failed",
+      "failed_msg": "Error signing in. Please check your credentials.",
+      "not_available_title": "Not Available",
+      "not_available_msg": " login is not yet supported.",
+      "error_title": "Login Error",
+      "error_msg": "Failed to sign in with "
     }
   }
 }

@@ -42,6 +42,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/lato";
 import { ErrorFallback } from "@/components/ErrorFallback";
+import { WebRedirect } from "@/components/ui/web-redirect";
 
 // export {
 //   // Catch any errors thrown by the Layout component.
@@ -69,7 +70,7 @@ ExpoSplashScreen.setOptions({
 // Configure deep linking
 //TODO: Look at this
 const linking = {
-  prefixes: ['myapp://', 'https://afrizon.africa'],
+  prefixes: ['myapp://', 'tunzaa://', 'https://afrizon.africa', 'https://tunzaa.co.tz'],
   config: {
     screens: {
       // Handle order deep links for authenticated users
@@ -179,6 +180,11 @@ const linking = {
   if (isLoading) {
     console.log('⏳ [AppWithRouting] Auth is loading - blocking Slot render');
     return null;
+  } else {
+    // Notify push notifications service that navigation is ready
+    import('@/src/services/push-notifications').then(mod => {
+      mod.pushNotificationsService.setNavigationReady(true);
+    });
   }
 
   if (!user && isProtected && !isEntryScreen) {
@@ -307,19 +313,25 @@ export default function RootLayout() {
                     <PushNotificationsProvider>
                       <ForegroundNotificationProvider>
                         <AppThemeProvider>
-                          <AppWithRouting />
-                          <View
-                            pointerEvents="box-none"
-                            style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                            }}
-                          >
-                            <PortalHost />
-                          </View>
+                          {Platform.OS === 'web' ? (
+                            <WebRedirect />
+                          ) : (
+                            <>
+                              <AppWithRouting />
+                              <View
+                                pointerEvents="box-none"
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                }}
+                              >
+                                <PortalHost />
+                              </View>
+                            </>
+                          )}
                         </AppThemeProvider>
                       </ForegroundNotificationProvider>
                     </PushNotificationsProvider>

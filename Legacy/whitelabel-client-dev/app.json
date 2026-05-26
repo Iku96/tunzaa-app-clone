@@ -1,0 +1,213 @@
+{
+  "expo": {
+    "name": "Afrizon",
+    "owner": "billgwakisa",
+    "slug": "dynamic-marketplace",
+    "version": "1.0.10",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "afrizon",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "buildNumber": "44",
+      "entitlements": {
+        "aps-environment": "production"
+      },
+      "googleServicesFile": "./config/GoogleService-Info.plist",
+      "supportsTablet": true,
+      "bundleIdentifier": "africa.afrizon.gsm",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "remote-notification",
+          "remote-notification"
+        ],
+        "NSUserNotificationUsageDescription": "This app uses notifications to keep you updated on your orders, deliveries, and important updates.",
+        "NSNotificationAlwaysAndWhenInUseUsageDescription": "This app uses notifications to keep you updated on your orders, deliveries, and important updates.",
+        "NSCameraUsageDescription": "This app needs access to your camera to take photos for your profile, business logo, and product images.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images for your profile, business logo, and product images."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyDj0-dYOYHB4eHnwELuV2cnOSpjtVPliMk"
+      },
+      "appleTeamId": "LLHL722QJ2",
+      "associatedDomains": [
+        "applinks:afrizon.africa",
+        "applinks:afrizon.africa"
+      ]
+    },
+    "android": {
+      "buildNumber": "33",
+      "googleServicesFile": "./config/google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ec1c24"
+      },
+      "package": "africa.afrizon.gsm",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.WAKE_LOCK",
+        "com.google.android.c2dm.permission.RECEIVE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.WAKE_LOCK",
+        "com.google.android.c2dm.permission.RECEIVE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDj0-dYOYHB4eHnwELuV2cnOSpjtVPliMk"
+        }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "afrizon.africa",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "afrizon.africa",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "name": "Afrizon",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDj0-dYOYHB4eHnwELuV2cnOSpjtVPliMk"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-dev-client",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ec1c24",
+          "image": "./assets/images/splash-icon-light.png",
+          "dark": {
+            "image": "./assets/images/splash-icon-dark.png",
+            "backgroundColor": "#ec1c24"
+          },
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow $(PRODUCT_NAME) to use your location",
+          "googleMapsApiKey": "AIzaSyDj0-dYOYHB4eHnwELuV2cnOSpjtVPliMk"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "@react-native-firebase/app",
+        {
+          "android": {
+            "googleServicesFile": "./config/google-services.json"
+          },
+          "ios": {
+            "googleServicesPlist": "./config/GoogleService-Info.plist"
+          }
+        }
+      ],
+      [
+        "@react-native-firebase/messaging",
+        {
+          "ios": {
+            "backgroundModes": [
+              "remote-notification"
+            ]
+          }
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.230701056851-pkf15en5cledgeas3ui62menv1ja1som"
+        }
+      ],
+      "expo-apple-authentication",
+      "expo-localization",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app needs access to your photo library to select images for your profile, business logo, and product images.",
+          "cameraPermission": "This app needs access to your camera to take photos for your profile, business logo, and product images."
+        }
+      ],
+      "./plugins/withDisableSandbox.js"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "595c16b1-b97f-430c-b726-eb76bd3a9342"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/595c16b1-b97f-430c-b726-eb76bd3a9342"
+    }
+  }
+}

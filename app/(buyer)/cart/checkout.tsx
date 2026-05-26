@@ -37,7 +37,7 @@ import { getImageUrl } from "@/utils/images";
 import { useThemeColors, useResolvedThemeColors } from "@/hooks/useThemeColors";
 import { useResponsive } from "@/hooks/useResponsive";
 import { SimilarItems } from "@/components/recommendations";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import type {
   DeliveryAddress,
   UpdateBuyerProfileBody,
@@ -67,7 +67,7 @@ const CheckoutScreen = () => {
   const { user } = useAuth();
   const cart = useCartCombined(user?.user_id ?? "");
   const { isDesktop } = useResponsive();
-  const { t } = useI18n();
+  const { t } = useLanguage();
 
   // Tenant modules
   const { isPaymentsEnabled, isDeliveryEnabled } = useTenantModules();
@@ -538,11 +538,11 @@ const CheckoutScreen = () => {
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft size={24} className="text-foreground" color={resolvedColors?.foreground || "#000000"} />
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-foreground">Checkout</Text>
+          <Text className="text-lg font-semibold text-foreground">{t.checkoutPageTitle}</Text>
           <View className="w-6" />
         </View>
         <View className="flex-1 justify-center items-center">
-          <Text className="text-muted-foreground">Loading cart...</Text>
+          <Text className="text-muted-foreground">{t.checkoutLoadingCart}</Text>
         </View>
       </SafeAreaView>
     );
@@ -566,15 +566,15 @@ const CheckoutScreen = () => {
           <View className="flex-1 justify-center items-center p-4">
             <Alert icon={Terminal} variant="default" className="mb-4">
               <Text className="text-sm text-foreground">
-                Your cart appears to be empty. This might happen if your order is being processed or if there was a connection issue.
+                {t.checkoutEmptyCartMsg}
               </Text>
             </Alert>
             <View className="flex-row space-x-2">
               <Button variant="outline" onPress={() => cart.refetch()}>
-                <Text>Refresh Cart</Text>
+                <Text>{t.checkoutRefreshCart}</Text>
               </Button>
               <Button onPress={handleBackNavigation}>
-                <Text>Go Back</Text>
+                <Text>{t.checkoutGoBack}</Text>
               </Button>
             </View>
           </View>
@@ -593,11 +593,11 @@ const CheckoutScreen = () => {
           <View className="flex-1 justify-center items-center p-4">
             <Alert icon={Terminal} variant="destructive" className="mb-4">
               <Text className="text-sm text-destructive">
-                Invalid cart data. Please return to your cart and try again.
+                {t.checkoutInvalidCartMsg}
               </Text>
             </Alert>
             <Button onPress={() => router.push("/(buyer)/cart")}>
-              <Text>Go to Cart</Text>
+              <Text>{t.checkoutGoToCart}</Text>
             </Button>
           </View>
         </SafeAreaView>
@@ -669,7 +669,7 @@ const CheckoutScreen = () => {
               <TouchableOpacity onPress={handleBackNavigation} className="absolute left-4">
                 <ArrowLeft size={24} color="#000000" />
               </TouchableOpacity>
-              <Text className="text-[20px] font-bold text-black text-center">Order Summary</Text>
+              <Text className="text-[20px] font-bold text-black text-center">{t.checkoutOrderSummaryTitle}</Text>
             </View>
           )}
 
@@ -683,7 +683,7 @@ const CheckoutScreen = () => {
 
           <ScrollView className="flex-1 px-4 pt-4 pb-[300px]" showsVerticalScrollIndicator={false}>
             {/* My cart */}
-            <Text className="text-[20px] font-bold mb-4 text-black">My cart</Text>
+            <Text className="text-[20px] font-bold mb-4 text-black">{t.checkoutMyCartTitle}</Text>
             
             {cartItems.map((item) => {
               const rawImage = item.image_url || item.metadata?.image_url || item.metadata?.image;
@@ -732,7 +732,7 @@ const CheckoutScreen = () => {
             })}
 
             {/* Order(1 item) */}
-            <Text className="text-[20px] font-bold mb-4 text-black mt-2">Order({cart.getTotalItemCount()} item{cart.getTotalItemCount() !== 1 ? 's' : ''})</Text>
+            <Text className="text-[20px] font-bold mb-4 text-black mt-2">{t.checkoutOrderPrefix}{cart.getTotalItemCount()}{cart.getTotalItemCount() !== 1 ? t.checkoutOrderSuffixPlural : t.checkoutOrderSuffixSingular}</Text>
             
             <View className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-[40px]">
               {cartItems.map((item, index) => {
@@ -740,13 +740,13 @@ const CheckoutScreen = () => {
                 return (
                   <View key={`summary-${item.item_id || item.product_id}`}>
                     <View className="flex-row justify-between mb-4">
-                      <Text className="text-[#6B7280] text-[18px]">Product</Text>
+                      <Text className="text-[#6B7280] text-[18px]">{t.checkoutProductLabel}</Text>
                       <Text className="text-black text-[18px]" numberOfLines={1}>
                         {itemName}
                       </Text>
                     </View>
                     <View className="flex-row justify-between mb-4">
-                      <Text className="text-[#6B7280] text-[18px]">Price</Text>
+                      <Text className="text-[#6B7280] text-[18px]">{t.checkoutPriceLabel}</Text>
                       <Text className="text-black text-[18px]">Tsh. {((item.sale_price || item.unit_price || 0) * item.quantity).toLocaleString()}</Text>
                     </View>
                     {index < cartItems.length - 1 && <View className="h-[1px] bg-gray-100 my-4" />}
@@ -766,26 +766,26 @@ const CheckoutScreen = () => {
           }}>
             <View className="p-6">
               <View className="flex-row justify-between mb-5">
-                <Text className="text-[#6B7280] text-[18px]">Subtotal</Text>
+                <Text className="text-[#6B7280] text-[18px]">{t.checkoutSubtotalLabel}</Text>
                 <Text className="text-black font-bold text-[18px]">Tsh. {subtotal.toLocaleString()}</Text>
               </View>
               <View className="flex-row justify-between mb-5">
-                <Text className="text-[#6B7280] text-[18px]">Discount</Text>
+                <Text className="text-[#6B7280] text-[18px]">{t.checkoutDiscountLabel}</Text>
                 <Text className="text-[#6B7280] text-[18px]">Tsh. {discount.toLocaleString()}</Text>
               </View>
               <View className="flex-row justify-between mb-5">
-                <Text className="text-[#6B7280] text-[18px]">Delivery Fees</Text>
+                <Text className="text-[#6B7280] text-[18px]">{t.checkoutDeliveryFeesLabel}</Text>
                 <Text className="text-black font-bold text-[18px]">Tsh. {deliveryFee.toLocaleString()}</Text>
               </View>
               <View className="flex-row justify-between mb-7">
-                <Text className="text-[#6B7280] text-[18px]">Tax (18%)</Text>
+                <Text className="text-[#6B7280] text-[18px]">{t.checkoutTaxLabel}</Text>
                 <Text className="text-black font-bold text-[18px]">Tsh. {tax.toLocaleString()}</Text>
               </View>
               
               <View className="h-[1px] bg-gray-100 mb-6" />
               
               <View className="flex-row justify-between items-center mb-8">
-                <Text className="text-black font-bold text-[18px]">Total costs</Text>
+                <Text className="text-black font-bold text-[18px]">{t.checkoutTotalCostsLabel}</Text>
                 <Text className="text-black font-bold text-[24px]">Tsh. {totalCosts.toLocaleString()}</Text>
               </View>
 
@@ -795,15 +795,15 @@ const CheckoutScreen = () => {
                   className="flex-1 bg-[#00B200] rounded-full items-center justify-center py-2 h-14 flex-col mr-2"
                   onPress={() => handlePayment('tunzaa_instalments')}
                 >
-                  <Text className="text-white font-bold text-[16px] leading-tight mb-0.5">Installment</Text>
-                  <Text className="text-white text-[11px] font-medium opacity-90 leading-tight">Tunzaa 10,000 Tsh/wiki</Text>
+                  <Text className="text-white font-bold text-[16px] leading-tight mb-0.5">{t.checkoutInstallmentBtn}</Text>
+                  <Text className="text-white text-[11px] font-medium opacity-90 leading-tight">{t.checkoutInstallmentDesc}</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
                   className="flex-1 bg-[#3B5191] rounded-full items-center justify-center py-2 h-14 ml-2"
                   onPress={() => handlePayment('mobile_money')}
                 >
-                  <Text className="text-white font-bold text-[16px]">Full Payment</Text>
+                  <Text className="text-white font-bold text-[16px]">{t.checkoutPayNowBtn}</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -175,7 +175,7 @@ export default function ProfileScreen() {
                 <View style={styles.recommendedSection}>
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Recommended for You</Text>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => router.push('/(buyer)/search/all')}>
                             <Text style={styles.seeAllText}>See All</Text>
                         </TouchableOpacity>
                     </View>

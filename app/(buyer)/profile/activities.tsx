@@ -69,12 +69,7 @@ export default function ActivitiesScreen() {
                     onPress={() => router.push('/(buyer)/wishlist')}
                 />
 
-                <SectionHeader title="Content" />
-                <ActivityItem
-                    icon="grid-outline"
-                    title="Post"
-                    onPress={() => { }}
-                />
+
 
                 <SectionHeader title="Payment" />
                 <ActivityItem

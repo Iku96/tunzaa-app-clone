@@ -1,22 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGetNotifications } from '@/src/services/notifications';
+import { useAuth } from '@/context/auth';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function NotificationFeedScreen() {
     const { type } = useLocalSearchParams<{ type: string }>();
     const router = useRouter();
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
-    useEffect(() => {
-        // TODO: Replace with actual API call to fetch notifications based on type
-        // e.g., const response = await notificationsApi.getNotifications({ type });
-        // setNotifications(response.items);
-        setNotifications([]);
-        setLoading(false);
-    }, [type]);
+    const { data, isLoading: loading, error } = useGetNotifications({
+        user_id: user?.id,
+        // The endpoint may expect "in_app" or specific types. For now we fetch all or filter by 'type' if your backend supports it.
+        // type: type, 
+    }, !!user?.id);
+
+    const notifications = data?.notifications?.map((notif) => {
+        // Use type-based styling if available, else default
+        const isOrder = type === 'orders' || notif.subject?.toLowerCase().includes('order');
+        return {
+            id: notif.id || notif._id,
+            title: notif.title || notif.subject || 'Notification',
+            message: notif.body,
+            time: notif.created_at ? formatDistanceToNow(new Date(notif.created_at), { addSuffix: true }) : '',
+            icon: isOrder ? 'reader-outline' : 'notifications-outline',
+            iconColor: isOrder ? '#10B981' : '#4B5563',
+            iconBg: isOrder ? '#ECFDF5' : '#F3F4F6',
+        };
+    }) || [];
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -24,7 +38,7 @@ export default function NotificationFeedScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Notification</Text>
+                <Text style={styles.headerTitle}>{type === 'orders' ? 'Orders' : type === 'promotions' ? 'Promotions' : 'Notifications'}</Text>
                 <TouchableOpacity style={styles.filterButton}>
                     <Ionicons name="options-outline" size={20} color="#4B5563" />
                 </TouchableOpacity>
@@ -32,7 +46,14 @@ export default function NotificationFeedScreen() {
 
             {loading ? (
                 <View style={styles.emptyState}>
-                    <Text style={styles.emptySubtitle}>Loading notifications...</Text>
+                    <ActivityIndicator size="large" color="#425BA4" />
+                    <Text style={[styles.emptySubtitle, { marginTop: 12 }]}>Loading notifications...</Text>
+                </View>
+            ) : error ? (
+                <View style={styles.emptyState}>
+                    <Ionicons name="alert-circle-outline" size={60} color="#EF4444" />
+                    <Text style={styles.emptyTitle}>Oops!</Text>
+                    <Text style={styles.emptySubtitle}>Failed to load notifications. Please try again later.</Text>
                 </View>
             ) : notifications.length === 0 ? (
                 <View style={styles.emptyState}>

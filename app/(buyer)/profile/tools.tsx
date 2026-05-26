@@ -1,11 +1,48 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useTunzaaAuth } from '@/src/contexts/TunzaaAuthContext';
 
 export default function ToolsScreen() {
     const router = useRouter();
+    const { switchRole } = useTunzaaAuth();
+    const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+    const handleOpenSheet = () => {
+        bottomSheetModalRef.current?.present();
+    };
+
+    const handleCloseSheet = () => {
+        bottomSheetModalRef.current?.dismiss();
+    };
+
+    const handleSwitchAccount = async (role: string) => {
+        handleCloseSheet();
+        try {
+            await switchRole(role);
+            if (role === 'delivery') {
+                router.replace('/(buyer)'); 
+            }
+        } catch (error) {
+            console.error("Failed to switch role:", error);
+        }
+    };
+
+    const renderBackdrop = useCallback(
+        (props: BottomSheetBackdropProps) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+                opacity={0.5}
+                pressBehavior="close"
+            />
+        ),
+        []
+    );
 
     const renderToolItem = (label: string, onPress?: () => void) => (
         <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
@@ -25,13 +62,38 @@ export default function ToolsScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                {renderToolItem("Switch account type")}
-                {renderToolItem("Add new business branch")}
+                {renderToolItem("Switch account type", handleOpenSheet)}
+                {renderToolItem("Add new business branch", () => Alert.alert('Coming Soon', 'This feature is coming soon.'))}
 
                 <View style={styles.footer}>
                     <Text style={styles.versionText}>Tunzaa Version 2.0</Text>
                 </View>
             </ScrollView>
+
+            {/* Bottom Sheet for Account Switching */}
+            <BottomSheetModal
+                ref={bottomSheetModalRef}
+                snapPoints={['35%']}
+                enablePanDownToClose={true}
+                backdropComponent={renderBackdrop}
+                backgroundStyle={{ backgroundColor: '#FFFFFF' }}
+                handleIndicatorStyle={{ backgroundColor: '#D1D5DB' }}
+            >
+                <BottomSheetView style={styles.sheetContent}>
+                    <TouchableOpacity style={styles.sheetItem} onPress={() => handleSwitchAccount('vendor')}>
+                        <Text style={styles.sheetItemText}>Switch to sales product / services account</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sheetItem} onPress={() => handleSwitchAccount('finance')}>
+                        <Text style={styles.sheetItemText}>Switch to financial provider account</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sheetItem} onPress={() => handleSwitchAccount('delivery')}>
+                        <Text style={styles.sheetItemText}>Switch to Delivery services account</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.sheetItem} onPress={() => handleSwitchAccount('affiliate')}>
+                        <Text style={styles.sheetItemText}>Switch to Affiliate Marketer account</Text>
+                    </TouchableOpacity>
+                </BottomSheetView>
+            </BottomSheetModal>
         </SafeAreaView>
     );
 }
@@ -82,4 +144,17 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#9CA3AF',
     },
+    sheetContent: {
+        paddingTop: 10,
+        paddingBottom: 20,
+    },
+    sheetItem: {
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+    },
+    sheetItemText: {
+        fontSize: 15,
+        color: '#111827',
+        fontWeight: '500',
+    }
 });

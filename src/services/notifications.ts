@@ -125,7 +125,7 @@ export class NotificationService {
         await this.scheduleLocalNotification(
             '📦 Delivery Update',
             `Your order #${orderId} is now ${status}. Tap to track.`,
-            { screen: 'orders', orderId }
+            { type: 'order', orderId }
         );
     }
 
@@ -133,7 +133,7 @@ export class NotificationService {
         await this.scheduleLocalNotification(
             '🎉 Special Offer',
             `Check out this new promo: ${promoTitle}!`,
-            { screen: 'home' }
+            { type: 'general' }
         );
     }
 
@@ -141,7 +141,7 @@ export class NotificationService {
         await this.scheduleLocalNotification(
             '⚙️ System Update',
             message,
-            { screen: 'settings' }
+            { type: 'general', deepLink: '/(buyer)/profile/settings' }
         );
     }
 
@@ -149,7 +149,7 @@ export class NotificationService {
         await this.scheduleLocalNotification(
             '⏳ Payment Reminder',
             `Your payment of ${amount} is due on ${dueDate}. Don't miss it!`,
-            { screen: 'payments' },
+            { type: 'general', deepLink: '/(payment)' },
             trigger
         );
     }
@@ -158,7 +158,7 @@ export class NotificationService {
         await this.scheduleLocalNotification(
             '🎯 Goal Progress',
             `You are ${progress} complete with your goal: ${goalName}. Keep it up!`,
-            { screen: 'goals' }
+            { type: 'general' }
         );
     }
 }

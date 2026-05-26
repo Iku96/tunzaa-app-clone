@@ -5,12 +5,14 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartCombined } from '../../../src/stores/cart';
 import { useTunzaaAuth } from '../../../src/contexts/TunzaaAuthContext';
+import { useLanguage } from '../../../src/contexts/LanguageContext';
 import BottomNav from '../../../src/components/navigation/BottomNav';
 
 const { width } = Dimensions.get('window');
 
 export default function CartScreen() {
     const router = useRouter();
+    const { t } = useLanguage();
     const { user } = useTunzaaAuth();
     const userId = user?.user_id || user?.id || '';
     const { 
@@ -70,9 +72,9 @@ export default function CartScreen() {
             await refetch();
         } catch (err: any) {
             if (err.message?.includes('inventory') || err.message?.includes('stock')) {
-                Alert.alert("Out of Stock", "Sorry, there is no more inventory available for this item.");
+                Alert.alert(t.cartAlertOutOfStockTitle, t.cartAlertOutOfStockMsg);
             } else {
-                Alert.alert("Error", "Could not update quantity. Please try again.");
+                Alert.alert(t.cartAlertUpdateErrorTitle, t.cartAlertUpdateErrorMsg);
             }
         } finally {
             setProcessingItemId(null);
@@ -81,12 +83,12 @@ export default function CartScreen() {
 
     const handleRemoveItem = (item: any) => {
         Alert.alert(
-            "Remove Item",
-            `Are you sure you want to remove ${item.product_name || 'this item'} from your cart?`,
+            t.cartAlertRemoveTitle,
+            `${t.cartAlertRemoveMsg1}${item.product_name || 'this item'}${t.cartAlertRemoveMsg2}`,
             [
-                { text: "Cancel", style: "cancel" },
+                { text: t.cartAlertRemoveCancel, style: "cancel" },
                 { 
-                    text: "Remove", 
+                    text: t.cartAlertRemoveConfirm, 
                     style: "destructive", 
                     onPress: async () => {
                         setProcessingItemId(item.item_id);
@@ -95,7 +97,7 @@ export default function CartScreen() {
                             setSelectedItems(prev => prev.filter(id => id !== item.item_id));
                             await refetch();
                         } catch (err) {
-                            Alert.alert("Error", "Could not remove item. Please try again.");
+                            Alert.alert(t.cartAlertRemoveErrorTitle, t.cartAlertRemoveErrorMsg);
                         } finally {
                             setProcessingItemId(null);
                         }
@@ -107,7 +109,7 @@ export default function CartScreen() {
 
     const handleCheckout = () => {
         if (selectedCount === 0) return;
-        router.push('/(buyer)/cart/summary' as any);
+        router.push('/(buyer)/cart/checkout' as any);
     };
 
     const renderCartItem = (item: any) => {
@@ -169,19 +171,19 @@ export default function CartScreen() {
                                 {deliveryFee > 0 ? (
                                     <View style={styles.infoRow}>
                                         <Ionicons name="location-outline" size={12} color="#6B7280" />
-                                        <Text style={styles.infoText}>Delivery: Tsh. {deliveryFee.toLocaleString()}</Text>
+                                        <Text style={styles.infoText}>{t.cartDeliveryPrefix}{deliveryFee.toLocaleString()}</Text>
                                     </View>
                                 ) : (
                                     <View style={styles.infoRow}>
                                         <Ionicons name="location-outline" size={12} color="#10B981" />
-                                        <Text style={[styles.infoText, { color: '#10B981' }]}>Free Delivery</Text>
+                                        <Text style={[styles.infoText, { color: '#10B981' }]}>{t.cartDeliveryFree}</Text>
                                     </View>
                                 )}
                                 
                                 {warranty && !isFood && (
                                     <View style={styles.infoRow}>
                                         <Ionicons name="shield-checkmark-outline" size={12} color="#6B7280" />
-                                        <Text style={styles.infoText}>{warranty} warranty</Text>
+                                        <Text style={styles.infoText}>{warranty}{t.cartWarrantySuffix}</Text>
                                     </View>
                                 )}
                             </View>
@@ -220,11 +222,12 @@ export default function CartScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Shopping Cart</Text>
+                <Text style={styles.headerTitle}>{t.cartHeaderTitle}</Text>
                 <View style={{ width: 40 }} />
             </SafeAreaView>
 
-            <View style={styles.content}>
+            <View style={styles.mainWrapper}>
+                <View style={styles.content}>
                 <TouchableOpacity style={styles.selectAllRow} onPress={toggleSelectAll}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                         <Ionicons 
@@ -232,9 +235,9 @@ export default function CartScreen() {
                             size={22} 
                             color={selectedItems.length === cartItems.length && cartItems.length > 0 ? "#425BA4" : "#D1D5DB"} 
                         />
-                        <Text style={styles.selectAllText}>Select all items</Text>
+                        <Text style={styles.selectAllText}>{t.cartSelectAll}</Text>
                     </View>
-                    <Text style={{ fontSize: 13, color: '#6B7280' }}>{cartItems.length} item{cartItems.length !== 1 ? 's' : ''}</Text>
+                    <Text style={{ fontSize: 13, color: '#6B7280' }}>{cartItems.length}{cartItems.length !== 1 ? t.cartItemCountPlural : t.cartItemCountSingular}</Text>
                 </TouchableOpacity>
 
                 {isLoading ? (
@@ -244,9 +247,9 @@ export default function CartScreen() {
                 ) : cartItems.length === 0 ? (
                     <View style={styles.centerContainer}>
                         <Ionicons name="cart-outline" size={64} color="#9CA3AF" />
-                        <Text style={styles.emptyText}>Your cart is empty</Text>
+                        <Text style={styles.emptyText}>{t.cartEmptyState}</Text>
                         <TouchableOpacity style={styles.browseButton} onPress={() => router.push('/(buyer)')}>
-                            <Text style={styles.browseText}>Continue Shopping</Text>
+                            <Text style={styles.browseText}>{t.cartContinueShopping}</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
@@ -260,19 +263,20 @@ export default function CartScreen() {
                 <View style={styles.bottomBarContainer}>
                     <View style={styles.bottomBar}>
                         <View>
-                            <Text style={styles.itemCountText}>{selectedCount} item{selectedCount !== 1 ? 's' : ''}</Text>
-                            <Text style={styles.subtotalText}>Subtotal: Tsh. {subtotal.toLocaleString()}</Text>
+                            <Text style={styles.itemCountText}>{selectedCount}{selectedCount !== 1 ? t.cartItemCountPlural : t.cartItemCountSingular}</Text>
+                            <Text style={styles.subtotalText}>{t.cartSubtotalPrefix}{subtotal.toLocaleString()}</Text>
                         </View>
                         <TouchableOpacity 
                             style={[styles.checkoutButton, selectedCount === 0 && styles.disabledButton]}
                             onPress={handleCheckout}
                             disabled={selectedCount === 0}
                         >
-                            <Text style={styles.checkoutButtonText}>Proceed to checkout</Text>
+                            <Text style={styles.checkoutButtonText}>{t.cartProceedCheckout}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             )}
+            </View>
 
             <BottomNav />
         </View>
@@ -282,7 +286,15 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#425BA4',
+    },
+    mainWrapper: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
+        marginBottom: 90,
+        overflow: 'hidden',
     },
     header: {
         backgroundColor: '#425BA4',
@@ -297,7 +309,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         color: '#FFFFFF',
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
     },
     content: {
@@ -312,12 +324,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     selectAllText: {
-        fontSize: 15,
+        fontSize: 16,
         color: '#1A1A1A',
     },
     listContent: {
         padding: 16,
-        paddingBottom: 160,
+        paddingBottom: 24,
         gap: 16,
     },
     cardContainer: {
@@ -359,8 +371,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     productTitle: {
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: 'normal',
         color: '#425BA4',
         flex: 1,
         marginRight: 8,
@@ -378,7 +390,7 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     price: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
         marginTop: 2,
@@ -422,36 +434,28 @@ const styles = StyleSheet.create({
     },
     qtyText: {
         marginHorizontal: 8,
-        fontSize: 12,
-        fontWeight: 'bold',
+        fontSize: 15,
+        fontWeight: '500',
         color: '#1A1A1A',
     },
     bottomBarContainer: {
-        position: 'absolute',
-        bottom: 85,
-        left: 0,
-        right: 0,
-        paddingHorizontal: 16,
+        paddingHorizontal: 24,
+        paddingBottom: 32,
+        paddingTop: 16,
+        backgroundColor: '#FFFFFF',
     },
     bottomBar: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 40,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 10,
     },
     itemCountText: {
-        fontSize: 12,
-        color: '#9CA3AF',
+        fontSize: 13,
+        color: '#6B7280',
+        marginBottom: 4,
     },
     subtotalText: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
     },
@@ -467,7 +471,7 @@ const styles = StyleSheet.create({
     checkoutButtonText: {
         color: '#FFFFFF',
         fontWeight: 'bold',
-        fontSize: 14,
+        fontSize: 16,
     },
     centerContainer: {
         flex: 1,

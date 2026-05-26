@@ -43,7 +43,17 @@
     "dont_have_account": "Una akaunti tayari?",
     "by_logging_in_or_registering_you_agree_to_our": "Kuingia au jisajili, una haki ya",
     "and": "na",
-    "i_m_new_sign_me_up": "Mimi ni mpya, jisajili"
+    "i_m_new_sign_me_up": "Mimi ni mpya, jisajili",
+    "winga": {
+      "welcome_back": "Welcome Back",
+      "enter_details": "Enter your details to sign in",
+      "phone_placeholder": "Enter +255xxx xxx xxx",
+      "password_placeholder": "Enter password",
+      "forgot_password": "Forgot Password?",
+      "terms_text1": "I have read agree to Tunzaa ",
+      "terms_link": "Terms and Conditions of use, privacy policy, and return policy",
+      "login_button": "Log In"
+    }
   },
   "common": {
     "home": "Nyumbani",
@@ -164,7 +174,9 @@
     "product_not_found": "Bidhaa haipatikani",
     "closer_to_area": "Karibu na eneo lako",
     "no_products_found": "Hakuna bidhaa zilizopatikana",
-    "search_products_placeholder": "Tafuta bidhaa..."
+    "search_products_placeholder": "Tafuta bidhaa...",
+    "customer_reviews": "Customer Reviews",
+    "see_all_reviews": "See all reviews"
   },
   "cart": {
     "cart": "Mkoba",
@@ -303,7 +315,17 @@
     "select_location": "Chagua Eneo",
     "add_delivery_address": "Ongeza Anwani ya Uwasilishaji",
     "save_address": "Hifadhi Anwani",
-    "set_as_default": "Weka kama anwani chaguo-msingi"
+    "set_as_default": "Weka kama anwani chaguo-msingi",
+    "address_title": "Address Title",
+    "address_line1": "Address Line 1",
+    "address_line2": "Address Line 2",
+    "city": "City",
+    "region": "Region",
+    "postal_code": "Postal Code",
+    "landmark": "Landmark",
+    "phone": "Phone Number",
+    "save_button": "Save Address",
+    "saving": "Saving..."
   },
   "account": {
     "account": "Akaunti",
@@ -575,7 +597,8 @@
       "next_payment_due": "Malipo Yanayofuata Yanahitajika",
       "payment_number": "Malipo #",
       "due": "Inahitajika:",
-      "payment_timeline": "Ratiba ya Malipo"
+      "payment_timeline": "Ratiba ya Malipo",
+      "pending": "Pending"
     },
     "payment_form": {
       "title": "Maelezo ya Malipo",
@@ -584,7 +607,13 @@
       "expiry_date": "Tarehe ya Kumalizika",
       "cvv": "CVV",
       "cardholder_name": "Jina la Mmiliki wa Kadi"
-    }
+    },
+    "cash_on_delivery_description": "You will pay when you receive your order. No payment is required now.",
+    "complete_order": "Complete Order",
+    "order_created": "Order Created",
+    "order_created_message": "Your order has been placed successfully. You will pay upon delivery.",
+    "failed_create_order": "Failed to create order. Please try again.",
+    "payment": "Payment"
   },
   "delivery": {
     "title": "Upelekaji",
@@ -718,7 +747,10 @@
     "description": "Soko lako la kuegemea kwa bidhaa na huduma za ubora.",
     "all_rights_reserved": "Haki zote zimehifadhiwa.",
     "privacy_policy": "Sera ya Faragha",
-    "terms_of_service": "Masharti ya Huduma"
+    "terms_of_service": "Masharti ya Huduma",
+    "search": "Search",
+    "home": "Home",
+    "stores": "Stores"
   },
   "nav": {
     "home": "Nyumbani",
@@ -740,7 +772,10 @@
     "50_100": "$50 - $100",
     "100_200": "$100 - $200",
     "over_200": "Zaidi ya $200",
-    "brands": "Chapa"
+    "brands": "Chapa",
+    "clear_all": "Clear All",
+    "min_price": "Min Price",
+    "max_price": "Max Price"
   },
   "stores": {
     "all_stores": "Maduka Yote",
@@ -880,7 +915,11 @@
       "description": "Tafadhali pakia picha wazi kama ushahidi",
       "upload_button": "Pakia Picha",
       "take_photo": "Piga Picha",
-      "choose_gallery": "Chagua kutoka Picha"
+      "choose_gallery": "Chagua kutoka Picha",
+      "retake": "Retake",
+      "submit": "Submit Proof",
+      "submitting": "Submitting...",
+      "error_photo_required": "Photo is required"
     },
     "document_status": {
       "title": "Hali ya Hati",
@@ -906,6 +945,52 @@
       "uploading": "Inapakia...",
       "upload": "Pakia",
       "download_template": "Pakua Njia"
+    },
+    "product_modal": {
+      "title_add": "Add Product",
+      "title_edit": "Edit Product",
+      "name": "Product Name",
+      "description": "Description",
+      "short_description": "Short Description",
+      "price": "Price",
+      "sale_price": "Sale Price",
+      "cost_price": "Cost Price",
+      "sku": "SKU",
+      "weight": "Weight (g)",
+      "low_stock_threshold": "Low Stock Threshold",
+      "category": "Category",
+      "tags": "Tags (comma separated)",
+      "images": "Product Images",
+      "variants": "Variants",
+      "has_variants": "This product has variants",
+      "add_variant": "Add Variant",
+      "remove_variant": "Remove",
+      "variant_name": "Variant Name",
+      "variant_sku": "Variant SKU",
+      "variant_price": "Variant Price",
+      "variant_stock": "Variant Stock",
+      "cancel": "Cancel",
+      "save": "Save Product",
+      "saving": "Saving...",
+      "error_name_required": "Product name is required",
+      "error_price_required": "Price is required",
+      "error_sku_required": "SKU is required"
+    },
+    "delivery_otp": {
+      "title": "Verify Delivery",
+      "description": "Ask the customer for the OTP sent to their phone to confirm delivery.",
+      "enter_otp": "Enter OTP",
+      "verify": "Verify",
+      "verifying": "Verifying...",
+      "resend": "Resend OTP",
+      "error_otp_required": "OTP is required"
+    },
+    "language_selector": {
+      "title": "Select Language",
+      "english": "English",
+      "swahili": "Swahili",
+      "french": "French",
+      "cancel": "Cancel"
     }
   },
   "forms": {
@@ -1066,7 +1151,18 @@
     "have_questions": "Una maswali kuhusu bidhaa hii?",
     "unable_to_add_cart": "Imeshindwa kuongeza kitu kwenye kikapu. Tafadhali jaribu tena.",
     "unable_to_proceed": "Imeshindwa kuendelea na ununuzi. Tafadhali jaribu tena.",
-    "failed_to_process": "Imeshindwa kuchakata ununuzi. Tafadhali jaribu tena."
+    "failed_to_process": "Imeshindwa kuchakata ununuzi. Tafadhali jaribu tena.",
+    "title": "Product Details",
+    "add_product": "Add Product",
+    "edit_product": "Edit Product",
+    "product_name": "Product Name",
+    "description": "Description",
+    "price": "Price",
+    "category": "Category",
+    "stock": "Stock Quantity",
+    "images": "Product Images",
+    "save_button": "Save Product",
+    "saving": "Saving..."
   },
   "ui": {
     "file_uploader": {
@@ -1108,7 +1204,15 @@
     "upload_successful": "Upakiaji Umefanikiwa",
     "products_processing": "Bidhaa zako zinachakatwa",
     "upload_failed": "Upakiaji Umeshindwa",
-    "download_template": "Pakua Ankara"
+    "download_template": "Pakua Ankara",
+    "title": "Bulk Upload Products",
+    "important_notes": "Important Notes:",
+    "note_csv": "CSV files should follow the template format exactly",
+    "note_zip": "ZIP files must contain a CSV file and optionally product images",
+    "note_size": "Maximum file size is 50MB",
+    "note_review": "After upload, you can review and approve your products",
+    "uploading": "Uploading...",
+    "upload": "Upload"
   },
   "delivery_home": {
     "reports_title": "Ripoti za Uwasilishaji",
@@ -1145,7 +1249,8 @@
     "store_location": "Mahali pa Duka/Muuzaji",
     "delivery_details": "Maelezo ya Utoaji",
     "vendor_order_not_implemented": "Maelezo ya oda ya muuzaji hayajatekelezwa kwa mtazamo wa utoaji",
-    "buyer_order_not_implemented": "Maelezo ya oda ya mnunuzi hayajatekelezwa kwa mtazamo wa utoaji"
+    "buyer_order_not_implemented": "Maelezo ya oda ya mnunuzi hayajatekelezwa kwa mtazamo wa utoaji",
+    "delivery_address": "Delivery Address"
   },
   "inbox": {
     "customer_messages": "Ujumbe wa Wateja"
@@ -1310,7 +1415,8 @@
       "images": "Picha",
       "save_product": "Hifadhi Bidhaa",
       "saving": "Inahifadhi...",
-      "add_your_first_product": "Ongeza bidhaa yako ya kwanza ili kuanza kuuza"
+      "add_your_first_product": "Ongeza bidhaa yako ya kwanza ili kuanza kuuza",
+      "product_name": "Nom du produit"
     }
   },
   "winga": {
@@ -1378,6 +1484,47 @@
       "a3": "Malipo yanasawazishwa kwenye akaunti yako ya benki au pochi ya simu ndani ya masaa 24 hadi 48 baada ya agizo kuwasilishwa na kuwekwa alama ya 'Kukamilika'.",
       "q4": "Je, ninaweza kudhibiti matawi mengi ya biashara?",
       "a4": "Ndio, unaweza kudhibiti matawi mengi. Nenda Mipangilio > Zana na udhibiti wa biashara, ambapo unaweza kuongeza matawi mapya ya biashara."
+    }
+  },
+  "address_selection": {
+    "title": "Select Address",
+    "select_address": "Select an address",
+    "add_new": "Add New Address",
+    "set_default": "Set as Default"
+  },
+  "proof_photo": {
+    "title": "Upload Proof Photo",
+    "description": "Please upload a clear photo as proof",
+    "upload_button": "Upload Photo",
+    "take_photo": "Take Photo",
+    "choose_gallery": "Choose from Gallery"
+  },
+  "document_status": {
+    "title": "Document Status",
+    "pending": "Pending Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "resubmit": "Resubmit Document"
+  },
+  "vendor_profile": {
+    "title": "Vendor Profile",
+    "business_name": "Business Name",
+    "business_description": "Business Description",
+    "business_type": "Business Type",
+    "save_button": "Save Profile"
+  },
+  "alerts": {
+    "login": {
+      "terms_required_title": "Terms Required",
+      "terms_required_msg": "Please agree to Terms and Conditions",
+      "missing_fields_title": "Missing Fields",
+      "missing_fields_msg": "Please enter your identifier and password",
+      "failed_title": "Login Failed",
+      "failed_msg": "Error signing in. Please check your credentials.",
+      "not_available_title": "Not Available",
+      "not_available_msg": " login is not yet supported.",
+      "error_title": "Login Error",
+      "error_msg": "Failed to sign in with "
     }
   }
 }

@@ -1,7 +1,9 @@
 import React, { useEffect, ReactNode } from "react";
 import { Platform, Alert } from "react-native";
+import * as Notifications from 'expo-notifications';
 import usePushNotifications from "@/hooks/usePushNotifications";
 import { useAuth } from "@/context/auth";
+import { pushNotificationsService } from "@/src/services/push-notifications";
 
 interface PushNotificationsProviderProps {
   children: ReactNode;
@@ -12,6 +14,8 @@ export const PushNotificationsProvider: React.FC<
 > = ({ children }) => {
   const { user } = useAuth();
   const isAuthenticated = !!user;
+  const lastNotificationResponse = Notifications.useLastNotificationResponse();
+
   const {
     hasPermission,
     canRequestPermission,
@@ -21,6 +25,22 @@ export const PushNotificationsProvider: React.FC<
     currentToken,
     initialize,
   } = usePushNotifications();
+
+  // Forward local notification interactions to the shared push notification routing handler
+  useEffect(() => {
+    if (
+      lastNotificationResponse &&
+      lastNotificationResponse.notification.request.content.data
+    ) {
+      console.log("📬 [Push Provider] User tapped local notification, routing...");
+      // Using the pushNotificationService bypasses router.push directly and uses our queue mechanism
+      // Need to cast to any since we are accessing a private method via bracket notation or we can just ignore TS error
+      // Actually, since we didn't expose it yet, we'll bypass private via any.
+      (pushNotificationsService as any).handleNotificationNavigation(
+        lastNotificationResponse.notification.request.content.data
+      );
+    }
+  }, [lastNotificationResponse]);
 
   // Initialize push notifications when user is logged in
   useEffect(() => {

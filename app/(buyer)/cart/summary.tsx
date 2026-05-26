@@ -1,3 +1,4 @@
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +9,7 @@ import { useAuth } from '@/context/auth';
 import { ActivityIndicator } from 'react-native';
 
 export default function OrderSummaryScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { productId, addressId, deliveryType, partnerId, vehicleId, calculatedFee } = useLocalSearchParams();
     const { user } = useAuth();
@@ -66,18 +68,18 @@ export default function OrderSummaryScreen() {
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#1F2937" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Order Summary</Text>
+                    <Text style={styles.headerTitle}>{t.checkoutOrderSummaryTitle}</Text>
                     <View style={{ width: 24 }} />
                 </View>
 
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     {/* My Cart Section */}
-                    <Text style={styles.sectionTitle}>My cart</Text>
+                    <Text style={styles.sectionTitle}>{t.checkoutMyCartTitle}</Text>
 
                     {(cartLoading || totalsLoading) && !cart ? (
                         <View style={{ padding: 40, alignItems: 'center' }}>
                             <ActivityIndicator size="large" color="#425BA4" />
-                            <Text style={{ marginTop: 10, color: '#6B7280' }}>Loading order details...</Text>
+                            <Text style={{ marginTop: 10, color: '#6B7280' }}>{t.summaryLoadingOrder}</Text>
                         </View>
                     ) : (
                         <>
@@ -94,12 +96,12 @@ export default function OrderSummaryScreen() {
                                                 <Text style={styles.productPrice}>Tsh. {new Intl.NumberFormat('en-US').format(item.unit_price || item.sale_price)}</Text>
 
                                                 <View style={styles.tagContainer}>
-                                                    <Text style={styles.tagText}>#Added</Text>
+                                                    <Text style={styles.tagText}>{t.summaryAddedTag}</Text>
                                                 </View>
 
                                                 <View style={styles.actionsRow}>
                                                     <View style={styles.qtyContainer}>
-                                                        <Text style={styles.qtyText}>Qty: {item.quantity}</Text>
+                                                        <Text style={styles.qtyText}>{t.summaryQtyPrefix}{item.quantity}</Text>
                                                     </View>
                                                 </View>
                                             </View>
@@ -108,11 +110,11 @@ export default function OrderSummaryScreen() {
 
                                     {/* Order Breakdown */}
                                     <View style={styles.orderItemRow}>
-                                        <Text style={styles.orderLabel}>Items</Text>
-                                        <Text style={styles.orderValue}>{cart.items.length} items</Text>
+                                        <Text style={styles.orderLabel}>{t.summaryItemsLabel}</Text>
+                                        <Text style={styles.orderValue}>{cart.items.length} {cart.items.length !== 1 ? t.cartItemCountPlural : t.cartItemCountSingular}</Text>
                                     </View>
                                     <View style={styles.orderItemRow}>
-                                        <Text style={styles.orderLabel}>Primary Item</Text>
+                                        <Text style={styles.orderLabel}>{t.summaryPrimaryItemLabel}</Text>
                                         <Text style={styles.orderValue}>{cart.items[0].product_name}</Text>
                                     </View>
 
@@ -120,26 +122,26 @@ export default function OrderSummaryScreen() {
 
                                     {/* Cost Breakdown */}
                                     <View style={styles.costRow}>
-                                        <Text style={styles.costLabel}>Subtotal</Text>
+                                        <Text style={styles.costLabel}>{t.checkoutSubtotalLabel}</Text>
                                         <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(subtotal)}</Text>
                                     </View>
                                     <View style={styles.costRow}>
-                                        <Text style={styles.costLabel}>Discount</Text>
+                                        <Text style={styles.costLabel}>{t.checkoutDiscountLabel}</Text>
                                         <Text style={styles.costValue}>Tsh. {discount}</Text>
                                     </View>
                                     <View style={styles.costRow}>
-                                        <Text style={styles.costLabel}>Delivery Fees</Text>
+                                        <Text style={styles.costLabel}>{t.checkoutDeliveryFeesLabel}</Text>
                                         <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(deliveryFees)}</Text>
                                     </View>
                                     <View style={styles.costRow}>
-                                        <Text style={styles.costLabel}>Tax (18%)</Text>
+                                        <Text style={styles.costLabel}>{t.checkoutTaxLabel}</Text>
                                         <Text style={styles.costValue}>Tsh. {new Intl.NumberFormat('en-US').format(tax)}</Text>
                                     </View>
 
                                     <View style={[styles.divider, { marginTop: 16 }]} />
 
                                     <View style={styles.totalRow}>
-                                        <Text style={styles.totalLabel}>Total costs</Text>
+                                        <Text style={styles.totalLabel}>{t.checkoutTotalCostsLabel}</Text>
                                         <Text style={styles.totalValue}>Tsh. {new Intl.NumberFormat('en-US').format(total)}</Text>
                                     </View>
                                 </>
@@ -150,13 +152,13 @@ export default function OrderSummaryScreen() {
                     {cart && (!cart.items || cart.items.length === 0) && (
                         <View style={{ padding: 40, alignItems: 'center' }}>
                             <Ionicons name="cart-outline" size={64} color="#D1D5DB" />
-                            <Text style={{ marginTop: 16, fontSize: 18, fontWeight: 'bold', color: '#4B5563' }}>Your cart is empty</Text>
-                            <Text style={{ marginTop: 8, color: '#6B7280', textAlign: 'center' }}>Add items to your cart to see your order summary and checkout.</Text>
+                            <Text style={{ marginTop: 16, fontSize: 18, fontWeight: 'bold', color: '#4B5563' }}>{t.summaryEmptyCartTitle}</Text>
+                            <Text style={{ marginTop: 8, color: '#6B7280', textAlign: 'center' }}>{t.summaryEmptyCartDesc}</Text>
                             <TouchableOpacity 
                                 style={{ marginTop: 24, backgroundColor: '#425BA4', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 }}
                                 onPress={() => router.push('/(buyer)/')}
                             >
-                                <Text style={{ color: 'white', fontWeight: 'bold' }}>Start Shopping</Text>
+                                <Text style={{ color: 'white', fontWeight: 'bold' }}>{t.summaryStartShopping}</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -169,7 +171,7 @@ export default function OrderSummaryScreen() {
                             style={styles.installmentBtn}
                             onPress={() => handleCheckout('installment')}
                         >
-                            <Text style={styles.btnTitle}>Installment</Text>
+                            <Text style={styles.btnTitle}>{t.checkoutInstallmentBtn}</Text>
                             <Text style={styles.btnSubtitle}>Tunzaa {new Intl.NumberFormat('en-US').format(Math.ceil(total / 4))} Tsh/wk</Text>
                         </TouchableOpacity>
 
@@ -177,7 +179,7 @@ export default function OrderSummaryScreen() {
                             style={styles.fullPayBtn}
                             onPress={() => handleCheckout('full')}
                         >
-                            <Text style={styles.btnTitle}>Full Payment</Text>
+                            <Text style={styles.btnTitle}>{t.checkoutPayNowBtn}</Text>
                         </TouchableOpacity>
                     </View>
                 )}

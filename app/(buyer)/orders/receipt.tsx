@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../src/contexts/LanguageContext";
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -7,6 +8,7 @@ import { useGetOrder } from '../../../src/services/orders';
 const { width } = Dimensions.get('window');
 
 export default function ReceiptScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { orderId } = useLocalSearchParams();
 
@@ -18,7 +20,7 @@ export default function ReceiptScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Receipt</Text>
+                <Text style={styles.headerTitle}>{t.receiptHeaderTitle}</Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -28,7 +30,7 @@ export default function ReceiptScreen() {
                 ) : !order ? (
                     <View style={{ padding: 40, alignItems: 'center' }}>
                         <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
-                        <Text style={{ marginTop: 16, color: '#6B7280' }}>Receipt not found</Text>
+                        <Text style={{ marginTop: 16, color: '#6B7280' }}>{t.receiptNotFound}</Text>
                     </View>
                 ) : (
                     <View style={styles.receiptCard}>
@@ -37,9 +39,9 @@ export default function ReceiptScreen() {
                             <Text style={styles.tunzaaLogoText}>TUNZAA</Text>
                             <View style={styles.paymentTypeRow}>
                                 <View style={styles.dot} />
-                                <Text style={styles.paymentTypeText}>Product Payments</Text>
+                                <Text style={styles.paymentTypeText}>{t.receiptProductPayments}</Text>
                             </View>
-                            <Text style={styles.orderNumberText}>Payment made for Order #{order.order_number || order.order_id?.substring(0, 8)}</Text>
+                            <Text style={styles.orderNumberText}>{t.receiptPaymentForOrder}{order.order_number || order.order_id?.substring(0, 8)}</Text>
                         </View>
 
                         <View style={styles.dashedDivider} />
@@ -49,23 +51,23 @@ export default function ReceiptScreen() {
                         {/* Main Receipt Info Rows */}
                         <View style={styles.infoSection}>
                             <View style={styles.infoRow}>
-                                <Text style={styles.infoLabel}>Service</Text>
+                                <Text style={styles.infoLabel}>{t.receiptInfoService}</Text>
                                 <Text style={styles.infoValue}>Tunzaa Marketplace</Text>
                             </View>
                             <View style={styles.infoRow}>
-                                <Text style={styles.infoLabel}>Method</Text>
+                                <Text style={styles.infoLabel}>{t.receiptInfoMethod}</Text>
                                 <Text style={styles.infoValue}>{order.payment_details?.method || 'N/A'}</Text>
                             </View>
                             <View style={styles.infoRow}>
-                                <Text style={styles.infoLabel}>Product Name</Text>
-                                <Text style={styles.infoValue} numberOfLines={1}>{order.items?.[0]?.name || 'Multiple Items'}</Text>
+                                <Text style={styles.infoLabel}>{t.receiptInfoProductName}</Text>
+                                <Text style={styles.infoValue} numberOfLines={1}>{order.items?.[0]?.name || t.receiptInfoMultiple}</Text>
                             </View>
                             <View style={styles.infoRow}>
-                                <Text style={styles.infoLabel}>Amount</Text>
+                                <Text style={styles.infoLabel}>{t.receiptInfoAmount}</Text>
                                 <Text style={styles.infoValue}>{order.currency} {order.totals?.total?.toLocaleString()}</Text>
                             </View>
                             <View style={styles.infoRow}>
-                                <Text style={styles.infoLabel}>Status</Text>
+                                <Text style={styles.infoLabel}>{t.receiptInfoStatus}</Text>
                                 <Text style={[styles.statusValue, order.status === 'pending' || order.payment_status === 'pending' ? { color: '#F59E0B' } : {}]}>
                                     {order.payment_status?.toUpperCase() || 'COMPLETED'}
                                 </Text>
@@ -77,20 +79,20 @@ export default function ReceiptScreen() {
                         {/* Breakdown Section */}
                         <View style={styles.breakdownSection}>
                             <View style={styles.breakdownRow}>
-                                <Text style={styles.breakdownLabel}>Subtotal</Text>
+                                <Text style={styles.breakdownLabel}>{t.receiptBreakdownSubtotal}</Text>
                                 <Text style={styles.breakdownValue}>{order.currency} {order.totals?.subtotal?.toLocaleString()}</Text>
                             </View>
                             <View style={styles.breakdownRow}>
-                                <Text style={styles.breakdownLabel}>Discount</Text>
+                                <Text style={styles.breakdownLabel}>{t.receiptBreakdownDiscount}</Text>
                                 <Text style={styles.breakdownValue}>{order.currency} {order.totals?.discount?.toLocaleString()}</Text>
                             </View>
                             <View style={styles.breakdownRow}>
-                                <Text style={styles.breakdownLabel}>Tax</Text>
+                                <Text style={styles.breakdownLabel}>{t.receiptBreakdownTax}</Text>
                                 <Text style={styles.breakdownValue}>{order.currency} {order.totals?.tax?.toLocaleString()}</Text>
                             </View>
 
                             <View style={[styles.breakdownRow, { marginTop: 12 }]}>
-                                <Text style={styles.totalLabel}>Total costs</Text>
+                                <Text style={styles.totalLabel}>{t.receiptTotalCosts}</Text>
                                 <Text style={styles.totalValue}>{order.currency} {order.totals?.total?.toLocaleString()}</Text>
                             </View>
                         </View>
@@ -102,7 +104,7 @@ export default function ReceiptScreen() {
                         {/* Fixed Button */}
                         <TouchableOpacity style={styles.downloadBtn} onPress={() => router.push('/(buyer)/orders' as any)}>
                             <Ionicons name="checkmark-done" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-                            <Text style={styles.downloadBtnText}>Done</Text>
+                            <Text style={styles.downloadBtnText}>{t.receiptDoneBtn}</Text>
                         </TouchableOpacity>
 
                     </View>

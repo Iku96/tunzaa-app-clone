@@ -62,22 +62,22 @@ export default function RegisterScreen() {
 
     const handleCreateAccount = async () => {
         if (!agreedToTerms) {
-            Alert.alert('Terms Required', 'Please agree to Terms and Conditions');
+            Alert.alert(t.alertsRegisterTermsRequiredTitle, t.alertsRegisterTermsRequiredMsg);
             return;
         }
         if (userRole === 'winga') {
             if (!phone) {
-                Alert.alert('Missing Field', 'Please enter your phone number');
+                Alert.alert(t.alertsRegisterMissingFieldTitle, t.alertsRegisterMissingFieldMsg);
                 return;
             }
         } else {
             if (!phone || !email || !firstName || !secondName) {
-                Alert.alert('Missing Fields', 'Please fill in all fields (Name, Phone, and Email)');
+                Alert.alert(t.alertsRegisterMissingFieldsTitle, t.alertsRegisterMissingFieldsMsg);
                 return;
             }
             const isEmailValid = email.includes('@') && email.includes('.');
             if (!isEmailValid) {
-                Alert.alert('Invalid Email', 'Please enter a valid email address');
+                Alert.alert(t.alertsRegisterInvalidEmailTitle, t.alertsRegisterInvalidEmailMsg);
                 return;
             }
         }
@@ -103,7 +103,7 @@ export default function RegisterScreen() {
             } as any);
         } catch (e: any) {
             console.error('❌ OTP request error:', e);
-            Alert.alert('Error', e.message || 'Error requesting verification code.');
+            Alert.alert(t.alertsRegisterErrorTitle, e.message || t.alertsRegisterErrorMsg);
         } finally {
             setLoading(false);
         }
@@ -111,12 +111,12 @@ export default function RegisterScreen() {
 
     const handleFinalRegister = async () => {
         if (!password || password.length < 6) {
-            Alert.alert('Password Error', 'Password must be at least 6 characters');
+            Alert.alert(t.alertsRegisterPasswordErrorTitle, t.alertsRegisterPasswordErrorMsg);
             return;
         }
 
         if (password !== confirmPassword) {
-            Alert.alert('Password Error', 'Passwords do not match');
+            Alert.alert(t.alertsRegisterPasswordErrorTitle, t.alertsRegisterPasswordMismatchMsg);
             return;
         }
 
@@ -173,8 +173,8 @@ export default function RegisterScreen() {
             if (isAlreadyExists) {
                 if (userRole === 'merchant' || userRole === 'delivery' || userRole === 'loan') {
                     Alert.alert(
-                        'Account Found',
-                        'You already have a Tunzaa account. Please sign in to continue your application.',
+                        t.alertsRegisterAccountFoundTitle,
+                        t.alertsRegisterAccountFoundMsg1,
                         [
                             {
                                 text: 'Sign In',
@@ -190,8 +190,8 @@ export default function RegisterScreen() {
                     );
                 } else {
                     Alert.alert(
-                        'Account Found',
-                        'This phone number is already registered. Please sign in to your account.',
+                        t.alertsRegisterAccountFoundTitle,
+                        t.alertsRegisterAccountFoundMsg2,
                         [
                             {
                                 text: 'Sign In',
@@ -206,7 +206,7 @@ export default function RegisterScreen() {
                     );
                 }
             } else {
-                Alert.alert('Registration Error', e.message || 'Error creating account.');
+                Alert.alert(t.alertsRegisterErrorCreatingTitle, e.message || t.alertsRegisterErrorCreatingMsg);
             }
         } finally {
             setLoading(false);
@@ -244,7 +244,7 @@ export default function RegisterScreen() {
                         <View style={[styles.contentWrapper, { paddingHorizontal: 24, paddingVertical: 40 }]}>
                             {/* Title: Create an account */}
                             <Text style={[styles.title, { fontSize: 24, fontWeight: '700', color: '#1D1E1F', marginBottom: 24, marginTop: 20 }]}>
-                                {t.languageScreenTitle?.includes('Chagua') ? 'Weka Taarifa Zako Kama Winga' : 'Create an account'}
+                                {t.registerWingaTitle}
                             </Text>
 
                             {/* Centered Logo: TUNZAA */}
@@ -260,7 +260,7 @@ export default function RegisterScreen() {
                             <View style={styles.formContainer}>
                                 <TextInput
                                     style={[styles.input, { height: 56, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1F2937' }]}
-                                    placeholder="Enter +255xxx xxx xxx"
+                                    placeholder={t.registerWingaPhonePlaceholder}
                                     placeholderTextColor="#9CA3AF"
                                     value={phone}
                                     onChangeText={setPhone}
@@ -277,8 +277,8 @@ export default function RegisterScreen() {
                                     {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                 </View>
                                 <Text style={[styles.termsText, { fontSize: 13, lineHeight: 18, color: '#4B5563', flex: 1 }]}>
-                                    I have read agree to Tunzaa{" "}
-                                    <Text style={{ color: '#425BA4', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                                    {t.registerWingaTermsText1}
+                                    <Text style={{ color: '#425BA4', fontWeight: '500' }}>{t.registerWingaTermsLink}</Text>
                                 </Text>
                             </TouchableOpacity>
 
@@ -289,7 +289,7 @@ export default function RegisterScreen() {
                                 disabled={loading}
                             >
                                 <Text style={[styles.createButtonText, { fontSize: 16, fontWeight: '700', color: '#FFFFFF' }]}>
-                                    {loading ? '...' : 'Create Account'}
+                                    {loading ? '...' : t.registerWingaCreateButton}
                                 </Text>
                             </TouchableOpacity>
 
@@ -299,8 +299,8 @@ export default function RegisterScreen() {
                                 style={{ marginTop: 40, alignItems: 'center' }}
                             >
                                 <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>
-                                    Already have an account?{" "}
-                                    <Text style={{ color: '#425BA4', fontWeight: '700' }}>Log in</Text>
+                                    {t.registerWingaAlreadyAccount}
+                                    <Text style={{ color: '#425BA4', fontWeight: '700' }}>{t.registerWingaLoginLink}</Text>
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -329,14 +329,14 @@ export default function RegisterScreen() {
                             <View style={styles.header}>
                                 <Text style={styles.title}>
                                     {currentStep === 'password' 
-                                        ? 'Verify and Create Password' 
+                                        ? t.registerVerifyPasswordTitle 
                                         : (userRole === 'winga' 
-                                            ? (t.languageScreenTitle?.includes('Chagua') ? 'Weka Taarifa Zako Kama Winga' : 'Create an account')
-                                            : (userRole === 'merchant' ? t.registerTitleMerchant : userRole === 'delivery' ? 'Register Delivery Partner' : userRole === 'loan' ? 'Register Loan Provider' : t.registerTitleBuyer))}
+                                            ? t.registerWingaTitle
+                                            : (userRole === 'merchant' ? t.registerTitleMerchant : userRole === 'delivery' ? t.registerDeliveryPartnerTitle : userRole === 'loan' ? t.registerLoanProviderTitle : t.registerTitleBuyer))}
                                 </Text>
                                 <Text style={styles.subtitle}>
                                     {currentStep === 'password' 
-                                        ? 'Set a secure password for your account' 
+                                        ? t.registerVerifyPasswordSubtitle 
                                         : t.registerSubtitleEmpty}
                                 </Text>
                             </View>
@@ -376,7 +376,7 @@ export default function RegisterScreen() {
                                         />
                                         <TextInput
                                             style={styles.input}
-                                            placeholder="Enter email address"
+                                            placeholder={t.registerEmailPlaceholder}
                                             placeholderTextColor="#9CA3AF"
                                             value={email}
                                             onChangeText={setEmail}
@@ -411,7 +411,7 @@ export default function RegisterScreen() {
                                         <View style={styles.passwordContainer}>
                                             <TextInput
                                                 style={styles.passwordInput}
-                                                placeholder="Confirm Password"
+                                                placeholder={t.registerConfirmPasswordPlaceholder}
                                                 placeholderTextColor="#9CA3AF"
                                                 value={confirmPassword}
                                                 onChangeText={setConfirmPassword}
@@ -442,7 +442,7 @@ export default function RegisterScreen() {
                                         {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                     </View>
                                     <Text style={styles.termsText}>
-                                        I agree to the <Text style={styles.termsLink}>Terms and Conditions</Text>
+                                        {t.authLoginTermsText1}<Text style={styles.termsLink}>{t.authLoginTermsLink}</Text>
                                     </Text>
                                 </TouchableOpacity>
                             )}
@@ -453,7 +453,7 @@ export default function RegisterScreen() {
                                 disabled={loading}
                             >
                                 <Text style={styles.createButtonText}>
-                                    {loading ? '...' : (currentStep === 'password' ? 'Complete Account' : t.registerButton)}
+                                    {loading ? '...' : (currentStep === 'password' ? t.registerCompleteAccountButton : t.registerButton)}
                                 </Text>
                             </TouchableOpacity>
 
@@ -475,7 +475,7 @@ export default function RegisterScreen() {
                                     </View>
 
                                     <TouchableOpacity onPress={() => router.replace({ pathname: '/login', params: { role: userRole } })} style={styles.loginContainer}>
-                                        <Text style={styles.loginText}>Already have an account? <Text style={{ color: '#425BA4', fontWeight: '600' }}>Log in</Text></Text>
+                                        <Text style={styles.loginText}>{t.registerWingaAlreadyAccount}<Text style={{ color: '#425BA4', fontWeight: '600' }}>{t.registerWingaLoginLink}</Text></Text>
                                     </TouchableOpacity>
                                 </>
                             )}

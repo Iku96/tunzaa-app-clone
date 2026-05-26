@@ -58,7 +58,7 @@ export default function SettingsScreen() {
             <ScrollView contentContainerStyle={styles.content}>
                 {renderSettingItem("briefcase-outline", "Your Activities", () => router.push('/(buyer)/profile/activities' as any))}
                 {renderSettingItem("notifications-outline", "In-App Notifications", () => router.push('/(buyer)/profile/settings/notifications' as any))}
-                {renderSettingItem("construct-outline", "Business tools and control", () => router.push('/(buyer)/profile/tools' as any))}
+                {/* {renderSettingItem("construct-outline", "Business tools and control", () => router.push('/(buyer)/profile/tools' as any))} */}
                 {renderSettingItem("alarm-outline", "Reminders", () => router.push('/(buyer)/profile/settings/reminder' as any))}
                 {renderSettingItem("cube-outline", "Delivery Method", () => router.push('/(buyer)/profile/delivery' as any))}
                 {renderSettingItem("document-text-outline", "Policies", () => router.push('/(buyer)/profile/settings/policies' as any))}

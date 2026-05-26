@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     ScrollView,
     Dimensions,
+    Alert,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useTunzaaAuth } from '../../src/contexts/TunzaaAuthContext';
@@ -22,6 +23,7 @@ import { useBanners } from '../../src/services/tenant';
 import BottomNav from '../../src/components/navigation/BottomNav';
 import { useProfileCompletion } from '../../src/hooks/useProfileCompletion';
 import { getAvatarUrl } from '../../src/utils/images';
+import { useUserBalance, useRewardConfig, useRedeemPoints, rewardsUtils } from '../../src/services/rewards';
 
 const { width } = Dimensions.get('window');
 const PROFILE_EXTRAS_KEY = '@tunzaa_profile_extras';
@@ -33,6 +35,47 @@ export default function AccountScreen() {
     const { products, loading: marketplaceLoading } = useMarketplace();
     const { data: banners, isLoading: bannersLoading } = useBanners();
     const { percentage, missingFields } = useProfileCompletion();
+
+    const { data: balance, refetch: refetchBalance } = useUserBalance();
+    const { data: config } = useRewardConfig();
+    const redeemPointsMutation = useRedeemPoints();
+    const [isRedeeming, setIsRedeeming] = useState(false);
+
+    const couponValue = rewardsUtils.calculateCouponValue(
+        balance?.balance || 0,
+        config?.redemption_points || 100
+    );
+
+    const handleCollect = async () => {
+        if (!user?.user_id) return;
+        
+        const availablePoints = balance?.balance || 0;
+        const redemptionRate = config?.redemption_points || 100;
+        const maxRedeemablePoints = Math.floor(availablePoints / redemptionRate) * redemptionRate;
+
+        if (maxRedeemablePoints < redemptionRate) {
+            Alert.alert("Not enough points", `You need at least ${redemptionRate} points to collect an offer.`);
+            return;
+        }
+
+        setIsRedeeming(true);
+        try {
+            const response = await redeemPointsMutation.mutateAsync({
+                points: maxRedeemablePoints,
+                user_id: user.user_id,
+            });
+            Alert.alert(
+                "Offer Collected!", 
+                `You have successfully collected a coupon worth ${rewardsUtils.formatCurrency(response.coupon_value)}!\n\nYour Coupon Code: ${response.coupon_code}\n\n(Save this code to use at checkout)`
+            );
+            refetchBalance();
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.detail || error.message || "Failed to collect offer";
+            Alert.alert("Collection Failed", errorMessage);
+        } finally {
+            setIsRedeeming(false);
+        }
+    };
 
     const [profileData, setProfileData] = useState({
         username: '',
@@ -89,9 +132,9 @@ export default function AccountScreen() {
 
     // Quick actions
     const quickActions = [
-        { icon: 'heart-outline' as const, label: 'Wishlist', route: '/(buyer)/wishlist' },
-        { icon: 'receipt-outline' as const, label: 'Refund', route: '/(buyer)/refund' },
-        { icon: 'gift-outline' as const, label: 'Gift Card', route: '/(buyer)/services' },
+        { icon: 'heart-outline' as const, label: t.accountQuickActionWishlist, route: '/(buyer)/wishlist' },
+        { icon: 'receipt-outline' as const, label: t.accountQuickActionRefund, route: '/(buyer)/refund' },
+        { icon: 'gift-outline' as const, label: t.accountQuickActionGiftCard, route: '/(buyer)/services' },
     ];
 
     return (
@@ -111,7 +154,7 @@ export default function AccountScreen() {
                                 <Text style={styles.headerName}>{displayName}</Text>
                                 <View style={styles.verifiedBadge}>
                                     <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
-                                    <Text style={styles.verifiedText}>Verified</Text>
+                                    <Text style={styles.verifiedText}>{t.accountVerifiedBadge}</Text>
                                 </View>
                             </View>
                             <View style={styles.locationRow}>
@@ -144,10 +187,10 @@ export default function AccountScreen() {
                             <Ionicons name="person-circle-outline" size={20} color="#425BA4" />
                             <View style={styles.completionTextCol}>
                                 <Text style={styles.completionTitle}>
-                                    Complete your profile – {percentage}%
+                                    {t.accountCompleteProfile}{percentage}%
                                 </Text>
                                 <Text style={styles.completionSubtitle}>
-                                    Missing: {missingFields.map(f => f.label).slice(0, 2).join(', ')}
+                                    {t.accountMissingFields}{missingFields.map(f => f.label).slice(0, 2).join(', ')}
                                     {missingFields.length > 2 ? '...' : ''}
                                 </Text>
                                 <View style={styles.progressTrack}>
@@ -183,12 +226,18 @@ export default function AccountScreen() {
                     <View style={styles.offerLeft}>
                         <View style={styles.coinBadge}>
                             <Ionicons name="cash-outline" size={16} color="#FBBF24" />
-                            <Text style={styles.coinText}>Coin: Tsh40</Text>
+                            <Text style={styles.coinText}>{t.accountCoinPrefix}{rewardsUtils.formatCurrency(couponValue)}</Text>
                         </View>
-                        <Text style={styles.offerClaimText}>Claim Offer</Text>
+                        <Text style={styles.offerClaimText}>{t.accountClaimOffer}</Text>
                     </View>
-                    <TouchableOpacity style={styles.collectButton}>
-                        <Text style={styles.collectButtonText}>Collect</Text>
+                    <TouchableOpacity 
+                        style={[styles.collectButton, isRedeeming && { opacity: 0.7 }]}
+                        onPress={handleCollect}
+                        disabled={isRedeeming}
+                    >
+                        <Text style={styles.collectButtonText}>
+                            {isRedeeming ? "Collecting..." : t.accountCollectButton}
+                        </Text>
                     </TouchableOpacity>
                 </View>
 
@@ -211,7 +260,7 @@ export default function AccountScreen() {
 
                 {/* ── Discover More Deals ── */}
                 <View style={styles.dealsSection}>
-                    <Text style={styles.dealsSectionTitle}>Discover More Deals</Text>
+                    <Text style={styles.dealsSectionTitle}>{t.accountDiscoverDeals}</Text>
                     <View style={styles.dealsGrid}>
                         {products.map((item, index) => (
                             <View key={item.id || index} style={styles.dealsGridItem}>

@@ -169,7 +169,7 @@ export default function BuyerHome() {
                 <View style={styles.sectionContainer}>
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Recommended for You</Text>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => router.push('/(buyer)/search/all')}>
                             <Text style={styles.seeAll}>See All</Text>
                         </TouchableOpacity>
                     </View>

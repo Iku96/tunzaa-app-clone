@@ -9,16 +9,13 @@
  * 1. Add the language in src/constants/languages.ts (SUPPORTED_LANGUAGES).
  * 2. Add a new entry below with the same keys and translated values.
  */
-
 import type { LanguageCode } from '../constants/languages';
-
 /** Translation keys used across the app. Add new keys here and in each locale. */
 export interface TranslationKeys {
     // --- Language screen ---
     languageScreenTitle: string;
     languageScreenChoosePreferred: string;
     languageScreenSkip: string;
-
     // --- Role screen ---
     roleScreenTitle: string;
     roleScreenDescription: string;
@@ -27,11 +24,9 @@ export interface TranslationKeys {
     roleScreenOr: string;
     roleScreenSkip: string;
     roleScreenBack: string;
-
     // --- Home (placeholder) ---
     homeWelcome: string;
     homeComingSoon: string;
-
     // --- Settings ---
     settingsTitle: string;
     settingsActivities: string;
@@ -46,7 +41,6 @@ export interface TranslationKeys {
     settingsLogoutConfirmTitle: string;
     settingsLogoutConfirmMessage: string;
     settingsVersion: string;
-
     // --- Onboarding Step 1 ---
     onboardingStep1Title: string;
     onboardingStep1Subtitle: string;
@@ -64,7 +58,6 @@ export interface TranslationKeys {
     onboardingStep1Back: string;
     onboardingStep1Next: string;
     onboardingStep1Saving: string;
-
     // --- Onboarding Step 2 ---
     onboardingStep2Title: string;
     onboardingStep2Subtitle: string;
@@ -79,7 +72,6 @@ export interface TranslationKeys {
     onboardingStep2Required: string;
     onboardingStep2PermissionError: string;
     onboardingStep2ValidationShopName: string;
-
     // --- Onboarding Step 3 ---
     onboardingStep3Title: string;
     onboardingStep3Subtitle: string;
@@ -87,7 +79,6 @@ export interface TranslationKeys {
     onboardingStep3ManualButton: string;
     onboardingStep3Or: string;
     onboardingStep3GPSButton: string;
-
     // --- Onboarding Step 3 Manual/Map ---
     onboardingStep3RegionLabel: string;
     onboardingStep3MunicipalLabel: string;
@@ -102,7 +93,6 @@ export interface TranslationKeys {
     onboardingStep3ManualSubtitle: string;
     onboardingStep3MapSubtitle: string;
     onboardingStep3MapMarker: string;
-
     // --- Onboarding Step 4 ---
     onboardingStep4Title: string;
     onboardingStep4Subtitle: string;
@@ -110,7 +100,6 @@ export interface TranslationKeys {
     onboardingStep4NotesLabel: string;
     onboardingStep4MultiLocationQuestion: string;
     onboardingStep4AddShop: string;
-
     // --- Onboarding Step 5 ---
     onboardingStep5Title: string;
     onboardingStep5Subtitle: string;
@@ -127,7 +116,6 @@ export interface TranslationKeys {
     onboardingStep5SuccessModalTitle: string;
     onboardingStep5SuccessModalDescription: string;
     onboardingStep5SuccessModalButton: string;
-
     // Login Screen
     loginTitle: string;
     loginSubtitle: string;
@@ -256,14 +244,195 @@ export interface TranslationKeys {
     // --- Loans ---
     "vendor.loans.loans_request": string;
     "vendor.loans.repayments_track": string;
+    authWingaWelcomeBack: string;
+    authWingaEnterDetails: string;
+    authWingaPhonePlaceholder: string;
+    authWingaPasswordPlaceholder: string;
+    authWingaForgotPassword: string;
+    authWingaTermsText1: string;
+    authWingaTermsLink: string;
+    authWingaLoginButton: string;
+    authLoginTermsText1: string;
+    authLoginTermsLink: string;
+    authLoginNoAccount: string;
+    authLoginSignUp: string;
+    alertsLoginTermsRequiredTitle: string;
+    alertsLoginTermsRequiredMsg: string;
+    alertsLoginMissingFieldsTitle: string;
+    alertsLoginMissingFieldsMsg: string;
+    alertsLoginFailedTitle: string;
+    alertsLoginFailedMsg: string;
+    alertsLoginNotAvailableTitle: string;
+    alertsLoginNotAvailableMsg: string;
+    alertsLoginErrorTitle: string;
+    alertsLoginErrorMsg: string;
+    registerWingaTitle: string;
+    registerWingaPhonePlaceholder: string;
+    registerWingaTermsText1: string;
+    registerWingaTermsLink: string;
+    registerWingaCreateButton: string;
+    registerWingaAlreadyAccount: string;
+    registerWingaLoginLink: string;
+    registerVerifyPasswordTitle: string;
+    registerVerifyPasswordSubtitle: string;
+    registerDeliveryPartnerTitle: string;
+    registerLoanProviderTitle: string;
+    registerEmailPlaceholder: string;
+    registerConfirmPasswordPlaceholder: string;
+    registerCompleteAccountButton: string;
+    alertsRegisterMissingFieldTitle: string;
+    alertsRegisterMissingFieldMsg: string;
+    alertsRegisterMissingFieldsTitle: string;
+    alertsRegisterMissingFieldsMsg: string;
+    alertsRegisterInvalidEmailTitle: string;
+    alertsRegisterInvalidEmailMsg: string;
+    alertsRegisterErrorTitle: string;
+    alertsRegisterErrorMsg: string;
+    alertsRegisterPasswordErrorTitle: string;
+    alertsRegisterPasswordErrorMsg: string;
+    alertsRegisterPasswordMismatchMsg: string;
+    alertsRegisterAccountFoundTitle: string;
+    alertsRegisterAccountFoundMsg1: string;
+    alertsRegisterAccountFoundMsg2: string;
+    alertsRegisterErrorCreatingTitle: string;
+    alertsRegisterErrorCreatingMsg: string;
+    accountVerifiedBadge: string;
+    accountCompleteProfile: string;
+    accountMissingFields: string;
+    accountCoinPrefix: string;
+    accountClaimOffer: string;
+    accountCollectButton: string;
+    accountQuickActionWishlist: string;
+    accountQuickActionRefund: string;
+    accountQuickActionGiftCard: string;
+    accountDiscoverDeals: string;
+    cartAlertOutOfStockTitle: string;
+    cartAlertOutOfStockMsg: string;
+    cartAlertUpdateErrorTitle: string;
+    cartAlertUpdateErrorMsg: string;
+    cartAlertRemoveTitle: string;
+    cartAlertRemoveMsg1: string;
+    cartAlertRemoveMsg2: string;
+    cartAlertRemoveCancel: string;
+    cartAlertRemoveConfirm: string;
+    cartAlertRemoveErrorTitle: string;
+    cartAlertRemoveErrorMsg: string;
+    cartDeliveryPrefix: string;
+    cartDeliveryFree: string;
+    cartWarrantySuffix: string;
+    cartHeaderTitle: string;
+    cartSelectAll: string;
+    cartItemCountSingular: string;
+    cartItemCountPlural: string;
+    cartEmptyState: string;
+    cartContinueShopping: string;
+    cartSubtotalPrefix: string;
+    cartProceedCheckout: string;
+    checkoutPageTitle: string;
+    checkoutLoadingCart: string;
+    checkoutEmptyCartMsg: string;
+    checkoutRefreshCart: string;
+    checkoutGoBack: string;
+    checkoutInvalidCartMsg: string;
+    checkoutGoToCart: string;
+    checkoutOrderSummaryTitle: string;
+    checkoutMyCartTitle: string;
+    checkoutOrderPrefix: string;
+    checkoutOrderSuffixSingular: string;
+    checkoutOrderSuffixPlural: string;
+    checkoutProductLabel: string;
+    checkoutPriceLabel: string;
+    checkoutSubtotalLabel: string;
+    checkoutDiscountLabel: string;
+    checkoutDeliveryFeesLabel: string;
+    checkoutTaxLabel: string;
+    checkoutTotalCostsLabel: string;
+    checkoutInstallmentBtn: string;
+    checkoutInstallmentDesc: string;
+    checkoutPayNowBtn: string;
+    checkoutCashOnDeliveryBtn: string;
+    successOrderTitle: string;
+    successOrderDesc: string;
+    successOrderConfTitle: string;
+    successOrderIdPrefix: string;
+    successOrderUpdateMsg: string;
+    successViewOrderDetails: string;
+    successViewAllOrders: string;
+    successContinueShopping: string;
+    summaryLoadingOrder: string;
+    summaryAddedTag: string;
+    summaryQtyPrefix: string;
+    summaryItemsLabel: string;
+    summaryPrimaryItemLabel: string;
+    summaryEmptyCartTitle: string;
+    summaryEmptyCartDesc: string;
+    summaryStartShopping: string;
+    ordersTabPending: string;
+    ordersTabShipped: string;
+    ordersTabCompleted: string;
+    ordersTabGiftCards: string;
+    ordersUnknownProduct: string;
+    ordersNextInstallment: string;
+    ordersPayPrefix: string;
+    ordersTotalPaid: string;
+    ordersBadgeCompleted: string;
+    ordersHeaderTitle: string;
+    ordersLoading: string;
+    ordersEmptyPending: string;
+    ordersEmptyTransit: string;
+    ordersEmptyCompleted: string;
+    ordersEmptyGiftCards: string;
+    orderDetailsLoadingItem: string;
+    orderDetailsStatusPending: string;
+    orderDetailsNotFound: string;
+    orderDetailsProgressPaid: string;
+    orderDetailsNumberPrefix: string;
+    orderDetailsSectionTitle: string;
+    orderDetailsAmountPaid: string;
+    orderDetailsPendingAmount: string;
+    orderDetailsTotalAmount: string;
+    orderDetailsReceiveBtn: string;
+    orderDetailsPayInstallmentBtn: string;
+    orderDetailsViewReceiptBtn: string;
+    receiptHeaderTitle: string;
+    receiptNotFound: string;
+    receiptProductPayments: string;
+    receiptPaymentForOrder: string;
+    receiptInfoService: string;
+    receiptInfoMethod: string;
+    receiptInfoProductName: string;
+    receiptInfoMultiple: string;
+    receiptInfoAmount: string;
+    receiptInfoStatus: string;
+    receiptBreakdownSubtotal: string;
+    receiptBreakdownDiscount: string;
+    receiptBreakdownTax: string;
+    receiptTotalCosts: string;
+    receiptDoneBtn: string;
+    rateHeaderTitle: string;
+    rateSuccessTitle: string;
+    rateSuccessMsg: string;
+    rateDoneBtn: string;
+    rateQuestionVendor: string;
+    rateQuestionShop: string;
+    rateQuestionDelivery: string;
+    rateSubmitBtn: string;
+    trackingStatusPickedUp: string;
+    trackingStatusInTransit: string;
+    trackingStatusDelivered: string;
+    trackingMapMarkerTitle: string;
+    trackingHeaderPrepared: string;
+    trackingHeaderOnWay: string;
+    trackingHeaderDelivered: string;
+    trackingArrivesBetween: string;
+    trackingSupplierSince: string;
+    trackingContactShopBtn: string;
 }
-
 /** English (default). */
 const en: TranslationKeys = {
     languageScreenTitle: 'Choose your language',
     languageScreenChoosePreferred: 'Choose preferred language',
     languageScreenSkip: 'Skip',
-
     roleScreenTitle: 'Choose what describes you best',
     roleScreenDescription:
         "Achieve your financial goals through a save-to-buy model.\nBusinesses sell, deliver and offer financial services.",
@@ -272,10 +441,8 @@ const en: TranslationKeys = {
     roleScreenOr: 'OR',
     roleScreenSkip: 'Skip',
     roleScreenBack: 'Go back',
-
     homeWelcome: 'Welcome to Tunzaa!',
     homeComingSoon: 'Marketplace coming soon...',
-
     settingsTitle: 'Settings',
     settingsActivities: 'Your Activities',
     settingsNotifications: 'In-App Notifications',
@@ -289,7 +456,6 @@ const en: TranslationKeys = {
     settingsLogoutConfirmTitle: 'Log Out',
     settingsLogoutConfirmMessage: 'Are you sure you want to log out?',
     settingsVersion: 'Tunzaa Version 2.0',
-
     onboardingStep1Title: 'Business Documents',
     onboardingStep1Subtitle: 'It is important to attach business documents for better security of your account.',
     onboardingStep1UploadInfo: 'Upload the following information',
@@ -306,7 +472,6 @@ const en: TranslationKeys = {
     onboardingStep1Back: 'Back',
     onboardingStep1Next: 'Continue',
     onboardingStep1Saving: 'Saving...',
-
     onboardingStep2Title: 'Shop Details',
     onboardingStep2Subtitle: 'Logo, shop name and shop description are important in creating your shop on Tunzaa.',
     onboardingStep2AddLogo: 'Add logo*',
@@ -320,7 +485,6 @@ const en: TranslationKeys = {
     onboardingStep2Required: 'Required section',
     onboardingStep2PermissionError: 'Sorry, we need permission to access your photos.',
     onboardingStep2ValidationShopName: 'Please enter your company or shop name.',
-
     onboardingStep3Title: 'Shop Location',
     onboardingStep3Subtitle: 'Enable customers to follow products easily by setting your shop location.',
     onboardingStep3CardTitle: 'Set shop location',
@@ -340,14 +504,12 @@ const en: TranslationKeys = {
     onboardingStep3ManualSubtitle: 'Fill in your location information accurately so that customers can find you easily.',
     onboardingStep3MapSubtitle: 'Drag the pin on the map to choose the correct location for your shop.',
     onboardingStep3MapMarker: 'Your Shop',
-
     onboardingStep4Title: 'Review Information',
     onboardingStep4Subtitle: 'Review your shop details before continuing.',
     onboardingStep4Edit: 'Edit',
     onboardingStep4NotesLabel: 'Extra details',
     onboardingStep4MultiLocationQuestion: 'Do you have more than one shop location?',
     onboardingStep4AddShop: 'Add Shop',
-
     onboardingStep5Title: 'Business Documents',
     onboardingStep5Subtitle: 'It is important to attach business documents for added security of your account.',
     onboardingStep5CardHeader: 'Upload the following information',
@@ -363,7 +525,6 @@ const en: TranslationKeys = {
     onboardingStep5SuccessModalTitle: 'Congratulations!',
     onboardingStep5SuccessModalDescription: 'We have received your documents. Please wait a bit while we review the details in the next 24 to 48 hours.',
     onboardingStep5SuccessModalButton: 'Okay',
-
     // Login Screen
     loginTitle: "Welcome Back",
     loginSubtitle: "Enter your details to sign in",
@@ -487,14 +648,195 @@ const en: TranslationKeys = {
     // --- Loans ---
     "vendor.loans.loans_request": "Loans Request",
     "vendor.loans.repayments_track": "Repayments Track",
+    authWingaWelcomeBack: "Welcome Back",
+    authWingaEnterDetails: "Enter your details to sign in",
+    authWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    authWingaPasswordPlaceholder: "Enter password",
+    authWingaForgotPassword: "Forgot Password?",
+    authWingaTermsText1: "I have read agree to Tunzaa ",
+    authWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    authWingaLoginButton: "Log In",
+    authLoginTermsText1: "I agree to the ",
+    authLoginTermsLink: "Terms and Conditions",
+    authLoginNoAccount: "Don't have an account? ",
+    authLoginSignUp: "Sign up",
+    alertsLoginTermsRequiredTitle: "Terms Required",
+    alertsLoginTermsRequiredMsg: "Please agree to Terms and Conditions",
+    alertsLoginMissingFieldsTitle: "Missing Fields",
+    alertsLoginMissingFieldsMsg: "Please enter your identifier and password",
+    alertsLoginFailedTitle: "Login Failed",
+    alertsLoginFailedMsg: "Error signing in. Please check your credentials.",
+    alertsLoginNotAvailableTitle: "Not Available",
+    alertsLoginNotAvailableMsg: " login is not yet supported.",
+    alertsLoginErrorTitle: "Login Error",
+    alertsLoginErrorMsg: "Failed to sign in with ",
+    registerWingaTitle: "Create an account",
+    registerWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    registerWingaTermsText1: "I have read agree to Tunzaa ",
+    registerWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    registerWingaCreateButton: "Create Account",
+    registerWingaAlreadyAccount: "Already have an account? ",
+    registerWingaLoginLink: "Log in",
+    registerVerifyPasswordTitle: "Verify and Create Password",
+    registerVerifyPasswordSubtitle: "Set a secure password for your account",
+    registerDeliveryPartnerTitle: "Register Delivery Partner",
+    registerLoanProviderTitle: "Register Loan Provider",
+    registerEmailPlaceholder: "Enter email address",
+    registerConfirmPasswordPlaceholder: "Confirm Password",
+    registerCompleteAccountButton: "Complete Account",
+    alertsRegisterMissingFieldTitle: "Missing Field",
+    alertsRegisterMissingFieldMsg: "Please enter your phone number",
+    alertsRegisterMissingFieldsTitle: "Missing Fields",
+    alertsRegisterMissingFieldsMsg: "Please fill in all fields (Name, Phone, and Email)",
+    alertsRegisterInvalidEmailTitle: "Invalid Email",
+    alertsRegisterInvalidEmailMsg: "Please enter a valid email address",
+    alertsRegisterErrorTitle: "Error",
+    alertsRegisterErrorMsg: "Error requesting verification code.",
+    alertsRegisterPasswordErrorTitle: "Password Error",
+    alertsRegisterPasswordErrorMsg: "Password must be at least 6 characters",
+    alertsRegisterPasswordMismatchMsg: "Passwords do not match",
+    alertsRegisterAccountFoundTitle: "Account Found",
+    alertsRegisterAccountFoundMsg1: "You already have a Tunzaa account. Please sign in to continue your application.",
+    alertsRegisterAccountFoundMsg2: "This phone number is already registered. Please sign in to your account.",
+    alertsRegisterErrorCreatingTitle: "Registration Error",
+    alertsRegisterErrorCreatingMsg: "Error creating account.",
+    accountVerifiedBadge: "Verified",
+    accountCompleteProfile: "Complete your profile – ",
+    accountMissingFields: "Missing: ",
+    accountCoinPrefix: "Coin: ",
+    accountClaimOffer: "Claim Offer",
+    accountCollectButton: "Collect",
+    accountQuickActionWishlist: "Wishlist",
+    accountQuickActionRefund: "Refund",
+    accountQuickActionGiftCard: "Gift Card",
+    accountDiscoverDeals: "Discover More Deals",
+    cartAlertOutOfStockTitle: "Out of Stock",
+    cartAlertOutOfStockMsg: "Sorry, there is no more inventory available for this item.",
+    cartAlertUpdateErrorTitle: "Error",
+    cartAlertUpdateErrorMsg: "Could not update quantity. Please try again.",
+    cartAlertRemoveTitle: "Remove Item",
+    cartAlertRemoveMsg1: "Are you sure you want to remove ",
+    cartAlertRemoveMsg2: " from your cart?",
+    cartAlertRemoveCancel: "Cancel",
+    cartAlertRemoveConfirm: "Remove",
+    cartAlertRemoveErrorTitle: "Error",
+    cartAlertRemoveErrorMsg: "Could not remove item. Please try again.",
+    cartDeliveryPrefix: "Delivery: Tsh. ",
+    cartDeliveryFree: "Free Delivery",
+    cartWarrantySuffix: " warranty",
+    cartHeaderTitle: "Shopping Cart",
+    cartSelectAll: "Select all items",
+    cartItemCountSingular: " item",
+    cartItemCountPlural: " items",
+    cartEmptyState: "Your cart is empty",
+    cartContinueShopping: "Continue Shopping",
+    cartSubtotalPrefix: "Subtotal: Tsh. ",
+    cartProceedCheckout: "Proceed to checkout",
+    checkoutPageTitle: "Checkout",
+    checkoutLoadingCart: "Loading cart...",
+    checkoutEmptyCartMsg: "Your cart appears to be empty. This might happen if your order is being processed or if there was a connection issue.",
+    checkoutRefreshCart: "Refresh Cart",
+    checkoutGoBack: "Go Back",
+    checkoutInvalidCartMsg: "Invalid cart data. Please return to your cart and try again.",
+    checkoutGoToCart: "Go to Cart",
+    checkoutOrderSummaryTitle: "Order Summary",
+    checkoutMyCartTitle: "My cart",
+    checkoutOrderPrefix: "Order(",
+    checkoutOrderSuffixSingular: " item)",
+    checkoutOrderSuffixPlural: " items)",
+    checkoutProductLabel: "Product",
+    checkoutPriceLabel: "Price",
+    checkoutSubtotalLabel: "Subtotal",
+    checkoutDiscountLabel: "Discount",
+    checkoutDeliveryFeesLabel: "Delivery Fees",
+    checkoutTaxLabel: "Tax (18%)",
+    checkoutTotalCostsLabel: "Total costs",
+    checkoutInstallmentBtn: "Installment",
+    checkoutInstallmentDesc: "Tunzaa 10,000 Tsh/wiki",
+    checkoutPayNowBtn: "Full Payment",
+    checkoutCashOnDeliveryBtn: "Cash On Delivery",
+    successOrderTitle: "Order Successful!",
+    successOrderDesc: "Your order has been placed successfully",
+    successOrderConfTitle: "Order Confirmation",
+    successOrderIdPrefix: "Order ID: ",
+    successOrderUpdateMsg: "We'll send you updates about your order via email and SMS. You can also track your order in the orders section.",
+    successViewOrderDetails: "View Order Details",
+    successViewAllOrders: "View All Orders",
+    successContinueShopping: "Continue Shopping",
+    summaryLoadingOrder: "Loading order details...",
+    summaryAddedTag: "#Added",
+    summaryQtyPrefix: "Qty: ",
+    summaryItemsLabel: "Items",
+    summaryPrimaryItemLabel: "Primary Item",
+    summaryEmptyCartTitle: "Your cart is empty",
+    summaryEmptyCartDesc: "Add items to your cart to see your order summary and checkout.",
+    summaryStartShopping: "Start Shopping",
+    ordersTabPending: "Pending",
+    ordersTabShipped: "Shipped",
+    ordersTabCompleted: "Completed",
+    ordersTabGiftCards: "Gift cards",
+    ordersUnknownProduct: "Unknown Product",
+    ordersNextInstallment: "Next installment :",
+    ordersPayPrefix: "pay Tsh ",
+    ordersTotalPaid: "Total paid :",
+    ordersBadgeCompleted: "Completed",
+    ordersHeaderTitle: "Order",
+    ordersLoading: "Loading orders...",
+    ordersEmptyPending: "No pending orders",
+    ordersEmptyTransit: "No orders in transit",
+    ordersEmptyCompleted: "No completed orders",
+    ordersEmptyGiftCards: "No gift cards available",
+    orderDetailsLoadingItem: "Loading Item...",
+    orderDetailsStatusPending: "Pending",
+    orderDetailsNotFound: "Order not found",
+    orderDetailsProgressPaid: "Paid",
+    orderDetailsNumberPrefix: "Order number #",
+    orderDetailsSectionTitle: "Order details",
+    orderDetailsAmountPaid: "Amount paid",
+    orderDetailsPendingAmount: "Pending amount",
+    orderDetailsTotalAmount: "Total Amount",
+    orderDetailsReceiveBtn: "Receive your product",
+    orderDetailsPayInstallmentBtn: "Pay Installment",
+    orderDetailsViewReceiptBtn: "View receipt",
+    receiptHeaderTitle: "Receipt",
+    receiptNotFound: "Receipt not found",
+    receiptProductPayments: "Product Payments",
+    receiptPaymentForOrder: "Payment made for Order #",
+    receiptInfoService: "Service",
+    receiptInfoMethod: "Method",
+    receiptInfoProductName: "Product Name",
+    receiptInfoMultiple: "Multiple Items",
+    receiptInfoAmount: "Amount",
+    receiptInfoStatus: "Status",
+    receiptBreakdownSubtotal: "Subtotal",
+    receiptBreakdownDiscount: "Discount",
+    receiptBreakdownTax: "Tax",
+    receiptTotalCosts: "Total costs",
+    receiptDoneBtn: "Done",
+    rateHeaderTitle: "Rate",
+    rateSuccessTitle: "Thanks for rating!",
+    rateSuccessMsg: "We're grateful for your trust in our service! Your satisfaction is our priority.",
+    rateDoneBtn: "Done Reviewing",
+    rateQuestionVendor: "How would you rate your experience with the vendor?",
+    rateQuestionShop: "How would you rate your experience with the shop?",
+    rateQuestionDelivery: "How would you rate your delivery experience?",
+    rateSubmitBtn: "Leave Feedback",
+    trackingStatusPickedUp: "Picked up",
+    trackingStatusInTransit: "In transit",
+    trackingStatusDelivered: "Delivered",
+    trackingMapMarkerTitle: "Delivery Location",
+    trackingHeaderPrepared: "Your order is being prepared",
+    trackingHeaderOnWay: "Your order is on the way",
+    trackingHeaderDelivered: "Order Delivered",
+    trackingArrivesBetween: "Arrives between 11:23 PM - 12:01 AM",
+    trackingSupplierSince: "Supplier since ",
+    trackingContactShopBtn: "Contact Shop"
 };
-
 /** Swahili. */
 const sw: TranslationKeys = {
     languageScreenTitle: 'Chagua lugha yako',
     languageScreenChoosePreferred: 'Chagua lugha unayopendelea',
     languageScreenSkip: 'Ruka',
-
     roleScreenTitle: 'Chagua kinachokufanana zaidi',
     roleScreenDescription:
         'Fikia malengo yako ya kifedha kupitia mfumo wa kuokota-ili-kununua.\nWafanyabiashara wanauza, wasafirisha na kutoa huduma za kifedha.',
@@ -503,10 +845,8 @@ const sw: TranslationKeys = {
     roleScreenOr: 'AU',
     roleScreenSkip: 'Ruka',
     roleScreenBack: 'Rudi',
-
     homeWelcome: 'Karibu Tunzaa!',
     homeComingSoon: 'Soko linakuja hivi karibuni...',
-
     settingsTitle: 'Mipangilio',
     settingsActivities: 'Shughuli zako',
     settingsNotifications: 'Taarifa za ndani ya programu',
@@ -520,7 +860,6 @@ const sw: TranslationKeys = {
     settingsLogoutConfirmTitle: 'Ondoka',
     settingsLogoutConfirmMessage: 'Je, una uhakika unataka kuondoka?',
     settingsVersion: 'Tunzaa Toleo la 2.0',
-
     onboardingStep1Title: 'Hati Za Biashara',
     onboardingStep1Subtitle: 'Ni muhimu kuambatanisha hati za biashara kwa usalama zaidi wa akaunti yako.',
     onboardingStep1UploadInfo: 'Pakia taarifa zifuatazo',
@@ -537,7 +876,6 @@ const sw: TranslationKeys = {
     onboardingStep1Back: 'Rudi',
     onboardingStep1Next: 'Endelea',
     onboardingStep1Saving: 'Inahifadhi...',
-
     onboardingStep2Title: 'Weka Taarifa Za Duka',
     onboardingStep2Subtitle: 'Logo, jina la duka na maelezo ya duka ni muhimu katika kuunda duka lako Tunzaa.',
     onboardingStep2AddLogo: 'Weka logo*',
@@ -551,7 +889,6 @@ const sw: TranslationKeys = {
     onboardingStep2Required: 'Sehemu ya lazima',
     onboardingStep2PermissionError: 'Samahani, tunahitaji ruhusa ya kufikia picha zako.',
     onboardingStep2ValidationShopName: 'Tafadhali weka jina la kampuni au duka lako.',
-
     onboardingStep3Title: 'Eneo La Duka',
     onboardingStep3Subtitle: 'Wezesha wateja kufuata bidhaa kwa urahisi kwa kuweka eneo la duka lako.',
     onboardingStep3CardTitle: 'Weka eneo la duka',
@@ -571,14 +908,12 @@ const sw: TranslationKeys = {
     onboardingStep3ManualSubtitle: 'Jaza taarifa za eneo lako kwa usahihi ili wateja wakupate kwa urahisi.',
     onboardingStep3MapSubtitle: 'Buruta pini kwenye ramani kuchagua eneo sahihi la duka lako.',
     onboardingStep3MapMarker: 'Duka Lako',
-
     onboardingStep4Title: 'Hakiki Taarifa',
     onboardingStep4Subtitle: 'Hakiki taarifa za duka lako kabla ya kuendelea.',
     onboardingStep4Edit: 'Hariri',
     onboardingStep4NotesLabel: 'Maelezo ya ziada',
     onboardingStep4MultiLocationQuestion: 'Una Duka zaidi ya eneo moja?',
     onboardingStep4AddShop: 'Ongeza Duka',
-
     onboardingStep5Title: 'Hati Za Biashara',
     onboardingStep5Subtitle: 'Ni muhimu kuambatanisha hati za biashara kwa usalama zaidi wa akaunti yako.',
     onboardingStep5CardHeader: 'Pakia taarifa zifuatazo',
@@ -594,7 +929,6 @@ const sw: TranslationKeys = {
     onboardingStep5SuccessModalTitle: 'Hongera!',
     onboardingStep5SuccessModalDescription: 'Tumepokea hati zako. Subiri kidogo tunapokagua maelezo katika saa 24 hadi 48 zijazo.',
     onboardingStep5SuccessModalButton: 'Sawa',
-
     // Login Screen
     loginTitle: "Karibu Tena",
     loginSubtitle: "Ingiza maelezo yako ili uingie",
@@ -719,14 +1053,195 @@ const sw: TranslationKeys = {
     // --- Loans ---
     "vendor.loans.loans_request": "Ombi la Mkopo",
     "vendor.loans.repayments_track": "Fuatilia Marejesho",
+    authWingaWelcomeBack: "Karibu Tena",
+    authWingaEnterDetails: "Ingiza maelezo yako ili uingie",
+    authWingaPhonePlaceholder: "Weka +255xxx xxx xxx",
+    authWingaPasswordPlaceholder: "Weka nenosiri",
+    authWingaForgotPassword: "Umesahau Nenosiri?",
+    authWingaTermsText1: "Nimesoma na kukubaliana na Tunzaa ",
+    authWingaTermsLink: "Masharti na Vigezo vya matumizi, sera ya faragha, na sera ya kurejesha",
+    authWingaLoginButton: "Ingia",
+    authLoginTermsText1: "Ninakubali ",
+    authLoginTermsLink: "Masharti na Vigezo",
+    authLoginNoAccount: "Huna akaunti? ",
+    authLoginSignUp: "Jisajili",
+    alertsLoginTermsRequiredTitle: "Masharti Yanahitajika",
+    alertsLoginTermsRequiredMsg: "Tafadhali kubaliana na Masharti na Vigezo",
+    alertsLoginMissingFieldsTitle: "Sehemu Zinazokosekana",
+    alertsLoginMissingFieldsMsg: "Tafadhali weka barua pepe/simu na nenosiri",
+    alertsLoginFailedTitle: "Uingiaji Umeshindikana",
+    alertsLoginFailedMsg: "Hitilafu wakati wa kuingia. Tafadhali kagua maelezo yako.",
+    alertsLoginNotAvailableTitle: "Haipatikani",
+    alertsLoginNotAvailableMsg: " uingiaji hauungwi mkono bado.",
+    alertsLoginErrorTitle: "Hitilafu ya Uingiaji",
+    alertsLoginErrorMsg: "Imeshindwa kuingia na ",
+    registerWingaTitle: "Fungua akaunti",
+    registerWingaPhonePlaceholder: "Weka +255xxx xxx xxx",
+    registerWingaTermsText1: "Nimesoma na kukubaliana na Tunzaa ",
+    registerWingaTermsLink: "Masharti na Vigezo vya matumizi, sera ya faragha, na sera ya kurejesha",
+    registerWingaCreateButton: "Fungua Akaunti",
+    registerWingaAlreadyAccount: "Tayari una akaunti? ",
+    registerWingaLoginLink: "Ingia",
+    registerVerifyPasswordTitle: "Thibitisha na Tengeneza Nenosiri",
+    registerVerifyPasswordSubtitle: "Weka nenosiri salama kwa akaunti yako",
+    registerDeliveryPartnerTitle: "Sajili Mshirika wa Usafirishaji",
+    registerLoanProviderTitle: "Sajili Mtoa Mkopo",
+    registerEmailPlaceholder: "Weka barua pepe",
+    registerConfirmPasswordPlaceholder: "Thibitisha Nenosiri",
+    registerCompleteAccountButton: "Kamilisha Akaunti",
+    alertsRegisterMissingFieldTitle: "Sehemu Inayokosekana",
+    alertsRegisterMissingFieldMsg: "Tafadhali weka namba yako ya simu",
+    alertsRegisterMissingFieldsTitle: "Sehemu Zinazokosekana",
+    alertsRegisterMissingFieldsMsg: "Tafadhali jaza sehemu zote (Jina, Simu, na Barua pepe)",
+    alertsRegisterInvalidEmailTitle: "Barua Pepe Batili",
+    alertsRegisterInvalidEmailMsg: "Tafadhali weka barua pepe sahihi",
+    alertsRegisterErrorTitle: "Hitilafu",
+    alertsRegisterErrorMsg: "Hitilafu wakati wa kuomba namba ya uthibitisho.",
+    alertsRegisterPasswordErrorTitle: "Hitilafu ya Nenosiri",
+    alertsRegisterPasswordErrorMsg: "Nenosiri lazima liwe na angalau herufi 6",
+    alertsRegisterPasswordMismatchMsg: "Manenosiri hayafanani",
+    alertsRegisterAccountFoundTitle: "Akaunti Imepatikana",
+    alertsRegisterAccountFoundMsg1: "Tayari una akaunti ya Tunzaa. Tafadhali ingia ili kuendelea.",
+    alertsRegisterAccountFoundMsg2: "Namba hii ya simu tayari imesajiliwa. Tafadhali ingia kwenye akaunti yako.",
+    alertsRegisterErrorCreatingTitle: "Hitilafu ya Usajili",
+    alertsRegisterErrorCreatingMsg: "Hitilafu wakati wa kufungua akaunti.",
+    accountVerifiedBadge: "Imethibitishwa",
+    accountCompleteProfile: "Kamilisha wasifu wako – ",
+    accountMissingFields: "Inakosekana: ",
+    accountCoinPrefix: "Sarafu: ",
+    accountClaimOffer: "Dai Ofa",
+    accountCollectButton: "Kusanya",
+    accountQuickActionWishlist: "Matamanio",
+    accountQuickActionRefund: "Rejesha Pesa",
+    accountQuickActionGiftCard: "Kadi ya Zawadi",
+    accountDiscoverDeals: "Gundua Ofa Zaidi",
+    cartAlertOutOfStockTitle: "Hakuna Bidhaa",
+    cartAlertOutOfStockMsg: "Samahani, hakuna bidhaa zaidi inayopatikana.",
+    cartAlertUpdateErrorTitle: "Hitilafu",
+    cartAlertUpdateErrorMsg: "Haikuweza kusasisha idadi. Tafadhali jaribu tena.",
+    cartAlertRemoveTitle: "Ondoa Bidhaa",
+    cartAlertRemoveMsg1: "Una uhakika unataka kuondoa ",
+    cartAlertRemoveMsg2: " kutoka kwenye kikapu chako?",
+    cartAlertRemoveCancel: "Ghairi",
+    cartAlertRemoveConfirm: "Ondoa",
+    cartAlertRemoveErrorTitle: "Hitilafu",
+    cartAlertRemoveErrorMsg: "Haikuweza kuondoa bidhaa. Tafadhali jaribu tena.",
+    cartDeliveryPrefix: "Usafirishaji: Tsh. ",
+    cartDeliveryFree: "Usafirishaji Bure",
+    cartWarrantySuffix: " udhamini",
+    cartHeaderTitle: "Kikapu cha Manunuzi",
+    cartSelectAll: "Chagua bidhaa zote",
+    cartItemCountSingular: " bidhaa",
+    cartItemCountPlural: " bidhaa",
+    cartEmptyState: "Kikapu chako kipo wazi",
+    cartContinueShopping: "Endelea na Manunuzi",
+    cartSubtotalPrefix: "Jumla ndogo: Tsh. ",
+    cartProceedCheckout: "Endelea kwenye malipo",
+    checkoutPageTitle: "Malipo",
+    checkoutLoadingCart: "Inapakia kikapu...",
+    checkoutEmptyCartMsg: "Kikapu chako kinaonekana kuwa wazi. Hii inaweza kutokea ikiwa agizo lako linashughulikiwa.",
+    checkoutRefreshCart: "Onyesha upya",
+    checkoutGoBack: "Rudi nyuma",
+    checkoutInvalidCartMsg: "Taarifa za kikapu si sahihi. Tafadhali rudi kwenye kikapu chako.",
+    checkoutGoToCart: "Nenda kwenye Kikapu",
+    checkoutOrderSummaryTitle: "Muhtasari wa Agizo",
+    checkoutMyCartTitle: "Kikapu changu",
+    checkoutOrderPrefix: "Agizo(",
+    checkoutOrderSuffixSingular: " bidhaa)",
+    checkoutOrderSuffixPlural: " bidhaa)",
+    checkoutProductLabel: "Bidhaa",
+    checkoutPriceLabel: "Bei",
+    checkoutSubtotalLabel: "Jumla ndogo",
+    checkoutDiscountLabel: "Punguzo",
+    checkoutDeliveryFeesLabel: "Gharama za Usafirishaji",
+    checkoutTaxLabel: "Kodi (18%)",
+    checkoutTotalCostsLabel: "Jumla ya gharama",
+    checkoutInstallmentBtn: "Malipo ya Kidogo kidogo",
+    checkoutInstallmentDesc: "Tunzaa Tsh 10,000/wiki",
+    checkoutPayNowBtn: "Lipa Sasa",
+    checkoutCashOnDeliveryBtn: "Lipa Unapopokea",
+    successOrderTitle: "Agizo Limekamilika!",
+    successOrderDesc: "Agizo lako limewekwa kikamilifu",
+    successOrderConfTitle: "Uthibitisho wa Agizo",
+    successOrderIdPrefix: "Namba ya Agizo: ",
+    successOrderUpdateMsg: "Tutakutumia taarifa kuhusu agizo lako kupitia barua pepe na SMS.",
+    successViewOrderDetails: "Tazama Maelezo ya Agizo",
+    successViewAllOrders: "Tazama Maagizo Yote",
+    successContinueShopping: "Endelea na Manunuzi",
+    summaryLoadingOrder: "Inapakia maelezo ya agizo...",
+    summaryAddedTag: "#Imeongezwa",
+    summaryQtyPrefix: "Idadi: ",
+    summaryItemsLabel: "Bidhaa",
+    summaryPrimaryItemLabel: "Bidhaa Kuu",
+    summaryEmptyCartTitle: "Kikapu chako kipo wazi",
+    summaryEmptyCartDesc: "Ongeza bidhaa ili kuona muhtasari wako.",
+    summaryStartShopping: "Anza Manunuzi",
+    ordersTabPending: "Zinasubiri",
+    ordersTabShipped: "Zinasafirishwa",
+    ordersTabCompleted: "Zimekamilika",
+    ordersTabGiftCards: "Kadi za Zawadi",
+    ordersUnknownProduct: "Bidhaa isiyojulikana",
+    ordersNextInstallment: "Malipo yajayo :",
+    ordersPayPrefix: "lipa Tsh ",
+    ordersTotalPaid: "Jumla iliyolipwa :",
+    ordersBadgeCompleted: "Imekamilika",
+    ordersHeaderTitle: "Agizo",
+    ordersLoading: "Inapakia maagizo...",
+    ordersEmptyPending: "Hakuna maagizo yanayosubiri",
+    ordersEmptyTransit: "Hakuna maagizo yanayosafirishwa",
+    ordersEmptyCompleted: "Hakuna maagizo yaliyokamilika",
+    ordersEmptyGiftCards: "Hakuna kadi za zawadi",
+    orderDetailsLoadingItem: "Inapakia Bidhaa...",
+    orderDetailsStatusPending: "Inasubiri",
+    orderDetailsNotFound: "Agizo halikupatikana",
+    orderDetailsProgressPaid: "Imelipiwa",
+    orderDetailsNumberPrefix: "Namba ya Agizo #",
+    orderDetailsSectionTitle: "Maelezo ya agizo",
+    orderDetailsAmountPaid: "Kiasi kilicholipwa",
+    orderDetailsPendingAmount: "Kiasi kinachodaiwa",
+    orderDetailsTotalAmount: "Jumla ya Kiasi",
+    orderDetailsReceiveBtn: "Pokea bidhaa yako",
+    orderDetailsPayInstallmentBtn: "Lipa Kidogo",
+    orderDetailsViewReceiptBtn: "Tazama risiti",
+    receiptHeaderTitle: "Risiti",
+    receiptNotFound: "Risiti haikupatikana",
+    receiptProductPayments: "Malipo ya Bidhaa",
+    receiptPaymentForOrder: "Malipo yamefanywa kwa Agizo #",
+    receiptInfoService: "Huduma",
+    receiptInfoMethod: "Njia",
+    receiptInfoProductName: "Jina la Bidhaa",
+    receiptInfoMultiple: "Bidhaa Nyingi",
+    receiptInfoAmount: "Kiasi",
+    receiptInfoStatus: "Hali",
+    receiptBreakdownSubtotal: "Jumla ndogo",
+    receiptBreakdownDiscount: "Punguzo",
+    receiptBreakdownTax: "Kodi",
+    receiptTotalCosts: "Jumla ya gharama",
+    receiptDoneBtn: "Kamilisha",
+    rateHeaderTitle: "Tathmini",
+    rateSuccessTitle: "Asante kwa kutathmini!",
+    rateSuccessMsg: "Tunashukuru kwa imani yako kwenye huduma yetu! Kuridhika kwako ni kipaumbele chetu.",
+    rateDoneBtn: "Nimemaliza Kutathmini",
+    rateQuestionVendor: "Unatathmini vipi uzoefu wako na muuzaji?",
+    rateQuestionShop: "Unatathmini vipi uzoefu wako na duka?",
+    rateQuestionDelivery: "Unatathmini vipi uzoefu wako wa usafirishaji?",
+    rateSubmitBtn: "Tuma Maoni",
+    trackingStatusPickedUp: "Imechukuliwa",
+    trackingStatusInTransit: "Ipo njiani",
+    trackingStatusDelivered: "Imefikishwa",
+    trackingMapMarkerTitle: "Eneo la Kufikisha",
+    trackingHeaderPrepared: "Agizo lako linaandaliwa",
+    trackingHeaderOnWay: "Agizo lako lipo njiani",
+    trackingHeaderDelivered: "Agizo Limefikishwa",
+    trackingArrivesBetween: "Itafika kati ya 11:23 PM - 12:01 AM",
+    trackingSupplierSince: "Muuzaji tangu ",
+    trackingContactShopBtn: "Wasiliana na Duka"
 };
-
 /** French. */
 const fr: TranslationKeys = {
     languageScreenTitle: 'Choisissez votre langue',
     languageScreenChoosePreferred: 'Choisir la langue préférée',
     languageScreenSkip: 'Passer',
-
     roleScreenTitle: 'Choisissez ce qui vous décrit le mieux',
     roleScreenDescription:
         'Atteignez vos objectifs financiers grâce à un modèle épargner-pour-acheter.\nLes entreprises vendent, livrent et offrent des services financiers.',
@@ -735,10 +1250,8 @@ const fr: TranslationKeys = {
     roleScreenOr: 'OU',
     roleScreenSkip: 'Passer',
     roleScreenBack: 'Retour',
-
     homeWelcome: 'Bienvenue chez Tunzaa!',
     homeComingSoon: 'Marketplace bientôt disponible...',
-
     settingsTitle: 'Paramètres',
     settingsActivities: 'Vos activités',
     settingsNotifications: 'Notifications in-app',
@@ -752,7 +1265,6 @@ const fr: TranslationKeys = {
     settingsLogoutConfirmTitle: 'Déconnexion',
     settingsLogoutConfirmMessage: 'Êtes-vous sûr de vouloir vous déconnecter ?',
     settingsVersion: 'Version Tunzaa 2.0',
-
     onboardingStep1Title: 'Documents commerciaux',
     onboardingStep1Subtitle: 'Il est important de joindre des documents commerciaux pour une meilleure sécurité de votre compte.',
     onboardingStep1UploadInfo: 'Téléchargez les informations suivantes',
@@ -769,7 +1281,6 @@ const fr: TranslationKeys = {
     onboardingStep1Back: 'Retour',
     onboardingStep1Next: 'Continuer',
     onboardingStep1Saving: 'Enregistrement...',
-
     onboardingStep2Title: 'Détails de la boutique',
     onboardingStep2Subtitle: 'Le logo, le nom de la boutique et sa description sont importants pour créer votre boutique sur Tunzaa.',
     onboardingStep2AddLogo: 'Ajouter un logo*',
@@ -783,7 +1294,6 @@ const fr: TranslationKeys = {
     onboardingStep2Required: 'Section requise',
     onboardingStep2PermissionError: 'Désolé, nous avons besoin de la permission d\'accéder à vos photos.',
     onboardingStep2ValidationShopName: 'Veuillez entrer le nom de votre entreprise ou boutique.',
-
     onboardingStep3Title: 'Emplacement de la boutique',
     onboardingStep3Subtitle: 'Permettez aux clients de suivre facilement les produits en définissant l\'emplacement de votre boutique.',
     onboardingStep3CardTitle: 'Définir l\'emplacement de la boutique',
@@ -803,14 +1313,12 @@ const fr: TranslationKeys = {
     onboardingStep3ManualSubtitle: 'Remplissez vos informations de localisation avec précision pour que les clients puissent vous trouver facilement.',
     onboardingStep3MapSubtitle: 'Faites glisser l\'épingle sur la carte pour choisir l\'emplacement correct de votre boutique.',
     onboardingStep3MapMarker: 'Votre boutique',
-
     onboardingStep4Title: 'Réviser les informations',
     onboardingStep4Subtitle: 'Vérifiez les détails de votre boutique avant de continuer.',
     onboardingStep4Edit: 'Modifier',
     onboardingStep4NotesLabel: 'Détails supplémentaires',
     onboardingStep4MultiLocationQuestion: 'Avez-vous plus d\'un emplacement de boutique ?',
     onboardingStep4AddShop: 'Ajouter une boutique',
-
     onboardingStep5Title: 'Documents commerciaux',
     onboardingStep5Subtitle: 'Il est important de joindre les documents commerciaux pour une sécurité accrue de votre compte.',
     onboardingStep5CardHeader: 'Télécharger les informations suivantes',
@@ -826,7 +1334,6 @@ const fr: TranslationKeys = {
     onboardingStep5SuccessModalTitle: 'Félicitations !',
     onboardingStep5SuccessModalDescription: 'Nous avons reçu vos documents. Veuillez patienter un peu pendant que nous examinons les détails dans les 24 à 48 prochaines heures.',
     onboardingStep5SuccessModalButton: 'D\'accord',
-
     // Login Screen
     loginTitle: "Heureux de vous revoir",
     loginSubtitle: "Entrez vos coordonnées pour vous connecter",
@@ -893,7 +1400,6 @@ const fr: TranslationKeys = {
     registerButton: "Créer un compte",
     registerAlreadyAccount: "Vous avez déjà un compte ? Se connecter",
     registerTermsLink: "Conditions générales",
-
     // Role Screen (additional)
     roleScreenOptionSell: "Vendre des produits / Services",
     roleScreenOptionDelivery: "Fournir des services de livraison",
@@ -940,8 +1446,190 @@ const fr: TranslationKeys = {
     // --- Loans ---
     "vendor.loans.loans_request": "Demande de prêt",
     "vendor.loans.repayments_track": "Suivi des remboursements",
+    authWingaWelcomeBack: "Bon retour",
+    authWingaEnterDetails: "Entrez vos coordonnées pour vous connecter",
+    authWingaPhonePlaceholder: "Entrez +255xxx xxx xxx",
+    authWingaPasswordPlaceholder: "Entrez le mot de passe",
+    authWingaForgotPassword: "Mot de passe oublié ?",
+    authWingaTermsText1: "J'ai lu et j'accepte Tunzaa ",
+    authWingaTermsLink: "Conditions d'utilisation, politique de confidentialité et politique de retour",
+    authWingaLoginButton: "Connexion",
+    authLoginTermsText1: "J'accepte les ",
+    authLoginTermsLink: "Conditions générales",
+    authLoginNoAccount: "Pas de compte ? ",
+    authLoginSignUp: "S'inscrire",
+    alertsLoginTermsRequiredTitle: "Conditions requises",
+    alertsLoginTermsRequiredMsg: "Veuillez accepter les conditions générales",
+    alertsLoginMissingFieldsTitle: "Champs manquants",
+    alertsLoginMissingFieldsMsg: "Veuillez entrer votre identifiant et mot de passe",
+    alertsLoginFailedTitle: "Échec de la connexion",
+    alertsLoginFailedMsg: "Erreur de connexion. Veuillez vérifier vos identifiants.",
+    alertsLoginNotAvailableTitle: "Non disponible",
+    alertsLoginNotAvailableMsg: " n'est pas encore pris en charge.",
+    alertsLoginErrorTitle: "Erreur de connexion",
+    alertsLoginErrorMsg: "Échec de la connexion avec ",
+    registerWingaTitle: "Créer un compte",
+    registerWingaPhonePlaceholder: "Entrez +255xxx xxx xxx",
+    registerWingaTermsText1: "J'ai lu et j'accepte Tunzaa ",
+    registerWingaTermsLink: "Conditions d'utilisation, politique de confidentialité et politique de retour",
+    registerWingaCreateButton: "Créer un compte",
+    registerWingaAlreadyAccount: "Déjà un compte ? ",
+    registerWingaLoginLink: "Connexion",
+    registerVerifyPasswordTitle: "Vérifier et créer un mot de passe",
+    registerVerifyPasswordSubtitle: "Définissez un mot de passe sécurisé",
+    registerDeliveryPartnerTitle: "Enregistrer le partenaire de livraison",
+    registerLoanProviderTitle: "Enregistrer le fournisseur de prêt",
+    registerEmailPlaceholder: "Entrez l'adresse e-mail",
+    registerConfirmPasswordPlaceholder: "Confirmer le mot de passe",
+    registerCompleteAccountButton: "Terminer le compte",
+    alertsRegisterMissingFieldTitle: "Champ manquant",
+    alertsRegisterMissingFieldMsg: "Veuillez entrer votre numéro de téléphone",
+    alertsRegisterMissingFieldsTitle: "Champs manquants",
+    alertsRegisterMissingFieldsMsg: "Veuillez remplir tous les champs",
+    alertsRegisterInvalidEmailTitle: "E-mail invalide",
+    alertsRegisterInvalidEmailMsg: "Veuillez entrer une adresse e-mail valide",
+    alertsRegisterErrorTitle: "Erreur",
+    alertsRegisterErrorMsg: "Erreur lors de la demande du code de vérification.",
+    alertsRegisterPasswordErrorTitle: "Erreur de mot de passe",
+    alertsRegisterPasswordErrorMsg: "Le mot de passe doit comporter au moins 6 caractères",
+    alertsRegisterPasswordMismatchMsg: "Les mots de passe ne correspondent pas",
+    alertsRegisterAccountFoundTitle: "Compte trouvé",
+    alertsRegisterAccountFoundMsg1: "Vous avez déjà un compte. Veuillez vous connecter.",
+    alertsRegisterAccountFoundMsg2: "Ce numéro est déjà enregistré. Veuillez vous connecter.",
+    alertsRegisterErrorCreatingTitle: "Erreur d'inscription",
+    alertsRegisterErrorCreatingMsg: "Erreur lors de la création du compte.",
+    accountVerifiedBadge: "Vérifié",
+    accountCompleteProfile: "Complétez votre profil – ",
+    accountMissingFields: "Manquant : ",
+    accountCoinPrefix: "Pièce : ",
+    accountClaimOffer: "Réclamer l'offre",
+    accountCollectButton: "Collecter",
+    accountQuickActionWishlist: "Liste de souhaits",
+    accountQuickActionRefund: "Remboursement",
+    accountQuickActionGiftCard: "Carte cadeau",
+    accountDiscoverDeals: "Découvrir plus d'offres",
+    cartAlertOutOfStockTitle: "Rupture de stock",
+    cartAlertOutOfStockMsg: "Désolé, il n'y a plus de stock disponible pour cet article.",
+    cartAlertUpdateErrorTitle: "Erreur",
+    cartAlertUpdateErrorMsg: "Impossible de mettre à jour la quantité. Veuillez réessayer.",
+    cartAlertRemoveTitle: "Retirer l'article",
+    cartAlertRemoveMsg1: "Êtes-vous sûr de vouloir retirer ",
+    cartAlertRemoveMsg2: " de votre panier ?",
+    cartAlertRemoveCancel: "Annuler",
+    cartAlertRemoveConfirm: "Retirer",
+    cartAlertRemoveErrorTitle: "Erreur",
+    cartAlertRemoveErrorMsg: "Impossible de retirer l'article. Veuillez réessayer.",
+    cartDeliveryPrefix: "Livraison : Tsh. ",
+    cartDeliveryFree: "Livraison gratuite",
+    cartWarrantySuffix: " garantie",
+    cartHeaderTitle: "Panier d'achat",
+    cartSelectAll: "Tout sélectionner",
+    cartItemCountSingular: " article",
+    cartItemCountPlural: " articles",
+    cartEmptyState: "Votre panier est vide",
+    cartContinueShopping: "Continuer vos achats",
+    cartSubtotalPrefix: "Sous-total : Tsh. ",
+    cartProceedCheckout: "Passer à la caisse",
+    checkoutPageTitle: "Caisse",
+    checkoutLoadingCart: "Chargement du panier...",
+    checkoutEmptyCartMsg: "Votre panier semble être vide. Cela peut se produire si votre commande est en cours de traitement.",
+    checkoutRefreshCart: "Actualiser le panier",
+    checkoutGoBack: "Retour",
+    checkoutInvalidCartMsg: "Données du panier invalides. Veuillez retourner à votre panier.",
+    checkoutGoToCart: "Aller au panier",
+    checkoutOrderSummaryTitle: "Résumé de la commande",
+    checkoutMyCartTitle: "Mon panier",
+    checkoutOrderPrefix: "Commande(",
+    checkoutOrderSuffixSingular: " article)",
+    checkoutOrderSuffixPlural: " articles)",
+    checkoutProductLabel: "Produit",
+    checkoutPriceLabel: "Prix",
+    checkoutSubtotalLabel: "Sous-total",
+    checkoutDiscountLabel: "Remise",
+    checkoutDeliveryFeesLabel: "Frais de livraison",
+    checkoutTaxLabel: "Taxe (18%)",
+    checkoutTotalCostsLabel: "Coûts totaux",
+    checkoutInstallmentBtn: "Paiement échelonné",
+    checkoutInstallmentDesc: "Tunzaa 10,000 Tsh/semaine",
+    checkoutPayNowBtn: "Payer maintenant",
+    checkoutCashOnDeliveryBtn: "Paiement à la livraison",
+    successOrderTitle: "Commande réussie !",
+    successOrderDesc: "Votre commande a été passée avec succès",
+    successOrderConfTitle: "Confirmation de commande",
+    successOrderIdPrefix: "N° de commande : ",
+    successOrderUpdateMsg: "Nous vous enverrons des mises à jour concernant votre commande par e-mail et SMS.",
+    successViewOrderDetails: "Voir les détails",
+    successViewAllOrders: "Voir toutes les commandes",
+    successContinueShopping: "Continuer vos achats",
+    summaryLoadingOrder: "Chargement des détails...",
+    summaryAddedTag: "#Ajouté",
+    summaryQtyPrefix: "Qté : ",
+    summaryItemsLabel: "Articles",
+    summaryPrimaryItemLabel: "Article principal",
+    summaryEmptyCartTitle: "Votre panier est vide",
+    summaryEmptyCartDesc: "Ajoutez des articles pour voir le résumé.",
+    summaryStartShopping: "Commencer les achats",
+    ordersTabPending: "En attente",
+    ordersTabShipped: "Expédiées",
+    ordersTabCompleted: "Terminées",
+    ordersTabGiftCards: "Cartes cadeaux",
+    ordersUnknownProduct: "Produit inconnu",
+    ordersNextInstallment: "Prochain versement :",
+    ordersPayPrefix: "payer Tsh ",
+    ordersTotalPaid: "Total payé :",
+    ordersBadgeCompleted: "Terminé",
+    ordersHeaderTitle: "Commande",
+    ordersLoading: "Chargement des commandes...",
+    ordersEmptyPending: "Aucune commande en attente",
+    ordersEmptyTransit: "Aucune commande en transit",
+    ordersEmptyCompleted: "Aucune commande terminée",
+    ordersEmptyGiftCards: "Aucune carte cadeau disponible",
+    orderDetailsLoadingItem: "Chargement de l'article...",
+    orderDetailsStatusPending: "En attente",
+    orderDetailsNotFound: "Commande introuvable",
+    orderDetailsProgressPaid: "Payé",
+    orderDetailsNumberPrefix: "Numéro de commande #",
+    orderDetailsSectionTitle: "Détails de la commande",
+    orderDetailsAmountPaid: "Montant payé",
+    orderDetailsPendingAmount: "Montant en attente",
+    orderDetailsTotalAmount: "Montant total",
+    orderDetailsReceiveBtn: "Recevoir votre produit",
+    orderDetailsPayInstallmentBtn: "Payer le versement",
+    orderDetailsViewReceiptBtn: "Voir le reçu",
+    receiptHeaderTitle: "Reçu",
+    receiptNotFound: "Reçu introuvable",
+    receiptProductPayments: "Paiements de produits",
+    receiptPaymentForOrder: "Paiement effectué pour la commande #",
+    receiptInfoService: "Service",
+    receiptInfoMethod: "Méthode",
+    receiptInfoProductName: "Nom du produit",
+    receiptInfoMultiple: "Articles multiples",
+    receiptInfoAmount: "Montant",
+    receiptInfoStatus: "Statut",
+    receiptBreakdownSubtotal: "Sous-total",
+    receiptBreakdownDiscount: "Remise",
+    receiptBreakdownTax: "Taxe",
+    receiptTotalCosts: "Coûts totaux",
+    receiptDoneBtn: "Terminé",
+    rateHeaderTitle: "Évaluer",
+    rateSuccessTitle: "Merci pour votre évaluation !",
+    rateSuccessMsg: "Nous sommes reconnaissants de votre confiance en notre service ! Votre satisfaction est notre priorité.",
+    rateDoneBtn: "Évaluation terminée",
+    rateQuestionVendor: "Comment évaluez-vous votre expérience avec le vendeur ?",
+    rateQuestionShop: "Comment évaluez-vous votre expérience avec la boutique ?",
+    rateQuestionDelivery: "Comment évaluez-vous votre expérience de livraison ?",
+    rateSubmitBtn: "Laisser un commentaire",
+    trackingStatusPickedUp: "Récupérée",
+    trackingStatusInTransit: "En transit",
+    trackingStatusDelivered: "Livrée",
+    trackingMapMarkerTitle: "Lieu de livraison",
+    trackingHeaderPrepared: "Votre commande est en préparation",
+    trackingHeaderOnWay: "Votre commande est en route",
+    trackingHeaderDelivered: "Commande livrée",
+    trackingArrivesBetween: "Arrive entre 23h23 et 00h01",
+    trackingSupplierSince: "Fournisseur depuis ",
+    trackingContactShopBtn: "Contacter la boutique"
 };
-
 /** Arabic. */
 const ar: TranslationKeys = {
     languageScreenTitle: 'اختر لغتك',
@@ -955,7 +1643,6 @@ const ar: TranslationKeys = {
     affiliateNoAccount: "Don't have an account?",
     affiliateLoginLink: "Log in",
     affiliateAlreadyAccount: "Already have an account?",
-
     roleScreenTitle: 'اختر ما يصفك بشكل أفضل',
     roleScreenDescription:
         'حقق أهدافك المالية من خلال نموذج الادخار للشراء.\nتبيع الشركات وتوصل وتقدم خدمات مالية.',
@@ -964,10 +1651,8 @@ const ar: TranslationKeys = {
     roleScreenOr: 'أو',
     roleScreenSkip: 'تخطي',
     roleScreenBack: 'رجوع',
-
     homeWelcome: 'مرحبا بك في تنزا!',
     homeComingSoon: 'السوق قادم قريبا...',
-
     settingsTitle: 'الإعدادات',
     settingsActivities: 'أنشطتك',
     settingsNotifications: 'إشعارات التطبيق',
@@ -981,7 +1666,6 @@ const ar: TranslationKeys = {
     settingsLogoutConfirmTitle: 'تسجيل الخروج',
     settingsLogoutConfirmMessage: 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
     settingsVersion: 'إصدار تنزا 2.0',
-
     onboardingStep1Title: 'وثائق العمل',
     onboardingStep1Subtitle: 'من المهم إرفاق وثائق العمل لتأمين حسابك بشكل أفضل.',
     onboardingStep1UploadInfo: 'تحميل المعلومات التالية',
@@ -998,7 +1682,6 @@ const ar: TranslationKeys = {
     onboardingStep1Back: 'رجوع',
     onboardingStep1Next: 'متابعة',
     onboardingStep1Saving: 'جاري الحفظ...',
-
     onboardingStep2Title: 'تفاصيل المتجر',
     onboardingStep2Subtitle: 'الشعار واسم المتجر ووصف المتجر مهمة لإنشاء متجرك في تنزا.',
     onboardingStep2AddLogo: 'إضافة شعار*',
@@ -1012,7 +1695,6 @@ const ar: TranslationKeys = {
     onboardingStep2Required: 'قسم مطلوب',
     onboardingStep2PermissionError: 'عذرًا، نحتاج إلى إذن للوصول إلى صورك.',
     onboardingStep2ValidationShopName: 'يرجى إدخال اسم شركتك أو متجرك.',
-
     onboardingStep3Title: 'موقع المتجر',
     onboardingStep3Subtitle: 'تمكين العملاء من متابعة المنتجات بسهولة عن طريق تحديد موقع متجرك.',
     onboardingStep3CardTitle: 'تحديد موقع المتجر',
@@ -1032,14 +1714,12 @@ const ar: TranslationKeys = {
     onboardingStep3ManualSubtitle: 'املأ معلومات موقعك بدقة حتى يتمكن العملاء من العثور عليك بسهولة.',
     onboardingStep3MapSubtitle: 'اسحب الدبوس على الخريطة لاختيار الموقع الصحيح لمتجرك.',
     onboardingStep3MapMarker: 'متجرك',
-
     onboardingStep4Title: 'مراجعة المعلومات',
     onboardingStep4Subtitle: 'راجع تفاصيل متجرك قبل المتابعة.',
     onboardingStep4Edit: 'تعديل',
     onboardingStep4NotesLabel: 'تفاصيل إضافية',
     onboardingStep4MultiLocationQuestion: 'هل لديك أكثر من موقع متجر واحد؟',
     onboardingStep4AddShop: 'إضافة متجر',
-
     onboardingStep5Title: 'وثائق العمل',
     onboardingStep5Subtitle: 'من المهم إرفاق وثائق العمل لمزيد من الأمان لحسابك.',
     onboardingStep5CardHeader: 'تحميل المعلومات التالية',
@@ -1055,7 +1735,6 @@ const ar: TranslationKeys = {
     onboardingStep5SuccessModalTitle: 'تهانينا!',
     onboardingStep5SuccessModalDescription: 'لقد استلمنا وثائقك. يرجى الانتظار قليلاً بينما نراجع التفاصيل في غضون 24 إلى 48 ساعة القادمة.',
     onboardingStep5SuccessModalButton: 'حسنًا',
-
     // Login Screen
     loginTitle: "مرحباً بعودتك",
     loginSubtitle: "أدخل بياناتك لتسجيل الدخول",
@@ -1122,7 +1801,6 @@ const ar: TranslationKeys = {
     registerButton: "إنشاء حساب",
     registerAlreadyAccount: "لديك حساب بالفعل؟ تسجيل الدخول",
     registerTermsLink: "الشروط والأحكام",
-
     // Role Screen (additional)
     roleScreenOptionSell: "بيع المنتجات / الخدمات",
     roleScreenOptionDelivery: "تقديم خدمات التوصيل",
@@ -1169,14 +1847,195 @@ const ar: TranslationKeys = {
     // --- Loans ---
     "vendor.loans.loans_request": "طلب قرض",
     "vendor.loans.repayments_track": "تتبع السداد",
+    authWingaWelcomeBack: "Welcome Back",
+    authWingaEnterDetails: "Enter your details to sign in",
+    authWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    authWingaPasswordPlaceholder: "Enter password",
+    authWingaForgotPassword: "Forgot Password?",
+    authWingaTermsText1: "I have read agree to Tunzaa ",
+    authWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    authWingaLoginButton: "Log In",
+    authLoginTermsText1: "I agree to the ",
+    authLoginTermsLink: "Terms and Conditions",
+    authLoginNoAccount: "Don't have an account? ",
+    authLoginSignUp: "Sign up",
+    alertsLoginTermsRequiredTitle: "Terms Required",
+    alertsLoginTermsRequiredMsg: "Please agree to Terms and Conditions",
+    alertsLoginMissingFieldsTitle: "Missing Fields",
+    alertsLoginMissingFieldsMsg: "Please enter your identifier and password",
+    alertsLoginFailedTitle: "Login Failed",
+    alertsLoginFailedMsg: "Error signing in. Please check your credentials.",
+    alertsLoginNotAvailableTitle: "Not Available",
+    alertsLoginNotAvailableMsg: " login is not yet supported.",
+    alertsLoginErrorTitle: "Login Error",
+    alertsLoginErrorMsg: "Failed to sign in with ",
+    registerWingaTitle: "Create an account",
+    registerWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    registerWingaTermsText1: "I have read agree to Tunzaa ",
+    registerWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    registerWingaCreateButton: "Create Account",
+    registerWingaAlreadyAccount: "Already have an account? ",
+    registerWingaLoginLink: "Log in",
+    registerVerifyPasswordTitle: "Verify and Create Password",
+    registerVerifyPasswordSubtitle: "Set a secure password for your account",
+    registerDeliveryPartnerTitle: "Register Delivery Partner",
+    registerLoanProviderTitle: "Register Loan Provider",
+    registerEmailPlaceholder: "Enter email address",
+    registerConfirmPasswordPlaceholder: "Confirm Password",
+    registerCompleteAccountButton: "Complete Account",
+    alertsRegisterMissingFieldTitle: "Missing Field",
+    alertsRegisterMissingFieldMsg: "Please enter your phone number",
+    alertsRegisterMissingFieldsTitle: "Missing Fields",
+    alertsRegisterMissingFieldsMsg: "Please fill in all fields (Name, Phone, and Email)",
+    alertsRegisterInvalidEmailTitle: "Invalid Email",
+    alertsRegisterInvalidEmailMsg: "Please enter a valid email address",
+    alertsRegisterErrorTitle: "Error",
+    alertsRegisterErrorMsg: "Error requesting verification code.",
+    alertsRegisterPasswordErrorTitle: "Password Error",
+    alertsRegisterPasswordErrorMsg: "Password must be at least 6 characters",
+    alertsRegisterPasswordMismatchMsg: "Passwords do not match",
+    alertsRegisterAccountFoundTitle: "Account Found",
+    alertsRegisterAccountFoundMsg1: "You already have a Tunzaa account. Please sign in to continue your application.",
+    alertsRegisterAccountFoundMsg2: "This phone number is already registered. Please sign in to your account.",
+    alertsRegisterErrorCreatingTitle: "Registration Error",
+    alertsRegisterErrorCreatingMsg: "Error creating account.",
+    accountVerifiedBadge: "Verified",
+    accountCompleteProfile: "Complete your profile – ",
+    accountMissingFields: "Missing: ",
+    accountCoinPrefix: "Coin: ",
+    accountClaimOffer: "Claim Offer",
+    accountCollectButton: "Collect",
+    accountQuickActionWishlist: "Wishlist",
+    accountQuickActionRefund: "Refund",
+    accountQuickActionGiftCard: "Gift Card",
+    accountDiscoverDeals: "Discover More Deals",
+    cartAlertOutOfStockTitle: "Out of Stock",
+    cartAlertOutOfStockMsg: "Sorry, there is no more inventory available for this item.",
+    cartAlertUpdateErrorTitle: "Error",
+    cartAlertUpdateErrorMsg: "Could not update quantity. Please try again.",
+    cartAlertRemoveTitle: "Remove Item",
+    cartAlertRemoveMsg1: "Are you sure you want to remove ",
+    cartAlertRemoveMsg2: " from your cart?",
+    cartAlertRemoveCancel: "Cancel",
+    cartAlertRemoveConfirm: "Remove",
+    cartAlertRemoveErrorTitle: "Error",
+    cartAlertRemoveErrorMsg: "Could not remove item. Please try again.",
+    cartDeliveryPrefix: "Delivery: Tsh. ",
+    cartDeliveryFree: "Free Delivery",
+    cartWarrantySuffix: " warranty",
+    cartHeaderTitle: "Shopping Cart",
+    cartSelectAll: "Select all items",
+    cartItemCountSingular: " item",
+    cartItemCountPlural: " items",
+    cartEmptyState: "Your cart is empty",
+    cartContinueShopping: "Continue Shopping",
+    cartSubtotalPrefix: "Subtotal: Tsh. ",
+    cartProceedCheckout: "Proceed to checkout",
+    checkoutPageTitle: "Checkout",
+    checkoutLoadingCart: "Loading cart...",
+    checkoutEmptyCartMsg: "Your cart appears to be empty. This might happen if your order is being processed or if there was a connection issue.",
+    checkoutRefreshCart: "Refresh Cart",
+    checkoutGoBack: "Go Back",
+    checkoutInvalidCartMsg: "Invalid cart data. Please return to your cart and try again.",
+    checkoutGoToCart: "Go to Cart",
+    checkoutOrderSummaryTitle: "Order Summary",
+    checkoutMyCartTitle: "My cart",
+    checkoutOrderPrefix: "Order(",
+    checkoutOrderSuffixSingular: " item)",
+    checkoutOrderSuffixPlural: " items)",
+    checkoutProductLabel: "Product",
+    checkoutPriceLabel: "Price",
+    checkoutSubtotalLabel: "Subtotal",
+    checkoutDiscountLabel: "Discount",
+    checkoutDeliveryFeesLabel: "Delivery Fees",
+    checkoutTaxLabel: "Tax (18%)",
+    checkoutTotalCostsLabel: "Total costs",
+    checkoutInstallmentBtn: "Installment",
+    checkoutInstallmentDesc: "Tunzaa 10,000 Tsh/wiki",
+    checkoutPayNowBtn: "Full Payment",
+    checkoutCashOnDeliveryBtn: "Cash On Delivery",
+    successOrderTitle: "Order Successful!",
+    successOrderDesc: "Your order has been placed successfully",
+    successOrderConfTitle: "Order Confirmation",
+    successOrderIdPrefix: "Order ID: ",
+    successOrderUpdateMsg: "We'll send you updates about your order via email and SMS. You can also track your order in the orders section.",
+    successViewOrderDetails: "View Order Details",
+    successViewAllOrders: "View All Orders",
+    successContinueShopping: "Continue Shopping",
+    summaryLoadingOrder: "Loading order details...",
+    summaryAddedTag: "#Added",
+    summaryQtyPrefix: "Qty: ",
+    summaryItemsLabel: "Items",
+    summaryPrimaryItemLabel: "Primary Item",
+    summaryEmptyCartTitle: "Your cart is empty",
+    summaryEmptyCartDesc: "Add items to your cart to see your order summary and checkout.",
+    summaryStartShopping: "Start Shopping",
+    ordersTabPending: "Pending",
+    ordersTabShipped: "Shipped",
+    ordersTabCompleted: "Completed",
+    ordersTabGiftCards: "Gift cards",
+    ordersUnknownProduct: "Unknown Product",
+    ordersNextInstallment: "Next installment :",
+    ordersPayPrefix: "pay Tsh ",
+    ordersTotalPaid: "Total paid :",
+    ordersBadgeCompleted: "Completed",
+    ordersHeaderTitle: "Order",
+    ordersLoading: "Loading orders...",
+    ordersEmptyPending: "No pending orders",
+    ordersEmptyTransit: "No orders in transit",
+    ordersEmptyCompleted: "No completed orders",
+    ordersEmptyGiftCards: "No gift cards available",
+    orderDetailsLoadingItem: "Loading Item...",
+    orderDetailsStatusPending: "Pending",
+    orderDetailsNotFound: "Order not found",
+    orderDetailsProgressPaid: "Paid",
+    orderDetailsNumberPrefix: "Order number #",
+    orderDetailsSectionTitle: "Order details",
+    orderDetailsAmountPaid: "Amount paid",
+    orderDetailsPendingAmount: "Pending amount",
+    orderDetailsTotalAmount: "Total Amount",
+    orderDetailsReceiveBtn: "Receive your product",
+    orderDetailsPayInstallmentBtn: "Pay Installment",
+    orderDetailsViewReceiptBtn: "View receipt",
+    receiptHeaderTitle: "Receipt",
+    receiptNotFound: "Receipt not found",
+    receiptProductPayments: "Product Payments",
+    receiptPaymentForOrder: "Payment made for Order #",
+    receiptInfoService: "Service",
+    receiptInfoMethod: "Method",
+    receiptInfoProductName: "Product Name",
+    receiptInfoMultiple: "Multiple Items",
+    receiptInfoAmount: "Amount",
+    receiptInfoStatus: "Status",
+    receiptBreakdownSubtotal: "Subtotal",
+    receiptBreakdownDiscount: "Discount",
+    receiptBreakdownTax: "Tax",
+    receiptTotalCosts: "Total costs",
+    receiptDoneBtn: "Done",
+    rateHeaderTitle: "Rate",
+    rateSuccessTitle: "Thanks for rating!",
+    rateSuccessMsg: "We're grateful for your trust in our service! Your satisfaction is our priority.",
+    rateDoneBtn: "Done Reviewing",
+    rateQuestionVendor: "How would you rate your experience with the vendor?",
+    rateQuestionShop: "How would you rate your experience with the shop?",
+    rateQuestionDelivery: "How would you rate your delivery experience?",
+    rateSubmitBtn: "Leave Feedback",
+    trackingStatusPickedUp: "Picked up",
+    trackingStatusInTransit: "In transit",
+    trackingStatusDelivered: "Delivered",
+    trackingMapMarkerTitle: "Delivery Location",
+    trackingHeaderPrepared: "Your order is being prepared",
+    trackingHeaderOnWay: "Your order is on the way",
+    trackingHeaderDelivered: "Order Delivered",
+    trackingArrivesBetween: "Arrives between 11:23 PM - 12:01 AM",
+    trackingSupplierSince: "Supplier since ",
+    trackingContactShopBtn: "Contact Shop"
 };
-
 /** Spanish. */
 const es: TranslationKeys = {
     languageScreenTitle: 'Elige tu idioma',
     languageScreenChoosePreferred: 'Elegir idioma preferido',
     languageScreenSkip: 'Saltar',
-
     roleScreenTitle: 'Elige lo que mejor te describe',
     roleScreenDescription:
         'Alcanza tus objetivos financieros a través de un modelo de ahorro para comprar.\nLas empresas venden, entregan y ofrecen servicios financieros.',
@@ -1185,10 +2044,8 @@ const es: TranslationKeys = {
     roleScreenOr: 'O',
     roleScreenSkip: 'Saltar',
     roleScreenBack: 'Volver',
-
     homeWelcome: '¡Bienvenido a Tunzaa!',
     homeComingSoon: 'Mercado próximamente...',
-
     settingsTitle: 'Ajustes',
     settingsActivities: 'Tus actividades',
     settingsNotifications: 'Notificaciones en la aplicación',
@@ -1202,7 +2059,6 @@ const es: TranslationKeys = {
     settingsLogoutConfirmTitle: 'Cerrar sesión',
     settingsLogoutConfirmMessage: '¿Estás seguro de que quieres cerrar sesión?',
     settingsVersion: 'Versión Tunzaa 2.0',
-
     onboardingStep1Title: 'Documentos comerciales',
     onboardingStep1Subtitle: 'Es importante adjuntar documentos comerciales para una mejor seguridad de su cuenta.',
     onboardingStep1UploadInfo: 'Sube la siguiente información',
@@ -1219,7 +2075,6 @@ const es: TranslationKeys = {
     onboardingStep1Back: 'Volver',
     onboardingStep1Next: 'Continuar',
     onboardingStep1Saving: 'Guardando...',
-
     onboardingStep2Title: 'Detalles de la tienda',
     onboardingStep2Subtitle: 'El logo, el nombre de la tienda y la descripción de la tienda son importantes al crear su tienda en Tunzaa.',
     onboardingStep2AddLogo: 'Añadir logo*',
@@ -1233,7 +2088,6 @@ const es: TranslationKeys = {
     onboardingStep2Required: 'Sección requerida',
     onboardingStep2PermissionError: 'Lo sentimos, necesitamos permiso para acceder a sus fotos.',
     onboardingStep2ValidationShopName: 'Por favor, ingrese el nombre de su empresa o tienda.',
-
     onboardingStep3Title: 'Ubicación de la tienda',
     onboardingStep3Subtitle: 'Permita que los clientes sigan los productos fácilmente estableciendo la ubicación de su tienda.',
     onboardingStep3CardTitle: 'Establecer ubicación de la tienda',
@@ -1253,14 +2107,12 @@ const es: TranslationKeys = {
     onboardingStep3ManualSubtitle: 'Complete la información de su ubicación con precisión para que los clientes puedan encontrarlo fácilmente.',
     onboardingStep3MapSubtitle: 'Arrastre el pin en el mapa para elegir la ubicación correcta de su tienda.',
     onboardingStep3MapMarker: 'Su tienda',
-
     onboardingStep4Title: 'Revisar información',
     onboardingStep4Subtitle: 'Revise los detalles de su tienda antes de continuar.',
     onboardingStep4Edit: 'Editar',
     onboardingStep4NotesLabel: 'Detalles adicionales',
     onboardingStep4MultiLocationQuestion: '¿Tiene más de una ubicación de tienda?',
     onboardingStep4AddShop: 'Añadir tienda',
-
     onboardingStep5Title: 'Documentos comerciales',
     onboardingStep5Subtitle: 'Es importante adjuntar documentos comerciales para mayor seguridad de su cuenta.',
     onboardingStep5CardHeader: 'Subir la siguiente información',
@@ -1276,7 +2128,6 @@ const es: TranslationKeys = {
     onboardingStep5SuccessModalTitle: '¡Felicidades!',
     onboardingStep5SuccessModalDescription: 'Hemos recibido sus documentos. Espere un poco mientras revisamos los detalles en las próximas 24 a 48 horas.',
     onboardingStep5SuccessModalButton: 'De acuerdo',
-
     // Login Screen
     loginTitle: "Bienvenido de nuevo",
     loginSubtitle: "Ingrese sus datos para iniciar sesión",
@@ -1343,7 +2194,6 @@ const es: TranslationKeys = {
     registerButton: "Crear cuenta",
     registerAlreadyAccount: "¿Ya tiene una cuenta? Inicie sesión",
     registerTermsLink: "Términos y Condiciones",
-
     // Role Screen (additional)
     roleScreenOptionSell: "Vender productos / Servicios",
     roleScreenOptionDelivery: "Proporcionar servicios de entrega",
@@ -1391,8 +2241,190 @@ const es: TranslationKeys = {
     // --- Loans ---
     "vendor.loans.loans_request": "Solicitud de préstamo",
     "vendor.loans.repayments_track": "Seguimiento de pagos",
+    authWingaWelcomeBack: "Welcome Back",
+    authWingaEnterDetails: "Enter your details to sign in",
+    authWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    authWingaPasswordPlaceholder: "Enter password",
+    authWingaForgotPassword: "Forgot Password?",
+    authWingaTermsText1: "I have read agree to Tunzaa ",
+    authWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    authWingaLoginButton: "Log In",
+    authLoginTermsText1: "I agree to the ",
+    authLoginTermsLink: "Terms and Conditions",
+    authLoginNoAccount: "Don't have an account? ",
+    authLoginSignUp: "Sign up",
+    alertsLoginTermsRequiredTitle: "Terms Required",
+    alertsLoginTermsRequiredMsg: "Please agree to Terms and Conditions",
+    alertsLoginMissingFieldsTitle: "Missing Fields",
+    alertsLoginMissingFieldsMsg: "Please enter your identifier and password",
+    alertsLoginFailedTitle: "Login Failed",
+    alertsLoginFailedMsg: "Error signing in. Please check your credentials.",
+    alertsLoginNotAvailableTitle: "Not Available",
+    alertsLoginNotAvailableMsg: " login is not yet supported.",
+    alertsLoginErrorTitle: "Login Error",
+    alertsLoginErrorMsg: "Failed to sign in with ",
+    registerWingaTitle: "Create an account",
+    registerWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    registerWingaTermsText1: "I have read agree to Tunzaa ",
+    registerWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    registerWingaCreateButton: "Create Account",
+    registerWingaAlreadyAccount: "Already have an account? ",
+    registerWingaLoginLink: "Log in",
+    registerVerifyPasswordTitle: "Verify and Create Password",
+    registerVerifyPasswordSubtitle: "Set a secure password for your account",
+    registerDeliveryPartnerTitle: "Register Delivery Partner",
+    registerLoanProviderTitle: "Register Loan Provider",
+    registerEmailPlaceholder: "Enter email address",
+    registerConfirmPasswordPlaceholder: "Confirm Password",
+    registerCompleteAccountButton: "Complete Account",
+    alertsRegisterMissingFieldTitle: "Missing Field",
+    alertsRegisterMissingFieldMsg: "Please enter your phone number",
+    alertsRegisterMissingFieldsTitle: "Missing Fields",
+    alertsRegisterMissingFieldsMsg: "Please fill in all fields (Name, Phone, and Email)",
+    alertsRegisterInvalidEmailTitle: "Invalid Email",
+    alertsRegisterInvalidEmailMsg: "Please enter a valid email address",
+    alertsRegisterErrorTitle: "Error",
+    alertsRegisterErrorMsg: "Error requesting verification code.",
+    alertsRegisterPasswordErrorTitle: "Password Error",
+    alertsRegisterPasswordErrorMsg: "Password must be at least 6 characters",
+    alertsRegisterPasswordMismatchMsg: "Passwords do not match",
+    alertsRegisterAccountFoundTitle: "Account Found",
+    alertsRegisterAccountFoundMsg1: "You already have a Tunzaa account. Please sign in to continue your application.",
+    alertsRegisterAccountFoundMsg2: "This phone number is already registered. Please sign in to your account.",
+    alertsRegisterErrorCreatingTitle: "Registration Error",
+    alertsRegisterErrorCreatingMsg: "Error creating account.",
+    accountVerifiedBadge: "Verified",
+    accountCompleteProfile: "Complete your profile – ",
+    accountMissingFields: "Missing: ",
+    accountCoinPrefix: "Coin: ",
+    accountClaimOffer: "Claim Offer",
+    accountCollectButton: "Collect",
+    accountQuickActionWishlist: "Wishlist",
+    accountQuickActionRefund: "Refund",
+    accountQuickActionGiftCard: "Gift Card",
+    accountDiscoverDeals: "Discover More Deals",
+    cartAlertOutOfStockTitle: "Out of Stock",
+    cartAlertOutOfStockMsg: "Sorry, there is no more inventory available for this item.",
+    cartAlertUpdateErrorTitle: "Error",
+    cartAlertUpdateErrorMsg: "Could not update quantity. Please try again.",
+    cartAlertRemoveTitle: "Remove Item",
+    cartAlertRemoveMsg1: "Are you sure you want to remove ",
+    cartAlertRemoveMsg2: " from your cart?",
+    cartAlertRemoveCancel: "Cancel",
+    cartAlertRemoveConfirm: "Remove",
+    cartAlertRemoveErrorTitle: "Error",
+    cartAlertRemoveErrorMsg: "Could not remove item. Please try again.",
+    cartDeliveryPrefix: "Delivery: Tsh. ",
+    cartDeliveryFree: "Free Delivery",
+    cartWarrantySuffix: " warranty",
+    cartHeaderTitle: "Shopping Cart",
+    cartSelectAll: "Select all items",
+    cartItemCountSingular: " item",
+    cartItemCountPlural: " items",
+    cartEmptyState: "Your cart is empty",
+    cartContinueShopping: "Continue Shopping",
+    cartSubtotalPrefix: "Subtotal: Tsh. ",
+    cartProceedCheckout: "Proceed to checkout",
+    checkoutPageTitle: "Checkout",
+    checkoutLoadingCart: "Loading cart...",
+    checkoutEmptyCartMsg: "Your cart appears to be empty. This might happen if your order is being processed or if there was a connection issue.",
+    checkoutRefreshCart: "Refresh Cart",
+    checkoutGoBack: "Go Back",
+    checkoutInvalidCartMsg: "Invalid cart data. Please return to your cart and try again.",
+    checkoutGoToCart: "Go to Cart",
+    checkoutOrderSummaryTitle: "Order Summary",
+    checkoutMyCartTitle: "My cart",
+    checkoutOrderPrefix: "Order(",
+    checkoutOrderSuffixSingular: " item)",
+    checkoutOrderSuffixPlural: " items)",
+    checkoutProductLabel: "Product",
+    checkoutPriceLabel: "Price",
+    checkoutSubtotalLabel: "Subtotal",
+    checkoutDiscountLabel: "Discount",
+    checkoutDeliveryFeesLabel: "Delivery Fees",
+    checkoutTaxLabel: "Tax (18%)",
+    checkoutTotalCostsLabel: "Total costs",
+    checkoutInstallmentBtn: "Installment",
+    checkoutInstallmentDesc: "Tunzaa 10,000 Tsh/wiki",
+    checkoutPayNowBtn: "Full Payment",
+    checkoutCashOnDeliveryBtn: "Cash On Delivery",
+    successOrderTitle: "Order Successful!",
+    successOrderDesc: "Your order has been placed successfully",
+    successOrderConfTitle: "Order Confirmation",
+    successOrderIdPrefix: "Order ID: ",
+    successOrderUpdateMsg: "We'll send you updates about your order via email and SMS. You can also track your order in the orders section.",
+    successViewOrderDetails: "View Order Details",
+    successViewAllOrders: "View All Orders",
+    successContinueShopping: "Continue Shopping",
+    summaryLoadingOrder: "Loading order details...",
+    summaryAddedTag: "#Added",
+    summaryQtyPrefix: "Qty: ",
+    summaryItemsLabel: "Items",
+    summaryPrimaryItemLabel: "Primary Item",
+    summaryEmptyCartTitle: "Your cart is empty",
+    summaryEmptyCartDesc: "Add items to your cart to see your order summary and checkout.",
+    summaryStartShopping: "Start Shopping",
+    ordersTabPending: "Pending",
+    ordersTabShipped: "Shipped",
+    ordersTabCompleted: "Completed",
+    ordersTabGiftCards: "Gift cards",
+    ordersUnknownProduct: "Unknown Product",
+    ordersNextInstallment: "Next installment :",
+    ordersPayPrefix: "pay Tsh ",
+    ordersTotalPaid: "Total paid :",
+    ordersBadgeCompleted: "Completed",
+    ordersHeaderTitle: "Order",
+    ordersLoading: "Loading orders...",
+    ordersEmptyPending: "No pending orders",
+    ordersEmptyTransit: "No orders in transit",
+    ordersEmptyCompleted: "No completed orders",
+    ordersEmptyGiftCards: "No gift cards available",
+    orderDetailsLoadingItem: "Loading Item...",
+    orderDetailsStatusPending: "Pending",
+    orderDetailsNotFound: "Order not found",
+    orderDetailsProgressPaid: "Paid",
+    orderDetailsNumberPrefix: "Order number #",
+    orderDetailsSectionTitle: "Order details",
+    orderDetailsAmountPaid: "Amount paid",
+    orderDetailsPendingAmount: "Pending amount",
+    orderDetailsTotalAmount: "Total Amount",
+    orderDetailsReceiveBtn: "Receive your product",
+    orderDetailsPayInstallmentBtn: "Pay Installment",
+    orderDetailsViewReceiptBtn: "View receipt",
+    receiptHeaderTitle: "Receipt",
+    receiptNotFound: "Receipt not found",
+    receiptProductPayments: "Product Payments",
+    receiptPaymentForOrder: "Payment made for Order #",
+    receiptInfoService: "Service",
+    receiptInfoMethod: "Method",
+    receiptInfoProductName: "Product Name",
+    receiptInfoMultiple: "Multiple Items",
+    receiptInfoAmount: "Amount",
+    receiptInfoStatus: "Status",
+    receiptBreakdownSubtotal: "Subtotal",
+    receiptBreakdownDiscount: "Discount",
+    receiptBreakdownTax: "Tax",
+    receiptTotalCosts: "Total costs",
+    receiptDoneBtn: "Done",
+    rateHeaderTitle: "Rate",
+    rateSuccessTitle: "Thanks for rating!",
+    rateSuccessMsg: "We're grateful for your trust in our service! Your satisfaction is our priority.",
+    rateDoneBtn: "Done Reviewing",
+    rateQuestionVendor: "How would you rate your experience with the vendor?",
+    rateQuestionShop: "How would you rate your experience with the shop?",
+    rateQuestionDelivery: "How would you rate your delivery experience?",
+    rateSubmitBtn: "Leave Feedback",
+    trackingStatusPickedUp: "Picked up",
+    trackingStatusInTransit: "In transit",
+    trackingStatusDelivered: "Delivered",
+    trackingMapMarkerTitle: "Delivery Location",
+    trackingHeaderPrepared: "Your order is being prepared",
+    trackingHeaderOnWay: "Your order is on the way",
+    trackingHeaderDelivered: "Order Delivered",
+    trackingArrivesBetween: "Arrives between 11:23 PM - 12:01 AM",
+    trackingSupplierSince: "Supplier since ",
+    trackingContactShopBtn: "Contact Shop"
 };
-
 /** Portuguese. */
 const pt: TranslationKeys = {
     languageScreenTitle: 'Escolha o seu idioma',
@@ -1406,7 +2438,6 @@ const pt: TranslationKeys = {
     affiliateNoAccount: "Don't have an account?",
     affiliateLoginLink: "Log in",
     affiliateAlreadyAccount: "Already have an account?",
-
     roleScreenTitle: 'Escolha o que melhor descreve você',
     roleScreenDescription:
         'Alcance seus objetivos financeiros através de um modelo de poupança para compra.\nEmpresas vendem, entregam e oferecem serviços financeiros.',
@@ -1415,10 +2446,8 @@ const pt: TranslationKeys = {
     roleScreenOr: 'OU',
     roleScreenSkip: 'Pular',
     roleScreenBack: 'Voltar',
-
     homeWelcome: 'Bem-vindo ao Tunzaa!',
     homeComingSoon: 'Mercado em breve...',
-
     settingsTitle: 'Configurações',
     settingsActivities: 'Suas atividades',
     settingsNotifications: 'Notificações no aplicativo',
@@ -1432,7 +2461,6 @@ const pt: TranslationKeys = {
     settingsLogoutConfirmTitle: 'Sair',
     settingsLogoutConfirmMessage: 'Tem certeza de que deseja sair?',
     settingsVersion: 'Versão Tunzaa 2.0',
-
     onboardingStep1Title: 'Documentos comerciais',
     onboardingStep1Subtitle: 'É importante anexar documentos comerciais para uma melhor segurança da sua conta.',
     onboardingStep1UploadInfo: 'Carregue as seguintes informações',
@@ -1449,7 +2477,6 @@ const pt: TranslationKeys = {
     onboardingStep1Back: 'Voltar',
     onboardingStep1Next: 'Continuar',
     onboardingStep1Saving: 'Salvando...',
-
     onboardingStep2Title: 'Detalhes da loja',
     onboardingStep2Subtitle: 'Logotipo, nome da loja e descrição da loja são importantes na criação da sua loja no Tunzaa.',
     onboardingStep2AddLogo: 'Adicionar logotipo*',
@@ -1463,7 +2490,6 @@ const pt: TranslationKeys = {
     onboardingStep2Required: 'Seção obrigatória',
     onboardingStep2PermissionError: 'Desculpe, precisamos de permissão para acessar suas fotos.',
     onboardingStep2ValidationShopName: 'Por favor, digite o nome da sua empresa ou loja.',
-
     onboardingStep3Title: 'Localização da loja',
     onboardingStep3Subtitle: 'Permita que os clientes acompanhem os produtos facilmente configurando a localização da sua loja.',
     onboardingStep3CardTitle: 'Definir localização da loja',
@@ -1483,14 +2509,12 @@ const pt: TranslationKeys = {
     onboardingStep3ManualSubtitle: 'Preencha suas informações de localização com precisão para que os clientes possam encontrá-lo facilmente.',
     onboardingStep3MapSubtitle: 'Arraste o pino no mapa para escolher a localização correta da sua loja.',
     onboardingStep3MapMarker: 'Sua loja',
-
     onboardingStep4Title: 'Revisar informações',
     onboardingStep4Subtitle: 'Revise os detalhes da sua loja antes de continuar.',
     onboardingStep4Edit: 'Editar',
     onboardingStep4NotesLabel: 'Detalhes adicionais',
     onboardingStep4MultiLocationQuestion: 'Você tem mais de um local de loja?',
     onboardingStep4AddShop: 'Adicionar loja',
-
     onboardingStep5Title: 'Documentos comerciais',
     onboardingStep5Subtitle: 'É importante anexar documentos comerciais para maior segurança da sua conta.',
     onboardingStep5CardHeader: 'Carregar as seguintes informações',
@@ -1506,7 +2530,6 @@ const pt: TranslationKeys = {
     onboardingStep5SuccessModalTitle: 'Parabéns!',
     onboardingStep5SuccessModalDescription: 'Recebemos seus documentos. Aguarde um pouco enquanto revisamos os detalhes nas próximas 24 a 48 horas.',
     onboardingStep5SuccessModalButton: 'Ok',
-
     // Login Screen
     loginTitle: "Bem-vindo de volta",
     loginSubtitle: "Insira seus dados para entrar",
@@ -1573,7 +2596,6 @@ const pt: TranslationKeys = {
     registerButton: "Criar conta",
     registerAlreadyAccount: "Já tem uma conta? Entrar",
     registerTermsLink: "Termos e Condições",
-
     // Role Screen (additional)
     roleScreenOptionSell: "Vender produtos / Serviços",
     roleScreenOptionDelivery: "Fornecer serviços de entrega",
@@ -1621,8 +2643,190 @@ const pt: TranslationKeys = {
     // --- Loans ---
     "vendor.loans.loans_request": "Pedido de empréstimo",
     "vendor.loans.repayments_track": "Rastreio de pagamentos",
+    authWingaWelcomeBack: "Welcome Back",
+    authWingaEnterDetails: "Enter your details to sign in",
+    authWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    authWingaPasswordPlaceholder: "Enter password",
+    authWingaForgotPassword: "Forgot Password?",
+    authWingaTermsText1: "I have read agree to Tunzaa ",
+    authWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    authWingaLoginButton: "Log In",
+    authLoginTermsText1: "I agree to the ",
+    authLoginTermsLink: "Terms and Conditions",
+    authLoginNoAccount: "Don't have an account? ",
+    authLoginSignUp: "Sign up",
+    alertsLoginTermsRequiredTitle: "Terms Required",
+    alertsLoginTermsRequiredMsg: "Please agree to Terms and Conditions",
+    alertsLoginMissingFieldsTitle: "Missing Fields",
+    alertsLoginMissingFieldsMsg: "Please enter your identifier and password",
+    alertsLoginFailedTitle: "Login Failed",
+    alertsLoginFailedMsg: "Error signing in. Please check your credentials.",
+    alertsLoginNotAvailableTitle: "Not Available",
+    alertsLoginNotAvailableMsg: " login is not yet supported.",
+    alertsLoginErrorTitle: "Login Error",
+    alertsLoginErrorMsg: "Failed to sign in with ",
+    registerWingaTitle: "Create an account",
+    registerWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    registerWingaTermsText1: "I have read agree to Tunzaa ",
+    registerWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    registerWingaCreateButton: "Create Account",
+    registerWingaAlreadyAccount: "Already have an account? ",
+    registerWingaLoginLink: "Log in",
+    registerVerifyPasswordTitle: "Verify and Create Password",
+    registerVerifyPasswordSubtitle: "Set a secure password for your account",
+    registerDeliveryPartnerTitle: "Register Delivery Partner",
+    registerLoanProviderTitle: "Register Loan Provider",
+    registerEmailPlaceholder: "Enter email address",
+    registerConfirmPasswordPlaceholder: "Confirm Password",
+    registerCompleteAccountButton: "Complete Account",
+    alertsRegisterMissingFieldTitle: "Missing Field",
+    alertsRegisterMissingFieldMsg: "Please enter your phone number",
+    alertsRegisterMissingFieldsTitle: "Missing Fields",
+    alertsRegisterMissingFieldsMsg: "Please fill in all fields (Name, Phone, and Email)",
+    alertsRegisterInvalidEmailTitle: "Invalid Email",
+    alertsRegisterInvalidEmailMsg: "Please enter a valid email address",
+    alertsRegisterErrorTitle: "Error",
+    alertsRegisterErrorMsg: "Error requesting verification code.",
+    alertsRegisterPasswordErrorTitle: "Password Error",
+    alertsRegisterPasswordErrorMsg: "Password must be at least 6 characters",
+    alertsRegisterPasswordMismatchMsg: "Passwords do not match",
+    alertsRegisterAccountFoundTitle: "Account Found",
+    alertsRegisterAccountFoundMsg1: "You already have a Tunzaa account. Please sign in to continue your application.",
+    alertsRegisterAccountFoundMsg2: "This phone number is already registered. Please sign in to your account.",
+    alertsRegisterErrorCreatingTitle: "Registration Error",
+    alertsRegisterErrorCreatingMsg: "Error creating account.",
+    accountVerifiedBadge: "Verified",
+    accountCompleteProfile: "Complete your profile – ",
+    accountMissingFields: "Missing: ",
+    accountCoinPrefix: "Coin: ",
+    accountClaimOffer: "Claim Offer",
+    accountCollectButton: "Collect",
+    accountQuickActionWishlist: "Wishlist",
+    accountQuickActionRefund: "Refund",
+    accountQuickActionGiftCard: "Gift Card",
+    accountDiscoverDeals: "Discover More Deals",
+    cartAlertOutOfStockTitle: "Out of Stock",
+    cartAlertOutOfStockMsg: "Sorry, there is no more inventory available for this item.",
+    cartAlertUpdateErrorTitle: "Error",
+    cartAlertUpdateErrorMsg: "Could not update quantity. Please try again.",
+    cartAlertRemoveTitle: "Remove Item",
+    cartAlertRemoveMsg1: "Are you sure you want to remove ",
+    cartAlertRemoveMsg2: " from your cart?",
+    cartAlertRemoveCancel: "Cancel",
+    cartAlertRemoveConfirm: "Remove",
+    cartAlertRemoveErrorTitle: "Error",
+    cartAlertRemoveErrorMsg: "Could not remove item. Please try again.",
+    cartDeliveryPrefix: "Delivery: Tsh. ",
+    cartDeliveryFree: "Free Delivery",
+    cartWarrantySuffix: " warranty",
+    cartHeaderTitle: "Shopping Cart",
+    cartSelectAll: "Select all items",
+    cartItemCountSingular: " item",
+    cartItemCountPlural: " items",
+    cartEmptyState: "Your cart is empty",
+    cartContinueShopping: "Continue Shopping",
+    cartSubtotalPrefix: "Subtotal: Tsh. ",
+    cartProceedCheckout: "Proceed to checkout",
+    checkoutPageTitle: "Checkout",
+    checkoutLoadingCart: "Loading cart...",
+    checkoutEmptyCartMsg: "Your cart appears to be empty. This might happen if your order is being processed or if there was a connection issue.",
+    checkoutRefreshCart: "Refresh Cart",
+    checkoutGoBack: "Go Back",
+    checkoutInvalidCartMsg: "Invalid cart data. Please return to your cart and try again.",
+    checkoutGoToCart: "Go to Cart",
+    checkoutOrderSummaryTitle: "Order Summary",
+    checkoutMyCartTitle: "My cart",
+    checkoutOrderPrefix: "Order(",
+    checkoutOrderSuffixSingular: " item)",
+    checkoutOrderSuffixPlural: " items)",
+    checkoutProductLabel: "Product",
+    checkoutPriceLabel: "Price",
+    checkoutSubtotalLabel: "Subtotal",
+    checkoutDiscountLabel: "Discount",
+    checkoutDeliveryFeesLabel: "Delivery Fees",
+    checkoutTaxLabel: "Tax (18%)",
+    checkoutTotalCostsLabel: "Total costs",
+    checkoutInstallmentBtn: "Installment",
+    checkoutInstallmentDesc: "Tunzaa 10,000 Tsh/wiki",
+    checkoutPayNowBtn: "Full Payment",
+    checkoutCashOnDeliveryBtn: "Cash On Delivery",
+    successOrderTitle: "Order Successful!",
+    successOrderDesc: "Your order has been placed successfully",
+    successOrderConfTitle: "Order Confirmation",
+    successOrderIdPrefix: "Order ID: ",
+    successOrderUpdateMsg: "We'll send you updates about your order via email and SMS. You can also track your order in the orders section.",
+    successViewOrderDetails: "View Order Details",
+    successViewAllOrders: "View All Orders",
+    successContinueShopping: "Continue Shopping",
+    summaryLoadingOrder: "Loading order details...",
+    summaryAddedTag: "#Added",
+    summaryQtyPrefix: "Qty: ",
+    summaryItemsLabel: "Items",
+    summaryPrimaryItemLabel: "Primary Item",
+    summaryEmptyCartTitle: "Your cart is empty",
+    summaryEmptyCartDesc: "Add items to your cart to see your order summary and checkout.",
+    summaryStartShopping: "Start Shopping",
+    ordersTabPending: "Pending",
+    ordersTabShipped: "Shipped",
+    ordersTabCompleted: "Completed",
+    ordersTabGiftCards: "Gift cards",
+    ordersUnknownProduct: "Unknown Product",
+    ordersNextInstallment: "Next installment :",
+    ordersPayPrefix: "pay Tsh ",
+    ordersTotalPaid: "Total paid :",
+    ordersBadgeCompleted: "Completed",
+    ordersHeaderTitle: "Order",
+    ordersLoading: "Loading orders...",
+    ordersEmptyPending: "No pending orders",
+    ordersEmptyTransit: "No orders in transit",
+    ordersEmptyCompleted: "No completed orders",
+    ordersEmptyGiftCards: "No gift cards available",
+    orderDetailsLoadingItem: "Loading Item...",
+    orderDetailsStatusPending: "Pending",
+    orderDetailsNotFound: "Order not found",
+    orderDetailsProgressPaid: "Paid",
+    orderDetailsNumberPrefix: "Order number #",
+    orderDetailsSectionTitle: "Order details",
+    orderDetailsAmountPaid: "Amount paid",
+    orderDetailsPendingAmount: "Pending amount",
+    orderDetailsTotalAmount: "Total Amount",
+    orderDetailsReceiveBtn: "Receive your product",
+    orderDetailsPayInstallmentBtn: "Pay Installment",
+    orderDetailsViewReceiptBtn: "View receipt",
+    receiptHeaderTitle: "Receipt",
+    receiptNotFound: "Receipt not found",
+    receiptProductPayments: "Product Payments",
+    receiptPaymentForOrder: "Payment made for Order #",
+    receiptInfoService: "Service",
+    receiptInfoMethod: "Method",
+    receiptInfoProductName: "Product Name",
+    receiptInfoMultiple: "Multiple Items",
+    receiptInfoAmount: "Amount",
+    receiptInfoStatus: "Status",
+    receiptBreakdownSubtotal: "Subtotal",
+    receiptBreakdownDiscount: "Discount",
+    receiptBreakdownTax: "Tax",
+    receiptTotalCosts: "Total costs",
+    receiptDoneBtn: "Done",
+    rateHeaderTitle: "Rate",
+    rateSuccessTitle: "Thanks for rating!",
+    rateSuccessMsg: "We're grateful for your trust in our service! Your satisfaction is our priority.",
+    rateDoneBtn: "Done Reviewing",
+    rateQuestionVendor: "How would you rate your experience with the vendor?",
+    rateQuestionShop: "How would you rate your experience with the shop?",
+    rateQuestionDelivery: "How would you rate your delivery experience?",
+    rateSubmitBtn: "Leave Feedback",
+    trackingStatusPickedUp: "Picked up",
+    trackingStatusInTransit: "In transit",
+    trackingStatusDelivered: "Delivered",
+    trackingMapMarkerTitle: "Delivery Location",
+    trackingHeaderPrepared: "Your order is being prepared",
+    trackingHeaderOnWay: "Your order is on the way",
+    trackingHeaderDelivered: "Order Delivered",
+    trackingArrivesBetween: "Arrives between 11:23 PM - 12:01 AM",
+    trackingSupplierSince: "Supplier since ",
+    trackingContactShopBtn: "Contact Shop"
 };
-
 /** Chinese (Simplified). */
 const zh: TranslationKeys = {
     languageScreenTitle: '选择您的语言',
@@ -1636,7 +2840,6 @@ const zh: TranslationKeys = {
     affiliateNoAccount: "Don't have an account?",
     affiliateLoginLink: "Log in",
     affiliateAlreadyAccount: "Already have an account?",
-
     roleScreenTitle: '选择最适合您的描述',
     roleScreenDescription:
         '通过先存后买模式实现您的财务目标。\n企业销售、交付并提供金融服务。',
@@ -1645,10 +2848,8 @@ const zh: TranslationKeys = {
     roleScreenOr: '或',
     roleScreenSkip: '跳过',
     roleScreenBack: '返回',
-
     homeWelcome: '欢迎来到Tunzaa！',
     homeComingSoon: '市场即将推出...',
-
     settingsTitle: '设置',
     settingsActivities: '您的活动',
     settingsNotifications: '应用内通知',
@@ -1662,7 +2863,6 @@ const zh: TranslationKeys = {
     settingsLogoutConfirmTitle: '注销',
     settingsLogoutConfirmMessage: '您确定要注销吗？',
     settingsVersion: 'Tunzaa 版本 2.0',
-
     onboardingStep1Title: '商业文件',
     onboardingStep1Subtitle: '附加商业文件对于提高您的账户安全性非常重要。',
     onboardingStep1UploadInfo: '上传以下信息',
@@ -1679,7 +2879,6 @@ const zh: TranslationKeys = {
     onboardingStep1Back: '返回',
     onboardingStep1Next: '继续',
     onboardingStep1Saving: '保存中...',
-
     onboardingStep2Title: '商店详情',
     onboardingStep2Subtitle: 'Logo、商店名称和商店描述对于在 Tunzaa 上创建您的商店非常重要。',
     onboardingStep2AddLogo: '添加 Logo*',
@@ -1693,7 +2892,6 @@ const zh: TranslationKeys = {
     onboardingStep2Required: '必填部分',
     onboardingStep2PermissionError: '抱歉，我们需要访问您照片的权限。',
     onboardingStep2ValidationShopName: '请输入您的公司 or 商店名称。',
-
     onboardingStep3Title: '商店位置',
     onboardingStep3Subtitle: '通过设置商店位置，让客户轻松关注产品。',
     onboardingStep3CardTitle: '设置商店位置',
@@ -1713,14 +2911,12 @@ const zh: TranslationKeys = {
     onboardingStep3ManualSubtitle: '准确填写您的位置信息，以便客户轻松找到您。',
     onboardingStep3MapSubtitle: '在地图上拖动大头针，为您的商店选择正确的位置。',
     onboardingStep3MapMarker: '您的商店',
-
     onboardingStep4Title: '核对信息',
     onboardingStep4Subtitle: '在继续之前核对您的商店详情。',
     onboardingStep4Edit: '编辑',
     onboardingStep4NotesLabel: '额外详情',
     onboardingStep4MultiLocationQuestion: '您是否有多个商店位置？',
     onboardingStep4AddShop: '添加商店',
-
     onboardingStep5Title: '商业文件',
     onboardingStep5Subtitle: '附加商业文件对于提高您的账户安全性非常重要。',
     onboardingStep5CardHeader: '上传以下信息',
@@ -1736,7 +2932,6 @@ const zh: TranslationKeys = {
     onboardingStep5SuccessModalTitle: '恭喜！',
     onboardingStep5SuccessModalDescription: '我们已收到您的文件。请稍候，我们将在接下来的 24 到 48 小时内审核详情。',
     onboardingStep5SuccessModalButton: '好的',
-
     // Login Screen
     loginTitle: "欢迎回来",
     loginSubtitle: "输入您的详细信息以登录",
@@ -1803,7 +2998,6 @@ const zh: TranslationKeys = {
     registerButton: "创建帐户",
     registerAlreadyAccount: "已有账号？登录",
     registerTermsLink: "条款和条件",
-
     // Role Screen (additional)
     roleScreenOptionSell: "销售产品/服务",
     roleScreenOptionDelivery: "提供送货服务",
@@ -1851,8 +3045,190 @@ const zh: TranslationKeys = {
     // --- Loans ---
     "vendor.loans.loans_request": "贷款申请",
     "vendor.loans.repayments_track": "还款追踪",
+    authWingaWelcomeBack: "Welcome Back",
+    authWingaEnterDetails: "Enter your details to sign in",
+    authWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    authWingaPasswordPlaceholder: "Enter password",
+    authWingaForgotPassword: "Forgot Password?",
+    authWingaTermsText1: "I have read agree to Tunzaa ",
+    authWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    authWingaLoginButton: "Log In",
+    authLoginTermsText1: "I agree to the ",
+    authLoginTermsLink: "Terms and Conditions",
+    authLoginNoAccount: "Don't have an account? ",
+    authLoginSignUp: "Sign up",
+    alertsLoginTermsRequiredTitle: "Terms Required",
+    alertsLoginTermsRequiredMsg: "Please agree to Terms and Conditions",
+    alertsLoginMissingFieldsTitle: "Missing Fields",
+    alertsLoginMissingFieldsMsg: "Please enter your identifier and password",
+    alertsLoginFailedTitle: "Login Failed",
+    alertsLoginFailedMsg: "Error signing in. Please check your credentials.",
+    alertsLoginNotAvailableTitle: "Not Available",
+    alertsLoginNotAvailableMsg: " login is not yet supported.",
+    alertsLoginErrorTitle: "Login Error",
+    alertsLoginErrorMsg: "Failed to sign in with ",
+    registerWingaTitle: "Create an account",
+    registerWingaPhonePlaceholder: "Enter +255xxx xxx xxx",
+    registerWingaTermsText1: "I have read agree to Tunzaa ",
+    registerWingaTermsLink: "Terms and Conditions of use, privacy policy, and return policy",
+    registerWingaCreateButton: "Create Account",
+    registerWingaAlreadyAccount: "Already have an account? ",
+    registerWingaLoginLink: "Log in",
+    registerVerifyPasswordTitle: "Verify and Create Password",
+    registerVerifyPasswordSubtitle: "Set a secure password for your account",
+    registerDeliveryPartnerTitle: "Register Delivery Partner",
+    registerLoanProviderTitle: "Register Loan Provider",
+    registerEmailPlaceholder: "Enter email address",
+    registerConfirmPasswordPlaceholder: "Confirm Password",
+    registerCompleteAccountButton: "Complete Account",
+    alertsRegisterMissingFieldTitle: "Missing Field",
+    alertsRegisterMissingFieldMsg: "Please enter your phone number",
+    alertsRegisterMissingFieldsTitle: "Missing Fields",
+    alertsRegisterMissingFieldsMsg: "Please fill in all fields (Name, Phone, and Email)",
+    alertsRegisterInvalidEmailTitle: "Invalid Email",
+    alertsRegisterInvalidEmailMsg: "Please enter a valid email address",
+    alertsRegisterErrorTitle: "Error",
+    alertsRegisterErrorMsg: "Error requesting verification code.",
+    alertsRegisterPasswordErrorTitle: "Password Error",
+    alertsRegisterPasswordErrorMsg: "Password must be at least 6 characters",
+    alertsRegisterPasswordMismatchMsg: "Passwords do not match",
+    alertsRegisterAccountFoundTitle: "Account Found",
+    alertsRegisterAccountFoundMsg1: "You already have a Tunzaa account. Please sign in to continue your application.",
+    alertsRegisterAccountFoundMsg2: "This phone number is already registered. Please sign in to your account.",
+    alertsRegisterErrorCreatingTitle: "Registration Error",
+    alertsRegisterErrorCreatingMsg: "Error creating account.",
+    accountVerifiedBadge: "Verified",
+    accountCompleteProfile: "Complete your profile – ",
+    accountMissingFields: "Missing: ",
+    accountCoinPrefix: "Coin: ",
+    accountClaimOffer: "Claim Offer",
+    accountCollectButton: "Collect",
+    accountQuickActionWishlist: "Wishlist",
+    accountQuickActionRefund: "Refund",
+    accountQuickActionGiftCard: "Gift Card",
+    accountDiscoverDeals: "Discover More Deals",
+    cartAlertOutOfStockTitle: "Out of Stock",
+    cartAlertOutOfStockMsg: "Sorry, there is no more inventory available for this item.",
+    cartAlertUpdateErrorTitle: "Error",
+    cartAlertUpdateErrorMsg: "Could not update quantity. Please try again.",
+    cartAlertRemoveTitle: "Remove Item",
+    cartAlertRemoveMsg1: "Are you sure you want to remove ",
+    cartAlertRemoveMsg2: " from your cart?",
+    cartAlertRemoveCancel: "Cancel",
+    cartAlertRemoveConfirm: "Remove",
+    cartAlertRemoveErrorTitle: "Error",
+    cartAlertRemoveErrorMsg: "Could not remove item. Please try again.",
+    cartDeliveryPrefix: "Delivery: Tsh. ",
+    cartDeliveryFree: "Free Delivery",
+    cartWarrantySuffix: " warranty",
+    cartHeaderTitle: "Shopping Cart",
+    cartSelectAll: "Select all items",
+    cartItemCountSingular: " item",
+    cartItemCountPlural: " items",
+    cartEmptyState: "Your cart is empty",
+    cartContinueShopping: "Continue Shopping",
+    cartSubtotalPrefix: "Subtotal: Tsh. ",
+    cartProceedCheckout: "Proceed to checkout",
+    checkoutPageTitle: "Checkout",
+    checkoutLoadingCart: "Loading cart...",
+    checkoutEmptyCartMsg: "Your cart appears to be empty. This might happen if your order is being processed or if there was a connection issue.",
+    checkoutRefreshCart: "Refresh Cart",
+    checkoutGoBack: "Go Back",
+    checkoutInvalidCartMsg: "Invalid cart data. Please return to your cart and try again.",
+    checkoutGoToCart: "Go to Cart",
+    checkoutOrderSummaryTitle: "Order Summary",
+    checkoutMyCartTitle: "My cart",
+    checkoutOrderPrefix: "Order(",
+    checkoutOrderSuffixSingular: " item)",
+    checkoutOrderSuffixPlural: " items)",
+    checkoutProductLabel: "Product",
+    checkoutPriceLabel: "Price",
+    checkoutSubtotalLabel: "Subtotal",
+    checkoutDiscountLabel: "Discount",
+    checkoutDeliveryFeesLabel: "Delivery Fees",
+    checkoutTaxLabel: "Tax (18%)",
+    checkoutTotalCostsLabel: "Total costs",
+    checkoutInstallmentBtn: "Installment",
+    checkoutInstallmentDesc: "Tunzaa 10,000 Tsh/wiki",
+    checkoutPayNowBtn: "Full Payment",
+    checkoutCashOnDeliveryBtn: "Cash On Delivery",
+    successOrderTitle: "Order Successful!",
+    successOrderDesc: "Your order has been placed successfully",
+    successOrderConfTitle: "Order Confirmation",
+    successOrderIdPrefix: "Order ID: ",
+    successOrderUpdateMsg: "We'll send you updates about your order via email and SMS. You can also track your order in the orders section.",
+    successViewOrderDetails: "View Order Details",
+    successViewAllOrders: "View All Orders",
+    successContinueShopping: "Continue Shopping",
+    summaryLoadingOrder: "Loading order details...",
+    summaryAddedTag: "#Added",
+    summaryQtyPrefix: "Qty: ",
+    summaryItemsLabel: "Items",
+    summaryPrimaryItemLabel: "Primary Item",
+    summaryEmptyCartTitle: "Your cart is empty",
+    summaryEmptyCartDesc: "Add items to your cart to see your order summary and checkout.",
+    summaryStartShopping: "Start Shopping",
+    ordersTabPending: "Pending",
+    ordersTabShipped: "Shipped",
+    ordersTabCompleted: "Completed",
+    ordersTabGiftCards: "Gift cards",
+    ordersUnknownProduct: "Unknown Product",
+    ordersNextInstallment: "Next installment :",
+    ordersPayPrefix: "pay Tsh ",
+    ordersTotalPaid: "Total paid :",
+    ordersBadgeCompleted: "Completed",
+    ordersHeaderTitle: "Order",
+    ordersLoading: "Loading orders...",
+    ordersEmptyPending: "No pending orders",
+    ordersEmptyTransit: "No orders in transit",
+    ordersEmptyCompleted: "No completed orders",
+    ordersEmptyGiftCards: "No gift cards available",
+    orderDetailsLoadingItem: "Loading Item...",
+    orderDetailsStatusPending: "Pending",
+    orderDetailsNotFound: "Order not found",
+    orderDetailsProgressPaid: "Paid",
+    orderDetailsNumberPrefix: "Order number #",
+    orderDetailsSectionTitle: "Order details",
+    orderDetailsAmountPaid: "Amount paid",
+    orderDetailsPendingAmount: "Pending amount",
+    orderDetailsTotalAmount: "Total Amount",
+    orderDetailsReceiveBtn: "Receive your product",
+    orderDetailsPayInstallmentBtn: "Pay Installment",
+    orderDetailsViewReceiptBtn: "View receipt",
+    receiptHeaderTitle: "Receipt",
+    receiptNotFound: "Receipt not found",
+    receiptProductPayments: "Product Payments",
+    receiptPaymentForOrder: "Payment made for Order #",
+    receiptInfoService: "Service",
+    receiptInfoMethod: "Method",
+    receiptInfoProductName: "Product Name",
+    receiptInfoMultiple: "Multiple Items",
+    receiptInfoAmount: "Amount",
+    receiptInfoStatus: "Status",
+    receiptBreakdownSubtotal: "Subtotal",
+    receiptBreakdownDiscount: "Discount",
+    receiptBreakdownTax: "Tax",
+    receiptTotalCosts: "Total costs",
+    receiptDoneBtn: "Done",
+    rateHeaderTitle: "Rate",
+    rateSuccessTitle: "Thanks for rating!",
+    rateSuccessMsg: "We're grateful for your trust in our service! Your satisfaction is our priority.",
+    rateDoneBtn: "Done Reviewing",
+    rateQuestionVendor: "How would you rate your experience with the vendor?",
+    rateQuestionShop: "How would you rate your experience with the shop?",
+    rateQuestionDelivery: "How would you rate your delivery experience?",
+    rateSubmitBtn: "Leave Feedback",
+    trackingStatusPickedUp: "Picked up",
+    trackingStatusInTransit: "In transit",
+    trackingStatusDelivered: "Delivered",
+    trackingMapMarkerTitle: "Delivery Location",
+    trackingHeaderPrepared: "Your order is being prepared",
+    trackingHeaderOnWay: "Your order is on the way",
+    trackingHeaderDelivered: "Order Delivered",
+    trackingArrivesBetween: "Arrives between 11:23 PM - 12:01 AM",
+    trackingSupplierSince: "Supplier since ",
+    trackingContactShopBtn: "Contact Shop"
 };
-
 /**
  * Hook or function to get translations for a given language.
  * Currently uses flat objects.

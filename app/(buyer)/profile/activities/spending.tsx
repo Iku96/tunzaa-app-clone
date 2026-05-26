@@ -232,7 +232,7 @@ export default function SpendingActivitiesScreen() {
                             fontWeight="bold"
                             fill="#111827"
                         >
-                            Tzs {totalMonthlySpending.toLocaleString()}
+                            {`Tzs ${totalMonthlySpending.toLocaleString()}`}
                         </SvgText>
                     </Svg>
                 </View>

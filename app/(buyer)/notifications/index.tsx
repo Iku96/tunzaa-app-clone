@@ -34,7 +34,10 @@ export default function NotificationHubScreen() {
                     <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Notifications</Text>
-                <TouchableOpacity style={[styles.filterButton, { backgroundColor: '#F0F4FA' }]}>
+                <TouchableOpacity 
+                    style={[styles.filterButton, { backgroundColor: '#F0F4FA' }]}
+                    onPress={() => router.push('/(buyer)/profile/settings/notifications')}
+                >
                     <Ionicons name="settings-outline" size={20} color="#425BA4" />
                 </TouchableOpacity>
             </View>

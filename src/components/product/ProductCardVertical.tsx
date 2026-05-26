@@ -189,12 +189,12 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     title: {
-        fontSize: 15, // Not too large
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: 'normal',
         color: '#1F2937',
     },
     price: {
-        fontSize: 15,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#1E3A8A', // Deep blue
         marginTop: 2,

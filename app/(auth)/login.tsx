@@ -55,11 +55,11 @@ export default function LoginScreen() {
     const handleLogin = async () => {
         // Pre-flight validation
         if (!agreedToTerms) {
-            Alert.alert('Terms Required', 'Please agree to Terms and Conditions');
+            Alert.alert(t.alertsLoginTermsRequiredTitle, t.alertsLoginTermsRequiredMsg);
             return;
         }
         if (!usernameOrEmail || !password) {
-            Alert.alert('Missing Fields', 'Please enter your identifier and password');
+            Alert.alert(t.alertsLoginMissingFieldsTitle, t.alertsLoginMissingFieldsMsg);
             return;
         }
 
@@ -102,7 +102,7 @@ export default function LoginScreen() {
             router.replace('/');
         } catch (e: any) {
             console.warn('❌ Login error:', e.message || e);
-            Alert.alert('Login Failed', e.message || 'Error signing in. Please check your credentials.');
+            Alert.alert(t.alertsLoginFailedTitle, e.message || t.alertsLoginFailedMsg);
         } finally {
             setLoading(false);
         }
@@ -117,7 +117,7 @@ export default function LoginScreen() {
             } else if (provider === 'apple') {
                 response = await signInWithApple();
             } else {
-                Alert.alert('Not Available', `${provider} login is not yet supported.`);
+                Alert.alert(t.alertsLoginNotAvailableTitle, `${provider}${t.alertsLoginNotAvailableMsg}`);
                 setLoading(false);
                 return;
             }
@@ -131,7 +131,7 @@ export default function LoginScreen() {
             }
         } catch (e: any) {
             console.error('❌ Social login error:', e);
-            Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}.`);
+            Alert.alert(t.alertsLoginErrorTitle, e.message || `${t.alertsLoginErrorMsg}${provider}.`);
         } finally {
             setLoading(false);
         }
@@ -154,12 +154,12 @@ export default function LoginScreen() {
                         <View style={[styles.contentWrapper, { paddingHorizontal: 24, paddingVertical: 40 }]}>
                             {/* Title: Welcome Back */}
                             <Text style={{ fontSize: 24, fontWeight: '700', color: '#1D1E1F', textAlign: 'center', marginBottom: 6 }}>
-                                Welcome Back
+                                {t.authWingaWelcomeBack}
                             </Text>
 
                             {/* Subtitle: Enter your details to sign in */}
                             <Text style={{ fontSize: 14, color: '#666666', textAlign: 'center', marginBottom: 30 }}>
-                                Enter your details to sign in
+                                {t.authWingaEnterDetails}
                             </Text>
 
                             {/* Centered Logo: TUNZAA */}
@@ -176,7 +176,7 @@ export default function LoginScreen() {
                                 {/* Phone Input */}
                                 <TextInput
                                     style={{ height: 56, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, fontSize: 16, color: '#1D1E1F' }}
-                                    placeholder="Enter +255xxx xxx xxx"
+                                    placeholder={t.authWingaPhonePlaceholder}
                                     placeholderTextColor="#9CA3AF"
                                     value={usernameOrEmail}
                                     onChangeText={setUsernameOrEmail}
@@ -187,7 +187,7 @@ export default function LoginScreen() {
                                 <View style={{ height: 56, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 12 }}>
                                     <TextInput
                                         style={{ flex: 1, fontSize: 16, color: '#1D1E1F' }}
-                                        placeholder="Enter password"
+                                        placeholder={t.authWingaPasswordPlaceholder}
                                         placeholderTextColor="#9CA3AF"
                                         value={password}
                                         onChangeText={setPassword}
@@ -211,7 +211,7 @@ export default function LoginScreen() {
                                     onPress={() => router.push('/forgot-password')}
                                     style={{ alignSelf: 'flex-end', marginTop: 4 }}
                                 >
-                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#425BA4' }}>Forgot Password?</Text>
+                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#425BA4' }}>{t.authWingaForgotPassword}</Text>
                                 </TouchableOpacity>
                             </View>
 
@@ -224,8 +224,8 @@ export default function LoginScreen() {
                                     {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                 </View>
                                 <Text style={{ fontSize: 13, lineHeight: 18, color: '#4B5563', flex: 1 }}>
-                                    I have read agree to Tunzaa{" "}
-                                    <Text style={{ color: '#425BA4', fontWeight: '500' }}>Terms and Conditions of use, privacy policy, and return policy</Text>
+                                    {t.authWingaTermsText1}
+                                    <Text style={{ color: '#425BA4', fontWeight: '500' }}>{t.authWingaTermsLink}</Text>
                                 </Text>
                             </TouchableOpacity>
 
@@ -236,7 +236,7 @@ export default function LoginScreen() {
                                 disabled={loading}
                             >
                                 <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFFFF' }}>
-                                    {loading ? '...' : 'Log In'}
+                                    {loading ? '...' : t.authWingaLoginButton}
                                 </Text>
                             </TouchableOpacity>
 
@@ -329,7 +329,7 @@ export default function LoginScreen() {
                                     {agreedToTerms && <Ionicons name="checkmark" size={16} color="#fff" />}
                                 </View>
                                 <Text style={styles.termsText}>
-                                    I agree to the <Text style={styles.termsLink}>Terms and Conditions</Text>
+                                    {t.authLoginTermsText1}<Text style={styles.termsLink}>{t.authLoginTermsLink}</Text>
                                 </Text>
                             </TouchableOpacity>
 
@@ -358,7 +358,7 @@ export default function LoginScreen() {
                             {/* Sign Up Link */}
                             <View style={styles.signUpContainer}>
                                 <TouchableOpacity onPress={() => router.push('/register')} className="flex-row items-center">
-                                    <Text style={styles.signUpText}>Don't have an account? <Text style={{ color: '#425BA4', fontWeight: '600' }}>Sign up</Text></Text>
+                                    <Text style={styles.signUpText}>{t.authLoginNoAccount}<Text style={{ color: '#425BA4', fontWeight: '600' }}>{t.authLoginSignUp}</Text></Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

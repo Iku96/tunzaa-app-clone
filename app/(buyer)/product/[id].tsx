@@ -838,7 +838,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#1F2937',
     },
@@ -890,7 +890,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     price: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#425BA4', // Deep Brand Blue
     },
@@ -950,7 +950,7 @@ const styles = StyleSheet.create({
         paddingRight: 12,
     },
     productTitle: {
-        fontSize: 16, // Screenshot shows it slightly smaller than price
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#1F2937',
         marginBottom: 8,
@@ -1093,7 +1093,7 @@ const styles = StyleSheet.create({
         marginTop: 24,
     },
     specsTitle: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#1F2937',
         marginBottom: 16,

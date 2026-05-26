@@ -1,34 +1,57 @@
 {
   "project_info": {
-    "project_number": "230701056851",
-    "project_id": "afrizon-60b46",
-    "storage_bucket": "afrizon-60b46.firebasestorage.app"
+    "project_number": "881892445823",
+    "project_id": "tunzaa-fintech-inc1",
+    "storage_bucket": "tunzaa-fintech-inc1.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:230701056851:android:1cc66e60dd6ae2a47517a6",
+        "mobilesdk_app_id": "1:881892445823:android:c5c42be68e44604867f94a",
         "android_client_info": {
-          "package_name": "africa.afrizon.gsm"
+          "package_name": "com.tunzaa.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "230701056851-d1lqfo4r16r29irhq2q7ihb61bsr5o9k.apps.googleusercontent.com",
+          "client_id": "881892445823-0ro6l7040c8d4hrj8115ncn56gqjool9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tunzaa.app",
+            "certificate_hash": "f7a893c070e9592d572d9ec88a084e78027ef501"
+          }
+        },
+        {
+          "client_id": "881892445823-njshmg32sqs7p7a5tqquplsf2ag4a11d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tunzaa.app",
+            "certificate_hash": "ddce1ae0c5c6e4f41d0d4e5ef12dc3795d4261ae"
+          }
+        },
+        {
+          "client_id": "881892445823-qfughrm517b6ak2dcsdo49bdel06boif.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBT52bjXgpL_zPQFXGWz5f1zyiP_dwWp2w"
+          "current_key": "AIzaSyBYImV2F_Z9MdjlMpWQ248EPtS9RHew2tM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "230701056851-d1lqfo4r16r29irhq2q7ihb61bsr5o9k.apps.googleusercontent.com",
+              "client_id": "881892445823-qfughrm517b6ak2dcsdo49bdel06boif.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "881892445823-rh7rijobdjg7ndqhha9o4v0oelqjqgk5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.tunzaa.app"
+              }
             }
           ]
         }
