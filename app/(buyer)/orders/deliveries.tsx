@@ -17,7 +17,6 @@ export default function BuyerDeliveriesScreen() {
     const router = useRouter();
     const { user } = useTunzaaAuth();
     const userId = user?.user_id || user?.id || '';
-    const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState(t.deliveriesTabOnRoute);
 
     const { data: ordersData, isLoading } = useQuery({
