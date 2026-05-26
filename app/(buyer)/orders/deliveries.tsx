@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../src/contexts/LanguageContext";
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -12,10 +13,12 @@ import DeliveryCompletedCard from '@/components/orders/DeliveryCompletedCard';
 import DeliveryReturnCard from '@/components/orders/DeliveryReturnCard';
 
 export default function BuyerDeliveriesScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { user } = useTunzaaAuth();
     const userId = user?.user_id || user?.id || '';
-    const [activeTab, setActiveTab] = useState('On Route');
+    const { t } = useLanguage();
+    const [activeTab, setActiveTab] = useState(t.deliveriesTabOnRoute);
 
     const { data: ordersData, isLoading } = useQuery({
         queryKey: ['userOrders', userId],
@@ -25,7 +28,7 @@ export default function BuyerDeliveriesScreen() {
 
     const renderTabs = () => (
         <View style={styles.tabsContainer}>
-            {['On Route', 'Completed', 'Return Orders'].map((tab) => {
+            {[t.deliveriesTabOnRoute, t.deliveriesTabCompleted, t.deliveriesTabReturn].map((tab) => {
                 const isActive = activeTab === tab;
                 return (
                     <TouchableOpacity
@@ -47,7 +50,7 @@ export default function BuyerDeliveriesScreen() {
         return (
             <DeliveryRouteCard
                 key={item.order_id}
-                etaText="Arriving in 25 mins" // MOCKED
+                etaText={t.deliveriesArrivingIn} // MOCKED
                 statusStep={statusStep}
                 driverName="Simba Courier"
                 driverId={item.delivery_details?.partner_id?.slice(0,8) || "N/A"}
@@ -59,10 +62,10 @@ export default function BuyerDeliveriesScreen() {
     };
 
     const renderCompletedCard = (item: any) => {
-        const itemName = item.items?.[0]?.name || 'Unknown Product';
+        const itemName = item.items?.[0]?.name || t.deliveriesUnknownProduct;
         const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
         const address = item.shipping_address;
-        const addressStr = address ? `${address.address_line1}, ${address.city}` : 'No Address';
+        const addressStr = address ? `${address.address_line1}, ${address.city}` : t.deliveriesNoAddress;
         const date = new Date(item.updated_at || item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
         return (
@@ -90,9 +93,9 @@ export default function BuyerDeliveriesScreen() {
                 productPrice={price}
                 productImage={itemImage}
                 orderId={item.order_number || item.order_id.slice(0, 8)}
-                sellerName="Tunzaa Vendor"
+                sellerName={t.deliveriesTunzaaVendor}
                 returnId={`RET-${item.order_id.slice(0, 6).toUpperCase()}`}
-                returnReason="Product defective" // MOCKED
+                returnReason={t.deliveriesDefective} // MOCKED
                 returnQuantity={1}
                 returnStatus={item.status === 'refunded' ? 'completed' : 'requested'}
                 onViewDetailsPress={() => {}}
@@ -111,7 +114,7 @@ export default function BuyerDeliveriesScreen() {
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Delivery Orders</Text>
+                <Text style={styles.headerTitle}>{t.deliveriesTitle}</Text>
                 <View style={{ width: 24 }} />
             </View>
 
@@ -121,32 +124,32 @@ export default function BuyerDeliveriesScreen() {
                 {isLoading ? (
                     <View style={styles.emptyState}>
                         <ActivityIndicator size="large" color="#425BA4" />
-                        <Text style={{ marginTop: 12, color: '#6B7280' }}>Loading deliveries...</Text>
+                        <Text style={{ marginTop: 12, color: '#6B7280' }}>{t.deliveriesLoading}</Text>
                     </View>
                 ) : (
                     <>
-                        {activeTab === 'On Route' && (
+                        {activeTab === t.deliveriesTabOnRoute && (
                             onRouteOrders.length === 0 ? (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No packages currently on route</Text>
+                                    <Text style={styles.emptyText}>{t.deliveriesEmptyOnRoute}</Text>
                                 </View>
                             ) : (
                                 onRouteOrders.map(renderOnRouteCard)
                             )
                         )}
-                        {activeTab === 'Completed' && (
+                        {activeTab === t.deliveriesTabCompleted && (
                             completedOrders.length === 0 ? (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No completed deliveries yet</Text>
+                                    <Text style={styles.emptyText}>{t.deliveriesEmptyCompleted}</Text>
                                 </View>
                             ) : (
                                 completedOrders.map(renderCompletedCard)
                             )
                         )}
-                        {activeTab === 'Return Orders' && (
+                        {activeTab === t.deliveriesTabReturn && (
                             returnOrders.length === 0 ? (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyText}>No return orders found</Text>
+                                    <Text style={styles.emptyText}>{t.deliveriesEmptyReturn}</Text>
                                 </View>
                             ) : (
                                 returnOrders.map(renderReturnCard)

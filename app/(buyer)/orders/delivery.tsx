@@ -4,15 +4,15 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, MapPin, Package, ChevronRight } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 
 /**
  * Delivery Method screen — matches Figma "01 - Setting Screen"
- * Simple option list: Add delivery address / Pick up/comes round
+ * Simple option list: {t.deliveryMethodAddAddress} / {t.deliveryMethodPickup}
  */
 export default function DeliveryMethodScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { cartId, orderId } = useLocalSearchParams();
 
   const handleDeliveryAddress = () => {
@@ -36,7 +36,7 @@ export default function DeliveryMethodScreen() {
         <TouchableOpacity onPress={() => router.back()} className="p-1">
           <ArrowLeft size={24} color="#1F2937" />
         </TouchableOpacity>
-        <Text className="text-lg font-semibold text-foreground ml-3">Delivery Method</Text>
+        <Text className="text-lg font-semibold text-foreground ml-3">{t.deliveryMethodTitle}</Text>
       </View>
 
       {/* Options */}

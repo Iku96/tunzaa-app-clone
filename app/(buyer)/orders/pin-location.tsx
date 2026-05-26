@@ -1,3 +1,4 @@
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import React, { useState, useRef, useEffect } from "react";
 import { View, TouchableOpacity, TextInput, Dimensions, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -10,6 +11,7 @@ import * as Location from "expo-location";
 const { width, height } = Dimensions.get("window");
 
 export default function PinLocationScreen() {
+    const { t } = useLanguage();
   const router = useRouter();
   const { cartId, orderId, partnerId } = useLocalSearchParams();
   const mapRef = useRef<MapView>(null);
@@ -72,7 +74,7 @@ export default function PinLocationScreen() {
       setSelectedLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-        address: addr || "Current Location",
+        address: addr || t.pinLocationCurrent,
       });
       mapRef.current?.animateToRegion(region, 500);
     } catch (error) {
@@ -107,7 +109,7 @@ export default function PinLocationScreen() {
         setSelectedLocation({
           latitude,
           longitude,
-          address: addr || "Selected Location",
+          address: addr || t.pinLocationSelected,
         });
       }
     } catch (err) {
@@ -207,7 +209,7 @@ export default function PinLocationScreen() {
             <Search size={18} color="#9CA3AF" />
             <TextInput
               className="flex-1 ml-2 text-sm text-foreground"
-              placeholder="Search for a location..."
+              placeholder={t.pinLocationSearchPlaceholder}
               placeholderTextColor="#9CA3AF"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -234,17 +236,17 @@ export default function PinLocationScreen() {
             <View className="flex-row items-center mb-2">
               <MapPin size={16} color="#425BA4" />
               <Text className="text-sm font-semibold text-foreground ml-2">
-                {selectedLocation.address ? selectedLocation.address : "Selected Location"}
+                {selectedLocation.address ? selectedLocation.address : t.pinLocationSelected}
               </Text>
             </View>
             <Text className="text-xs text-muted-foreground">
-              Coordinates: {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
+              {t.pinLocationCoordinates}{selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
             </Text>
           </View>
         ) : (
           <View className="mb-4">
             <Text className="text-sm text-muted-foreground">
-              {isLocating ? "Getting your location..." : "Tap on the map to select a delivery point"}
+              {isLocating ? t.pinLocationGetting : t.pinLocationTapPrompt}
             </Text>
           </View>
         )}
@@ -258,9 +260,7 @@ export default function PinLocationScreen() {
           onPress={handleConfirm}
           disabled={!selectedLocation}
         >
-          <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>
-            Confirm Address
-          </Text>
+          <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>{t.pinLocationConfirmBtn}</Text>
         </TouchableOpacity>
       </View>
     </View>

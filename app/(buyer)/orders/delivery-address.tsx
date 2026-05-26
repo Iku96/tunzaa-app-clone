@@ -7,13 +7,13 @@ import { Text } from "@/components/ui/text";
 import { useAuth } from "@/context/auth";
 import { buyersApi, useUpdateBuyerProfile } from "@/src/services/buyers";
 import { useQuery } from "@tanstack/react-query";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 
 type AddressType = "home" | "work" | "other";
 
 export default function DeliveryAddressScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { cartId, orderId, partnerId, lat, lng, address } = useLocalSearchParams();
   const { user } = useAuth();
   const updateProfileMutation = useUpdateBuyerProfile();
@@ -102,9 +102,9 @@ export default function DeliveryAddressScreen() {
   };
 
   const typeOptions: { key: AddressType; label: string; icon: any }[] = [
-    { key: "home", label: "Home", icon: Home },
-    { key: "work", label: "Work", icon: Briefcase },
-    { key: "other", label: "Other", icon: MoreHorizontal },
+    { key: "home", label: t.deliveryAddressTypeHome, icon: Home },
+    { key: "work", label: t.deliveryAddressTypeWork, icon: Briefcase },
+    { key: "other", label: t.deliveryAddressTypeOther, icon: MoreHorizontal },
   ];
 
   return (
@@ -114,17 +114,17 @@ export default function DeliveryAddressScreen() {
         <TouchableOpacity onPress={() => router.back()} className="p-1">
           <ArrowLeft size={24} color="#1F2937" />
         </TouchableOpacity>
-        <Text className="text-lg font-semibold text-foreground ml-3">Delivery Address</Text>
+        <Text className="text-lg font-semibold text-foreground ml-3">{t.deliveryAddressTitle}</Text>
       </View>
 
       <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="px-4 pt-6">
           {/* Title */}
           <Text className="text-xl font-bold text-foreground mb-2">
-            {isNewAddressMode ? "Confirm Address Details" : "Where should we deliver your order?"}
+            {isNewAddressMode ? t.deliveryAddressConfirmTitle : t.deliveryAddressWhereTo}
           </Text>
           <Text className="text-sm text-muted-foreground mb-6">
-            {isNewAddressMode ? "Please verify the details of your pinned location." : "Select a saved address or add a new one."}
+            {isNewAddressMode ? t.deliveryAddressVerifyDesc : t.deliveryAddressSelectDesc}
           </Text>
 
           {/* Dynamic Content based on Mode */}
@@ -132,7 +132,7 @@ export default function DeliveryAddressScreen() {
             <View>
               {/* Address Type Tabs */}
               <Text className="text-sm font-semibold text-muted-foreground mt-4 mb-3">
-                ADDRESS TYPE
+                {t.deliveryAddressTypeLabel}
               </Text>
               <View className="flex-row gap-3 mb-6">
                 {typeOptions.map(({ key, label, icon: Icon }) => (
@@ -162,33 +162,33 @@ export default function DeliveryAddressScreen() {
               </View>
 
               <Text className="text-sm font-semibold text-muted-foreground mb-2">
-                STREET ADDRESS
+                {t.deliveryAddressStreetLabel}
               </Text>
               <TextInput
                 className="border border-border rounded-xl px-4 py-3 text-base text-foreground mb-4"
-                placeholder="e.g., Mbezi Beach, Makonde"
+                placeholder={t.deliveryAddressStreetPlaceholder}
                 placeholderTextColor="#9CA3AF"
                 value={addressLine}
                 onChangeText={setAddressLine}
               />
 
               <Text className="text-sm font-semibold text-muted-foreground mb-2">
-                CITY / AREA
+                {t.deliveryAddressCityLabel}
               </Text>
               <TextInput
                 className="border border-border rounded-xl px-4 py-3 text-base text-foreground mb-4"
-                placeholder="e.g., Dar es Salaam"
+                placeholder={t.deliveryAddressCityPlaceholder}
                 placeholderTextColor="#9CA3AF"
                 value={metro}
                 onChangeText={setMetro}
               />
 
               <Text className="text-sm font-semibold text-muted-foreground mb-2">
-                LANDMARK (optional)
+                {t.deliveryAddressLandmarkLabel}
               </Text>
               <TextInput
                 className="border border-border rounded-xl px-4 py-3 text-base text-foreground mb-6"
-                placeholder="e.g., Near the blue gate, opposite supermarket"
+                placeholder={t.deliveryAddressLandmarkPlaceholder}
                 placeholderTextColor="#9CA3AF"
                 value={landmark}
                 onChangeText={setLandmark}
@@ -207,7 +207,7 @@ export default function DeliveryAddressScreen() {
                 >
                   <Plus size={20} color="#425BA4" />
                 </View>
-                <Text className="text-base font-medium text-foreground ml-3">Add New Address</Text>
+                <Text className="text-base font-medium text-foreground ml-3">{t.deliveryAddressAddNew}</Text>
               </TouchableOpacity>
 
               {/* Saved Addresses */}
@@ -216,7 +216,7 @@ export default function DeliveryAddressScreen() {
               ) : savedAddresses.length > 0 ? (
                 <>
                   <Text className="text-sm font-semibold text-muted-foreground mb-3">
-                    SAVED ADDRESSES
+                    {t.deliveryAddressSavedLabel}
                   </Text>
                   {savedAddresses.map((addr: any) => {
                     const isSelected = selectedAddressId === addr.address_id;
@@ -268,11 +268,11 @@ export default function DeliveryAddressScreen() {
 
           {/* Delivery Note */}
           <Text className="text-sm font-semibold text-muted-foreground mb-2">
-            DELIVERY NOTE (optional)
+            {t.deliveryAddressNoteLabel}
           </Text>
           <TextInput
             className="border border-border rounded-xl px-4 py-3 text-base text-foreground mb-6"
-            placeholder="e.g., Ring the doorbell, leave at the gate..."
+            placeholder={t.deliveryAddressNotePlaceholder}
             placeholderTextColor="#9CA3AF"
             value={deliveryNote}
             onChangeText={setDeliveryNote}
@@ -297,7 +297,7 @@ export default function DeliveryAddressScreen() {
             <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>
-              {isNewAddressMode ? "Save Address & Continue" : "Continue"}
+              {isNewAddressMode ? t.deliveryAddressSaveBtn : t.deliveryAddressContinueBtn}
             </Text>
           )}
         </TouchableOpacity>

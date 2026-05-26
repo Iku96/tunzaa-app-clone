@@ -1,3 +1,4 @@
+import { useLanguage } from "../../../src/contexts/LanguageContext";
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -9,6 +10,7 @@ const { width } = Dimensions.get('window');
 const DELIVERY_ILLUSTRATION = 'https://img.freepik.com/free-vector/delivery-service-illustrated_23-2148505081.jpg?w=826&t=st=1709849000~exp=1709849600~hmac=...'; // Replace with local asset
 
 export default function OrderSuccessScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
 
     useEffect(() => {
@@ -28,10 +30,10 @@ export default function OrderSuccessScreen() {
                     style={styles.illustration}
                     resizeMode="contain"
                 />
-                <Text style={styles.title}>Your Order successfully assigned</Text>
+                <Text style={styles.title}>{t.deliverySuccessAssigned}</Text>
 
                 <View style={styles.deliveryInfo}>
-                    <Text style={styles.deliveryLabel}>— Delivery from —</Text>
+                    <Text style={styles.deliveryLabel}>{t.deliverySuccessFrom}</Text>
                     <View style={styles.locationContainer}>
                         {/* Icon placeholder */}
                         <Text style={styles.locationText}>Dar es salaam</Text>

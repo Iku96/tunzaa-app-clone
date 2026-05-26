@@ -4,7 +4,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, ChevronRight, Truck, Package, Info } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
-import { useI18n } from "@/hooks/useI18n";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import { deliveryApi } from "@/src/services/delivery";
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,7 +12,7 @@ type DeliveryMethod = "courier" | "pickup";
 
 export default function ChooseCourierScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const { cartId, orderId, method: initialMethod } = useLocalSearchParams();
 
   const [selectedMethod, setSelectedMethod] = useState<DeliveryMethod>(
@@ -58,17 +58,17 @@ export default function ChooseCourierScreen() {
         <TouchableOpacity onPress={() => router.back()} className="p-1">
           <ArrowLeft size={24} color="#1F2937" />
         </TouchableOpacity>
-        <Text className="text-lg font-semibold text-foreground ml-3">Choose Your Courier</Text>
+        <Text className="text-lg font-semibold text-foreground ml-3">{t.chooseCourierTitle}</Text>
       </View>
 
       <ScrollView className="flex-1">
         <View className="px-4 pt-6">
           {/* Method Selection */}
           <Text className="text-base font-semibold text-foreground mb-4">
-            Choose Your Delivery Method
+            {t.chooseCourierMethodTitle}
           </Text>
 
-          {/* Courier Delivery Option */}
+          {/* {t.chooseCourierDelivery} Option */}
           <TouchableOpacity
             className="flex-row items-center py-4 px-4 rounded-xl border mb-3"
             style={{
@@ -97,7 +97,7 @@ export default function ChooseCourierScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Self Pickup Option */}
+          {/* {t.chooseCourierPickup} Option */}
           <TouchableOpacity
             className="flex-row items-center py-4 px-4 rounded-xl border mb-6"
             style={{
@@ -130,7 +130,7 @@ export default function ChooseCourierScreen() {
           {selectedMethod === "courier" && (
             <>
               <Text className="text-base font-semibold text-foreground mb-4">
-                Select your preferred delivery company
+                {t.chooseCourierSelectCompany}
               </Text>
 
               {isLoading ? (
@@ -139,7 +139,7 @@ export default function ChooseCourierScreen() {
                 </View>
               ) : partners.length === 0 ? (
                 <View className="py-8 items-center">
-                  <Text className="text-muted-foreground">No delivery partners available</Text>
+                  <Text className="text-muted-foreground">{t.chooseCourierNoPartners}</Text>
                 </View>
               ) : (
                 partners.map((partner) => {
@@ -185,7 +185,7 @@ export default function ChooseCourierScreen() {
             </>
           )}
 
-          {/* Delivery Information Note */}
+          {/* {t.chooseCourierInfoTitle} Note */}
           <View
             className="rounded-xl p-4 mt-4 mb-6"
             style={{ backgroundColor: "#EFF6FF" }}
@@ -197,8 +197,7 @@ export default function ChooseCourierScreen() {
                   Delivery Information
                 </Text>
                 <Text className="text-xs" style={{ color: "#6B7280" }}>
-                  All delivery costs are calculated based on distance to your location. Make sure
-                  the delivery person calls you first before arriving.
+                  {t.chooseCourierInfoDesc}
                 </Text>
               </View>
             </View>
@@ -218,9 +217,7 @@ export default function ChooseCourierScreen() {
           onPress={handleContinue}
           disabled={selectedMethod === "courier" && !selectedPartnerId}
         >
-          <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>
-            Continue
-          </Text>
+          <Text className="text-base font-semibold" style={{ color: "#FFFFFF" }}>{t.chooseCourierContinueBtn}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
