@@ -34,7 +34,7 @@ export default function OrderDetailsScreen() {
         items: apiOrder?.items?.length > 0 ? apiOrder.items.map(i => ({
             name: i.name,
             price: i.unit_price,
-            image: i.metadata?.image || 'https://via.placeholder.com/500?text=Order',
+            image: i.product_image?.url || i.metadata?.image || 'https://via.placeholder.com/500?text=Order',
             quantity: i.quantity
         })) : [{ name: t.orderDetailsLoadingItem, price: 0, image: 'https://via.placeholder.com/500', quantity: 1 }],
         paidAmount: paid,

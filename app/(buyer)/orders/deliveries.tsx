@@ -62,7 +62,7 @@ export default function BuyerDeliveriesScreen() {
 
     const renderCompletedCard = (item: any) => {
         const itemName = item.items?.[0]?.name || t.deliveriesUnknownProduct;
-        const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
+        const itemImage = item.items?.[0]?.product_image?.url || 'https://via.placeholder.com/300x300?text=No+Image';
         const address = item.shipping_address;
         const addressStr = address ? `${address.address_line1}, ${address.city}` : t.deliveriesNoAddress;
         const date = new Date(item.updated_at || item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -82,7 +82,7 @@ export default function BuyerDeliveriesScreen() {
 
     const renderReturnCard = (item: any) => {
         const itemName = item.items?.[0]?.name || 'Unknown Product';
-        const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
+        const itemImage = item.items?.[0]?.product_image?.url || 'https://via.placeholder.com/300x300?text=No+Image';
         const price = item.totals?.total ? `Tsh ${new Intl.NumberFormat('en-US').format(item.totals.total)}` : 'Tsh 0';
 
         return (

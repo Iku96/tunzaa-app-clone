@@ -56,6 +56,7 @@ export interface OrderItem {
     commission_rate: string;
     refunded_quantity: number;
     refunded_amount: number;
+    product_image?: { url: string; is_primary: boolean } | null;
 }
 
 export interface OrderTotals {

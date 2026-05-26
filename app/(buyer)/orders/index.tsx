@@ -46,7 +46,7 @@ export default function OrdersScreen() {
     const renderPendingCard = (item: any) => {
         // Derive variables from the API Order object
         const itemName = item.items?.[0]?.name || t.ordersUnknownProduct;
-        const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
+        const itemImage = item.items?.[0]?.product_image?.url || 'https://via.placeholder.com/300x300?text=No+Image';
         const date = new Date(item.created_at).toLocaleDateString();
         const total = item.totals?.total || 0;
         
@@ -94,7 +94,7 @@ export default function OrdersScreen() {
 
     const renderCompletedCard = (item: any) => {
         const itemName = item.items?.[0]?.name || 'Unknown Product';
-        const itemImage = item.items?.[0]?.image_url || 'https://via.placeholder.com/300x300?text=No+Image';
+        const itemImage = item.items?.[0]?.product_image?.url || 'https://via.placeholder.com/300x300?text=No+Image';
         const date = new Date(item.created_at).toLocaleDateString();
         const total = item.totals?.total || 0;
 

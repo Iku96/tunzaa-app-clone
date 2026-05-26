@@ -63,6 +63,7 @@ export interface OrderItem {
   category_ids?: string[];
   categories?: any[];
   metadata?: any | null;
+  product_image?: { url: string; is_primary: boolean } | null;
 }
 
 export interface OrderTotals {
