@@ -130,7 +130,7 @@ export default function AccountScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      quality: 0.8,
+      quality: 0.2,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {

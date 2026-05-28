@@ -52,7 +52,7 @@ export function ImageUploader({
   className,
   disabled = false,
   aspectRatio = [1, 1],
-  quality = 0.8,
+  quality = 0.2, // Aggressive compression to avoid 413 payload too large
   allowsEditing = true,
   maxFileSize = 10, // 10MB default
 }: ImageUploaderProps) {

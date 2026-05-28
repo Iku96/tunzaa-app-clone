@@ -52,7 +52,7 @@ const AccountScreen = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
+        quality: 0.2,
       });
 
       if (result.canceled || !result.assets || result.assets.length === 0) return;

@@ -38,6 +38,7 @@ export default function RegisterScreen() {
         first_name: string,
         last_name: string,
         phone_number: string,
+        email?: string,
     }>();
     const userRole = params.role || 'buyer';
     const pendingOnboarding = params.pendingOnboarding || '';
@@ -46,7 +47,7 @@ export default function RegisterScreen() {
     const [firstName, setFirstName] = useState(params.first_name || '');
     const [secondName, setSecondName] = useState(params.last_name || '');
     const [phone, setPhone] = useState(params.phone_number || '');
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(params.email || '');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -126,12 +127,13 @@ export default function RegisterScreen() {
                 first_name: firstName.trim(),
                 last_name: secondName.trim(),
                 phone_number: phone,
-                email: email.trim().toLowerCase(),
+                ...(email ? { email: email.trim().toLowerCase() } : {}),
                 password: password,
+                role: userRole,
             };
 
             const portal = userRole === 'merchant' ? 'merchant' : userRole === 'delivery' ? 'delivery' : userRole === 'loan' ? 'loan' : 'buyer';
-            await register(registrationData, portal);
+            await register(registrationData as any, portal);
             
             // Explicitly force update user details since the register API might not persist first/last names immediately
             try {
@@ -216,11 +218,53 @@ export default function RegisterScreen() {
     const handleSocialLogin = async (provider: string) => {
         setLoading(true);
         try {
-            if (provider === 'google') await signInWithGoogle();
-            else if (provider === 'apple') await signInWithApple();
+            let response;
+            if (provider === 'google') response = await signInWithGoogle();
+            else if (provider === 'apple') response = await signInWithApple();
+
+            if (response) {
+                const portalTarget = userRole === 'merchant' ? 'merchant'
+                                   : userRole === 'delivery' ? 'delivery'
+                                   : userRole === 'loan' ? 'loan'
+                                   : 'buyer';
+                await AsyncStorage.setItem('LAST_PORTAL', portalTarget);
+
+                // Check if this is a newly created account via social login
+                const createdAt = response.created_at || response.meta?.createdAt;
+                if (createdAt) {
+                    const createdTime = new Date(createdAt).getTime();
+                    const now = new Date().getTime();
+                    const ageInSeconds = (now - createdTime) / 1000;
+                    if (ageInSeconds < 60) {
+                        console.log('🆕 [Register] New social account detected, flagging for onboarding...');
+                        if (portalTarget === 'buyer') {
+                            await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
+                        } else if (portalTarget === 'merchant') {
+                            await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
+                        } else if (portalTarget === 'delivery') {
+                            await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
+                        } else if (portalTarget === 'loan') {
+                            await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
+                        }
+                    }
+                }
+            }
         } catch (e: any) {
+            const errorMsg = e?.message || String(e);
+            // Silently ignore cancellation or unavailable errors
+            if (
+                errorMsg.includes('No ID token') || 
+                errorMsg.includes('Apple Authentication is not available') ||
+                errorMsg.includes('SIGN_IN_CANCELLED') ||
+                errorMsg.includes('cancelled') ||
+                errorMsg.includes('canceled')
+            ) {
+                console.log('ℹ️ [Register] Social login cancelled or unavailable:', errorMsg);
+                return;
+            }
+
             console.error('❌ Social login error:', e);
-            Alert.alert('Login Error', e.message || `Failed to sign in with ${provider}.`);
+            Alert.alert('Login Error', errorMsg || `Failed to sign in with ${provider}.`);
         } finally {
             setLoading(false);
         }

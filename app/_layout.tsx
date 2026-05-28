@@ -216,7 +216,7 @@ export default function RootLayout() {
   });
 
   // Custom Tunzaa fonts
-  const [customFontsLoaded] = useFonts({
+  const [customFontsLoaded, customFontError] = useFonts({
     'Gilroy-Regular': require('../assets/fonts/Gilroy-Regular.ttf'),
     'Gilroy-Medium': require('../assets/fonts/Gilroy-Medium.ttf'),
     'Gilroy-SemiBold': require('../assets/fonts/Gilroy-SemiBold.ttf'),
@@ -258,10 +258,13 @@ export default function RootLayout() {
 
   // Handle app readiness and splash screen hiding
   React.useEffect(() => {
-    if (isColorSchemeLoaded && (fontsLoaded || fontError) && customFontsLoaded) {
+    if (isColorSchemeLoaded && (fontsLoaded || fontError) && (customFontsLoaded || customFontError)) {
+      if (customFontError) {
+        console.error("⚠️ Failed to load custom fonts:", customFontError);
+      }
       setAppIsReady(true);
     }
-  }, [isColorSchemeLoaded, fontsLoaded, fontError, customFontsLoaded]);
+  }, [isColorSchemeLoaded, fontsLoaded, fontError, customFontsLoaded, customFontError]);
 
   const onLayoutRootView = React.useCallback(() => {
     if (appIsReady) {

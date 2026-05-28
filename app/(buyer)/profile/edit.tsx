@@ -162,7 +162,7 @@ export default function EditProfileScreen() {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 0.8,
+                quality: 0.2, // Aggressive compression to avoid 413 payload too large
             });
 
             if (result.canceled || !result.assets?.[0]) return;

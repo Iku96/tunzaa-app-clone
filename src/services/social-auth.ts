@@ -123,6 +123,14 @@ export const socialAuth = {
                 }
 
                 await GoogleSignin.hasPlayServices();
+                
+                // Force account selection dialog every time
+                try {
+                    await GoogleSignin.signOut();
+                } catch (e) {
+                    // Ignore errors if not signed in
+                }
+                
                 const userInfo = await GoogleSignin.signIn();
 
                 if (!userInfo.data?.idToken) {

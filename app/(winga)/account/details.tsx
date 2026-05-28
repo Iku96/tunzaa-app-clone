@@ -121,7 +121,7 @@ export default function EditBusinessProfileScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.2,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -168,7 +168,7 @@ export default function EditBusinessProfileScreen() {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      quality: 0.8,
+      quality: 0.2,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {

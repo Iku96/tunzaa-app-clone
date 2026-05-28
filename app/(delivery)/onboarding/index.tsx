@@ -67,7 +67,7 @@ export default function Step1Details() {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: type === 'logo' ? [1, 1] : [3, 1],
-                quality: 0.8,
+                quality: 0.2,
             });
             if (!result.canceled) {
                 if (type === 'cover') setCoverImage(result.assets[0].uri);

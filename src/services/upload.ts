@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { Platform } from "react-native";
-import { documentClient } from "./client";
+import { apiClient } from "./client";
 
 interface UploadResponse {
   id?: string;
@@ -21,8 +21,8 @@ interface UploadResponse {
 
 export const uploadApi = {
   uploadDocument: async (file: FormData): Promise<UploadResponse> => {
-    const response = await documentClient.post<UploadResponse>(
-      "/upload",
+    const response = await apiClient.post<UploadResponse>(
+      "/uploads",
       file,
       {
         headers: {
@@ -85,6 +85,8 @@ export const uploadApi = {
       } as any;
       formData.append("file", fileObject);
     }
+
+    formData.append("public", "true");
 
     return uploadApi.uploadDocument(formData);
   },

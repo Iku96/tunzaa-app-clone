@@ -248,7 +248,7 @@ const ModalImageUploader = React.memo(({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
+        quality: 0.2,
         exif: false,
       });
 
@@ -272,7 +272,7 @@ const ModalImageUploader = React.memo(({
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        quality: 0.8,
+        quality: 0.2,
         exif: false,
       });
 
@@ -469,7 +469,7 @@ const VariantManager = React.memo(({
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        quality: 0.8,
+        quality: 0.2,
         exif: false,
       });
 

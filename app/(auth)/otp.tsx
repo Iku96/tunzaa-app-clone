@@ -95,6 +95,7 @@ export default function OTPScreen() {
                                 first_name: first_name,
                                 last_name: last_name,
                                 phone_number: phone_number,
+                                email: email,
                                 role: role,
                             }
                         } as any);

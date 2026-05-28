@@ -128,10 +128,43 @@ export default function LoginScreen() {
                                    : targetRole === 'loan' ? 'loan'
                                    : 'buyer';
                 await AsyncStorage.setItem('LAST_PORTAL', portalTarget);
+
+                // Check if this is a newly created account via social login
+                const createdAt = response.created_at || response.meta?.createdAt;
+                if (createdAt) {
+                    const createdTime = new Date(createdAt).getTime();
+                    const now = new Date().getTime();
+                    const ageInSeconds = (now - createdTime) / 1000;
+                    if (ageInSeconds < 60) {
+                        console.log('🆕 [Login] New social account detected, flagging for onboarding...');
+                        if (portalTarget === 'buyer') {
+                            await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
+                        } else if (portalTarget === 'merchant') {
+                            await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
+                        } else if (portalTarget === 'delivery') {
+                            await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
+                        } else if (portalTarget === 'loan') {
+                            await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
+                        }
+                    }
+                }
             }
         } catch (e: any) {
+            const errorMsg = e?.message || String(e);
+            // Silently ignore cancellation or unavailable errors
+            if (
+                errorMsg.includes('No ID token') || 
+                errorMsg.includes('Apple Authentication is not available') ||
+                errorMsg.includes('SIGN_IN_CANCELLED') ||
+                errorMsg.includes('cancelled') ||
+                errorMsg.includes('canceled')
+            ) {
+                console.log('ℹ️ [Login] Social login cancelled or unavailable:', errorMsg);
+                return;
+            }
+
             console.error('❌ Social login error:', e);
-            Alert.alert(t.alertsLoginErrorTitle, e.message || `${t.alertsLoginErrorMsg}${provider}.`);
+            Alert.alert(t.alertsLoginErrorTitle, errorMsg || `${t.alertsLoginErrorMsg}${provider}.`);
         } finally {
             setLoading(false);
         }
