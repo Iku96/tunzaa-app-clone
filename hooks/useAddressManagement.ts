@@ -47,8 +47,8 @@ export function useAddressManagement(options: AddressSubmissionOptions = {}) {
       };
 
       // Check if editing existing address or creating new
-      const isEditing = address.address_id && buyerProfile?.delivery_address?.some(
-        (addr) => addr.address_id === address.address_id
+      const isEditing = (address.address_id || address._id) && buyerProfile?.delivery_address?.some(
+        (addr) => (addr.address_id || (addr as any)._id) === (address.address_id || address._id)
       );
 
       let updatedAddresses: DeliveryAddress[];
@@ -56,7 +56,7 @@ export function useAddressManagement(options: AddressSubmissionOptions = {}) {
       if (isEditing && buyerProfile) {
         // Update existing address
         updatedAddresses = buyerProfile.delivery_address.map((addr) =>
-          addr.address_id === newAddress.address_id ? newAddress : addr
+          (addr.address_id || (addr as any)._id) === (newAddress.address_id || (newAddress as any)._id) ? newAddress : addr
         );
       } else if (buyerProfile) {
         // Add new address
@@ -143,7 +143,7 @@ export function useAddressManagement(options: AddressSubmissionOptions = {}) {
 
     try {
       const updatedAddresses = buyerProfile.delivery_address.filter(
-        (addr) => addr.address_id !== addressId
+        (addr) => (addr.address_id || (addr as any)._id) !== addressId
       );
 
       // If deleting the default address, set a new default
@@ -151,7 +151,7 @@ export function useAddressManagement(options: AddressSubmissionOptions = {}) {
       if (buyerProfile.default_delivery_address === addressId) {
         newDefaultAddress =
           updatedAddresses.length > 0
-            ? updatedAddresses[0].address_id
+            ? (updatedAddresses[0].address_id || (updatedAddresses[0] as any)._id)
             : undefined;
       }
 

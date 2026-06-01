@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useCartCombined, useCartTotals } from '@/stores/cart';
+import { useCartCombined, useCartTotals } from '@/src/stores/cart';
 import { useAuth } from '@/context/auth';
 import { ActivityIndicator } from 'react-native';
 

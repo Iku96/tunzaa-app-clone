@@ -183,7 +183,7 @@ export default function EditBusinessScreen() {
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.7,
+            quality: 0.2, // Aggressive compression to avoid 413 payload too large
         });
 
         if (!result.canceled) {

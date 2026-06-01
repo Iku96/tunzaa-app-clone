@@ -16,7 +16,7 @@ import { useAuth } from "@/context/auth";
 import { useInitiatePayment, paymentsApi } from "@/src/services/payments";
 import { useGetOrders, useCreateOrder } from "@/src/services/orders";
 import { cartApi } from "@/src/services/cart";
-import { useCartTotals } from "@/stores/cart";
+import { useCartTotals } from "@/src/stores/cart";
 import { buyersApi } from "@/src/services/buyers";
 import { useDeliveryTypesWithFallback } from "@/src/services/delivery";
 import { productsApi, Product } from "@/src/services/products";

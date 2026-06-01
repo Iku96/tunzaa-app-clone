@@ -73,7 +73,7 @@ export default function PaymentMethodsScreen() {
     const { data: paymentStatus } = useCheckPaymentStatus(transactionId || '', !!transactionId);
 
     useEffect(() => {
-        if (paymentStatus) {
+        if (paymentStatus?.data) {
             if (paymentStatus.data.status === 'COMPLETED') {
                 const cartId = params.cartId as string;
                 if (cartId) {
@@ -163,27 +163,7 @@ export default function PaymentMethodsScreen() {
                 };
             }
 
-            // 2. Create Order
-            const orderPayload = {
-                cart_id: cartId,
-                shipping_address: shippingAddress,
-                delivery_details: {
-                    partner_id: (params.partnerId as string) || "tunzaa_default",
-                    cost: 10000
-                },
-                payment_details: {
-                    method: NETWORK_TO_METHOD[methodId] || 'mobile_money',
-                    amount: totalOrderAmount,
-                    currency: "TZS",
-                    payment_gateway: NETWORK_TO_GATEWAY[methodId] || 'tunzaa_pay'
-                },
-                user_id: user?.user_id || '',
-                delivery_type_id: (params.deliveryType as string) || "standard",
-            };
-
-            const order = await createOrder(orderPayload);
-            
-            // 3. Create Installment Plan (if applicable)
+            // 2. Create Installment Plan (if applicable)
             let planId;
             if (paymentMethod === 'tunzaa_instalments') {
                 const plan = await createInstallmentPlan({
@@ -193,8 +173,8 @@ export default function PaymentMethodsScreen() {
                         phone: user?.phone_number || '',
                         address: shippingAddress.address_line1 || 'Tanzania',
                     },
-                    name: `Installment for Order ${order.order_number}`,
-                    description: `Payment for order ${order.order_number}`,
+                    name: `Installment for Cart ${cartId}`,
+                    description: `Payment for cart ${cartId}`,
                     total_amount: totalOrderAmount,
                     payment_frequency: (params.installmentFrequency as "daily" | "weekly" | "monthly" | "custom") || "daily",
                     start_date: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
@@ -205,6 +185,31 @@ export default function PaymentMethodsScreen() {
                 });
                 planId = plan?.plan?.plan_id?.toString();
             }
+
+            // 3. Create Order
+            const orderPayload = {
+                cart_id: cartId,
+                shipping_address: shippingAddress,
+                delivery_details: {
+                    partner_id: (params.partnerId as string) || "tunzaa_default",
+                    cost: 10000
+                },
+                payment_details: {
+                    method: paymentMethod === 'tunzaa_instalments' ? 'tunzaa' : (NETWORK_TO_METHOD[methodId] || 'mobile_money'),
+                    amount: totalOrderAmount,
+                    currency: "TZS",
+                    payment_gateway: NETWORK_TO_GATEWAY[methodId] || 'tunzaa_pay',
+                    ...(planId ? {
+                        notes: `Installment plan ID: ${planId}`,
+                        installment_plan_id: Number(planId)
+                    } : {})
+                },
+                ...(planId ? { plan_id: planId } : {}),
+                user_id: user?.user_id || '',
+                delivery_type_id: (params.deliveryType as string) || "standard",
+            };
+
+            const order = await createOrder(orderPayload);
 
             // 4. Initiate Payment
             const paymentRes = await initiatePayment({

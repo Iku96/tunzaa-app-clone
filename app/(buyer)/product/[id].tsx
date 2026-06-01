@@ -15,6 +15,11 @@ import ProductCardVertical from '../../../src/components/product/ProductCardVert
 import ShareSheet from '../../../src/components/shop/ShareSheet';
 import { useSearchHistory } from '../../../src/stores/searchHistory';
 import { getAvatarUrl } from '../../../src/utils/images';
+import { ResponsiveModal } from '@/components/responsive-modal';
+import { DeliveryAddressSection } from '@/components/checkout';
+import { AddressModal } from '@/components/modals/AddressModal';
+import { useAddressManagement } from '@/hooks/useAddressManagement';
+import { Button } from '@/components/ui/button';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,6 +63,63 @@ export default function ProductDetailScreen() {
     } = useCartCombined(user?.user_id || user?.id || 'guest');
     const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
     const [isBuyingNow, setIsBuyingNow] = useState(false);
+    
+    // Delivery Location Selection State
+    const [showLocationModal, setShowLocationModal] = useState(false);
+    const [showAddressModal, setShowAddressModal] = useState(false);
+    const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+
+    const {
+        buyerProfile: addressBuyerProfile,
+        profileLoading,
+        handleAddressSubmit,
+    } = useAddressManagement({
+        onSuccess: (newAddress) => {
+            const addrId = newAddress.address_id || (newAddress as any)._id || '';
+            setSelectedAddressId(addrId);
+            executeBuyNow(addrId);
+        },
+    });
+
+    // Auto-initialize selectedAddressId from profile when the modal opens
+    useEffect(() => {
+        if (showLocationModal && buyerProfile?.delivery_address && buyerProfile.delivery_address.length > 0) {
+            const defaultId = buyerProfile.default_delivery_address;
+            const defaultExists = buyerProfile.delivery_address.some((addr) => (addr.address_id || (addr as any)._id) === defaultId);
+            const currentExists = buyerProfile.delivery_address.some((addr) => (addr.address_id || (addr as any)._id) === selectedAddressId);
+            
+            if (!selectedAddressId || !currentExists) {
+                if (defaultId && defaultExists) {
+                    setSelectedAddressId(defaultId);
+                } else {
+                    setSelectedAddressId(buyerProfile.delivery_address[0].address_id || (buyerProfile.delivery_address[0] as any)._id || "");
+                }
+            }
+        }
+    }, [showLocationModal, buyerProfile, selectedAddressId]);
+
+    const executeBuyNow = async (addressId?: string) => {
+        if (isAddingToCart || isBuyingNow) return;
+
+        try {
+            setIsBuyingNow(true);
+            setShowLocationModal(false);
+            console.log('🛒 [Buy Now] Triggering buyNow flow...');
+            await buyNow({
+                product_id: product?.id || '',
+                quantity: quantity,
+                ...(selectedVariant?.sku ? { sku: selectedVariant.sku } : {}),
+                currency: 'TZS',
+            });
+            const params: any = { productId: product?.id, returnTo: 'product' };
+            if (addressId) params.addressId = addressId;
+            router.push({ pathname: '/(buyer)/cart/checkout', params });
+        } catch (error) {
+            console.error('Failed to initiate Buy Now:', error);
+        } finally {
+            setIsBuyingNow(false);
+        }
+    };
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -757,30 +819,20 @@ export default function ProductDetailScreen() {
                                 <TouchableOpacity
                                     style={[styles.buyButton, (isAddingToCartOptimistic || isAddingToCart) && styles.buttonDisabled]}
                                     onPress={async () => {
-                                        console.log('🖱️ [Buy Now] Button pressed. IsAuthenticated:', isAuthenticated);
+                                            console.log('🖱️ [Buy Now] Button pressed. IsAuthenticated:', isAuthenticated);
                                         if (!isAuthenticated) {
                                             router.push('/login');
                                             return;
                                         }
                                         
-                                        if (isAddingToCart) return;
-
                                         if (isAddingToCart || isBuyingNow) return;
-
-                                        try {
-                                            setIsBuyingNow(true);
-                                            console.log('🛒 [Buy Now] Triggering buyNow flow...');
-                                            await buyNow({
-                                                product_id: product?.id || '',
-                                                quantity: quantity,
-                                                ...(selectedVariant?.sku ? { sku: selectedVariant.sku } : {}),
-                                                currency: 'TZS',
-                                            });
-                                            router.push({ pathname: '/(buyer)/cart/checkout', params: { productId: product?.id, returnTo: 'product' } });
-                                        } catch (error) {
-                                            console.error('Failed to initiate Buy Now:', error);
-                                        } finally {
-                                            setIsBuyingNow(false);
+                                        
+                                        // If user has no addresses at all, immediately open Add New Address modal
+                                        if (!buyerProfile?.delivery_address || buyerProfile.delivery_address.length === 0) {
+                                            setShowAddressModal(true);
+                                        } else {
+                                            // Otherwise show the location selection modal
+                                            setShowLocationModal(true);
                                         }
                                     }}
                                     activeOpacity={0.9}
@@ -804,6 +856,53 @@ export default function ProductDetailScreen() {
                     image={product.image}
                 />
             )}
+
+            {/* Location Selection Modal for Buy Now */}
+            <ResponsiveModal
+                isOpen={showLocationModal}
+                onOpenChange={setShowLocationModal}
+                title="Select Delivery Location"
+                snapPoints={["60%", "80%"]}
+                footer={
+                    <View style={{ padding: 16 }}>
+                        <Button
+                            variant="primary"
+                            disabled={!selectedAddressId || isBuyingNow}
+                            onPress={() => executeBuyNow(selectedAddressId)}
+                            className="w-full"
+                        >
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                                {isBuyingNow ? 'Processing...' : 'Continue'}
+                            </Text>
+                        </Button>
+                    </View>
+                }
+            >
+                <View style={{ paddingBottom: 24 }}>
+                    <DeliveryAddressSection
+                        buyerProfile={buyerProfile}
+                        selectedAddressId={selectedAddressId}
+                        profileLoading={profileLoading || loading}
+                        onAddressSelect={setSelectedAddressId}
+                        onAddNewAddress={() => {
+                            setShowLocationModal(false);
+                            // Slight delay to allow previous modal to close smoothly before opening the new one
+                            setTimeout(() => setShowAddressModal(true), 300);
+                        }}
+                    />
+                </View>
+            </ResponsiveModal>
+
+            {/* Add/Edit Address Modal */}
+            <AddressModal
+                isOpen={showAddressModal}
+                address={undefined}
+                onClose={() => setShowAddressModal(false)}
+                onSubmit={async (address) => {
+                    await handleAddressSubmit(address);
+                    setShowAddressModal(false);
+                }}
+            />
         </SafeAreaView>
     );
 }

@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useProductById, useProducts } from "@/stores/products";
-import { useCartCombined } from "@/stores/cart";
+import { useCartCombined } from "@/src/stores/cart";
 import { useAuth } from "@/context/auth";
 import { useProductReferral } from "@/hooks/useUrlHandler";
 import { Button } from "@/components/ui/button";

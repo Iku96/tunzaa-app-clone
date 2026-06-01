@@ -47,24 +47,25 @@ export const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
       ) : (
         <>
           {buyerProfile?.delivery_address?.map((address) => {
-            const isSelected = selectedAddressId === address.address_id;
+            const addrId = address.address_id || (address as any)._id;
+            const isSelected = selectedAddressId === addrId;
             return resolvedColors && isSelected ? (
               <TouchableOpacity
-                key={address.address_id}
+                key={addrId}
                 className="mb-3 rounded-xl p-4"
                 style={{
                   backgroundColor: resolvedColors.successWithOpacity(0.1),
                   borderColor: resolvedColors.success,
                   borderWidth: 1,
                 }}
-                onPress={() => onAddressSelect(address.address_id!)}
+                onPress={() => onAddressSelect(addrId)}
               >
                 <View className="flex-row items-center mb-2 gap-2">
                   <MapPin size={20} className="text-muted-foreground" />
                   <Text className="flex-1 text-base font-semibold text-foreground">
                     {address.title}
                   </Text>
-                  {address.address_id ===
+                  {addrId ===
                     buyerProfile?.default_delivery_address && (
                     <Badge variant="secondary" className="bg-yellow-200">
                       <Text className="text-xs text-accent">{t("common.default")}</Text>
@@ -77,20 +78,20 @@ export const DeliveryAddressSection: React.FC<DeliveryAddressSectionProps> = ({
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                key={address.address_id}
+                key={addrId}
                 className={`mb-3 rounded-xl p-4 ${
                   isSelected
                     ? "bg-green-500/10 border border-green-500"
                     : "bg-muted"
                 }`}
-                onPress={() => onAddressSelect(address.address_id!)}
+                onPress={() => onAddressSelect(addrId)}
               >
                 <View className="flex-row items-center mb-2 gap-2">
                   <MapPin size={20} className="text-muted-foreground" />
                   <Text className="flex-1 text-base font-semibold text-foreground">
                     {address.title}
                   </Text>
-                  {address.address_id ===
+                  {addrId ===
                     buyerProfile?.default_delivery_address && (
                     <Badge variant="secondary" className="bg-yellow-200">
                       <Text className="text-xs text-accent">{t("common.default")}</Text>

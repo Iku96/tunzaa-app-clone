@@ -158,6 +158,12 @@ export default function WelcomeScreen() {
                     return;
                 }
 
+                if (isFirstTimeBuyer === 'true') {
+                    console.log('🚀 [Splash] First-time buyer detected in fallback, directing to onboarding...');
+                    router.replace('/(buyer)/onboarding');
+                    return;
+                }
+
                 router.replace('/(buyer)');
                 return;
             }

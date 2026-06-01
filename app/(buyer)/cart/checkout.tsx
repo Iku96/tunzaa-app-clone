@@ -15,8 +15,8 @@ import {
   ChevronUp,
   Trash2,
 } from "lucide-react-native";
-import { useAuth } from "@/context/auth";
-import { useCartCombined, useCartTotals } from "@/stores/cart";
+import { useTunzaaAuth as useAuth } from "@/src/contexts/TunzaaAuthContext";
+import { useCartCombined, useCartTotals } from "@/src/stores/cart";
 import { useAddressManagement } from "@/hooks/useAddressManagement";
 import {
   useDeliveryTypesWithFallback,
@@ -63,9 +63,10 @@ import { useTenantModules } from "@/hooks/useTenantModules";
 
 const CheckoutScreen = () => {
   const router = useRouter();
-  const { returnTo, productId } = useLocalSearchParams();
+  const { returnTo, productId, addressId } = useLocalSearchParams<{ returnTo?: string; productId?: string; addressId?: string }>();
   const { user } = useAuth();
-  const cart = useCartCombined(user?.user_id ?? "");
+  const userId = user?.user_id || (user as any)?.id || "";
+  const cart = useCartCombined(userId);
   const { isDesktop } = useResponsive();
   const { t } = useLanguage();
 
@@ -100,7 +101,7 @@ const CheckoutScreen = () => {
   }, [cartTotals]);
 
   // Checkout state
-  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [selectedAddressId, setSelectedAddressId] = useState<string>(addressId || "");
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [selectedDeliveryType, setSelectedDeliveryType] = useState<string>("");
@@ -160,7 +161,7 @@ const CheckoutScreen = () => {
         (newAddress.address_id === buyerProfile?.default_delivery_address ||
           buyerProfile?.delivery_address.length === 1)
       ) {
-        setSelectedAddressId(newAddress.address_id);
+        setSelectedAddressId(newAddress.address_id || (newAddress as any)._id || "");
       }
     },
     onError: (errorMsg) => setError(errorMsg),
@@ -170,14 +171,14 @@ const CheckoutScreen = () => {
   useEffect(() => {
     if (buyerProfile?.delivery_address && buyerProfile.delivery_address.length > 0) {
       const defaultId = buyerProfile.default_delivery_address;
-      const defaultExists = buyerProfile.delivery_address.some((addr) => addr.address_id === defaultId);
-      const currentExists = buyerProfile.delivery_address.some((addr) => addr.address_id === selectedAddressId);
+      const defaultExists = buyerProfile.delivery_address.some((addr) => (addr.address_id || (addr as any)._id) === defaultId);
+      const currentExists = buyerProfile.delivery_address.some((addr) => (addr.address_id || (addr as any)._id) === selectedAddressId);
       
       if (!selectedAddressId || !currentExists) {
         if (defaultId && defaultExists) {
           setSelectedAddressId(defaultId);
         } else {
-          setSelectedAddressId(buyerProfile.delivery_address[0].address_id || "");
+          setSelectedAddressId(buyerProfile.delivery_address[0].address_id || (buyerProfile.delivery_address[0] as any)._id || "");
         }
       }
     }
@@ -204,7 +205,7 @@ const CheckoutScreen = () => {
   useEffect(() => {
     if (isDeliveryEnabled && selectedAddressId && selectedDeliveryType && vendor?.latitude && vendor?.longitude) {
       const selectedAddressData = buyerProfile?.delivery_address?.find(
-        (addr) => addr.address_id === selectedAddressId
+        (addr) => (addr.address_id || (addr as any)._id) === selectedAddressId
       );
       
       if (selectedAddressData?.lat && selectedAddressData?.lng) {
@@ -415,7 +416,7 @@ const CheckoutScreen = () => {
       }
 
       const selectedAddressData = buyerProfile.delivery_address?.find(
-        (addr) => addr.address_id === selectedAddressId
+        (addr) => (addr.address_id || (addr as any)._id) === selectedAddressId
       );
 
       if (!selectedAddressData) {
@@ -607,7 +608,7 @@ const CheckoutScreen = () => {
 
   const cartItems = cart.cart?.items || [];
   const selectedAddressData = buyerProfile?.delivery_address?.find(
-    (addr) => addr.address_id === selectedAddressId
+    (addr) => (addr.address_id || (addr as any)._id) === selectedAddressId
   );
 
   const handlePayment = (method: string) => {

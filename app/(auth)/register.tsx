@@ -148,6 +148,7 @@ export default function RegisterScreen() {
             // Set first-time buyer flag to ensure index.tsx routes correctly
             if (userRole === 'buyer') {
                 await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
+                await AsyncStorage.setItem('LAST_PORTAL', 'buyer');
             } else if (userRole === 'merchant') {
                 console.log('📝 [Register] Setting HAS_PENDING_MERCHANT_ONBOARDING for merchant flow');
                 await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');

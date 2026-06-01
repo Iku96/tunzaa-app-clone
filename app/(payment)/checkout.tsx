@@ -15,7 +15,7 @@ import {
   ChevronUp,
 } from "lucide-react-native";
 import { useAuth } from "@/context/auth";
-import { useCartCombined, useCartTotals } from "@/stores/cart";
+import { useCartCombined, useCartTotals } from "@/src/stores/cart";
 import { useAddressManagement } from "@/hooks/useAddressManagement";
 import {
   useDeliveryTypesWithFallback,

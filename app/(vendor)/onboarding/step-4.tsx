@@ -213,6 +213,22 @@ export default function Step4Documents() {
 
             // 3. Create Vendor
             await createVendor(vendorData);
+            
+            // Persist metadata locally (workaround: backend doesn't save metadata yet)
+            try {
+                const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+                const BUSINESS_EXTRAS_KEY = '@tunzaa_business_extras';
+                const existingExtras = await AsyncStorage.getItem(`${BUSINESS_EXTRAS_KEY}_${vendorUserId}`);
+                const existing = existingExtras ? JSON.parse(existingExtras) : {};
+                await AsyncStorage.setItem(`${BUSINESS_EXTRAS_KEY}_${vendorUserId}`, JSON.stringify({
+                    ...existing,
+                    ...vendorData.metadata,
+                }));
+                console.log('✅ [Step5] Business metadata persisted locally');
+            } catch (storageErr) {
+                console.warn('⚠️ [Step5] AsyncStorage write failed:', storageErr);
+            }
+
             console.log('✅ [Step5] Vendor profile created successfully!');
             
             // Explicitly refresh profile to ensure the new vendor state is propagated
