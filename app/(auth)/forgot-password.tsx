@@ -12,7 +12,7 @@ import {
     StyleSheet
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, CheckCircle2 } from "lucide-react-native";
 import { Text } from "@/components/ui/text";
 import { PhoneInput } from "@/components/PhoneInput";
@@ -21,6 +21,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import * as Burnt from "burnt";
 
 export default function ForgotPasswordScreen() {
+  const { role } = useLocalSearchParams<{ role?: string }>();
   const [identifier, setIdentifier] = useState("");
   const [isUsingEmail, setIsUsingEmail] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState({
@@ -109,8 +110,8 @@ export default function ForgotPasswordScreen() {
                       router.push({
                         pathname: "/reset-password",
                         params: isUsingEmail 
-                            ? { email: identifier } 
-                            : { phone_number: getFormattedPhone() },
+                            ? { email: identifier, role: role } 
+                            : { phone_number: getFormattedPhone(), role: role },
                       })
                     }
                   >

@@ -12,6 +12,9 @@
 import type { LanguageCode } from '../constants/languages';
 /** Translation keys used across the app. Add new keys here and in each locale. */
 export interface TranslationKeys {
+    paymentSuccessInstallmentDesc: string;
+    paymentSuccessFullDesc: string;
+    paymentSuccessCongratulations: string;
     // --- Language screen ---
     languageScreenTitle: string;
     languageScreenChoosePreferred: string;
@@ -486,6 +489,9 @@ export interface TranslationKeys {
 }
 /** English (default). */
 const en: TranslationKeys = {
+    paymentSuccessInstallmentDesc: "You've successfully completed the first payment towards your goal! Keep up the great work. We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessFullDesc: "You've successfully completed your full payment! We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessCongratulations: "Congratulations {{name}}!",
     languageScreenTitle: 'Choose your language',
     languageScreenChoosePreferred: 'Choose preferred language',
     languageScreenSkip: 'Skip',
@@ -945,6 +951,9 @@ const en: TranslationKeys = {
 };
 /** Swahili. */
 const sw: TranslationKeys = {
+    paymentSuccessInstallmentDesc: "Umefanikiwa kukamilisha malipo ya kwanza kuelekea lengo lako! Endelea na kazi nzuri. Tumetuma risiti ya kina kwenye anwani yako ya barua pepe kwa kumbukumbu zako.",
+    paymentSuccessFullDesc: "Umefanikiwa kukamilisha malipo yako kamili! Tumetuma risiti ya kina kwenye anwani yako ya barua pepe kwa kumbumbu zako.",
+    paymentSuccessCongratulations: "Hongera {{name}}!",
     languageScreenTitle: 'Chagua lugha yako',
     languageScreenChoosePreferred: 'Chagua lugha unayopendelea',
     languageScreenSkip: 'Ruka',
@@ -1405,6 +1414,9 @@ const sw: TranslationKeys = {
 };
 /** French. */
 const fr: TranslationKeys = {
+    paymentSuccessInstallmentDesc: "Vous avez réussi le premier paiement pour atteindre votre objectif ! Continuez ce bon travail. Nous avons envoyé un reçu détaillé à votre adresse e-mail pour vos dossiers.",
+    paymentSuccessFullDesc: "Vous avez réussi à effectuer votre paiement intégral ! Nous avons envoyé un reçu détaillé à votre adresse e-mail pour vos dossiers.",
+    paymentSuccessCongratulations: "Félicitations {{name}}!",
     languageScreenTitle: 'Choisissez votre langue',
     languageScreenChoosePreferred: 'Choisir la langue préférée',
     languageScreenSkip: 'Passer',
@@ -1853,6 +1865,9 @@ const fr: TranslationKeys = {
 };
 /** Arabic. */
 const ar: TranslationKeys = {
+    paymentSuccessInstallmentDesc: "You've successfully completed the first payment towards your goal! Keep up the great work. We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessFullDesc: "You've successfully completed your full payment! We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessCongratulations: "Congratulations {{name}}!",
     languageScreenTitle: 'اختر لغتك',
     languageScreenChoosePreferred: 'اختر اللغة المفضلة',
     languageScreenSkip: 'تخطي',
@@ -2309,6 +2324,9 @@ const ar: TranslationKeys = {
 };
 /** Spanish. */
 const es: TranslationKeys = {
+    paymentSuccessInstallmentDesc: "You've successfully completed the first payment towards your goal! Keep up the great work. We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessFullDesc: "You've successfully completed your full payment! We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessCongratulations: "Congratulations {{name}}!",
     languageScreenTitle: 'Elige tu idioma',
     languageScreenChoosePreferred: 'Elegir idioma preferido',
     languageScreenSkip: 'Saltar',
@@ -2758,6 +2776,9 @@ const es: TranslationKeys = {
 };
 /** Portuguese. */
 const pt: TranslationKeys = {
+    paymentSuccessInstallmentDesc: "You've successfully completed the first payment towards your goal! Keep up the great work. We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessFullDesc: "You've successfully completed your full payment! We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessCongratulations: "Congratulations {{name}}!",
     languageScreenTitle: 'Escolha o seu idioma',
     languageScreenChoosePreferred: 'Escolher idioma preferido',
     languageScreenSkip: 'Pular',
@@ -3215,6 +3236,9 @@ const pt: TranslationKeys = {
 };
 /** Chinese (Simplified). */
 const zh: TranslationKeys = {
+    paymentSuccessInstallmentDesc: "You've successfully completed the first payment towards your goal! Keep up the great work. We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessFullDesc: "You've successfully completed your full payment! We've sent a detailed receipt to your email address for your records.",
+    paymentSuccessCongratulations: "Congratulations {{name}}!",
     languageScreenTitle: '选择您的语言',
     languageScreenChoosePreferred: '选择首选语言',
     languageScreenSkip: '跳过',

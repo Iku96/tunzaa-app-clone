@@ -59,21 +59,84 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch (e) { } }
 
 
+        // Preserve local roles that the backend missed
+        const existingRoles = userRef.current?.roles || userRef.current?.user?.roles || [];
+        existingRoles.forEach((er: any) => {
+            const erRole = typeof er === 'string' ? er : (er?.role || er?.name || '');
+            if (!erRole) return;
+            const hasRole = (raw.roles || []).some((ir: any) => {
+                const irRole = typeof ir === 'string' ? ir : (ir?.role || ir?.name || '');
+                return irRole.toLowerCase() === erRole.toLowerCase();
+            });
+            if (!hasRole) {
+                if (!raw.roles) raw.roles = [];
+                raw.roles.push(er);
+            }
+        });
+
         const incomingProfiles = incomingData.profiles || raw.profiles || [];
         
         // Deeply merge profiles to ensure metadata (hydration) isn't lost by shallow updates
-        const finalProfiles = incomingProfiles.length > 0 ? incomingProfiles.map((ip: any) => {
-            const existing = (userRef.current?.profiles || []).find((ep: any) => ep.profile_id === ip.profile_id || ep.profileId === ip.profileId);
-            if (!existing) return ip;
-            return {
-                ...existing,
-                ...ip,
-                metadata: {
-                    ...(existing.metadata || {}),
-                    ...(ip.metadata || {})
+        let finalProfiles: any[] = [];
+        if (incomingProfiles.length > 0) {
+            finalProfiles = incomingProfiles.map((ip: any) => {
+                const existing = (userRef.current?.profiles || []).find((ep: any) => ep.profile_id === ip.profile_id || ep.profileId === ip.profileId);
+                if (!existing) return ip;
+                return {
+                    ...existing,
+                    ...ip,
+                    metadata: {
+                        ...(existing.metadata || {}),
+                        ...(ip.metadata || {})
+                    }
+                };
+            });
+            
+            // Re-add any existing profiles that weren't in the incoming list (like synthesized ones)
+            (userRef.current?.profiles || []).forEach((ep: any) => {
+                const isInIncoming = finalProfiles.some((fp: any) => fp.profile_id === ep.profile_id || fp.profileId === ep.profileId);
+                // Fallback check by role for synthesized profiles
+                const hasRole = finalProfiles.some((fp: any) => (fp.role || '').toLowerCase() === (ep.role || '').toLowerCase());
+                if (!isInIncoming && !hasRole) {
+                    finalProfiles.push(ep);
                 }
-            };
-        }) : (userRef.current?.profiles || []);
+            });
+        } else {
+            finalProfiles = (userRef.current?.profiles || []);
+        }
+
+        // SYNTHESIZE MISSING PROFILES FROM ROLES (For Tunzaa 1.0 legacy accounts)
+        const roles = raw.roles || [];
+        roles.forEach((r: any) => {
+            const roleStr = typeof r === 'string' ? r : (r?.name || r?.role || '');
+            if (!roleStr || typeof roleStr !== 'string') return;
+            const roleLower = roleStr.toLowerCase();
+            const exists = finalProfiles.some((p: any) => p.role?.toLowerCase() === roleLower);
+            if (!exists) {
+                // If the user has 'vendor' role but no vendor profile, synthesize one!
+                if (IS_MERCHANT(roleLower)) {
+                    finalProfiles.push({
+                        profile_id: `synth_${roleLower}_${raw.id || raw.user_id}`,
+                        role: roleLower,
+                        metadata: raw.vendorDetails || {},
+                        kyc: { verified: true, documents: [] } // Assume verified if they had the role in v1
+                    });
+                } else if (IS_DELIVERY(roleLower)) {
+                    finalProfiles.push({
+                        profile_id: `synth_${roleLower}_${raw.id || raw.user_id}`,
+                        role: roleLower,
+                        metadata: raw.deliveryDetails || {},
+                        kyc: { verified: true, documents: [] }
+                    });
+                } else {
+                    finalProfiles.push({
+                        profile_id: `synth_${roleLower}_${raw.id || raw.user_id}`,
+                        role: roleLower,
+                        metadata: {},
+                    });
+                }
+            }
+        });
 
 
         const normalizedProfiles = finalProfiles.map((p: any) => {
@@ -160,6 +223,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         };
 
         setUser(updatedUser);
+        userRef.current = updatedUser; // Synchronously update ref to prevent race conditions in rapid successive calls
 
         try {
             await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
@@ -256,8 +320,18 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                                         const vendorId = vProfile?.profile_id || vProfile?.profileId || vProfile?.id;
                                         
                                         if (vendorId) {
-                                            console.log('🔄 [AuthContext] Hydrating marketplace vendor profile for ID:', vendorId);
-                                            return await marketplaceVendorsApi.getVendor(vendorId);
+                                            const isSynth = typeof vendorId === 'string' && vendorId.startsWith('synth_');
+                                            if (isSynth) {
+                                                console.log('🔄 [AuthContext] Boot: Synth vendor detected, resolving real ID for user:', idToFetch);
+                                                const resolved = await marketplaceVendorsApi.getVendorByUserId(idToFetch);
+                                                if (resolved) {
+                                                    console.log(`✅ [AuthContext] Boot: Resolved real vendor ID: ${resolved.vendor_id}`);
+                                                }
+                                                return resolved;
+                                            } else {
+                                                console.log('🔄 [AuthContext] Hydrating marketplace vendor profile for ID:', vendorId);
+                                                return await marketplaceVendorsApi.getVendor(vendorId);
+                                            }
                                         }
                                         
                                         // Fallback to TunzaaPay merchant profile if role matches
@@ -279,16 +353,48 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                                 if (freshData) {
 
                                     // Merge merchant profile data into the profile metadata if found
-                                    if (merchantData && freshData.profiles) {
+                                    if (merchantData) {
+                                        // Ensure vendor role exists
+                                        if (!freshData.roles) freshData.roles = [];
+                                        const hasVendorRole = freshData.roles.some((r: any) => {
+                                            const rStr = typeof r === 'string' ? r : (r?.role || r?.name || '');
+                                            return rStr.toLowerCase() === 'vendor';
+                                        });
+                                        if (!hasVendorRole) {
+                                            freshData.roles.push({ role: 'vendor', description: 'Recovered vendor role' });
+                                        }
+                                        
+                                        if (!freshData.profiles) freshData.profiles = [];
                                         const mIndex = freshData.profiles.findIndex((p: any) => IS_MERCHANT(p.role));
+                                        
                                         if (mIndex > -1) {
                                             console.log('📝 [AuthContext] Merging merchant data into profile at index:', mIndex);
+                                            // Replace synth profile_id with real vendor_id
+                                            if (merchantData.vendor_id) {
+                                                freshData.profiles[mIndex].profile_id = merchantData.vendor_id;
+                                            }
                                             freshData.profiles[mIndex].metadata = {
                                                 ...(freshData.profiles[mIndex].metadata || {}),
                                                 ...merchantData,
+                                                vendor_id: merchantData.vendor_id,
                                                 merchant_profile_synced: true,
                                                 business_name: merchantData.business_name || merchantData.company_name || merchantData.name
                                             };
+                                        } else if (merchantData.vendor_id) {
+                                            // Auth service has no vendor profile at all — inject one
+                                            console.log(`✅ [AuthContext] Boot: Injecting real vendor profile: ${merchantData.vendor_id}`);
+                                            freshData.profiles.push({
+                                                profile_id: merchantData.vendor_id,
+                                                role: 'vendor',
+                                                display_name: merchantData.business_name || merchantData.display_name || 'Vendor',
+                                                is_active: true,
+                                                metadata: {
+                                                    ...merchantData,
+                                                    vendor_id: merchantData.vendor_id,
+                                                    merchant_profile_synced: true,
+                                                    business_name: merchantData.business_name || merchantData.company_name || merchantData.name
+                                                }
+                                            });
                                         }
                                     }
                                     storeUserData(freshData, merchantData ? { vendorDetails: merchantData } : undefined);
@@ -342,9 +448,22 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const response = await authApi.login({ identifier: id, password: pass, is_phone: isPhone });
             
             const serverRole = (response.activeProfileRole || response.active_profile_role || '').toLowerCase();
-            const hasVendor = response.profiles?.some((p: any) => IS_MERCHANT(p.role));
-            const hasDelivery = response.profiles?.some((p: any) => IS_DELIVERY(p.role));
-            const hasLoan = response.profiles?.some((p: any) => IS_LOAN(p.role));
+            
+            // The login response might not include the full profiles array for legacy accounts.
+            // Fetch the full user details to ensure we have all profiles before proceeding.
+            let fullUserResponse = response;
+            try {
+                const freshDetails = await authApi.getUserDetails(response.user_id || response.id);
+                if (freshDetails) {
+                    fullUserResponse = { ...response, ...freshDetails };
+                }
+            } catch (err) {
+                console.warn('⚠️ [AuthContext] Failed to fetch full user details after login:', err);
+            }
+
+            const hasVendor = fullUserResponse.profiles?.some((p: any) => IS_MERCHANT(p.role));
+            const hasDelivery = fullUserResponse.profiles?.some((p: any) => IS_DELIVERY(p.role));
+            const hasLoan = fullUserResponse.profiles?.some((p: any) => IS_LOAN(p.role));
 
             let finalPortal = 'buyer';
             if (targetPortal === 'buyer') finalPortal = 'buyer';
@@ -358,7 +477,7 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             else if (serverRole === 'winga' || serverRole === 'affiliate') finalPortal = 'affiliate';
             
             await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
-            return await storeUserData(response);
+            return await storeUserData(fullUserResponse);
         },
         logout: async () => { 
             console.log('🔒 [AuthContext] Logout initiated — clearing all session data');
@@ -480,11 +599,36 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             
             const previousState = userRef.current;
             try {
+                // Step 0: Resolve synth IDs to real vendor IDs
+                const isSynthVendor = vendorId && vendorId.startsWith('synth_');
+                const isSynthProfile = profileId && profileId.startsWith('synth_');
+                
+                if (isSynthVendor || isSynthProfile) {
+                    console.log('🔍 [AuthContext] updateVendor: Resolving synth IDs...');
+                    const userId = previousState?.user_id || previousState?.id || '';
+                    if (userId) {
+                        const realVendor = await marketplaceVendorsApi.getVendorByUserId(userId);
+                        if (realVendor && realVendor.vendor_id) {
+                            console.log(`✅ [AuthContext] Resolved real vendor ID: ${realVendor.vendor_id}`);
+                            vendorId = realVendor.vendor_id;
+                            // Keep profileId as synth_ or clear it so we don't call updateUserProfile
+                        }
+                    }
+                }
+
                 // 1. Dual Write to Auth Profile & Marketplace
-                const promise1 = authApi.updateUserProfile(previousState?.user_id || '', profileId, {
-                    display_name: vendorData.display_name || vendorData.business_name,
-                    metadata: { ...vendorData.metadata, vendor_id: vendorId }
-                }).catch(e => { throw new Error(`Auth Profile failed: ${e.message}`); });
+                let promise1 = Promise.resolve();
+                if (profileId && !profileId.startsWith('synth_') && !isSynthProfile) {
+                    promise1 = authApi.updateUserProfile(previousState?.user_id || '', profileId, {
+                        display_name: vendorData.display_name || vendorData.business_name,
+                        metadata: { ...vendorData.metadata, vendor_id: vendorId }
+                    }).catch(e => { 
+                        console.warn(`⚠️ [AuthContext] Auth Profile update failed (non-blocking): ${e.message}`);
+                        return null;
+                    });
+                } else {
+                    console.log('ℹ️ [AuthContext] Skipping Auth profile update for synthesized profile');
+                }
 
                 let promise2 = Promise.resolve();
                 if (vendorId) {
@@ -555,16 +699,44 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             return true;
         },
         saveAuthResponse: storeUserData,
-        signInWithGoogle: async () => {
+        signInWithGoogle: async (targetPortal?: string) => {
             const response = await socialAuth.signInWithGoogle();
             if (response) {
+                const finalPortal = targetPortal || 'buyer';
+                await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
+                
+                const createdAt = response.created_at || response.meta?.createdAt;
+                if (createdAt) {
+                    const createdTime = new Date(createdAt).getTime();
+                    const ageInSeconds = (new Date().getTime() - createdTime) / 1000;
+                    if (ageInSeconds < 60) {
+                        if (finalPortal === 'buyer') await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
+                        else if (finalPortal === 'merchant') await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
+                        else if (finalPortal === 'delivery') await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
+                        else if (finalPortal === 'loan') await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
+                    }
+                }
                 return await storeUserData(response);
             }
             return null;
         },
-        signInWithApple: async () => {
+        signInWithApple: async (targetPortal?: string) => {
             const response = await socialAuth.signInWithApple();
             if (response) {
+                const finalPortal = targetPortal || 'buyer';
+                await AsyncStorage.setItem('LAST_PORTAL', finalPortal);
+                
+                const createdAt = response.created_at || response.meta?.createdAt;
+                if (createdAt) {
+                    const createdTime = new Date(createdAt).getTime();
+                    const ageInSeconds = (new Date().getTime() - createdTime) / 1000;
+                    if (ageInSeconds < 60) {
+                        if (finalPortal === 'buyer') await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
+                        else if (finalPortal === 'merchant') await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
+                        else if (finalPortal === 'delivery') await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
+                        else if (finalPortal === 'loan') await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
+                    }
+                }
                 return await storeUserData(response);
             }
             return null;
@@ -576,28 +748,113 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 const userId = previousState?.user_id || previousState?.id || '';
                 const response = await authApi.createVendor(userId, vendorData);
                 
+                const realVendorId = response?.vendor_id || response?.id;
+                
                 // Immediately refresh profile to ensure context is updated
                 if (userId) {
                     try {
                         const freshData = await authApi.getUserDetails(userId);
-                        if (freshData) await storeUserData(freshData);
+                        if (freshData) {
+                            // 1. Ensure the vendor role exists
+                            if (!freshData.roles) freshData.roles = [];
+                            const hasVendorRole = freshData.roles.some((r: any) => {
+                                const rStr = typeof r === 'string' ? r : (r?.role || r?.name || '');
+                                return rStr.toLowerCase() === 'vendor';
+                            });
+                            
+                            if (!hasVendorRole) {
+                                console.log('✅ [AuthContext] Backend role sync delayed. Synthesizing vendor role...');
+                                freshData.roles.push({ role: 'vendor', description: 'Recovered vendor role' });
+                            }
+                            
+                            // 2. Inject the true vendor profile if it hasn't synced yet
+                            if (!freshData.profiles) freshData.profiles = [];
+                            const hasVendorProfile = freshData.profiles.some((p: any) => p.role === 'vendor');
+                            
+                            if (!hasVendorProfile && realVendorId) {
+                                console.log(`✅ [AuthContext] Injecting real vendor profile: ${realVendorId}`);
+                                freshData.profiles.push({
+                                    profile_id: realVendorId,
+                                    role: 'vendor',
+                                    display_name: vendorData.business_name || freshData.first_name || 'Vendor',
+                                    is_active: true,
+                                    metadata: { ...vendorData.metadata, vendor_id: realVendorId }
+                                });
+                            }
+                            
+                            await storeUserData(freshData);
+                        }
                     } catch (err) {
                         console.log('⚠️ [AuthContext] Post-create refresh failed:', err);
                     }
                 }
                 
                 return response;
-            } catch (error) {
+            } catch (error: any) {
                 console.error('❌ [AuthContext] createVendor failed:', error);
+                
+                // If the vendor already exists, fix the backend state mismatch by synthesizing the vendor role locally
+                const errMsg = error.message || '';
+                const errDetail = error.apiError?.detail || error.originalError?.response?.data?.detail || '';
+                const isAlreadyExists = typeof errDetail === 'string' ? errDetail.includes('Vendor exists') : JSON.stringify(errDetail).includes('Vendor exists');
+                
+                if (errMsg.includes('Vendor exists') || isAlreadyExists) {
+                    console.log('✅ [AuthContext] Vendor already exists on backend. Forcing local role synthesis...');
+                    const userId = previousState?.user_id || previousState?.id || '';
+                    if (userId) {
+                        try {
+                            const freshData = await authApi.getUserDetails(userId);
+                            if (freshData) {
+                                // Force synthesize the role to trigger legacy profile synthesis in storeUserData
+                                if (!freshData.roles) freshData.roles = [];
+                                const hasVendorRole = freshData.roles.some((r: any) => {
+                                    const rStr = typeof r === 'string' ? r : (r?.role || r?.name || '');
+                                    return rStr.toLowerCase() === 'vendor';
+                                });
+                                if (!hasVendorRole) {
+                                    freshData.roles.push({ role: 'vendor', description: 'Recovered vendor role' });
+                                }
+                                await storeUserData(freshData);
+                            }
+                        } catch (err) {
+                            console.log('⚠️ [AuthContext] Post-create refresh failed:', err);
+                        }
+                    }
+                    return { success: true, message: 'Vendor recovered' };
+                }
+                
                 throw error;
             }
         },
 
         submitVendorKyc: async (documents: any[]) => {
             const vendorProfile = userRef.current?.profiles?.find((p: any) => IS_MERCHANT(p.role));
-            const vendorId = vendorProfile?.metadata?.vendor_id || (vendorProfile as any)?.vendor_id || vendorProfile?.profile_id;
+            let vendorId = vendorProfile?.metadata?.vendor_id || (vendorProfile as any)?.vendor_id || vendorProfile?.profile_id;
             
-            if (!vendorId) throw new Error('No vendor profile found for KYC submission.');
+            // If it's a synthesized profile, we don't have the real vendor_id. We must fetch it!
+            if (vendorId && vendorId.startsWith('synth_')) {
+                console.log('🔍 [KYC] Synthesized profile detected. Resolving true vendor ID...');
+                try {
+                    const userId = userRef.current?.id || userRef.current?.user_id || '';
+                    if (userId) {
+                        const myVendor = await marketplaceVendorsApi.getVendorByUserId(userId);
+                        if (myVendor && myVendor.vendor_id) {
+                            vendorId = myVendor.vendor_id;
+                            console.log(`✅ [KYC] Resolved true vendor ID via /vendors?user_id=${userId}: ${vendorId}`);
+                            // Patch local profile
+                            if (vendorProfile) {
+                                vendorProfile.metadata = { ...(vendorProfile.metadata || {}), vendor_id: vendorId, ...myVendor };
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('⚠️ [KYC] Failed to resolve true vendor ID for synthesized profile', e);
+                }
+            }
+
+            if (!vendorId || vendorId.startsWith('synth_')) {
+                throw new Error('No valid vendor profile found for KYC submission. Please contact support if this persists.');
+            }
             
             const normalizedDocs = documents.map(doc => {
                 const url = doc.document_url || doc.url || doc.image_url || doc.link;
@@ -631,9 +888,36 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         submitDeliveryKyc: async (documents: any[]) => {
             const isMatch = (p: any, vendorProfile: any) => p.role.toLowerCase() === vendorProfile.role.toLowerCase() || IS_MERCHANT(p.role);
             const deliveryProfile = userRef.current?.profiles?.find((p: any) => p.role === 'delivery' || p.role === 'driver');
-            const partnerId = deliveryProfile?.metadata?.partner_id || deliveryProfile?.profile_id;
+            let partnerId = deliveryProfile?.metadata?.partner_id || deliveryProfile?.profile_id;
             
-            if (!partnerId) throw new Error('No delivery profile found for KYC submission.');
+            // If it's a synthesized profile, we don't have the real partner_id. We must fetch it!
+            if (partnerId && partnerId.startsWith('synth_')) {
+                console.log('🔍 [KYC] Synthesized delivery profile detected. Resolving true partner ID...');
+                try {
+                    const token = await AsyncStorage.getItem('userToken');
+                    const userId = userRef.current?.user_id || userRef.current?.id;
+                    const response = await fetch(`${API_CONFIG.BASE_URL}/partners/?user_id=${userId}&limit=100`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        const myPartner = data?.items?.find((p: any) => p.user_id === userId);
+                        if (myPartner && myPartner.partner_id) {
+                            partnerId = myPartner.partner_id;
+                            console.log(`✅ [KYC] Resolved true partner ID: ${partnerId}`);
+                            if (deliveryProfile) {
+                                deliveryProfile.metadata = { ...(deliveryProfile.metadata || {}), partner_id: partnerId, ...myPartner };
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('⚠️ [KYC] Failed to resolve true partner ID for synthesized profile', e);
+                }
+            }
+
+            if (!partnerId || partnerId.startsWith('synth_')) {
+                throw new Error('No valid delivery profile found for KYC submission.');
+            }
             
             const normalizedDocs = documents.map(doc => {
                 const url = doc.document_url || doc.url || doc.image_url || doc.link;
@@ -676,30 +960,78 @@ export const TunzaaAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             // included in the initial login response.
             if (IS_MERCHANT(role)) {
                 const vProfile = userRef.current.profiles?.find((p: any) => IS_MERCHANT(p.role));
-                const vendorId = vProfile?.profile_id || vProfile?.profileId || vProfile?.id;
+                let vendorId = vProfile?.profile_id || vProfile?.profileId || vProfile?.id;
                 const metaKeys = Object.keys(vProfile?.metadata || {});
+                const isSynthesized = vendorId && typeof vendorId === 'string' && vendorId.startsWith('synth_');
                 
-                // Only hydrate if metadata is empty (hasn't been fetched yet)
-                if (vendorId && metaKeys.length === 0) {
-                    console.log('🔄 [AuthContext] switchRole: Hydrating vendor profile for:', vendorId);
+                // Always hydrate if the profile is synthesized, or if metadata is empty
+                if (vendorId && (isSynthesized || metaKeys.length === 0)) {
+                    console.log('🔄 [AuthContext] switchRole: Hydrating vendor profile for:', vendorId, isSynthesized ? '(SYNTHESIZED - resolving real ID)' : '');
                     try {
-                        const [freshData, merchantData] = await Promise.all([
-                            authApi.getUserDetails(userRef.current.user_id || userRef.current.id).catch(() => null),
-                            marketplaceVendorsApi.getVendor(vendorId).catch(() => null)
-                        ]);
+                        const userId = userRef.current.user_id || userRef.current.id;
+                        
+                        // Step 1: If synth ID, resolve real vendor ID from marketplace
+                        let merchantData: any = null;
+                        if (isSynthesized) {
+                            console.log('🔍 [AuthContext] Resolving real vendor ID for user:', userId);
+                            merchantData = await marketplaceVendorsApi.getVendorByUserId(userId);
+                            if (merchantData && merchantData.vendor_id) {
+                                console.log(`✅ [AuthContext] Resolved real vendor ID: ${merchantData.vendor_id} (was: ${vendorId})`);
+                                vendorId = merchantData.vendor_id;
+                            } else {
+                                console.log('⚠️ [AuthContext] Could not resolve real vendor ID from marketplace');
+                            }
+                        } else {
+                            merchantData = await marketplaceVendorsApi.getVendor(vendorId).catch(() => null);
+                        }
+                        
+                        // Step 2: Fetch fresh user data from auth service
+                        const freshData = await authApi.getUserDetails(userId).catch(() => null);
                         
                         if (freshData) {
-                            if (merchantData && freshData.profiles) {
+                            // Ensure the vendor role exists in fresh data
+                            if (!freshData.roles) freshData.roles = [];
+                            const hasVendorRole = freshData.roles.some((r: any) => {
+                                const rStr = typeof r === 'string' ? r : (r?.role || r?.name || '');
+                                return rStr.toLowerCase() === 'vendor';
+                            });
+                            if (!hasVendorRole) {
+                                freshData.roles.push({ role: 'vendor', description: 'Recovered vendor role' });
+                            }
+                            
+                            // Inject real vendor profile if backend auth doesn't have it
+                            if (!freshData.profiles) freshData.profiles = [];
+                            const hasVendorProfile = freshData.profiles.some((p: any) => IS_MERCHANT(p.role));
+                            
+                            if (!hasVendorProfile && merchantData && vendorId) {
+                                console.log(`✅ [AuthContext] Injecting real vendor profile into fresh data: ${vendorId}`);
+                                freshData.profiles.push({
+                                    profile_id: vendorId,
+                                    role: 'vendor',
+                                    display_name: merchantData.business_name || merchantData.display_name || 'Vendor',
+                                    is_active: true,
+                                    metadata: {
+                                        ...merchantData,
+                                        vendor_id: vendorId,
+                                        merchant_profile_synced: true,
+                                        business_name: merchantData.business_name || merchantData.company_name || merchantData.name
+                                    }
+                                });
+                            } else if (hasVendorProfile && merchantData) {
+                                // Update existing vendor profile with marketplace data
                                 const mIndex = freshData.profiles.findIndex((p: any) => IS_MERCHANT(p.role));
                                 if (mIndex > -1) {
+                                    freshData.profiles[mIndex].profile_id = vendorId;
                                     freshData.profiles[mIndex].metadata = {
                                         ...(freshData.profiles[mIndex].metadata || {}),
                                         ...merchantData,
+                                        vendor_id: vendorId,
                                         merchant_profile_synced: true,
                                         business_name: merchantData.business_name || merchantData.company_name || merchantData.name
                                     };
                                 }
                             }
+                            
                             // Preserve the role we just switched to
                             freshData.activeProfileRole = role;
                             await storeUserData(freshData, merchantData ? { vendorDetails: merchantData } : undefined);

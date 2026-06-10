@@ -142,14 +142,17 @@ export default function OrderDetailsScreen() {
                         {isCompleted ? (
                             <TouchableOpacity
                                 style={styles.primaryButton}
-                                onPress={() => router.push('/(buyer)/orders/delivery')}
+                                onPress={() => router.push({ pathname: '/(buyer)/orders/delivery', params: { orderId: order.id } })}
                             >
                                 <Text style={styles.primaryButtonText}>{t.orderDetailsReceiveBtn}</Text>
                             </TouchableOpacity>
                         ) : (
                             <TouchableOpacity
                                 style={styles.primaryButton}
-                                onPress={() => setPaymentModalVisible(true)}
+                                onPress={() => router.push({
+                                    pathname: '/(buyer)/payment',
+                                    params: { orderId: order.id }
+                                })}
                             >
                                 <Text style={styles.primaryButtonText}>{t.orderDetailsPayInstallmentBtn}</Text>
                             </TouchableOpacity>

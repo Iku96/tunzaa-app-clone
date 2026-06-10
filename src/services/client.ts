@@ -24,7 +24,6 @@ export const apiClient = axios.create({
     headers: {
         ...API_CONFIG.HEADERS,
         "X-Tenant-ID": API_CONFIG.TENANT_ID,
-        "X-Environment": "sandbox",
     },
 });
 

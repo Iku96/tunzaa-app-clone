@@ -130,7 +130,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 if (hasVendorProfile) {
                     return safeReplace('/(vendor)/dashboard');
                 } else {
-                    return safeReplace('/(vendor)/onboarding/step-2');
+                    return safeReplace('/(vendor)/onboarding/step-1');
                 }
             }
             if (lastPortal === 'loan') {

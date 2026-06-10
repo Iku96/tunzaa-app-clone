@@ -90,12 +90,15 @@ export default function LoginScreen() {
 
             // Edge case: Pending merchant onboarding
             const hasPending = await AsyncStorage.getItem('TEMP_ONBOARDING_SHOP_NAME');
-            if (hasPending) {
-                const serverRole = (response?.activeProfileRole || response?.active_profile_role || '').toLowerCase();
-                if (serverRole !== 'vendor') {
-                    console.log('🏗️ [Login] Marking pending onboarding for splash redirect...');
-                    await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
-                }
+            const hasVendorProfile = response?.profiles?.some((p: any) => ['vendor', 'merchant', 'business'].includes(p.role?.toLowerCase() || ''));
+            
+            if (hasPending && !hasVendorProfile) {
+                console.log('🏗️ [Login] Marking pending onboarding for splash redirect...');
+                await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
+            } else if (hasVendorProfile) {
+                // Clear any stale onboarding flags if they already have a vendor profile
+                await AsyncStorage.removeItem('TEMP_ONBOARDING_SHOP_NAME');
+                await AsyncStorage.removeItem('HAS_PENDING_MERCHANT_ONBOARDING');
             }
 
             // Explicitly route to the root splash screen so it can decide which dashboard to load
@@ -111,43 +114,20 @@ export default function LoginScreen() {
     const handleSocialLogin = async (provider: string) => {
         setLoading(true);
         try {
+            const portalTarget = targetRole === 'merchant' ? 'merchant'
+                               : targetRole === 'delivery' ? 'delivery'
+                               : targetRole === 'loan' ? 'loan'
+                               : 'buyer';
+
             let response;
             if (provider === 'google') {
-                response = await signInWithGoogle();
+                response = await signInWithGoogle(portalTarget);
             } else if (provider === 'apple') {
-                response = await signInWithApple();
+                response = await signInWithApple(portalTarget);
             } else {
                 Alert.alert(t.alertsLoginNotAvailableTitle, `${provider}${t.alertsLoginNotAvailableMsg}`);
                 setLoading(false);
                 return;
-            }
-
-            if (response) {
-                const portalTarget = targetRole === 'merchant' ? 'merchant'
-                                   : targetRole === 'delivery' ? 'delivery'
-                                   : targetRole === 'loan' ? 'loan'
-                                   : 'buyer';
-                await AsyncStorage.setItem('LAST_PORTAL', portalTarget);
-
-                // Check if this is a newly created account via social login
-                const createdAt = response.created_at || response.meta?.createdAt;
-                if (createdAt) {
-                    const createdTime = new Date(createdAt).getTime();
-                    const now = new Date().getTime();
-                    const ageInSeconds = (now - createdTime) / 1000;
-                    if (ageInSeconds < 60) {
-                        console.log('🆕 [Login] New social account detected, flagging for onboarding...');
-                        if (portalTarget === 'buyer') {
-                            await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
-                        } else if (portalTarget === 'merchant') {
-                            await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
-                        } else if (portalTarget === 'delivery') {
-                            await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
-                        } else if (portalTarget === 'loan') {
-                            await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
-                        }
-                    }
-                }
             }
         } catch (e: any) {
             const errorMsg = e?.message || String(e);
@@ -241,7 +221,7 @@ export default function LoginScreen() {
 
                                 {/* Forgot Password on the right */}
                                 <TouchableOpacity
-                                    onPress={() => router.push('/forgot-password')}
+                                    onPress={() => router.push({ pathname: '/forgot-password', params: targetRole ? { role: targetRole } : {} })}
                                     style={{ alignSelf: 'flex-end', marginTop: 4 }}
                                 >
                                     <Text style={{ fontSize: 14, fontWeight: '600', color: '#425BA4' }}>{t.authWingaForgotPassword}</Text>
@@ -344,7 +324,7 @@ export default function LoginScreen() {
                                 </View>
 
                                 <TouchableOpacity
-                                    onPress={() => router.push('/forgot-password')}
+                                    onPress={() => router.push({ pathname: '/forgot-password', params: targetRole ? { role: targetRole } : {} })}
                                     style={styles.forgotPasswordContainer}
                                 >
                                     <Text style={styles.forgotPassword}>{t.loginForgotPassword}</Text>

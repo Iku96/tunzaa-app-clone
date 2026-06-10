@@ -79,15 +79,32 @@ export default function DeliveryOrdersScreen() {
                     <Text style={styles.addressText}>{address?.city}</Text>
                 </View>
 
-                <TouchableOpacity 
-                    style={styles.viewDetailsBtn}
-                    onPress={() => toggleExpand(order.order_id)}
-                >
-                    <Text style={styles.viewDetailsText}>
-                        {isExpanded ? 'Hide details' : 'View more details'}
-                    </Text>
-                    <ChevronDown size={16} color="#111827" style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }} />
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <TouchableOpacity 
+                        style={styles.viewDetailsBtn}
+                        onPress={() => toggleExpand(order.order_id)}
+                    >
+                        <Text style={styles.viewDetailsText}>
+                            {isExpanded ? 'Hide details' : 'View more details'}
+                        </Text>
+                        <ChevronDown size={16} color="#111827" style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        style={{
+                            backgroundColor: '#425BA4',
+                            paddingHorizontal: 16,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            justifyContent: 'center',
+                        }}
+                        onPress={() => router.push(`/(vendor)/orders/${order.order_id}` as any)}
+                    >
+                        <Text style={{ color: '#FFF', fontWeight: '600', fontSize: 14 }}>
+                            Manage Order
+                        </Text>
+                    </TouchableOpacity>
+                </View>
 
                 {isExpanded && (
                     <>

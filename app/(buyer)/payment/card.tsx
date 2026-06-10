@@ -246,6 +246,7 @@ export default function CardPaymentScreen() {
                         </Text>
                         <TouchableOpacity style={styles.doneButton} onPress={() => {
                             setSuccessModalVisible(false);
+                            router.dismissAll();
                             router.push('/(buyer)/orders');
                         }}>
                             <Text style={styles.doneButtonText}>Go to Orders</Text>

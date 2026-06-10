@@ -498,17 +498,25 @@ const CheckoutScreen = () => {
     }
   };
 
+  // Ref to hold the latest cart functions to avoid useFocusEffect dependency triggers
+  const cartRef = useRef(cart);
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
+
   // Restore cart on unmount
   useFocusEffect(
     useCallback(() => {
+      let isActive = true;
       return () => {
-        const tempCart = cart.getTempCart();
+        isActive = false;
+        const tempCart = cartRef.current.getTempCart();
         if (tempCart?.cart) {
           // console.log('Checkout screen lost focus, restoring cart...');
-          handleCartRestoration();
+          cartRef.current.restoreOriginalCart().catch(console.error);
         }
       };
-    }, [handleCartRestoration])
+    }, [])
   );
 
   // Auto-select first delivery type if none selected
@@ -797,7 +805,6 @@ const CheckoutScreen = () => {
                   onPress={() => handlePayment('tunzaa_instalments')}
                 >
                   <Text className="text-white font-bold text-[16px] leading-tight mb-0.5">{t.checkoutInstallmentBtn}</Text>
-                  <Text className="text-white text-[11px] font-medium opacity-90 leading-tight">{t.checkoutInstallmentDesc}</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 

@@ -592,7 +592,7 @@ const PaymentScreen = () => {
                     <PaymentForm
                       orderId={orderId as string}
                       orderNumber={order?.order_number}
-                      amount={order?.totals?.total || order?.payment_details?.amount || 0}
+                      amount={orderId ? Math.max(0, (order?.totals?.total || 0) - (order?.payment_details?.amount || 0)) : (order?.totals?.total || order?.payment_details?.amount || 0)}
                       currency="TZS"
                       paymentCategory={order?.payment_details?.method || currentPaymentCategory}
                       onPaymentSuccess={(transactionId) => {
@@ -878,7 +878,7 @@ const PaymentScreen = () => {
                   <PaymentForm
                     orderId={orderId as string}
                     orderNumber={order?.order_number}
-                    amount={order?.totals?.total || order?.payment_details?.amount || 0}
+                    amount={orderId ? Math.max(0, (order?.totals?.total || 0) - (order?.payment_details?.amount || 0)) : (order?.totals?.total || order?.payment_details?.amount || 0)}
                     currency="TZS"
                     paymentCategory={order?.payment_details?.method || currentPaymentCategory}
                     onPaymentSuccess={(transactionId) => {

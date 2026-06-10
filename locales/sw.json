@@ -1526,5 +1526,8 @@
       "error_title": "Login Error",
       "error_msg": "Failed to sign in with "
     }
-  }
+  },
+  "paymentSuccessInstallmentDesc": "Umefanikiwa kukamilisha malipo ya kwanza kuelekea lengo lako! Endelea na kazi nzuri. Tumetuma risiti ya kina kwenye anwani yako ya barua pepe kwa kumbukumbu zako.",
+  "paymentSuccessFullDesc": "Umefanikiwa kukamilisha malipo yako kamili! Tumetuma risiti ya kina kwenye anwani yako ya barua pepe kwa kumbukumbu zako.",
+  "paymentSuccessCongratulations": "Hongera {{name}}!"
 }

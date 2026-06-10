@@ -10,6 +10,7 @@ import { useInitiatePayment, useCheckPaymentStatus, useCreateInstallmentPlan } f
 import { useGetBuyerProfile } from '@/src/services/buyers';
 import { useClearCart, useCartCombined } from '@/src/stores/cart';
 import * as Burnt from "burnt";
+import { useLanguage } from '@/src/contexts/LanguageContext';
 import { format, addDays } from 'date-fns';
 
 const PAYMENT_METHODS = [
@@ -44,6 +45,7 @@ export default function PaymentMethodsScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const { user } = useTunzaaAuth();
+    const { t } = useLanguage();
 
     const [expandedMethod, setExpandedMethod] = useState<string | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -73,15 +75,20 @@ export default function PaymentMethodsScreen() {
     const { data: paymentStatus } = useCheckPaymentStatus(transactionId || '', !!transactionId);
 
     useEffect(() => {
-        if (paymentStatus?.data) {
-            if (paymentStatus.data.status === 'COMPLETED') {
+        if (paymentStatus) {
+            const statusData = (paymentStatus as any).data || paymentStatus;
+            const status = statusData?.status?.toUpperCase();
+            
+            console.log("🔍 [Payment Poll] Status received:", status, paymentStatus);
+
+            if (['COMPLETED', 'SUCCESS', 'SUCCESSFUL', 'PAID'].includes(status)) {
                 const cartId = params.cartId as string;
                 if (cartId) {
                     clearCart({ cartId }).catch(console.error);
                 }
                 setConfirmModalVisible(false);
                 setSuccessModalVisible(true);
-            } else if (paymentStatus.data.status === 'FAILED') {
+            } else if (['FAILED', 'CANCELLED', 'CANCELED'].includes(status)) {
                 setConfirmModalVisible(false);
                 setTransactionId(null);
                 setIsProcessing(false);
@@ -247,6 +254,7 @@ export default function PaymentMethodsScreen() {
 
     const handleSuccessDone = () => {
         setSuccessModalVisible(false);
+        router.dismissAll();
         router.push('/(buyer)/orders');
     };
 
@@ -352,11 +360,11 @@ export default function PaymentMethodsScreen() {
                         <View style={styles.successIconCircle}>
                             <Ionicons name="checkmark" size={40} color="#FFFFFF" />
                         </View>
-                        <Text style={styles.successTitle}>Congratulations {user?.first_name || user?.name?.split(' ')[0]}!</Text>
+                        <Text style={styles.successTitle}>{t.paymentSuccessCongratulations?.replace('{{name}}', user?.first_name || user?.name?.split(' ')[0] || '')}</Text>
                         <Text style={styles.successMessage}>
-                            You've successfully completed the first payment towards your goal! 
-                            Keep up the great work. We've sent a detailed receipt to your email 
-                            address for your records.
+                            {isInstallment 
+                                ? t.paymentSuccessInstallmentDesc
+                                : t.paymentSuccessFullDesc}
                         </Text>
                         <TouchableOpacity style={styles.doneButton} onPress={handleSuccessDone}>
                             <Text style={styles.doneButtonText}>Done</Text>

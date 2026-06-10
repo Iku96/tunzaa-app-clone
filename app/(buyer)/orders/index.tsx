@@ -50,10 +50,30 @@ export default function OrdersScreen() {
         const date = new Date(item.created_at).toLocaleDateString();
         const total = item.totals?.total || 0;
         
-        // Mock progressive properties for installment, adjust when API returns them
+        // Calculate dynamic progress and payment due based on API response
+        let progress = 0;
+        let paymentDue = 0;
         const nextInstallment = total / 2;
-        const progress = 50; 
-        const paymentDue = nextInstallment;
+        
+        if (item.payment_status === 'paid') {
+            progress = 100;
+            paymentDue = 0;
+        } else if (item.payment_status === 'pending') {
+            progress = 0;
+            paymentDue = total;
+        } else {
+            // Partially paid or installments
+            if (total > 0 && item.payment_details?.amount) {
+                progress = Math.min(100, Math.round((item.payment_details.amount / total) * 100));
+                paymentDue = Math.max(0, total - item.payment_details.amount);
+            } else {
+                progress = 50;
+                paymentDue = total / 2;
+            }
+        }
+        
+        // Ensure progress is always a valid safe integer for styling
+        progress = Number.isFinite(progress) ? progress : 0;
 
         return (
             <TouchableOpacity
@@ -129,9 +149,9 @@ export default function OrdersScreen() {
     };
 
     const orders = ordersData?.items || [];
-    const pendingOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'completed' && o.status !== 'shipped' && o.status !== 'in_transit');
+    const pendingOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'completed' && o.status !== 'shipped' && o.status !== 'in_transit' && o.payment_status !== 'paid');
     const shippedOrders = orders.filter(o => o.status === 'shipped' || o.status === 'in_transit');
-    const completedOrders = orders.filter(o => o.status === 'delivered' || o.status === 'completed');
+    const completedOrders = orders.filter(o => o.status === 'delivered' || o.status === 'completed' || o.payment_status === 'paid');
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>

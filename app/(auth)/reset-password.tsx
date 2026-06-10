@@ -21,7 +21,7 @@ import { Text } from "@/components/ui/text";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function ResetPasswordScreen() {
-  const { email, phone_number } = useLocalSearchParams();
+  const { email, phone_number, role } = useLocalSearchParams<{ email?: string, phone_number?: string, role?: string }>();
   const router = useRouter();
 
   const [resetToken, setResetToken] = useState("");
@@ -67,7 +67,7 @@ export default function ResetPasswordScreen() {
       await confirmReset.mutateAsync(payload);
 
       Burnt.toast({ title: "Success!", message: "Password changed. Please sign in.", preset: "done" });
-      setTimeout(() => router.replace("/login"), 1200);
+      setTimeout(() => router.replace({ pathname: "/login", params: role ? { role: role } : {} }), 1200);
 
     } catch (error: any) {
         console.error(error);

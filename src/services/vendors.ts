@@ -122,6 +122,19 @@ export const vendorsApi = {
     return response.data;
   },
 
+  // Get Vendor Profile by User ID (Workaround for missing /me endpoint)
+  getVendorByUserId: async (userId: string): Promise<VendorResponse | null> => {
+    try {
+      const response = await apiClient.get<VendorsResponse>(
+        `/marketplace/vendors?user_id=${userId}`
+      );
+      return response.data.items?.[0] || null;
+    } catch (e) {
+      console.warn('⚠️ [API] Failed to get vendor by user ID:', e);
+      return null;
+    }
+  },
+
   // Get All Vendors
   getVendors: async (params?: VendorsParams): Promise<VendorsResponse> => {
     const response = await apiClient.get<VendorsResponse>(

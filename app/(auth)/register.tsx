@@ -219,37 +219,14 @@ export default function RegisterScreen() {
     const handleSocialLogin = async (provider: string) => {
         setLoading(true);
         try {
+            const portalTarget = userRole === 'merchant' ? 'merchant'
+                               : userRole === 'delivery' ? 'delivery'
+                               : userRole === 'loan' ? 'loan'
+                               : 'buyer';
+
             let response;
-            if (provider === 'google') response = await signInWithGoogle();
-            else if (provider === 'apple') response = await signInWithApple();
-
-            if (response) {
-                const portalTarget = userRole === 'merchant' ? 'merchant'
-                                   : userRole === 'delivery' ? 'delivery'
-                                   : userRole === 'loan' ? 'loan'
-                                   : 'buyer';
-                await AsyncStorage.setItem('LAST_PORTAL', portalTarget);
-
-                // Check if this is a newly created account via social login
-                const createdAt = response.created_at || response.meta?.createdAt;
-                if (createdAt) {
-                    const createdTime = new Date(createdAt).getTime();
-                    const now = new Date().getTime();
-                    const ageInSeconds = (now - createdTime) / 1000;
-                    if (ageInSeconds < 60) {
-                        console.log('🆕 [Register] New social account detected, flagging for onboarding...');
-                        if (portalTarget === 'buyer') {
-                            await AsyncStorage.setItem('IS_FIRST_TIME_BUYER', 'true');
-                        } else if (portalTarget === 'merchant') {
-                            await AsyncStorage.setItem('HAS_PENDING_MERCHANT_ONBOARDING', 'true');
-                        } else if (portalTarget === 'delivery') {
-                            await AsyncStorage.setItem('HAS_PENDING_DELIVERY_ONBOARDING', 'true');
-                        } else if (portalTarget === 'loan') {
-                            await AsyncStorage.setItem('HAS_PENDING_LOAN_ONBOARDING', 'true');
-                        }
-                    }
-                }
-            }
+            if (provider === 'google') response = await signInWithGoogle(portalTarget);
+            else if (provider === 'apple') response = await signInWithApple(portalTarget);
         } catch (e: any) {
             const errorMsg = e?.message || String(e);
             // Silently ignore cancellation or unavailable errors

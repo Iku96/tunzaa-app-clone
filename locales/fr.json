@@ -1526,5 +1526,8 @@
       "error_title": "Login Error",
       "error_msg": "Failed to sign in with "
     }
-  }
+  },
+  "paymentSuccessInstallmentDesc": "Vous avez réussi le premier paiement pour atteindre votre objectif ! Continuez ce bon travail. Nous avons envoyé un reçu détaillé à votre adresse e-mail pour vos dossiers.",
+  "paymentSuccessFullDesc": "Vous avez réussi à effectuer votre paiement intégral ! Nous avons envoyé un reçu détaillé à votre adresse e-mail pour vos dossiers.",
+  "paymentSuccessCongratulations": "Félicitations {{name}}!"
 }

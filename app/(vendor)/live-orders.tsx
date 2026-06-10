@@ -197,7 +197,11 @@ export default function OrdersAndSalesScreen() {
                         <Text style={{ textAlign: 'center', margin: 20, color: '#9CA3AF' }}>No orders found</Text>
                     ) : (
                         ordersData?.items.map((item, index) => (
-                            <View key={item.order_id} style={[styles.tableRow, index % 2 === 1 && styles.alternateRow]}>
+                            <TouchableOpacity 
+                                key={item.order_id} 
+                                style={[styles.tableRow, index % 2 === 1 && styles.alternateRow]}
+                                onPress={() => router.push(`/(vendor)/orders/${item.order_id}` as any)}
+                            >
                                 <Text style={[styles.tableRowText, { flex: 1 }]}>#{item.order_number.slice(-5)}</Text>
                                 <Text style={[styles.tableRowText, { flex: 2, textAlign: 'center' }]} numberOfLines={1}>
                                     {item.items[0]?.name || 'Unknown'}
@@ -205,7 +209,7 @@ export default function OrdersAndSalesScreen() {
                                 <Text style={[styles.tableRowText, { flex: 1.5, textAlign: 'right' }]}>
                                     {activeFilter === 'Completed' ? `${item.totals.total.toLocaleString()}/=` : item.status}
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         ))
                     )}
                 </View>
